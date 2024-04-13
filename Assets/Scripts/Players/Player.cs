@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,11 +20,16 @@ public class Player : ITarget
             { OfferingType.Scroll, 0},
         };
 
+    public int Health = 20;
     public string Name = "";
     public bool IsHuman = false;
 
     private int cardsPerTurn = 5;
     public int GoldPerTurn = 3;
+
+    public Action OnChange;
+
+
     public virtual void StartTurn()
     {
         
@@ -33,18 +39,23 @@ public class Player : ITarget
         DiscardHand();
         Resources[OfferingType.Gold] = GoldPerTurn;
         View.Instance.UpdateResources(this);
+
+        foreach (Follower follower in BattleRow.Followers)
+        {
+            follower.DoEndOfTurnEffects();
+        }
     }
 
     public void Init(List<Card> deck)
     {
-        // Setup Battlefield
+        BattleRow.Player = this;
 
         Resources[OfferingType.Gold] = GoldPerTurn;
 
         Deck = deck;
         foreach (Card card in Deck)
         {
-            card.Owner = this;
+            card.Init(this);
         }
         ShuffleDeck();
         //DrawHand();
@@ -55,7 +66,7 @@ public class Player : ITarget
         for (var i = 0; i < Deck.Count; i++)
         {
             Card temp = Deck[i];
-            int randIndex = Random.Range(0, Deck.Count);
+            int randIndex = UnityEngine.Random.Range(0, Deck.Count);
             Deck[i] = Deck[randIndex];
             Deck[randIndex] = temp;
         }
@@ -81,7 +92,7 @@ public class Player : ITarget
         Card card = Deck[0];
         Deck.RemoveAt(0);
         Hand.Add(card);
-        View.Instance.DrawCard(this, card);
+        View.Instance.DrawCard(card);
     }
 
     public void DiscardHand()
@@ -96,12 +107,12 @@ public class Player : ITarget
     {
         Hand.Remove(card);
         Graveyard.Add(card);
-        View.Instance.DiscardCard(this, card);
+        View.Instance.DiscardCard(card);
     }
 
     public void FollowerDied(Follower follower)
     {
-
+        BattleRow.Followers.Remove(follower);
     }
     public void PlayCard(Card card)
     {
@@ -110,12 +121,21 @@ public class Player : ITarget
     }
     public void TryPlayFollower(Follower follower, int index)
     {
+        // Pay costs and remove from hand
         PlayCard(follower);
 
+        SummonFollower(follower, index);
+    }
+
+    public void SummonFollower(Follower follower, int index)
+    {
         // Add to BattleRow
         BattleRow.Followers.Insert(index, follower);
 
         // Trigger Effects?
+
+        // Update View
+        View.Instance.MoveFollowerToBattleRow(follower, index);
     }
 
     public void PayCosts(Card card)
@@ -135,5 +155,11 @@ public class Player : ITarget
         }
 
         return true;
+    }
+
+    public void ChangeHealth(int change)
+    {
+        Health += change;
+        OnChange?.Invoke();
     }
 }

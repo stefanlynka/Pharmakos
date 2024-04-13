@@ -35,11 +35,6 @@ public class ViewCard : ViewTarget
         OnClick = onClick;
     }
 
-    public virtual void Click()
-    {
-        OnClick?.Invoke(this);
-    }
-
     public void SetHighlight(bool  highlight)
     {
         Highlight.enabled = highlight;

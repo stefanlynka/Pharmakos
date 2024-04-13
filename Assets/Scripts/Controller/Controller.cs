@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -66,6 +67,21 @@ public class Controller : MonoBehaviour
             Player2.IsHuman = false;
             Player2.Name = "AI";
             Player2.Init(CardManager.GetDeck(CardManager.DeckNames.Monsters));
+
+            Follower follower1 = new Hoplite();
+            follower1.Init(Player2);
+            Player2.SummonFollower(follower1, 0);
+            Follower follower2 = new Chariot();
+            follower2.Init(Player2);
+            Player2.SummonFollower(follower2, 0);
+            Follower follower3 = new Sphinx();
+            follower3.Init(Player2);
+            Player2.SummonFollower(follower3, 0);
+            //Player2.BattleRow.Followers.Insert(0, follower1);
+            //Follower follower2 = new Hoplite();
+            //Player2.BattleRow.Followers.Insert(0, follower2);
+            //Follower follower3 = new Hoplite();
+            //Player2.BattleRow.Followers.Insert(0, follower3);
             //for (int i = 0; i < View.AICreaturePositions.Length; i++)
             //{
             //    View.AICreaturePositions[i].CreaturePosition = Player2.CreaturePositions[i];

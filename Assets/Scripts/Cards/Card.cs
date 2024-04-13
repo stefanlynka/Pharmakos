@@ -11,6 +11,16 @@ public abstract class Card : ITarget
 
     public string Text = "";
 
+    public Action OnChange;
+    public Action OnRemove;
+
+    public virtual void Init(Player player)
+    {
+        Owner = player;
+        OnChange = null;
+        OnRemove = null;
+    }
+
     public virtual void Reset() { }
 
     public abstract List<ITarget> GetPlayableTargets();

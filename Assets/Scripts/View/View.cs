@@ -14,6 +14,9 @@ public class View : MonoBehaviour
     private static ObjectPool<GameObject> followerPool = new ObjectPool<GameObject>(CreateFollowerCard, OnCardGet, OnCardRelease);
     private static ObjectPool<GameObject> spellPool = new ObjectPool<GameObject>(CreateCard, OnCardGet, OnCardRelease);
 
+    public Dictionary<Card, ViewCard> CardMap = new Dictionary<Card, ViewCard>();
+
+
     public ViewPlayer Player1;
     public ViewPlayer Player2;
     public ViewHandHandler PlayerHand;
@@ -75,8 +78,65 @@ public class View : MonoBehaviour
         AIBattleRow.UpdateRow();
     }
 
-    
 
+    public ViewCard MakeNewViewCard(Card card)
+    {
+        GameObject newCard = null;
+
+        if (card is Follower)
+        {
+            newCard = followerPool.Get();
+        }
+        else if (card is Spell)
+        {
+            newCard = spellPool.Get();
+        }
+
+        if (newCard.TryGetComponent(out ViewCard viewCard))
+        {
+            viewCard.Load(card);
+            CardMap[card] = viewCard;
+
+            return viewCard;
+        }
+
+        Debug.LogError("Failed to make ViewCard for: " + card.GetType().Name);
+        return null;
+    }
+    public void RemoveCard(Card card)
+    {
+        if (!CardMap.ContainsKey(card)) return;
+
+        ViewCard viewCard = CardMap[card];
+        RemoveViewCard(viewCard);
+        CardMap.Remove(card);
+    }
+    public void RemoveViewCard(ViewCard viewCard)
+    {
+        //Debug.LogError("Remove View Card");
+        // Remove it from hand
+        ViewHandHandler viewHandHandler = viewCard.Card.Owner.IsHuman ? PlayerHand : AIHand;
+        ViewBattleRow viewBattleRow = viewCard.Card.Owner.IsHuman ? PlayerBattleRow : AIBattleRow;
+        viewHandHandler.ViewCards.Remove(viewCard);
+
+        // Remove from battlerow and release
+        ViewFollower viewFollower = viewCard as ViewFollower;
+        if (viewFollower != null)
+        {
+            viewBattleRow.Followers.Remove(viewFollower);
+            followerPool.Release(viewCard.gameObject);
+        }
+        ViewSpell viewSpell = viewCard as ViewSpell;
+        if (viewSpell != null)
+        {
+            spellPool.Release(viewCard.gameObject);
+        }
+    }
+    //public void ReleaseViewCard(ViewCard viewCard)
+    //{
+    //    if (viewCard.Card is Follower) followerPool.Release(viewCard.gameObject);
+    //    else if (viewCard.Card is Spell) spellPool.Release(viewCard.gameObject);
+    //}
 
     private static GameObject CreateFollowerCard()
     {
@@ -107,58 +167,48 @@ public class View : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void DrawCard(Player player, Card card)
+    public void DrawCard(Card card)
     {
-        GameObject newCard = null;
-        //ViewCard viewCard = null;
-        if (card is Follower) 
-        {
-            newCard = followerPool.Get();
-        }
-        else if (card is Spell)
-        {
-            newCard = spellPool.Get();
-        }
+        ViewCard viewCard = MakeNewViewCard(card);
 
-        if (newCard.TryGetComponent(out ViewCard viewCard))
+        if (viewCard != null)
         {
-            ViewHandHandler handHandler = player == Controller.Instance.Player1 ? PlayerHand : AIHand;
-            handHandler.AddCard(viewCard, card);
-        }
-    }
-    public void DiscardCard(Player player, Card card)
-    {
-        ViewHandHandler viewHandHandler = player.IsHuman ? PlayerHand : AIHand;
-        foreach (ViewCard cardInHand in viewHandHandler.ViewCards)
-        {
-            if (cardInHand.Card != card) continue;
-
-            viewHandHandler.ViewCards.Remove(cardInHand);
-            if (cardInHand.Card is Follower) followerPool.Release(cardInHand.gameObject);
-            else if (cardInHand.Card is Spell) spellPool.Release(cardInHand.gameObject);
-            break;
+            ViewHandHandler handHandler = card.Owner.IsHuman ? PlayerHand : AIHand;
+            handHandler.MoveCardToHand(viewCard);
         }
     }
 
-    public void ReleaseCard(ViewCard viewCard)
-    {
-        if (viewCard.Card is Follower) followerPool.Release(viewCard.gameObject);
-        else if (viewCard.Card is Spell) spellPool.Release(viewCard.gameObject);
 
+    public void DiscardCard(Card card)
+    {
+        RemoveCard(card);
+
+        //ViewHandHandler viewHandHandler = player.IsHuman ? PlayerHand : AIHand;
+        //foreach (ViewCard cardInHand in viewHandHandler.ViewCards)
+        //{
+        //    if (cardInHand.Card != card) continue;
+
+        //    viewHandHandler.ViewCards.Remove(cardInHand);
+        //    if (cardInHand.Card is Follower) followerPool.Release(cardInHand.gameObject);
+        //    else if (cardInHand.Card is Spell) spellPool.Release(cardInHand.gameObject);
+        //    break;
+        //}
     }
 
+    
 
-    public void DiscardHand(Player player)
-    {
-        ViewHandHandler viewHandHandler = player.IsHuman ? PlayerHand : AIHand;
-        foreach (ViewCard cardInHand in viewHandHandler.ViewCards)
-        {
-            if (cardInHand.Card is Follower) followerPool.Release(cardInHand.gameObject);
-            else if (cardInHand.Card is Spell) spellPool.Release(cardInHand.gameObject);
-        }
 
-        viewHandHandler.ViewCards.Clear();
-    }
+    //public void DiscardHand(Player player)
+    //{
+    //    ViewHandHandler viewHandHandler = player.IsHuman ? PlayerHand : AIHand;
+    //    foreach (ViewCard cardInHand in viewHandHandler.ViewCards)
+    //    {
+    //        if (cardInHand.Card is Follower) followerPool.Release(cardInHand.gameObject);
+    //        else if (cardInHand.Card is Spell) spellPool.Release(cardInHand.gameObject);
+    //    }
+
+    //    viewHandHandler.ViewCards.Clear();
+    //}
 
     public void HighlightTargets(List<ITarget> targets)
     {
@@ -173,5 +223,13 @@ public class View : MonoBehaviour
     {
         ViewPlayer viewPlayer = player == Player1.Player ? Player1 : Player2;
         viewPlayer.ViewResources.RefreshResources();
+    }
+
+    public void MoveFollowerToBattleRow(Follower follower, int index)
+    {
+        RemoveCard(follower);
+        ViewFollower viewFollower = (ViewFollower)MakeNewViewCard(follower);
+        ViewBattleRow battleRow = follower.Owner.IsHuman ? PlayerBattleRow : AIBattleRow;
+        battleRow.AddFollower(viewFollower, index);
     }
 }

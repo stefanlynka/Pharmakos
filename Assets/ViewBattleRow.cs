@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 public class ViewBattleRow : MonoBehaviour
 {
     public MeshRenderer Highlight;
-    public bool isPlayer = false;
+    public bool isHuman = false;
 
     private LayerMask zoneLayer = 128; // only layer 7
 
@@ -34,7 +34,7 @@ public class ViewBattleRow : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!isPlayer) return;
+        if (!isHuman) return;
 
         if (View.Instance.SelectionHandler.TryGetHeldFollower(out ViewFollower viewFollower))
         {
@@ -70,9 +70,18 @@ public class ViewBattleRow : MonoBehaviour
             xPositions.Add(viewFollower.transform.position.x);
 
             X += CardWidth + MaxSpacing;
+
+            bool highlighted = false;
+            if (View.Instance.SelectionHandler.AttackingFollower == viewFollower) highlighted = true; // If it's attacking
+            if (View.Instance.SelectionHandler.AttackableTargets.Contains(viewFollower.Follower)) highlighted = true; // If it's an attack target
+            if (isHuman && !View.Instance.SelectionHandler.IsHoldingCard() && viewFollower.Follower.CanAttack()) highlighted = true; // nothing's held and it can attack
+            if (View.Instance.SelectionHandler.IsHoldingCard() && View.Instance.SelectionHandler.CurrentTargets.Contains(viewFollower.Follower)) highlighted = true; // is a target of a spell
+
+
+            viewFollower.SetHighlight(highlighted);
         }
 
-        if (!View.Instance.SelectionHandler.IsHoldingFollower() || !IsMouseOverThis())
+        if (!View.Instance.SelectionHandler.IsHoldingFollower() || !IsMouseOverThis() || !isHuman)
         {
             return;
         }
@@ -166,11 +175,14 @@ public class ViewBattleRow : MonoBehaviour
 
     public void AddFollower(ViewFollower viewFollower, int index)
     {
-        viewFollower.OnClick = null;
+        viewFollower.OnClick = FollowerInPlayClicked;
         viewFollower.transform.SetParent(UnitHolderTransform);
         Followers.Insert(index, viewFollower);
     }
-
+    public void FollowerInPlayClicked(ViewTarget viewTarget)
+    {
+        ViewEventHandler.Instance.FireViewTargetInPlayClicked(viewTarget);
+    }
     public void HighlightTargets(List<ITarget> targets)
     {
         foreach (ViewFollower follower in Followers)

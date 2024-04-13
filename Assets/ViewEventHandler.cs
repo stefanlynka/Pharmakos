@@ -22,6 +22,9 @@ public class ViewEventHandler : MonoBehaviour
     public Action<ViewTarget> ViewTargetInHandClicked;
     public void FireTargetInHandClicked(ViewTarget target) { if (ViewTargetInHandClicked != null) ViewTargetInHandClicked(target); }
 
+    public Action<ViewTarget> ViewTargetInPlayClicked;
+    public void FireViewTargetInPlayClicked(ViewTarget target) { if (ViewTargetInPlayClicked != null) ViewTargetInPlayClicked(target); }
+
     public Action ManaChanged;
     public void FireManaChanged() { if (ManaChanged != null) ManaChanged(); }
 

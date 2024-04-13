@@ -8,18 +8,23 @@ public class SelectionHandler
 {
     private LayerMask targetLayer = 64; // only layer 6
 
+    // For picked up card in hand
     public ViewTarget CurrentHover = null;
     public ViewCard HeldCard = null;
-
     private float timeSinceCardInHandPickedUp = 0;
     public float heldCardZ = 20;
     public Vector3 HeldScale = Vector3.one;
-
     public List<ITarget> CurrentTargets = new List<ITarget>();
+
+    // For picking follower attack target
+    public ViewFollower AttackingFollower = null;
+    public List<ITarget> AttackableTargets = new List<ITarget>();
+    private float timeSinceAttackerPickedUp = 0;
 
     public void Setup()
     {
         ViewEventHandler.Instance.ViewTargetInHandClicked += ViewTargetInHandClicked;
+        ViewEventHandler.Instance.ViewTargetInPlayClicked += ViewTargetInPlayClicked;
         ViewEventHandler.Instance.ClickedAway += ClickedAway;
     }
 
@@ -48,6 +53,7 @@ public class SelectionHandler
         Debug.DrawRay(ray.origin, ray.direction * 100, Color.red);
 
         if (HeldCard != null) timeSinceCardInHandPickedUp += Time.deltaTime;
+        if (AttackingFollower != null) timeSinceAttackerPickedUp += Time.deltaTime;
     }
     private void HandleMouseInputs()
     {
@@ -72,6 +78,13 @@ public class SelectionHandler
                 {
                     // TODO: Try place follower on battlefield
                     DropHeldCard();
+                }
+            }
+            if (AttackingFollower != null)
+            {
+                if (timeSinceAttackerPickedUp > 0.1f)
+                {
+                    DropAttacker();
                 }
             }
         }
@@ -120,11 +133,31 @@ public class SelectionHandler
         }
     }
 
+    private void ViewTargetInPlayClicked(ViewTarget target)
+    {
+        //Debug.LogError("In Play Target Clicked");
+
+        if (HeldCard != null) return;
+
+        ViewFollower viewFollower = target as ViewFollower;
+        // You haven't selected something, and you're clicking on a friendly follower that can attack
+        if (AttackingFollower == null && viewFollower != null && viewFollower.Follower.Owner.IsHuman && viewFollower.Follower.CanAttack())
+        {
+            timeSinceAttackerPickedUp = 0;
+            AttackingFollower = viewFollower;
+            AttackableTargets = viewFollower.Follower.GetAttackTargets();
+            View.Instance.HighlightTargets(AttackableTargets);
+        }
+
+        return;
+    }
+
     private void ClickedAway()
     {
         if (HeldCard == null) return;
 
         DropHeldCard();
+        DropAttacker();
     }
 
     private void DropHeldCard()
@@ -135,7 +168,8 @@ public class SelectionHandler
             // Try place on battlefield
             int placementIndex = View.Instance.PlayerBattleRow.GetPlacementIndex();
             Controller.Instance.Player1.TryPlayFollower(viewFollower.Follower, placementIndex);
-            View.Instance.PlayerBattleRow.AddFollower(viewFollower, placementIndex);
+            //viewFollower = View.Instance
+            //View.Instance.PlayerBattleRow.AddFollower(viewFollower, placementIndex);
         }
         else
         {
@@ -151,7 +185,8 @@ public class SelectionHandler
                 {
                     Controller.Instance.Player1.PlayCard(viewSpell.Spell);
                     viewSpell.Spell.Play(CurrentHover.Target);
-                    View.Instance.ReleaseCard(viewSpell);
+                    View.Instance.RemoveViewCard(viewSpell);
+                    //View.Instance.ReleaseCard(viewSpell);
                     foundTarget = true;
                 }
             }
@@ -163,6 +198,29 @@ public class SelectionHandler
         CurrentHover = null;
         HeldCard = null;
         CurrentTargets.Clear();
+    }
+
+    public void DropAttacker()
+    {
+        if (CurrentHover != null && AttackableTargets.Contains(CurrentHover.Target))
+        {
+            Follower attackTarget = CurrentHover.Target as Follower;
+            Player attackedPlayer = CurrentHover.Target as Player;
+            if (attackTarget != null)
+            {
+                AttackingFollower.Follower.AttackFollower(attackTarget);
+            }
+            else if (attackedPlayer != null)
+            {
+                AttackingFollower.Follower.AttackPlayer(attackedPlayer);
+            }
+
+            //Controller.Instance.Player1.PerformAttack(AttackingFollower.Follower, attackTarget);
+        }
+
+        AttackingFollower = null;
+        AttackableTargets.Clear();
+        View.Instance.HighlightTargets(new List<ITarget>());
     }
 
     public bool TryGetHeldFollower(out ViewFollower viewFollower)
@@ -179,7 +237,7 @@ public class SelectionHandler
     }
     public bool IsHoldingCard()
     {
-        return HeldCard != null;
+        return HeldCard != null || AttackingFollower != null;
     }
     public bool IsHoldingFollower()
     {

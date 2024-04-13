@@ -25,13 +25,6 @@ public class ViewHandHandler : MonoBehaviour
         RefreshPositions();
     }
 
-    public void AddCard(ViewCard viewCard, Card card)
-    {
-        viewCard.Load(card, CardInHandClicked);
-
-        MoveCardToHand(viewCard);
-    }
-
     public void MoveCardToHand(ViewCard viewCard)
     {
         viewCard.transform.SetParent(transform, false);
