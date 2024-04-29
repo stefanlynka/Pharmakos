@@ -19,8 +19,8 @@ public class ViewFollower : ViewCard
         if (Follower == null) return;
 
         Target = Follower;
-        AttackText.text = Follower.BaseAttack.ToString();
-        HealthText.text = Follower.BaseHealth.ToString();
+        AttackText.text = Follower.CurrentAttack.ToString();
+        HealthText.text = Follower.CurrentHealth.ToString();
 
         Follower.OnChange -= CardChanged;
         Follower.OnChange += CardChanged;

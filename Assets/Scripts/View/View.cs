@@ -19,18 +19,15 @@ public class View : MonoBehaviour
 
     public ViewPlayer Player1;
     public ViewPlayer Player2;
-    public ViewHandHandler PlayerHand;
-    public ViewHandHandler AIHand;
 
-    public ViewBattleRow PlayerBattleRow;
-    public ViewBattleRow AIBattleRow;
+
 
     public SelectionHandler SelectionHandler;
 
     public ViewTarget CurrentHover { get { return SelectionHandler.CurrentHover; } }
 
 
-    public int target = 60;
+    //public int target = 60;
 
 
     private void Awake()
@@ -44,8 +41,8 @@ public class View : MonoBehaviour
             Destroy(this);
         }
 
-        QualitySettings.vSyncCount = 0;
-        Application.targetFrameRate = target;
+        //QualitySettings.vSyncCount = 0;
+        //Application.targetFrameRate = target;
 
 
         FollowerCardPrefab = Resources.Load<GameObject>("Prefabs/Cards/Follower");
@@ -60,24 +57,14 @@ public class View : MonoBehaviour
 
         Player1.Load(Controller.Instance.Player1);
         Player2.Load(Controller.Instance.Player2);
-
-        Player1.ViewResources.Init(Player1.Player);
-        Player2.ViewResources.Init(Player2.Player);
-
-        PlayerBattleRow.Setup(Controller.Instance.Player1.BattleRow);
-        AIBattleRow.Setup(Controller.Instance.Player2.BattleRow);
     }
 
     public void DoUpdate()
     {
         SelectionHandler.UpdateSelections();
-        PlayerHand.UpdateHand();
-        AIHand.UpdateHand();
-
-        PlayerBattleRow.UpdateRow();
-        AIBattleRow.UpdateRow();
+        Player1.UpdatePlayer();
+        Player2.UpdatePlayer();
     }
-
 
     public ViewCard MakeNewViewCard(Card card)
     {
@@ -115,8 +102,8 @@ public class View : MonoBehaviour
     {
         //Debug.LogError("Remove View Card");
         // Remove it from hand
-        ViewHandHandler viewHandHandler = viewCard.Card.Owner.IsHuman ? PlayerHand : AIHand;
-        ViewBattleRow viewBattleRow = viewCard.Card.Owner.IsHuman ? PlayerBattleRow : AIBattleRow;
+        ViewHandHandler viewHandHandler = viewCard.Card.Owner.IsHuman ? Player1.HandHandler : Player2.HandHandler;
+        ViewBattleRow viewBattleRow = viewCard.Card.Owner.IsHuman ? Player1.BattleRow : Player2.BattleRow;
         viewHandHandler.ViewCards.Remove(viewCard);
 
         // Remove from battlerow and release
@@ -173,7 +160,7 @@ public class View : MonoBehaviour
 
         if (viewCard != null)
         {
-            ViewHandHandler handHandler = card.Owner.IsHuman ? PlayerHand : AIHand;
+            ViewHandHandler handHandler = card.Owner.IsHuman ? Player1.HandHandler : Player2.HandHandler;
             handHandler.MoveCardToHand(viewCard);
         }
     }
@@ -210,13 +197,18 @@ public class View : MonoBehaviour
     //    viewHandHandler.ViewCards.Clear();
     //}
 
+    //public void UpdateHighlights()
+    //{
+
+    //}
+
     public void HighlightTargets(List<ITarget> targets)
     {
         Player1.SetHighlight(targets.Contains(Controller.Instance.Player1));
         Player2.SetHighlight(targets.Contains(Controller.Instance.Player2));
 
-        PlayerBattleRow.HighlightTargets(targets);
-        AIBattleRow.HighlightTargets(targets);
+        Player1.BattleRow.HighlightTargets(targets);
+        Player2.BattleRow.HighlightTargets(targets);
     }
 
     public void UpdateResources(Player player)
@@ -229,7 +221,7 @@ public class View : MonoBehaviour
     {
         RemoveCard(follower);
         ViewFollower viewFollower = (ViewFollower)MakeNewViewCard(follower);
-        ViewBattleRow battleRow = follower.Owner.IsHuman ? PlayerBattleRow : AIBattleRow;
+        ViewBattleRow battleRow = follower.Owner.IsHuman ? Player1.BattleRow : Player2.BattleRow;
         battleRow.AddFollower(viewFollower, index);
     }
 }

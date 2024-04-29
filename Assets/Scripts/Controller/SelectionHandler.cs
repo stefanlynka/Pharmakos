@@ -21,10 +21,16 @@ public class SelectionHandler
     public List<ITarget> AttackableTargets = new List<ITarget>();
     private float timeSinceAttackerPickedUp = 0;
 
+    // For picking ritual targets
+    public ViewRitual SelectedRitual = null;
+    public List<ITarget> PotentialRitualTargets = new List<ITarget>();
+    private float timeSinceRitualSelected = 0;
+
     public void Setup()
     {
         ViewEventHandler.Instance.ViewTargetInHandClicked += ViewTargetInHandClicked;
         ViewEventHandler.Instance.ViewTargetInPlayClicked += ViewTargetInPlayClicked;
+        ViewEventHandler.Instance.RitualClicked += ViewRitualClicked;
         ViewEventHandler.Instance.ClickedAway += ClickedAway;
     }
 
@@ -42,18 +48,16 @@ public class SelectionHandler
 
         CurrentHover = null;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // HOWTO Raycast
-        if (Physics.Raycast(ray, out RaycastHit hitData, 1000, targetLayer))
+        if (Physics.Raycast(ray, out RaycastHit hitData, 1000, targetLayer) && hitData.collider.gameObject.TryGetComponent(out ViewTarget viewCard))
         {
-            if (hitData.collider.gameObject.TryGetComponent(out ViewTarget viewCard))
-            {
-                CurrentHover = viewCard;
-            }
+            CurrentHover = viewCard;
         }
         //if (CurrentHover != null) Debug.LogError("CurrentHover: " +  CurrentHover.gameObject.name);
         Debug.DrawRay(ray.origin, ray.direction * 100, Color.red);
 
         if (HeldCard != null) timeSinceCardInHandPickedUp += Time.deltaTime;
         if (AttackingFollower != null) timeSinceAttackerPickedUp += Time.deltaTime;
+        if (SelectedRitual != null) timeSinceRitualSelected += Time.deltaTime;
     }
     private void HandleMouseInputs()
     {
@@ -87,6 +91,13 @@ public class SelectionHandler
                     DropAttacker();
                 }
             }
+            if (SelectedRitual != null)
+            {
+                if (timeSinceRitualSelected > 0.1f)
+                {
+                    DropRitual();
+                }
+            }
         }
     }
 
@@ -118,7 +129,7 @@ public class SelectionHandler
             //viewFollower.SetHighlight(true);
             HeldCard = viewFollower;
             HeldCard.transform.localScale = HeldScale;
-            View.Instance.PlayerHand.RemoveCard(HeldCard);
+            View.Instance.Player1.HandHandler.RemoveCard(HeldCard);
         }
         else if (viewSpell != null && viewSpell.Spell.HasPlayableTargets())
         {
@@ -127,7 +138,7 @@ public class SelectionHandler
             //viewSpell.SetHighlight(true);
             viewSpell.EnterTargetMode();
             HeldCard.transform.localScale = HeldScale;
-            View.Instance.PlayerHand.RemoveCard(HeldCard);
+            View.Instance.Player1.HandHandler.RemoveCard(HeldCard);
             CurrentTargets = viewSpell.Spell.GetPlayableTargets();
             View.Instance.HighlightTargets(CurrentTargets);
         }
@@ -152,21 +163,38 @@ public class SelectionHandler
         return;
     }
 
+    private void ViewRitualClicked(ViewTarget target)
+    {
+        if (HeldCard != null) return;
+
+        ViewRitual viewRitual = target as ViewRitual;
+        if (viewRitual == null) return;
+
+        if (SelectedRitual != null) return;
+        if (!viewRitual.Ritual.CanPlay()) return;
+
+        SelectedRitual = viewRitual;
+        PotentialRitualTargets = SelectedRitual.Ritual.GetTargets();
+        timeSinceRitualSelected = 0;
+        View.Instance.HighlightTargets(PotentialRitualTargets);
+    }
+
     private void ClickedAway()
     {
         if (HeldCard == null) return;
 
         DropHeldCard();
-        DropAttacker();
+        //DropAttacker();
+        //DropRitual();
     }
 
     private void DropHeldCard()
     {
         ViewFollower viewFollower = HeldCard as ViewFollower;
-        if (viewFollower != null && View.Instance.PlayerBattleRow.IsMouseOverThis())
+        if (viewFollower != null && View.Instance.Player1.BattleRow.IsMouseOverThis())
         {
             // Try place on battlefield
-            int placementIndex = View.Instance.PlayerBattleRow.GetPlacementIndex();
+            int placementIndex = View.Instance.Player1.BattleRow.GetPlacementIndex();
             Controller.Instance.Player1.TryPlayFollower(viewFollower.Follower, placementIndex);
             //viewFollower = View.Instance
             //View.Instance.PlayerBattleRow.AddFollower(viewFollower, placementIndex);
@@ -191,7 +219,7 @@ public class SelectionHandler
                 }
             }
 
-            if (!foundTarget) View.Instance.PlayerHand.MoveCardToHand(HeldCard);
+            if (!foundTarget) View.Instance.Player1.HandHandler.MoveCardToHand(HeldCard);
         }
 
         HeldCard.SetHighlight(false);
@@ -223,6 +251,17 @@ public class SelectionHandler
         View.Instance.HighlightTargets(new List<ITarget>());
     }
 
+    public void DropRitual()
+    {
+        if (CurrentHover != null && PotentialRitualTargets.Contains(CurrentHover.Target))
+        {
+            SelectedRitual.Ritual.Play(CurrentHover.Target);
+        }
+
+        SelectedRitual = null;
+        PotentialRitualTargets.Clear();
+    }
+
     public bool TryGetHeldFollower(out ViewFollower viewFollower)
     {
         viewFollower = null;
@@ -237,7 +276,7 @@ public class SelectionHandler
     }
     public bool IsHoldingCard()
     {
-        return HeldCard != null || AttackingFollower != null;
+        return HeldCard != null || AttackingFollower != null || SelectedRitual != null;
     }
     public bool IsHoldingFollower()
     {

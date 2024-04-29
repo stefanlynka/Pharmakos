@@ -96,8 +96,8 @@ public class Smite : Spell
     {
         List<ITarget> targets = new List<ITarget>();
 
-        targets.AddRange(GetAllPlayers());
-        targets.AddRange(GetAllFollowers());
+        targets.AddRange(ITarget.GetAllPlayers(Owner));
+        targets.AddRange(ITarget.GetAllFollowers(Owner));
 
         return targets;
     }
@@ -105,6 +105,17 @@ public class Smite : Spell
     public override void Play(ITarget target) 
     {
         base.Play(target);
+
+        Player player = target as Player;
+        Follower follower = target as Follower;
+        if (player != null)
+        {
+            player.ChangeHealth(-3);
+        }
+        else if (follower != null)
+        {
+            follower.ChangeHealth(-3);
+        }
     }
 
 }

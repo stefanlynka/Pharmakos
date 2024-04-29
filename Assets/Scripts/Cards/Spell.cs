@@ -10,37 +10,16 @@ public class Spell : Card, ITarget
         return new List<ITarget>();
     }
 
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        Controller.Instance.CurrentPlayer.ChangeOffering(OfferingType.Scroll, 1);
+    }
+
     public bool HasPlayableTargets()
     {
         return !HasTargets || GetPlayableTargets().Count > 0;
     }
 
-    public List<ITarget> GetAllFollowers()
-    {
-        List<ITarget> targets = new List<ITarget>();
-        targets.AddRange(Owner.BattleRow.Followers);
-        targets.AddRange(Controller.Instance.GetOtherPlayer(Owner).BattleRow.Followers);
-        return targets;
-    }
-    public List<ITarget> GetOwnFollowers()
-    {
-        List<ITarget> targets = new List<ITarget>();
-        targets.AddRange(Owner.BattleRow.Followers);
-        return targets;
-    }
-    public List<ITarget> GetEnemyFollowers()
-    {
-        List<ITarget> targets = new List<ITarget>();
-        targets.AddRange(Controller.Instance.GetOtherPlayer(Owner).BattleRow.Followers);
-        return targets;
-    }
-    public List<ITarget> GetAllPlayers()
-    {
-        List<ITarget> targets = new List<ITarget>
-        {
-            Owner,
-            Controller.Instance.GetOtherPlayer(Owner)
-        };
-        return targets;
-    }
 }

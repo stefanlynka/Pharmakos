@@ -55,6 +55,9 @@ public class Controller : MonoBehaviour
             Player1 = new Player();
             Player1.IsHuman = true;
             Player1.Name = "Human";
+            
+            Player1.MinorRitual = new ZeusMinor(Player1);
+            Player1.MajorRitual = new ZeusMajor(Player1);
             Player1.Init(CardManager.GetDeck(CardManager.DeckNames.Warriors));
             //for (int i = 0; i < View.PlayerCreaturePositions.Length; i++)
             //{
@@ -66,17 +69,19 @@ public class Controller : MonoBehaviour
             Player2 = new AIPlayer();
             Player2.IsHuman = false;
             Player2.Name = "AI";
+            Player2.MinorRitual = new ZeusMinor(Player2);
+            Player2.MajorRitual = new ZeusMajor(Player2);
             Player2.Init(CardManager.GetDeck(CardManager.DeckNames.Monsters));
 
             Follower follower1 = new Hoplite();
             follower1.Init(Player2);
-            Player2.SummonFollower(follower1, 0);
+            Player2.SummonFollower(follower1, 0, false);
             Follower follower2 = new Chariot();
             follower2.Init(Player2);
-            Player2.SummonFollower(follower2, 0);
+            Player2.SummonFollower(follower2, 0, false);
             Follower follower3 = new Sphinx();
             follower3.Init(Player2);
-            Player2.SummonFollower(follower3, 0);
+            Player2.SummonFollower(follower3, 0, false);
             //Player2.BattleRow.Followers.Insert(0, follower1);
             //Follower follower2 = new Hoplite();
             //Player2.BattleRow.Followers.Insert(0, follower2);

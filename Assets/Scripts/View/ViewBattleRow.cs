@@ -73,9 +73,10 @@ public class ViewBattleRow : MonoBehaviour
 
             bool highlighted = false;
             if (View.Instance.SelectionHandler.AttackingFollower == viewFollower) highlighted = true; // If it's attacking
-            if (View.Instance.SelectionHandler.AttackableTargets.Contains(viewFollower.Follower)) highlighted = true; // If it's an attack target
-            if (isHuman && !View.Instance.SelectionHandler.IsHoldingCard() && viewFollower.Follower.CanAttack()) highlighted = true; // nothing's held and it can attack
-            if (View.Instance.SelectionHandler.IsHoldingCard() && View.Instance.SelectionHandler.CurrentTargets.Contains(viewFollower.Follower)) highlighted = true; // is a target of a spell
+            else if (View.Instance.SelectionHandler.AttackableTargets.Contains(viewFollower.Follower)) highlighted = true; // If it's a potential attack target
+            else if (isHuman && !View.Instance.SelectionHandler.IsHoldingCard() && viewFollower.Follower.CanAttack()) highlighted = true; // nothing's held and it can attack
+            else if (View.Instance.SelectionHandler.IsHoldingCard() && View.Instance.SelectionHandler.CurrentTargets.Contains(viewFollower.Follower)) highlighted = true; // is a potential target of a spell
+            else if (View.Instance.SelectionHandler.SelectedRitual != null && View.Instance.SelectionHandler.PotentialRitualTargets.Contains(viewFollower.Follower)) highlighted = true; // Is a potential target of a ritual
 
 
             viewFollower.SetHighlight(highlighted);

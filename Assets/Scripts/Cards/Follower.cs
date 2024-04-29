@@ -77,9 +77,13 @@ public class Follower : Card, ITarget
         CurrentHealth = health;
     }
 
-    public virtual void TakeDamage(int damage)
+    public virtual void ChangeHealth(int value)
     {
-        CurrentHealth -= damage;
+        CurrentHealth += value;
+
+        ResolveDamage();
+
+        OnChange?.Invoke();
     }
 
     public virtual void ResolveDamage()
@@ -91,6 +95,7 @@ public class Follower : Card, ITarget
     {
         Owner.FollowerDied(this);
         OnRemove?.Invoke();
+        Controller.Instance.CurrentPlayer.ChangeOffering(OfferingType.Bone, 1);
     }
 
     public bool CanAttack()
@@ -100,17 +105,12 @@ public class Follower : Card, ITarget
 
     public void AttackFollower(Follower defender)
     {
-        CurrentHealth -= defender.CurrentAttack;
-        defender.CurrentHealth -= CurrentAttack;
-
         HasAttacked = true;
 
-        OnChange?.Invoke();
-        defender.OnChange?.Invoke();
-
-        if (CurrentHealth <= 0) Die();
-        if (defender.CurrentHealth <= 0) defender.Die();
+        ChangeHealth(-defender.CurrentAttack);
+        defender.ChangeHealth(-CurrentAttack);
     }
+
     public void AttackPlayer(Player player)
     {
         HasAttacked = true;

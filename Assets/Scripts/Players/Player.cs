@@ -11,14 +11,17 @@ public class Player : ITarget
 
     public BattleRow BattleRow = new BattleRow();
 
-    public Dictionary<OfferingType, int> Resources = new Dictionary<OfferingType, int>()
+    public Dictionary<OfferingType, int> Offerings = new Dictionary<OfferingType, int>()
         {
             { OfferingType.Gold, 0},
-            { OfferingType.Blood, 0},
-            { OfferingType.Bone, 0},
-            { OfferingType.Crop, 0},
-            { OfferingType.Scroll, 0},
+            { OfferingType.Blood, 3},
+            { OfferingType.Bone, 3},
+            { OfferingType.Crop, 3},
+            { OfferingType.Scroll, 3},
         };
+
+    public Ritual MinorRitual;
+    public Ritual MajorRitual;
 
     public int Health = 20;
     public string Name = "";
@@ -27,7 +30,8 @@ public class Player : ITarget
     private int cardsPerTurn = 5;
     public int GoldPerTurn = 3;
 
-    public Action OnChange;
+    public Action OnHealthChange;
+    public Action OnOfferingsChange;
 
 
     public virtual void StartTurn()
@@ -37,7 +41,7 @@ public class Player : ITarget
     public virtual void EndTurn()
     {
         DiscardHand();
-        Resources[OfferingType.Gold] = GoldPerTurn;
+        Offerings[OfferingType.Gold] = GoldPerTurn;
         View.Instance.UpdateResources(this);
 
         foreach (Follower follower in BattleRow.Followers)
@@ -50,7 +54,7 @@ public class Player : ITarget
     {
         BattleRow.Player = this;
 
-        Resources[OfferingType.Gold] = GoldPerTurn;
+        Offerings[OfferingType.Gold] = GoldPerTurn;
 
         Deck = deck;
         foreach (Card card in Deck)
@@ -127,12 +131,13 @@ public class Player : ITarget
         SummonFollower(follower, index);
     }
 
-    public void SummonFollower(Follower follower, int index)
+    public void SummonFollower(Follower follower, int index, bool createCrop = true)
     {
         // Add to BattleRow
         BattleRow.Followers.Insert(index, follower);
 
         // Trigger Effects?
+        if (createCrop) Controller.Instance.CurrentPlayer.ChangeOffering(OfferingType.Crop, 1);
 
         // Update View
         View.Instance.MoveFollowerToBattleRow(follower, index);
@@ -142,16 +147,27 @@ public class Player : ITarget
     {
         foreach (KeyValuePair<OfferingType, int> cost in card.Costs)
         {
-            Resources[cost.Key] -= cost.Value;
+            Offerings[cost.Key] -= cost.Value;
         }
-        View.Instance.UpdateResources(this);
+        OnOfferingsChange?.Invoke();
+        //View.Instance.UpdateResources(this);
     }
 
     public bool CanPlayCard(Card card)
     {
         foreach (KeyValuePair<OfferingType, int> cost in card.Costs)
         {
-            if (Resources[cost.Key] < cost.Value) return false;
+            if (Offerings[cost.Key] < cost.Value) return false;
+        }
+
+        return true;
+    }
+
+    public bool CanPlayRitual(Ritual ritual)
+    {
+        foreach (KeyValuePair<OfferingType, int> cost in ritual.Costs)
+        {
+            if (Offerings[cost.Key] < cost.Value) return false;
         }
 
         return true;
@@ -160,6 +176,15 @@ public class Player : ITarget
     public void ChangeHealth(int change)
     {
         Health += change;
-        OnChange?.Invoke();
+        OnHealthChange?.Invoke();
+
+        Controller.Instance.CurrentPlayer.ChangeOffering(OfferingType.Blood, Mathf.Abs(change));
+    }
+
+    public void ChangeOffering(OfferingType offeringType, int amount)
+    {
+        Offerings[offeringType] += amount;
+
+        OnOfferingsChange?.Invoke();
     }
 }
