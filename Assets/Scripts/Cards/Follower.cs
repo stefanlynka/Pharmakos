@@ -15,20 +15,15 @@ public class Follower : Card, ITarget
     public Action OnEnter;
     public Action OnDeath;
 
-    public static int IDIndex = 0;
-    public int Index = 0;
+    //public static int IDIndex = 0;
+    //public int Index = 0;
 
     public bool HasAttacked = false;
     public bool PlayedThisTurn = true;
     public bool HasSprint = false;
 
-    public Follower()
-    {
-        Index = IDIndex;
-        IDIndex++;
-    }
 
-    public override List<ITarget> GetPlayableTargets()
+    public override List<ITarget> GetTargets()
     {
         return new List<ITarget>();
     }
@@ -46,7 +41,7 @@ public class Follower : Card, ITarget
         if (index < 0) return targets;
         float position = -0.5f * (Owner.BattleRow.Followers.Count - 1) + index;
 
-        Player otherPlayer = Controller.Instance.GetOtherPlayer(Owner);
+        Player otherPlayer = GameState.GetOtherPlayer(Owner.PlayerID);
         if (otherPlayer == null) return targets;
 
         targets = otherPlayer.BattleRow.GetTargetsInRange(position);
@@ -94,8 +89,13 @@ public class Follower : Card, ITarget
     public virtual void Die()
     {
         Owner.FollowerDied(this);
-        OnRemove?.Invoke();
-        Controller.Instance.CurrentPlayer.ChangeOffering(OfferingType.Bone, 1);
+
+        if (!Owner.GameState.IsSimulated)
+        {
+            OnRemove?.Invoke();
+        }
+
+        GameState.CurrentPlayer.ChangeOffering(OfferingType.Bone, 1);
     }
 
     public bool CanAttack()

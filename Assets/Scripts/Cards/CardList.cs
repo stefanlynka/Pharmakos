@@ -92,7 +92,7 @@ public class Smite : Spell
         HasTargets = true;
     }
 
-    public override List<ITarget> GetPlayableTargets()
+    public override List<ITarget> GetTargets()
     {
         List<ITarget> targets = new List<ITarget>();
 

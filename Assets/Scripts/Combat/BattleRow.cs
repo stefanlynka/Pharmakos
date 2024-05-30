@@ -6,8 +6,22 @@ using static UnityEngine.UI.GridLayoutGroup;
 public class BattleRow
 {
     public List<Follower> Followers = new List<Follower>();
-    public Player Player;
+    public Player Owner;
 
+    public BattleRow DeepCopy(Player newOwner)
+    {
+        BattleRow copy = new BattleRow();
+
+        Owner = newOwner;
+
+        foreach (Follower follower in Followers)
+        {
+            Follower newFollower = (Follower)follower.DeepCopy(newOwner);
+            copy.Followers.Add(newFollower);
+        }
+
+        return copy;
+    }
     public int GetIndexOfFollower(Follower targetFollower)
     {
         int index = -1;
@@ -45,7 +59,7 @@ public class BattleRow
 
         // If you are aligned
         int expectedTargetCount = rowsAreAligned ? 3 : 2;
-        if (targets.Count != expectedTargetCount) targets.Add(Player);
+        if (targets.Count != expectedTargetCount) targets.Add(Owner);
 
         return targets;
     }

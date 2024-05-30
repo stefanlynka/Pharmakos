@@ -22,14 +22,14 @@ public static class CardManager
                 {
                     new Hoplite(),
                     new Hoplite(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Hoplite(),
                     new Chariot(),
                     new Chariot(),
-                    new Smite(),
-                    new Smite(),
-                    new Smite(),
-                    new Smite(),
-                    new Smite(),
-                    new Smite(),
+                    new Chariot(),
+                    new Chariot(),
                 };
                 return deck;
             case DeckNames.Monsters:
@@ -41,10 +41,15 @@ public static class CardManager
                     new Hoplite(),
                     new Hoplite(),
                     new Hoplite(),
-                    new DragonsTeeth(),
-                    new DragonsTeeth(),
-                    new Sphinx(),
-                    new Sphinx(),
+                    new Smite(),
+                    new Smite(),
+                    new Smite(),
+                    new Smite(),
+                    new Smite(),
+                    //new DragonsTeeth(),
+                    //new DragonsTeeth(),
+                    //new Sphinx(),
+                    //new Sphinx(),
                 };
                 return deck;
         }

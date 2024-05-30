@@ -10,10 +10,19 @@ public class Controller : MonoBehaviour
 
     public View View;
 
+    public GameState CanonGameState;
+
     public Player Player1 = null;
     public Player Player2 = null;
 
-    public Player CurrentPlayer = null;
+    public Player CurrentPlayer
+    {
+        get
+        {
+            if (CanonGameState == null) return null;
+            return CanonGameState.CurrentPlayer;
+        }
+    }
     public Player OtherPlayer
     {
         get
@@ -43,56 +52,46 @@ public class Controller : MonoBehaviour
 
     private void Update()
     {
+        if (Player1 == null || Player2 == null) return;
+
+        Player1.RunUpdate();
+        Player2.RunUpdate();
         View.Instance.DoUpdate();
     }
     private void Setup()
     {
-        //ViewEventHandler.Instance.ViewTargetInHandClicked -= CardInHandClicked;
-        //ViewEventHandler.Instance.ViewTargetInHandClicked += CardInHandClicked;
-
         if (Player1 == null)
         {
             Player1 = new Player();
+            Player2 = new AIPlayer();
+            CanonGameState = new GameState(Player1, Player2);
+
             Player1.IsHuman = true;
             Player1.Name = "Human";
-            
+            Player1.Init(CanonGameState, CardManager.GetDeck(CardManager.DeckNames.Warriors), 0);
             Player1.MinorRitual = new ZeusMinor(Player1);
+            Player1.MinorRitual.Init();
             Player1.MajorRitual = new ZeusMajor(Player1);
-            Player1.Init(CardManager.GetDeck(CardManager.DeckNames.Warriors));
-            //for (int i = 0; i < View.PlayerCreaturePositions.Length; i++)
-            //{
-            //    View.PlayerCreaturePositions[i].CreaturePosition = Player1.CreaturePositions[i];
-            //}
-            //Player1.ManaPool.IncreaseMaxMana(Colour.Red, 2);
-            //Player1.ManaPool.IncreaseMaxMana(Colour.Blue, 2);
+            Player1.MajorRitual.Init();
 
-            Player2 = new AIPlayer();
+
             Player2.IsHuman = false;
             Player2.Name = "AI";
+            Player2.Init(CanonGameState, CardManager.GetDeck(CardManager.DeckNames.Monsters), 1);
             Player2.MinorRitual = new ZeusMinor(Player2);
+            Player2.MinorRitual.Init();
             Player2.MajorRitual = new ZeusMajor(Player2);
-            Player2.Init(CardManager.GetDeck(CardManager.DeckNames.Monsters));
+            Player2.MajorRitual.Init();
 
-            Follower follower1 = new Hoplite();
-            follower1.Init(Player2);
-            Player2.SummonFollower(follower1, 0, false);
-            Follower follower2 = new Chariot();
-            follower2.Init(Player2);
-            Player2.SummonFollower(follower2, 0, false);
-            Follower follower3 = new Sphinx();
-            follower3.Init(Player2);
-            Player2.SummonFollower(follower3, 0, false);
-            //Player2.BattleRow.Followers.Insert(0, follower1);
-            //Follower follower2 = new Hoplite();
-            //Player2.BattleRow.Followers.Insert(0, follower2);
-            //Follower follower3 = new Hoplite();
-            //Player2.BattleRow.Followers.Insert(0, follower3);
-            //for (int i = 0; i < View.AICreaturePositions.Length; i++)
-            //{
-            //    View.AICreaturePositions[i].CreaturePosition = Player2.CreaturePositions[i];
-            //}
-
-            CurrentPlayer = Player1;
+            //Follower follower1 = new Hoplite();
+            //follower1.Init(Player2);
+            //Player2.SummonFollower(follower1, 0, false);
+            //Follower follower2 = new Chariot();
+            //follower2.Init(Player2);
+            //Player2.SummonFollower(follower2, 0, false);
+            //Follower follower3 = new Sphinx();
+            //follower3.Init(Player2);
+            //Player2.SummonFollower(follower3, 0, false);
         }
 
         View.Instance.Setup();
@@ -100,18 +99,17 @@ public class Controller : MonoBehaviour
 
     public void TryEndTurn()
     {
-        TriggerEndOfTurnEffects();
-        CurrentPlayer = CurrentPlayer == Player1 ? Player2 : Player1;
+        EndCurrentPlayersTurn();
+        //CurrentPlayer = CurrentPlayer == Player1 ? Player2 : Player1;
         StartNewTurn();
     }
 
-    private void TriggerEndOfTurnEffects()
+    private void EndCurrentPlayersTurn()
     {
         CurrentPlayer.EndTurn();
     }
     private void StartNewTurn()
     {
-        CurrentPlayer.DrawHand();
         CurrentPlayer.StartTurn();
     }
 

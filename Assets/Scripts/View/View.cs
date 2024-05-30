@@ -9,6 +9,8 @@ public class View : MonoBehaviour
 {
     public static View Instance;
 
+    public AnimationHandler AnimationHandler;
+
     public static GameObject FollowerCardPrefab;
     public static GameObject SpellCardPrefab;
     private static ObjectPool<GameObject> followerPool = new ObjectPool<GameObject>(CreateFollowerCard, OnCardGet, OnCardRelease);
@@ -57,6 +59,8 @@ public class View : MonoBehaviour
 
         Player1.Load(Controller.Instance.Player1);
         Player2.Load(Controller.Instance.Player2);
+
+        AnimationHandler = new AnimationHandler();
     }
 
     public void DoUpdate()
@@ -64,6 +68,7 @@ public class View : MonoBehaviour
         SelectionHandler.UpdateSelections();
         Player1.UpdatePlayer();
         Player2.UpdatePlayer();
+        AnimationHandler.UpdateAnimations();
     }
 
     public ViewCard MakeNewViewCard(Card card)

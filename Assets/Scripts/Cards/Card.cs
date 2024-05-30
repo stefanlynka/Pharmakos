@@ -4,27 +4,37 @@ using System.Collections.Generic;
 using UnityEngine;
 using static UnityEngine.UI.GridLayoutGroup;
 
-public abstract class Card : ITarget
+public abstract class Card : ICloneable, ITarget
 {
+    public GameState GameState { get; private set; }
     public Player Owner = null;
 
     public Dictionary<OfferingType, int> Costs = new Dictionary<OfferingType, int>();
 
     public string Text = "";
 
+    public int ID = -1;
+
     public Action OnChange;
     public Action OnRemove;
+
+    
 
     public virtual void Init(Player player)
     {
         Owner = player;
+        GameState = player.GameState;
+
+        ID = -1;
+        GameState.TryAssignID(this);
+
         OnChange = null;
         OnRemove = null;
     }
 
     public virtual void Reset() { }
 
-    public abstract List<ITarget> GetPlayableTargets();
+    public abstract List<ITarget> GetTargets();
 
     public virtual void Play(ITarget target) 
     {
@@ -41,17 +51,53 @@ public abstract class Card : ITarget
         Type callingType = this.GetType();
 
         // Create a new instance of the calling class
-        return (Card)Activator.CreateInstance(callingType);
+        Card newCard = (Card)Activator.CreateInstance(callingType);
+        newCard.Init(Owner);
+        return newCard;
     }
+
+    public Card DeepCopy(Player newOwner)
+    {
+        Card copy = (Card)Clone();
+        copy.Owner = newOwner;
+        copy.GameState = newOwner.GameState;
+        copy.GameState.TargetsByID[ID] = copy;
+
+        return copy;
+    }
+
+    // Call DeepCopy instead!
+    // Deep copy this. (Be careful about reference type variables)
+    public object Clone()
+    {
+        Card clone = (Card)this.MemberwiseClone(); // Creates new Card, copies over all variables. (Reference types will point to the original's object, so be careful)
+        HandleCloned(clone);
+        return clone;
+    }
+    // Children can implement this to handle specifics
+    protected virtual void HandleCloned(Card clone)
+    {
+        // TODO: How will effects work and how will they be copied over?
+    }
+
+    public int GetID()
+    {
+        return ID;
+    }
+
 }
+
 
 public interface ITarget
 {
+    public int GetID();
+
     public static List<ITarget> GetAllFollowers(Player player)
     {
         List<ITarget> targets = new List<ITarget>();
         targets.AddRange(player.BattleRow.Followers);
-        targets.AddRange(Controller.Instance.GetOtherPlayer(player).BattleRow.Followers);
+        
+        targets.AddRange(player.GameState.GetOtherPlayer(player.PlayerID).BattleRow.Followers);
         return targets;
     }
     public static List<ITarget> GetOwnFollowers(Player player)
@@ -63,7 +109,7 @@ public interface ITarget
     public static List<ITarget> GetEnemyFollowers(Player player)
     {
         List<ITarget> targets = new List<ITarget>();
-        targets.AddRange(Controller.Instance.GetOtherPlayer(player).BattleRow.Followers);
+        targets.AddRange(player.GameState.GetOtherPlayer(player.PlayerID).BattleRow.Followers);
         return targets;
     }
     public static List<ITarget> GetAllPlayers(Player player)
@@ -71,7 +117,7 @@ public interface ITarget
         List<ITarget> targets = new List<ITarget>
         {
             player,
-            Controller.Instance.GetOtherPlayer(player)
+            player.GameState.GetOtherPlayer(player.PlayerID)
         };
         return targets;
     }

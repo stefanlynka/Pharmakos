@@ -42,7 +42,7 @@ public class ZeusMinor : Ritual
         //ParentClass child = (ParentClass)Activator.CreateInstance(childType);
 
         Follower copy = (Follower)follower.MakeBaseCopy();
-        copy.Init(Owner);
+        copy.Owner = Owner;
         copy.CurrentAttack = 1;
         copy.CurrentHealth = 1;
         int index = Owner.BattleRow.Followers.Count;

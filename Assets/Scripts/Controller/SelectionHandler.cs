@@ -139,7 +139,7 @@ public class SelectionHandler
             viewSpell.EnterTargetMode();
             HeldCard.transform.localScale = HeldScale;
             View.Instance.Player1.HandHandler.RemoveCard(HeldCard);
-            CurrentTargets = viewSpell.Spell.GetPlayableTargets();
+            CurrentTargets = viewSpell.Spell.GetTargets();
             View.Instance.HighlightTargets(CurrentTargets);
         }
     }
@@ -211,10 +211,10 @@ public class SelectionHandler
 
                 if (CurrentHover != null && CurrentTargets.Contains(CurrentHover.Target))
                 {
-                    Controller.Instance.Player1.PlayCard(viewSpell.Spell);
-                    viewSpell.Spell.Play(CurrentHover.Target);
-                    View.Instance.RemoveViewCard(viewSpell);
-                    //View.Instance.ReleaseCard(viewSpell);
+                    Controller.Instance.Player1.TryPlaySpell(viewSpell.Spell, CurrentHover.Target); // TODO: If spells are broken comment out this line and uncomment lines below
+                    //Controller.Instance.Player1.PlayCard(viewSpell.Spell);
+                    //viewSpell.Spell.Play(CurrentHover.Target);
+                    //View.Instance.RemoveViewCard(viewSpell);
                     foundTarget = true;
                 }
             }

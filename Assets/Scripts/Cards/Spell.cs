@@ -5,7 +5,7 @@ using UnityEngine;
 public class Spell : Card, ITarget
 {
     public bool HasTargets = true;
-    public override List<ITarget> GetPlayableTargets()
+    public override List<ITarget> GetTargets()
     {
         return new List<ITarget>();
     }
@@ -14,12 +14,13 @@ public class Spell : Card, ITarget
     {
         base.Play(target);
 
-        Controller.Instance.CurrentPlayer.ChangeOffering(OfferingType.Scroll, 1);
+
+        GameState.CurrentPlayer.ChangeOffering(OfferingType.Scroll, 1);
     }
 
     public bool HasPlayableTargets()
     {
-        return !HasTargets || GetPlayableTargets().Count > 0;
+        return !HasTargets || GetTargets().Count > 0;
     }
 
 }
