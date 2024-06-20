@@ -19,8 +19,8 @@ public class DealDamageAction : GameAction
 
     public override void Execute(bool simulated = false)
     {
-        Follower follower = (Follower)Target;
-        Player player = (Player)Target;
+        Follower follower = Target as Follower;
+        Player player = Target as Player;
 
         if (follower != null )
         {
@@ -31,14 +31,14 @@ public class DealDamageAction : GameAction
             player.ChangeHealth(Damage);
         }
 
-        if (!simulated) View.Instance.AnimationHandler.AddGameActionToQueue(this);
+        base.Execute(simulated);
     }
 
     public override List<AnimationAction> GetAnimationActions()
     {
         List<AnimationAction> animationActions = new List<AnimationAction>(AnimationActions)
         {
-            new MoveAnimation(this)
+            new DamageAnimation(this)
         };
         //if (LastStep) animationActions.Add(new IdleAnimation(this));
         return animationActions;

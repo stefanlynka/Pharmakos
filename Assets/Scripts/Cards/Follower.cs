@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using static UnityEngine.UI.GridLayoutGroup;
 
@@ -88,21 +89,22 @@ public class Follower : Card, ITarget
 
     public virtual void Die()
     {
-        Owner.FollowerDied(this);
-
-        if (!Owner.GameState.IsSimulated)
-        {
-            OnRemove?.Invoke();
-        }
-
-        GameState.CurrentPlayer.ChangeOffering(OfferingType.Bone, 1);
+        GameAction newAction = new FollowerDeathAction(this);
+        GameState.ActionManager.AddAction(newAction);
+        GameState.ActionManager.StartEvaluating();
     }
 
     public bool CanAttack()
     {
         return !HasAttacked && (!PlayedThisTurn || HasSprint);
     }
-
+    public void AttackTarget(ITarget target)
+    {
+        Follower defendingFollower = target as Follower;
+        if (defendingFollower != null) AttackFollower(defendingFollower);
+        Player defendingPlayer = target as Player;
+        if (defendingPlayer != null) AttackPlayer(defendingPlayer);
+    }
     public void AttackFollower(Follower defender)
     {
         HasAttacked = true;

@@ -10,6 +10,8 @@ public class ViewFollower : ViewCard
     public TextMeshPro AttackText;
     public TextMeshPro HealthText;
 
+    public SpriteRenderer SkullRenderer;
+
     public Follower Follower;
 
     public override void Load(Card cardData, Action<ViewTarget> onClick = null)

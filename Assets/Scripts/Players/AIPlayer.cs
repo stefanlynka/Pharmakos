@@ -9,6 +9,8 @@ public class AIPlayer : Player
 {
     public AITurnPhase TurnPhase = AITurnPhase.Setup;
 
+    private DecisionSet playerDecisions = new DecisionSet();
+
     public enum AITurnPhase
     {
         Setup,
@@ -32,37 +34,47 @@ public class AIPlayer : Player
         switch (TurnPhase)
         {
             case AITurnPhase.Setup:
-                Debug.LogError("Start Planning AI Turn");
-                //var t = Task.Run(() => PlanActions());
-                PlanActions();
+                Debug.Log("Start Planning AI Turn");
+                var t = Task.Run(() => PlanActions());
+                //PlanActions();
+                Debug.LogError("Start Preparing");
                 TurnPhase = AITurnPhase.Preparing;
                 break;
             case AITurnPhase.Preparing:
                 //Debug.LogError("Thonking");
+                //TurnPhase = AITurnPhase.Executing;
                 break;
             case AITurnPhase.Executing:
                 //Debug.LogError("Executing");
+                foreach (PlayerDecision playerDecision in playerDecisions.Decisions)
+                {
+                    Debug.LogError("Decision: " + playerDecision.GetString());
+                    bool result = DoDecision(playerDecision);
+                    Debug.LogError("Decision Done");
+                    if (!result)
+                    {
+                        Debug.LogError("Decision Failed");
+                    }
+                    //Debug.LogError("Do Decision!");
+                    //Debug.Log(playerDecision.GetString());
+                }
+
                 TurnPhase = AITurnPhase.Ending;
                 break;
             case AITurnPhase.Ending:
-                //Debug.LogError("Ending");
+                Debug.Log("Ending");
                 TurnPhase = AITurnPhase.Setup;
                 GameState.EndTurn();
                 break;
         }
     }
 
+
     private void PlanActions()
     {
-        DecisionSet playerDecisions = GetBestOptions(GameState);
+        playerDecisions = GetBestOptions(GameState);
 
-        foreach (PlayerDecision playerDecision in playerDecisions.Decisions)
-        {
-            DoDecision(playerDecision);
-            Debug.LogError("Do Decision!");
-            //Debug.Log(playerDecision.GetString());
-        }
-
+        Debug.LogError("Start Executing");
         TurnPhase = AITurnPhase.Executing;
     }
 
@@ -119,29 +131,42 @@ public class AIPlayer : Player
                 }
             }
         }
+        else if (MajorRitual.CanPlay())
+        {
+            List<ITarget> possibleTargets = MajorRitual.GetTargets();
+            foreach (ITarget target in possibleTargets)
+            {
+                int ritualTargetID = target.GetID();
+                UseRitualDecision useRitualDecision = new UseRitualDecision(MajorRitual.ID, ritualTargetID);
+                options.Add(useRitualDecision);
+            }
+        }
+        else if (MinorRitual.CanPlay())
+        {
+            List<ITarget> possibleTargets = MinorRitual.GetTargets();
+            foreach (ITarget target in possibleTargets)
+            {
+                int ritualTargetID = target.GetID();
+                UseRitualDecision useRitualDecision = new UseRitualDecision(MinorRitual.ID, ritualTargetID);
+                options.Add(useRitualDecision);
+            }
+        }
         else
         {
-            if (MajorRitual.CanPlay())
+            List<Follower> followersThatCanAttack = BattleRow.GetFollowersThatCanAttack();
+
+            foreach (Follower follower in followersThatCanAttack)
             {
-                List<ITarget> possibleTargets = MajorRitual.GetTargets();
-                foreach (ITarget target in possibleTargets)
+                List<ITarget> attackTargets = follower.GetAttackTargets();
+                foreach (ITarget attackTarget in attackTargets)
                 {
-                    int ritualTargetID = target.GetID();
-                    UseRitualDecision useRitualDecision = new UseRitualDecision(MajorRitual.ID, ritualTargetID);
-                    options.Add(useRitualDecision);
-                }
-            }
-            if (MinorRitual.CanPlay())
-            {
-                List<ITarget> possibleTargets = MinorRitual.GetTargets();
-                foreach (ITarget target in possibleTargets)
-                {
-                    int ritualTargetID = target.GetID();
-                    UseRitualDecision useRitualDecision = new UseRitualDecision(MinorRitual.ID, ritualTargetID);
-                    options.Add(useRitualDecision);
+                    AttackWithFollowerDecision attackDecision = new AttackWithFollowerDecision(follower.ID, attackTarget.GetID());
+                    options.Add(attackDecision);
                 }
             }
         }
+
+
 
         // If we're out of options, calculate this state's utility and return up the recursive chain
         if (options.Count == 0)
@@ -156,6 +181,7 @@ public class AIPlayer : Player
         foreach (PlayerDecision option in options)
         {
             GameState simulatedGameState = new GameState(gameState, true);
+
             AIPlayer thisPlayer = simulatedGameState.GetPlayer(PlayerID) as AIPlayer;
 
             if (thisPlayer  == null)
@@ -163,11 +189,14 @@ public class AIPlayer : Player
                 Debug.LogError("ThisPlayer Should be AI");
                 // HOWTO Debugger break
                 //if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
-                // Should be AI player
             }
 
             // Apply this option to the simulatedGameState
-            thisPlayer.DoDecision(option);
+            bool result = thisPlayer.DoDecision(option);
+            if (!result)
+            {
+                Debug.LogError("Decision Failed");
+            }
 
             // Recursively explore future options, returning the best one
             DecisionSet bestOption = thisPlayer.GetBestOptions(simulatedGameState);

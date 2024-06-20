@@ -46,7 +46,11 @@ public class ZeusMinor : Ritual
         copy.CurrentAttack = 1;
         copy.CurrentHealth = 1;
         int index = Owner.BattleRow.Followers.Count;
-        Owner.SummonFollower(copy, index);
+
+        GameAction newAction = new SummonFollowerAction(copy, index);
+        Owner.GameState.ActionManager.AddAction(newAction);
+        Owner.GameState.ActionManager.StartEvaluating();
+        //Owner.SummonFollower(copy, index);
     }
 }
 

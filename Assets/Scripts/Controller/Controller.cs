@@ -47,7 +47,7 @@ public class Controller : MonoBehaviour
     {
         Setup();
 
-        StartNewTurn();
+        CurrentPlayer.StartTurn();
     }
 
     private void Update()
@@ -99,21 +99,8 @@ public class Controller : MonoBehaviour
 
     public void TryEndTurn()
     {
-        EndCurrentPlayersTurn();
-        //CurrentPlayer = CurrentPlayer == Player1 ? Player2 : Player1;
-        StartNewTurn();
+        CanonGameState.EndTurn();
     }
-
-    private void EndCurrentPlayersTurn()
-    {
-        CurrentPlayer.EndTurn();
-    }
-    private void StartNewTurn()
-    {
-        CurrentPlayer.StartTurn();
-    }
-
-    
 
     public Player GetOtherPlayer(Player player)
     {

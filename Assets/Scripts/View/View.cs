@@ -25,6 +25,8 @@ public class View : MonoBehaviour
 
 
     public SelectionHandler SelectionHandler;
+    public SequenceManager SequenceManager;
+    //public TweenManager TweenManager;
 
     public ViewTarget CurrentHover { get { return SelectionHandler.CurrentHover; } }
 
@@ -51,6 +53,9 @@ public class View : MonoBehaviour
         SpellCardPrefab = Resources.Load<GameObject>("Prefabs/Cards/Spell");
 
         SelectionHandler = new SelectionHandler();
+
+        SequenceManager = new SequenceManager();
+        //TweenManager = new TweenManager();
     }
 
     public void Setup()
@@ -68,6 +73,9 @@ public class View : MonoBehaviour
         SelectionHandler.UpdateSelections();
         Player1.UpdatePlayer();
         Player2.UpdatePlayer();
+
+        SequenceManager.Update();
+        //TweenManager.Update();
         AnimationHandler.UpdateAnimations();
     }
 
@@ -105,6 +113,11 @@ public class View : MonoBehaviour
     }
     public void RemoveViewCard(ViewCard viewCard)
     {
+        if (viewCard == null)
+        {
+            Debug.LogError("Hm");
+            return;
+        }
         //Debug.LogError("Remove View Card");
         // Remove it from hand
         ViewHandHandler viewHandHandler = viewCard.Card.Owner.IsHuman ? Player1.HandHandler : Player2.HandHandler;
@@ -124,6 +137,36 @@ public class View : MonoBehaviour
             spellPool.Release(viewCard.gameObject);
         }
     }
+
+    public bool TryGetViewCard(Card card, out ViewCard viewCard)
+    {
+        if (CardMap.ContainsKey(card))
+        {
+            viewCard = CardMap[card];
+            return true;
+        }
+
+        viewCard = null;
+        return false;
+    }
+    public bool TryGetViewFollower(Card card, out ViewFollower viewFollower)
+    {
+        if (!TryGetViewCard(card, out ViewCard viewCard))
+        {
+            viewFollower = null;
+            return false;
+        }
+
+        viewFollower = viewCard as ViewFollower;
+
+        return viewFollower != null;
+    }
+
+    public ViewPlayer GetViewPlayer(Player player)
+    {
+        return Player1.Player == player ? Player1 : Player2;
+    }
+
     //public void ReleaseViewCard(ViewCard viewCard)
     //{
     //    if (viewCard.Card is Follower) followerPool.Release(viewCard.gameObject);
@@ -174,38 +217,8 @@ public class View : MonoBehaviour
     public void DiscardCard(Card card)
     {
         RemoveCard(card);
-
-        //ViewHandHandler viewHandHandler = player.IsHuman ? PlayerHand : AIHand;
-        //foreach (ViewCard cardInHand in viewHandHandler.ViewCards)
-        //{
-        //    if (cardInHand.Card != card) continue;
-
-        //    viewHandHandler.ViewCards.Remove(cardInHand);
-        //    if (cardInHand.Card is Follower) followerPool.Release(cardInHand.gameObject);
-        //    else if (cardInHand.Card is Spell) spellPool.Release(cardInHand.gameObject);
-        //    break;
-        //}
     }
 
-    
-
-
-    //public void DiscardHand(Player player)
-    //{
-    //    ViewHandHandler viewHandHandler = player.IsHuman ? PlayerHand : AIHand;
-    //    foreach (ViewCard cardInHand in viewHandHandler.ViewCards)
-    //    {
-    //        if (cardInHand.Card is Follower) followerPool.Release(cardInHand.gameObject);
-    //        else if (cardInHand.Card is Spell) spellPool.Release(cardInHand.gameObject);
-    //    }
-
-    //    viewHandHandler.ViewCards.Clear();
-    //}
-
-    //public void UpdateHighlights()
-    //{
-
-    //}
 
     public void HighlightTargets(List<ITarget> targets)
     {
@@ -228,5 +241,6 @@ public class View : MonoBehaviour
         ViewFollower viewFollower = (ViewFollower)MakeNewViewCard(follower);
         ViewBattleRow battleRow = follower.Owner.IsHuman ? Player1.BattleRow : Player2.BattleRow;
         battleRow.AddFollower(viewFollower, index);
+        CardMap[follower] = viewFollower;
     }
 }

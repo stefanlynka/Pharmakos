@@ -10,7 +10,7 @@ public class GameAction
 
     public virtual void Execute(bool simulated = false)
     {
-
+        if (!simulated) View.Instance.AnimationHandler.AddGameActionToQueue(this);
     }
 
     public void AddAnimationAction(AnimationAction action)

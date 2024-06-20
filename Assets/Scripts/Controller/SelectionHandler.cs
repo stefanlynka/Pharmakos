@@ -232,16 +232,9 @@ public class SelectionHandler
     {
         if (CurrentHover != null && AttackableTargets.Contains(CurrentHover.Target))
         {
-            Follower attackTarget = CurrentHover.Target as Follower;
-            Player attackedPlayer = CurrentHover.Target as Player;
-            if (attackTarget != null)
-            {
-                AttackingFollower.Follower.AttackFollower(attackTarget);
-            }
-            else if (attackedPlayer != null)
-            {
-                AttackingFollower.Follower.AttackPlayer(attackedPlayer);
-            }
+            GameAction newAction = new AttackWithFollowerAction(AttackingFollower.Follower, CurrentHover.Target);
+            AttackingFollower.Follower.GameState.ActionManager.AddAction(newAction);
+            AttackingFollower.Follower.GameState.ActionManager.StartEvaluating();
 
             //Controller.Instance.Player1.PerformAttack(AttackingFollower.Follower, attackTarget);
         }

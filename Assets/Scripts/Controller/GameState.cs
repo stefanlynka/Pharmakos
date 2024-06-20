@@ -5,7 +5,7 @@ using UnityEngine;
 public class GameState
 {
     // Deep copied
-    ActionManager ActionManager = new ActionManager();
+    public ActionManager ActionManager = new ActionManager();
     public Player Human;
     public Player AI;
     public int CurrentTeamID = 1;
@@ -73,7 +73,9 @@ public class GameState
 
     public void EndTurn()
     {
+        CurrentPlayer.EndTurn();
         CurrentTeamID = Mathf.Abs(CurrentTeamID - 1);
+        CurrentPlayer.StartTurn();
     }
 
     public Player GetPlayer(int ID)

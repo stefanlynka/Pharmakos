@@ -29,6 +29,10 @@ public class Ritual : ITarget
     {
         return ID;
     }
+    public string GetName()
+    {
+        return GetType().Name;
+    }
 
     public virtual List<ITarget> GetTargets()
     {

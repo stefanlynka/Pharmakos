@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Unity.VisualScripting.Member;
 
 
 
@@ -77,6 +79,7 @@ public class Sphinx : Follower
 
 public class Smite : Spell
 {
+    private int damage = 3;
     public Smite()
     {
         Costs = new Dictionary<OfferingType, int>()
@@ -102,20 +105,13 @@ public class Smite : Spell
         return targets;
     }
 
-    public override void Play(ITarget target) 
+    public override void Play(ITarget target)
     {
         base.Play(target);
 
-        Player player = target as Player;
-        Follower follower = target as Follower;
-        if (player != null)
-        {
-            player.ChangeHealth(-3);
-        }
-        else if (follower != null)
-        {
-            follower.ChangeHealth(-3);
-        }
+        DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
+        Owner.GameState.ActionManager.AddAction(damageAction);
+        Owner.GameState.ActionManager.StartEvaluating();
     }
 
 }

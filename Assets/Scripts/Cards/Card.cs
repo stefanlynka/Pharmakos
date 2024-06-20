@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
-using static UnityEngine.UI.GridLayoutGroup;
 
 public abstract class Card : ICloneable, ITarget
 {
@@ -35,6 +35,11 @@ public abstract class Card : ICloneable, ITarget
     public virtual void Reset() { }
 
     public abstract List<ITarget> GetTargets();
+
+    public string GetName()
+    {
+        return GetType().Name;
+    }
 
     public virtual void Play(ITarget target) 
     {
@@ -91,6 +96,8 @@ public abstract class Card : ICloneable, ITarget
 public interface ITarget
 {
     public int GetID();
+
+    public string GetName();
 
     public static List<ITarget> GetAllFollowers(Player player)
     {

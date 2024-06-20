@@ -20,6 +20,7 @@ public class AnimationHandler
     public List<AnimationQueueItem> AnimationActionQueue = new List<AnimationQueueItem>();
     public static bool IsAnimating = false;
 
+    // TODO: Check player lose state when this is called
     public Action OnAnimationFinish;
 
     public bool HasPlayerLost = false;
@@ -76,7 +77,7 @@ public class AnimationHandler
         //Debug.LogError("Animation Complete");
         IsAnimating = false;
 
-        OnAnimationFinish.Invoke();
+        OnAnimationFinish?.Invoke();
     }
 
     private void DoAnimationCleanup()

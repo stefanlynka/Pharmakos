@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using static UnityEngine.UI.GridLayoutGroup;
 
@@ -54,6 +55,10 @@ public class Player : ITarget
     public int GetID()
     {
         return ITargetID;
+    }
+    public string GetName()
+    {
+        return IsHuman ? "Human" : "AI";
     }
 
     public Player() { }
@@ -139,10 +144,14 @@ public class Player : ITarget
     {
 
     }
+
+    // Setup for this Player. Should only be called by GameState.EndTurn()
     public virtual void StartTurn()
     {
         DrawHand();
     }
+
+    // Cleanup for this Player. Should only be called by GameState.EndTurn()
     public virtual void EndTurn()
     {
         if (!IsMyTurn) return;
@@ -155,8 +164,6 @@ public class Player : ITarget
         {
             follower.DoEndOfTurnEffects();
         }
-
-        GameState.EndTurn();
     }
 
 
@@ -220,6 +227,13 @@ public class Player : ITarget
     }
     public void TryPlayFollower(Follower follower, int index)
     {
+        GameAction newAction = new PlayFollowerAction(follower, index);
+        GameState.ActionManager.AddAction(newAction);
+        GameState.ActionManager.StartEvaluating();
+    }
+
+    public void PlayFollower(Follower follower, int index)
+    {
         // Pay costs and remove from hand
         PlayCard(follower);
 
@@ -242,7 +256,7 @@ public class Player : ITarget
         if (createCrop) GameState.CurrentPlayer.ChangeOffering(OfferingType.Crop, 1);
 
         // Update View
-        if (!GameState.IsSimulated) View.Instance.MoveFollowerToBattleRow(follower, index);
+        //if (!GameState.IsSimulated) View.Instance.MoveFollowerToBattleRow(follower, index);
     }
 
     public void PayCosts(Card card)
@@ -298,45 +312,59 @@ public class Player : ITarget
         OnOfferingsChange?.Invoke();
     }
 
-    public void DoDecision(PlayerDecision playerDecision)
+    public bool DoDecision(PlayerDecision playerDecision)
     {
         PlayFollowerDecision playFollowerDecision = playerDecision as PlayFollowerDecision;
         PlaySpellDecision playSpellDecision = playerDecision as PlaySpellDecision;
         UseRitualDecision useRitualDecision = playerDecision as UseRitualDecision;
+        AttackWithFollowerDecision attackWithFollowerDecision = playerDecision as AttackWithFollowerDecision;
 
         if (playFollowerDecision != null)
         {
-            if (!GameState.TargetsByID.TryGetValue(playFollowerDecision.CardID, out ITarget target)) return;
+            if (!GameState.TargetsByID.TryGetValue(playFollowerDecision.CardID, out ITarget target)) return false;
             Follower follower = target as Follower;
-            if (follower == null) return;
+            if (follower == null) return false;
             TryPlayFollower(follower, playFollowerDecision.PlacementIndex);
         }
         else if (playSpellDecision != null)
         {
-            if (!GameState.TargetsByID.TryGetValue(playSpellDecision.CardID, out ITarget cardToPlay)) return;
+            if (!GameState.TargetsByID.TryGetValue(playSpellDecision.CardID, out ITarget cardToPlay)) return false;
             Spell spell = (Spell)cardToPlay;
-            if (spell == null) return;
+            if (spell == null) return false;
 
             ITarget target = null;
             if (playSpellDecision.TargetID != -1)
             {
-                if (!GameState.TargetsByID.TryGetValue(playSpellDecision.TargetID, out target)) return;
+                if (!GameState.TargetsByID.TryGetValue(playSpellDecision.TargetID, out target)) return false;
             }
             TryPlaySpell(spell, target);
         }
         else if (useRitualDecision != null)
         {
-            if (!GameState.TargetsByID.TryGetValue(useRitualDecision.RitualID, out ITarget ritualToUse)) return;
+            if (!GameState.TargetsByID.TryGetValue(useRitualDecision.RitualID, out ITarget ritualToUse)) return false;
             Ritual ritual = ritualToUse as Ritual;
-            if (ritual == null) return;
+            if (ritual == null) return false;
 
             ITarget target = null;
             if (useRitualDecision.TargetID != -1)
             {
-                if (!GameState.TargetsByID.TryGetValue(useRitualDecision.TargetID, out target)) return;
+                if (!GameState.TargetsByID.TryGetValue(useRitualDecision.TargetID, out target)) return false;
             }
             ritual.Play(target);
         }
+        else if (attackWithFollowerDecision != null)
+        {
+            if (!GameState.TargetsByID.TryGetValue(attackWithFollowerDecision.FollowerID, out ITarget attacker)) return false;
+            if (!GameState.TargetsByID.TryGetValue(attackWithFollowerDecision.FollowerID, out ITarget defender)) return false;
+            Follower attackingFollower = attacker as Follower;
+            if (attackingFollower == null || defender == null) return false;
+            GameAction newAction = new AttackWithFollowerAction(attackingFollower, defender);
+            GameState.ActionManager.AddAction(newAction);
+            GameState.ActionManager.StartEvaluating();
+            //attackingFollower.AttackTarget(defender);
+        }
+
+        return true;
     }
 
 }

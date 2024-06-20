@@ -192,4 +192,26 @@ public class ViewBattleRow : MonoBehaviour
             else follower.SetHighlight(false);
         }
     }
+
+    public Vector3 GetPotentialFollowerPosition(int index)
+    {
+        float battleRowOffset = transform.position.z;
+        Vector3 position = transform.position;
+        int cardCount = Followers.Count + 1;
+
+        float totalWidth = (cardCount * CardWidth) + (cardCount - 1 * MaxSpacing);
+        float X = CardWidth / 2 - totalWidth / 2;
+        for (int i = 0; i < cardCount; i++)
+        {
+            if (i == index)
+            {
+                //X += CardWidth + MaxSpacing; // Make space for held card
+                return position + new Vector3(X, CardY, CardZ - CardZOffset * i);
+            }
+
+            X += CardWidth + MaxSpacing;
+        }
+
+        return position;
+    }
 }
