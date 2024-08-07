@@ -70,10 +70,27 @@ public class Sphinx : Follower
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
-            { OfferingType.Scroll, 3},
+            { OfferingType.Scroll, 0},
         };
 
         SetBaseStats(2, 6);
+    }
+}
+
+public class Cyclops : Follower
+{
+    public Cyclops()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 3},
+            { OfferingType.Blood, 3},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        SetBaseStats(5, 6);
     }
 }
 
@@ -110,8 +127,8 @@ public class Smite : Spell
         base.Play(target);
 
         DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
-        Owner.GameState.ActionManager.AddAction(damageAction);
-        Owner.GameState.ActionManager.StartEvaluating();
+        Owner.GameState.ActionHandler.AddAction(damageAction);
+        Owner.GameState.ActionHandler.StartEvaluating();
     }
 
 }

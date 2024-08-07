@@ -5,10 +5,10 @@ using UnityEngine;
 public class GameState
 {
     // Deep copied
-    public ActionManager ActionManager = new ActionManager();
+    public ActionHandler ActionHandler = new ActionHandler();
     public Player Human;
     public Player AI;
-    public int CurrentTeamID = 1;
+    public int CurrentTeamID = 0; // Human:0   AI:1
     public int HighestTargetID {  get; private set; }
     public Dictionary<int, ITarget> TargetsByID = new Dictionary<int, ITarget>();
 
@@ -38,7 +38,7 @@ public class GameState
     // Deep Copy
     public GameState(GameState original, bool simulated)
     {
-        ActionManager = new ActionManager(simulated);
+        ActionHandler = new ActionHandler(simulated);
         IsSimulated = simulated;
 
         HighestTargetID = original.HighestTargetID;

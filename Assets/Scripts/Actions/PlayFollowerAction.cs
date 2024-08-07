@@ -18,8 +18,8 @@ public class PlayFollowerAction : GameAction
         Follower.Owner.PlayCard(Follower);
 
         GameAction newAction = new SummonFollowerAction(Follower, Index);
-        Follower.GameState.ActionManager.AddAction(newAction);
-        Follower.GameState.ActionManager.StartEvaluating();
+        Follower.GameState.ActionHandler.AddAction(newAction);
+        Follower.GameState.ActionHandler.StartEvaluating();
 
         base.Execute(simulated);
     }

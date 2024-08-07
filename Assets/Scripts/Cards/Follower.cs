@@ -90,8 +90,8 @@ public class Follower : Card, ITarget
     public virtual void Die()
     {
         GameAction newAction = new FollowerDeathAction(this);
-        GameState.ActionManager.AddAction(newAction);
-        GameState.ActionManager.StartEvaluating();
+        GameState.ActionHandler.AddAction(newAction);
+        GameState.ActionHandler.StartEvaluating();
     }
 
     public bool CanAttack()

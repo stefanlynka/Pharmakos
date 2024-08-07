@@ -27,6 +27,8 @@ public class ViewRitual : ViewTarget
 
     public void Refresh()
     {
+        if (Ritual == null) return;
+
         CardText.text = Ritual.Description;
 
         BloodText.text = Ritual.Costs[OfferingType.Blood].ToString();
@@ -51,7 +53,7 @@ public class ViewRitual : ViewTarget
         {
             if (View.Instance.SelectionHandler.SelectedRitual == this) highlight = true;
         }
-        else if (Ritual.Owner.IsHuman && Ritual.CanPlay()) // If Playable
+        else if (Ritual != null && Ritual.Owner.IsHuman && Ritual.CanPlay()) // If Playable
         {
             highlight = true;
         }

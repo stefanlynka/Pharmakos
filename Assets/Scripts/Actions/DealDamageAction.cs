@@ -28,7 +28,7 @@ public class DealDamageAction : GameAction
         }
         else if (player != null )
         {
-            player.ChangeHealth(Damage);
+            player.ChangeHealth(-Damage);
         }
 
         base.Execute(simulated);

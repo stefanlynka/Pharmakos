@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class HumanPlayer : Player
 {
+    public HumanPlayer()
+    {
+        IsHuman = true;
+    }
     // Start is called before the first frame update
     void Start()
     {

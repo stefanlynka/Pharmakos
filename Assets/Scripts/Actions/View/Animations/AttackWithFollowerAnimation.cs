@@ -8,7 +8,7 @@ public class AttackWithFollowerAnimation : AnimationAction
 {
     AttackWithFollowerAction attackAction;
 
-    private float attackMoveDuration = 0.5f;
+    private float attackMoveDuration = 0.15f;
     private float moveDistance = 1f;
     private float cardSize = 3f;
     private ViewFollower attackerViewFollower;
@@ -55,6 +55,8 @@ public class AttackWithFollowerAnimation : AnimationAction
         attackSequence.Add(new Tween(MoveAttacker, 1, 0, attackMoveDuration));
         attackSequence.Add(new SequenceAction(CallCallback));
         attackSequence.Start();
+
+        Debug.LogError("Attack Animation");
     }
 
     private void MoveAttacker(float progress)

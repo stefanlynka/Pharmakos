@@ -26,6 +26,7 @@ public class AIPlayer : Player
         base.StartTurn();
     }
 
+
     public override void RunUpdate()
     {
         base.RunUpdate();
@@ -35,10 +36,10 @@ public class AIPlayer : Player
         {
             case AITurnPhase.Setup:
                 Debug.Log("Start Planning AI Turn");
-                var t = Task.Run(() => PlanActions());
-                //PlanActions();
-                Debug.LogError("Start Preparing");
+                Debug.Log("Start Preparing");
                 TurnPhase = AITurnPhase.Preparing;
+                //var t = Task.Run(() => PlanActions());
+                PlanActions();
                 break;
             case AITurnPhase.Preparing:
                 //Debug.LogError("Thonking");
@@ -48,12 +49,11 @@ public class AIPlayer : Player
                 //Debug.LogError("Executing");
                 foreach (PlayerDecision playerDecision in playerDecisions.Decisions)
                 {
-                    Debug.LogError("Decision: " + playerDecision.GetString());
+                    Debug.LogWarning("Decision: " + playerDecision.GetString());
                     bool result = DoDecision(playerDecision);
-                    Debug.LogError("Decision Done");
                     if (!result)
                     {
-                        Debug.LogError("Decision Failed");
+                        Debug.LogWarning("Decision Failed");
                     }
                     //Debug.LogError("Do Decision!");
                     //Debug.Log(playerDecision.GetString());
@@ -74,7 +74,7 @@ public class AIPlayer : Player
     {
         playerDecisions = GetBestOptions(GameState);
 
-        Debug.LogError("Start Executing");
+        Debug.Log("Start Executing");
         TurnPhase = AITurnPhase.Executing;
     }
 
@@ -131,7 +131,7 @@ public class AIPlayer : Player
                 }
             }
         }
-        else if (MajorRitual.CanPlay())
+        else if (MajorRitual != null && MajorRitual.CanPlay())
         {
             List<ITarget> possibleTargets = MajorRitual.GetTargets();
             foreach (ITarget target in possibleTargets)
@@ -141,7 +141,7 @@ public class AIPlayer : Player
                 options.Add(useRitualDecision);
             }
         }
-        else if (MinorRitual.CanPlay())
+        else if (MinorRitual != null && MinorRitual.CanPlay())
         {
             List<ITarget> possibleTargets = MinorRitual.GetTargets();
             foreach (ITarget target in possibleTargets)
@@ -160,12 +160,12 @@ public class AIPlayer : Player
                 List<ITarget> attackTargets = follower.GetAttackTargets();
                 foreach (ITarget attackTarget in attackTargets)
                 {
+                    int targetID = attackTarget.GetID();
                     AttackWithFollowerDecision attackDecision = new AttackWithFollowerDecision(follower.ID, attackTarget.GetID());
                     options.Add(attackDecision);
                 }
             }
         }
-
 
 
         // If we're out of options, calculate this state's utility and return up the recursive chain

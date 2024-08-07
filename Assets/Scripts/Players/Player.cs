@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
-using static UnityEngine.UI.GridLayoutGroup;
 
 public class Player : ITarget
 {
@@ -16,13 +13,15 @@ public class Player : ITarget
 
     public BattleRow BattleRow = new BattleRow();
 
-    public Dictionary<OfferingType, int> Offerings = new Dictionary<OfferingType, int>()
+    public Dictionary<OfferingType, int> Offerings = new Dictionary<OfferingType, int>();
+
+    public Dictionary<OfferingType, int> InitialOfferings = new Dictionary<OfferingType, int>()
         {
             { OfferingType.Gold, 0},
-            { OfferingType.Blood, 3},
-            { OfferingType.Bone, 3},
-            { OfferingType.Crop, 3},
-            { OfferingType.Scroll, 3},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
         };
     public Ritual MinorRitual;
     public Ritual MajorRitual;
@@ -34,7 +33,8 @@ public class Player : ITarget
     public int ITargetID = -1;
 
     public int Health = 20;
-    public string Name = "";
+    public int StartingHealth = 5;
+    public string Name { get { return IsHuman ? "Human" : "AI"; } }
     public bool IsHuman = false;
 
     public int CardsPerTurn = 5;
@@ -73,24 +73,48 @@ public class Player : ITarget
         return newCard;
     }
 
-    public void Init(GameState gameState, List<Card> deck, int playerID)
+    public void Init(int playerID)
     {
+        GameState.TryAssignID(this);
+
         PlayerID = playerID;
 
-        AttachToGameState(gameState);
-        gameState.TryAssignID(this);
+        Health = StartingHealth;
 
-        BattleRow.Owner = this;
+        LoadDeck(Deck);
 
+        MinorRitual?.Init(this);
+        MajorRitual?.Init(this);
+
+        BattleRow.Init(this);
+
+        Offerings = new Dictionary<OfferingType, int>(InitialOfferings);
         Offerings[OfferingType.Gold] = GoldPerTurn;
+    }
 
+    public void LoadDeck(List<Card> deck)
+    {
         Deck = deck;
         foreach (Card card in Deck)
         {
             card.Init(this);
         }
         ShuffleDeck();
-        //DrawHand();
+    }
+
+    // index: 0:Minor 1:Major
+    public void LoadRitual(Ritual ritual, int index)
+    {
+        if (index == 0)
+        {
+            MinorRitual = ritual;
+            MinorRitual.Init(this);
+        }
+        else
+        {
+            MajorRitual = ritual;
+            MajorRitual.Init(this);
+        }
     }
 
     public Player DeepCopy(GameState newGameState)
@@ -100,7 +124,6 @@ public class Player : ITarget
         copy.AttachToGameState(newGameState);
 
         copy.Health = Health;
-        copy.Name = Name;
         copy.IsHuman = IsHuman;
         copy.CardsPerTurn = CardsPerTurn;
         copy.GoldPerTurn = GoldPerTurn;
@@ -116,8 +139,8 @@ public class Player : ITarget
         copy.BattleRow = BattleRow.DeepCopy(copy);
 
         copy.Offerings = new Dictionary<OfferingType, int>(Offerings);
-        copy.MinorRitual = MinorRitual.DeepCopy(copy);
-        copy.MajorRitual = MajorRitual.DeepCopy(copy);
+        copy.MinorRitual = MinorRitual?.DeepCopy(copy);
+        copy.MajorRitual = MajorRitual?.DeepCopy(copy);
 
         return copy;
     }
@@ -138,6 +161,29 @@ public class Player : ITarget
     public void AttachToGameState(GameState gameState)
     {
         GameState = gameState;
+    }
+
+    public void Clear()
+    {
+        Deck.Clear();
+        Hand.Clear();
+        Graveyard.Clear();
+
+        BattleRow.Clear();
+        MinorRitual = null;
+        MajorRitual = null;
+
+        Offerings = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 0},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        OnHealthChange = null;
+        OnOfferingsChange = null;
     }
 
     public virtual void RunUpdate()
@@ -228,8 +274,8 @@ public class Player : ITarget
     public void TryPlayFollower(Follower follower, int index)
     {
         GameAction newAction = new PlayFollowerAction(follower, index);
-        GameState.ActionManager.AddAction(newAction);
-        GameState.ActionManager.StartEvaluating();
+        GameState.ActionHandler.AddAction(newAction);
+        GameState.ActionHandler.StartEvaluating();
     }
 
     public void PlayFollower(Follower follower, int index)
@@ -355,12 +401,12 @@ public class Player : ITarget
         else if (attackWithFollowerDecision != null)
         {
             if (!GameState.TargetsByID.TryGetValue(attackWithFollowerDecision.FollowerID, out ITarget attacker)) return false;
-            if (!GameState.TargetsByID.TryGetValue(attackWithFollowerDecision.FollowerID, out ITarget defender)) return false;
+            if (!GameState.TargetsByID.TryGetValue(attackWithFollowerDecision.TargetID, out ITarget defender)) return false;
             Follower attackingFollower = attacker as Follower;
             if (attackingFollower == null || defender == null) return false;
             GameAction newAction = new AttackWithFollowerAction(attackingFollower, defender);
-            GameState.ActionManager.AddAction(newAction);
-            GameState.ActionManager.StartEvaluating();
+            GameState.ActionHandler.AddAction(newAction);
+            GameState.ActionHandler.StartEvaluating();
             //attackingFollower.AttackTarget(defender);
         }
 

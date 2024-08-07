@@ -27,6 +27,17 @@ public class BattleRow
 
         return copy;
     }
+
+    public void Init(Player newOwner)
+    {
+        Owner = newOwner;
+    }
+    public void Clear()
+    {
+        Followers.Clear();
+        Owner = null;
+    }
+
     public int GetIndexOfFollower(Follower targetFollower)
     {
         int index = -1;

@@ -37,6 +37,15 @@ public class ViewPlayer : ViewTarget
         ViewMajorRitual.Init(Player.MajorRitual);
     }
 
+    public void Clear()
+    {
+        HandHandler.Clear();
+        BattleRow.Clear();
+
+        ViewMinorRitual.Init(null);
+        ViewMajorRitual.Init(null);
+    }
+
     public void UpdatePlayer()
     {
         HandHandler.UpdateHand();

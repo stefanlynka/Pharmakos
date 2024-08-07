@@ -28,16 +28,19 @@ public class ViewCard : ViewTarget
         Card = cardData;
         ViewOfferingCost.Load(Card.Costs);
 
-        ArtRenderer.sprite = CardManager.GetSprite(cardData);
+        ArtRenderer.sprite = CardHandler.GetSprite(cardData);
         NameText.text = cardData.GetType().Name;
         AbilityText.text = cardData.Text;
 
         OnClick = onClick;
     }
 
-    public void SetHighlight(bool  highlight)
+    public void SetHighlight(bool highlight)
     {
         Highlight.enabled = highlight;
     }
-
+    public bool IsHighlighted()
+    {
+        return Highlight.enabled;
+    }
 }

@@ -37,11 +37,6 @@ public class AnimationHandler
         if (AnimationsComplete())
         {
             DoAnimationCleanup();
-
-            if (HasPlayerLost)
-            {
-                PlayerLost();
-            }
         }
     }
 
@@ -54,6 +49,7 @@ public class AnimationHandler
         //Debug.LogError("Start evaluating the first of " + AnimationActionQueue.Count + " animations");
         if (AnimationActionQueue.Count == 0)
         {
+            Controller.Instance.CheckForPlayerDeath();
             return;
         }
 
@@ -114,10 +110,4 @@ public class AnimationHandler
         return (!IsAnimating && AnimationActionQueue.Count == 0);
     }
 
-    public void PlayerLost()
-    {
-        //Controller.Instance..instance.DoPlayerLoses();
-        Debug.LogError("Player Lost");
-        HasPlayerLost = false;
-    }
 }

@@ -30,6 +30,17 @@ public class ViewBattleRow : MonoBehaviour
         BattleRow = battleRow;
     }
 
+    public void Clear()
+    {
+        List<ViewFollower> followersCopy = new List<ViewFollower>(Followers);
+        foreach (ViewFollower viewFollower in followersCopy)
+        {
+            View.Instance.RemoveCard(viewFollower.Card);
+        }
+
+        Followers.Clear();
+    }
+
 
     // Update is called once per frame
     void Update()

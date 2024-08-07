@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class SequenceManager
+public class SequenceHandler
 {
-    public static SequenceManager instance;
+    public static SequenceHandler instance;
     public List<Sequence> Sequences = new List<Sequence>();
 
-    public SequenceManager() 
+    public SequenceHandler() 
     {
         if (instance == null) instance = this;
     }

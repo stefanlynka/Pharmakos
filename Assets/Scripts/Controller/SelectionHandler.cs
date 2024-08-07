@@ -34,6 +34,14 @@ public class SelectionHandler
         ViewEventHandler.Instance.ClickedAway += ClickedAway;
     }
 
+    public void Clear()
+    {
+        ViewEventHandler.Instance.ViewTargetInHandClicked -= ViewTargetInHandClicked;
+        ViewEventHandler.Instance.ViewTargetInPlayClicked -= ViewTargetInPlayClicked;
+        ViewEventHandler.Instance.RitualClicked -= ViewRitualClicked;
+        ViewEventHandler.Instance.ClickedAway -= ClickedAway;
+    }
+
 
     public void UpdateSelections()
     {
@@ -48,9 +56,9 @@ public class SelectionHandler
 
         CurrentHover = null;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // HOWTO Raycast
-        if (Physics.Raycast(ray, out RaycastHit hitData, 1000, targetLayer) && hitData.collider.gameObject.TryGetComponent(out ViewTarget viewCard))
+        if (Physics.Raycast(ray, out RaycastHit hitData, 1000, targetLayer) && hitData.collider.gameObject.TryGetComponent(out ViewTarget viewTarget))
         {
-            CurrentHover = viewCard;
+            CurrentHover = viewTarget;
         }
         //if (CurrentHover != null) Debug.LogError("CurrentHover: " +  CurrentHover.gameObject.name);
         Debug.DrawRay(ray.origin, ray.direction * 100, Color.red);
@@ -233,8 +241,8 @@ public class SelectionHandler
         if (CurrentHover != null && AttackableTargets.Contains(CurrentHover.Target))
         {
             GameAction newAction = new AttackWithFollowerAction(AttackingFollower.Follower, CurrentHover.Target);
-            AttackingFollower.Follower.GameState.ActionManager.AddAction(newAction);
-            AttackingFollower.Follower.GameState.ActionManager.StartEvaluating();
+            AttackingFollower.Follower.GameState.ActionHandler.AddAction(newAction);
+            AttackingFollower.Follower.GameState.ActionHandler.StartEvaluating();
 
             //Controller.Instance.Player1.PerformAttack(AttackingFollower.Follower, attackTarget);
         }
@@ -253,6 +261,7 @@ public class SelectionHandler
 
         SelectedRitual = null;
         PotentialRitualTargets.Clear();
+        View.Instance.HighlightTargets(new List<ITarget>());
     }
 
     public bool TryGetHeldFollower(out ViewFollower viewFollower)

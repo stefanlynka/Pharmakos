@@ -2,13 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ActionManager
+public class ActionHandler
 {
     public Stack<GameAction> ActionStack = new Stack<GameAction>();
     //public GameState GameState;
     public bool Simulated = false;
 
-    public ActionManager(bool simulated = false)
+    public ActionHandler(bool simulated = false)
     {
         Simulated = simulated;
     }

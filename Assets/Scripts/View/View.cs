@@ -25,7 +25,7 @@ public class View : MonoBehaviour
 
 
     public SelectionHandler SelectionHandler;
-    public SequenceManager SequenceManager;
+    public SequenceHandler SequenceHandler;
     //public TweenManager TweenManager;
 
     public ViewTarget CurrentHover { get { return SelectionHandler.CurrentHover; } }
@@ -54,7 +54,7 @@ public class View : MonoBehaviour
 
         SelectionHandler = new SelectionHandler();
 
-        SequenceManager = new SequenceManager();
+        SequenceHandler = new SequenceHandler();
         //TweenManager = new TweenManager();
     }
 
@@ -67,6 +67,15 @@ public class View : MonoBehaviour
 
         AnimationHandler = new AnimationHandler();
     }
+    public void Clear()
+    {
+        Player1.Clear();
+        Player2.Clear();
+
+        SelectionHandler.Clear();
+        // TODO: Check if everything in CardMap is getting cleared up
+
+    }
 
     public void DoUpdate()
     {
@@ -74,10 +83,12 @@ public class View : MonoBehaviour
         Player1.UpdatePlayer();
         Player2.UpdatePlayer();
 
-        SequenceManager.Update();
+        SequenceHandler.Update();
         //TweenManager.Update();
         AnimationHandler.UpdateAnimations();
     }
+
+    
 
     public ViewCard MakeNewViewCard(Card card)
     {
@@ -95,6 +106,7 @@ public class View : MonoBehaviour
         if (newCard.TryGetComponent(out ViewCard viewCard))
         {
             viewCard.Load(card);
+            viewCard.SetHighlight(false);
             CardMap[card] = viewCard;
 
             return viewCard;
@@ -129,6 +141,20 @@ public class View : MonoBehaviour
         if (viewFollower != null)
         {
             viewBattleRow.Followers.Remove(viewFollower);
+            followerPool.Release(viewCard.gameObject);
+        }
+        ViewSpell viewSpell = viewCard as ViewSpell;
+        if (viewSpell != null)
+        {
+            spellPool.Release(viewCard.gameObject);
+        }
+    }
+
+    public void ReleaseCard(ViewCard viewCard)
+    {
+        ViewFollower viewFollower = viewCard as ViewFollower;
+        if (viewFollower != null)
+        {
             followerPool.Release(viewCard.gameObject);
         }
         ViewSpell viewSpell = viewCard as ViewSpell;

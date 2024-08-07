@@ -25,6 +25,17 @@ public class ViewHandHandler : MonoBehaviour
         RefreshPositions();
     }
 
+    public void Clear()
+    {
+        List<ViewCard> viewCardsCopy = new List<ViewCard>(ViewCards);
+        foreach (ViewCard viewCard in viewCardsCopy)
+        {
+            View.Instance.RemoveCard(viewCard.Card);
+        }
+
+        ViewCards.Clear();
+    }
+
     public void MoveCardToHand(ViewCard viewCard)
     {
         viewCard.transform.SetParent(transform, false);
@@ -72,4 +83,6 @@ public class ViewHandHandler : MonoBehaviour
             viewCard.SetHighlight(canPlay);
         }
     }
+
+    
 }

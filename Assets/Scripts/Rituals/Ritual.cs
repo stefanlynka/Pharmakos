@@ -13,15 +13,15 @@ public class Ritual : ITarget
     public bool NeedsTargets = true;
     public string Description = "No Desc";
 
-    public Ritual(){ }
+    //public Ritual(){ }
 
-    public Ritual(Player player)
+    public Ritual()
     {
-        Owner = player;
     }
 
-    public void Init()
+    public void Init(Player player)
     {
+        Owner = player;
         Owner.GameState.TryAssignID(this);
     }
 
@@ -57,18 +57,18 @@ public class Ritual : ITarget
         Owner.PayRitualCosts(this);
     }
 
-    public Ritual MakeBaseCopy(Player newOwner)
+    public Ritual MakeBaseCopy()
     {
         // Get the type of the calling class
         Type callingType = this.GetType();
 
         // Create a new instance of the calling class
-        return (Ritual)Activator.CreateInstance(callingType, newOwner);
+        return (Ritual)Activator.CreateInstance(callingType);
     }
 
     public Ritual DeepCopy(Player newOwner)
     {
-        Ritual copy = MakeBaseCopy(newOwner);
+        Ritual copy = MakeBaseCopy();
         copy.Owner = newOwner;
         copy.ID = ID;
         copy.Owner.GameState.TargetsByID[ID] = copy;
