@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public abstract class PlayerDecision
 {
@@ -94,11 +95,32 @@ public class AttackWithFollowerDecision : PlayerDecision
 
     public override string GetString()
     {
+        //if (!Controller.Instance.CanonGameState.TargetsByID.ContainsKey(FollowerID)) return ""; // TODO : remove, this shouldn't happen
+        //if (!Controller.Instance.CanonGameState.TargetsByID.ContainsKey(TargetID)) return ""; // TODO : remove, this shouldn't happen
+
         Follower follower = Controller.Instance.CanonGameState.TargetsByID[FollowerID] as Follower;
         ITarget target = Controller.Instance.CanonGameState.TargetsByID[TargetID];
         if (follower == null) return "Attacker not found";
         if (target == null) return "Attack target not found";
 
         return follower.GetName() + " attacks " + target.GetName();
+    }
+}
+
+public class SkipFollowerAttackDecision : PlayerDecision
+{
+    public int FollowerID;
+
+    public SkipFollowerAttackDecision(int followerID)
+    {
+        FollowerID = followerID;
+    }
+
+    public override string GetString()
+    {
+        Follower follower = Controller.Instance.CanonGameState.TargetsByID[FollowerID] as Follower;
+        if (follower == null) return "Attacker not found";
+
+        return follower.GetName() + " skips its attack";
     }
 }

@@ -72,18 +72,24 @@ public class AIPlayer : Player
 
     private void PlanActions()
     {
+        //depth = 0;
         playerDecisions = GetBestOptions(GameState);
 
         Debug.Log("Start Executing");
         TurnPhase = AITurnPhase.Executing;
     }
 
-    //static int depth = 0;
+    //static int deepestDepth = 0;
     public DecisionSet GetBestOptions(GameState gameState)
     {
         var options = new List<PlayerDecision>();
 
         //depth++;
+        //if (depth > deepestDepth)
+        //{
+        //    deepestDepth = depth;
+        //    Debug.LogError("New Depth: " + deepestDepth);
+        //}
         //if (depth > 3) return new DecisionSet();
 
         List<Card> playableCards = GetPlayableCards();
@@ -164,6 +170,8 @@ public class AIPlayer : Player
                     AttackWithFollowerDecision attackDecision = new AttackWithFollowerDecision(follower.ID, attackTarget.GetID());
                     options.Add(attackDecision);
                 }
+
+                //SkipFollowerAttackDecision
             }
         }
 
@@ -231,7 +239,7 @@ public class AIPlayer : Player
         Player thisPlayer = gameState.GetPlayer(PlayerID);
         foreach (Follower follower in thisPlayer.BattleRow.Followers)
         {
-            utility += follower.CurrentAttack;
+            utility += follower.GetCurrentAttack();
             utility += follower.CurrentHealth;
         }
         utility += thisPlayer.Health;
@@ -240,7 +248,7 @@ public class AIPlayer : Player
         Player otherPlayer = gameState.GetOtherPlayer(PlayerID);
         foreach (Follower follower in otherPlayer.BattleRow.Followers)
         {
-            utility -= follower.CurrentAttack*2;
+            utility -= follower.GetCurrentAttack()*2;
             utility -= follower.CurrentHealth*2;
         }
         utility -= otherPlayer.Health;

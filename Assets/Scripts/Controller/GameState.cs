@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +12,15 @@ public class GameState
     public int CurrentTeamID = 0; // Human:0   AI:1
     public int HighestTargetID {  get; private set; }
     public Dictionary<int, ITarget> TargetsByID = new Dictionary<int, ITarget>();
+
+    public void FireFollowerEnters(Follower follower) { if (FollowerEnters != null) FollowerEnters(follower); }
+    public Action<Follower> FollowerEnters;
+    public void FireFollowerDies(Follower follower) { if (FollowerDies != null) FollowerDies(follower); }
+    public Action<Follower> FollowerDies;
+    //public void FireFollowerAttacks(Follower follower) { if (FollowerDies != null) FollowerDies(follower); }
+    //public Action<Follower> FollowerDies;
+    //public void FireFollowerDies(Follower follower) { if (FollowerDies != null) FollowerDies(follower); }
+    //public Action<Follower> FollowerDies;
 
     public bool IsSimulated = false;
 

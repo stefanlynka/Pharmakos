@@ -26,31 +26,19 @@ public static class CardHandler
                     player.MajorRitual = new ZeusMajor();
                     player.Deck = new List<Card>
                     {
-                        new Hoplite(),
-                        new Hoplite(),
-                        new Hoplite(),
-                        new Hoplite(),
+                        new Pytho(),
+                        new Pytho(),
                         new Smite(),
                         new Smite(),
-                        new Smite(),
-                        new Smite(),
-                        new Smite(),
-                        new Smite(),
-                        new Hoplite(),
-                        new Hoplite(),
-                        new Hoplite(),
-                        new Hoplite(),
-                        new Smite(),
-                        new Smite(),
-                        new Smite(),
-                        new Smite(),
-                        new Smite(),
-                        new Smite(),
-                        new Smite(),
-                        new Smite(),
-                        new Smite(),
-                        new Smite(),
-                        new Smite(),
+                        //new Agamemnon(),
+                        //new Hoplite(),
+                        //new Hoplite(),
+                        //new Hoplite(),
+                        //new Hoplite(),
+                        //new Hoplite(),
+                        //new Hoplite(),
+                        //new Hoplite(),
+                        //new Hoplite(),
                     };
                 }
                 break;
@@ -61,6 +49,12 @@ public static class CardHandler
                     player.MajorRitual = null;
                     player.Deck = new List<Card>
                     {
+                        //new TrojanHorse(),
+                        //new TrojanHorse(),
+                        //new TrojanHorse(),
+                        //new TrojanHorse(),
+                        //new TrojanHorse(),
+                        new Hoplite(),
                         new Hoplite(),
                         new Hoplite(),
                         new Hoplite(),

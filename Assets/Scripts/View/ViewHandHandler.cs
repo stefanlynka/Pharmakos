@@ -6,6 +6,8 @@ public class ViewHandHandler : MonoBehaviour
 {
     public List<ViewCard> ViewCards = new List<ViewCard>();
 
+    public bool IsHuman = false;
+
     public float MaxSpacing = 1;
     public float CardWidth = 0;
     public float HandWidth = 0;
@@ -62,6 +64,10 @@ public class ViewHandHandler : MonoBehaviour
 
         float spacing = Mathf.Min(MaxSpacing, (HandWidth - CardWidth * cardCount) / cardCount);
 
+        bool canPlay = true;
+        if (!IsHuman) canPlay = false;
+        else if (View.Instance.SelectionHandler.IsHoldingCard()) canPlay = false;
+
         for (int i = 0; i < ViewCards.Count; i++)
         {
             ViewCard viewCard = ViewCards[i];
@@ -79,7 +85,8 @@ public class ViewHandHandler : MonoBehaviour
             }
             viewCard.transform.localPosition = newPos;
 
-            bool canPlay = !View.Instance.SelectionHandler.IsHoldingCard() && viewCard.Card.Owner.CanPlayCard(viewCard.Card);
+            if (!viewCard.Card.Owner.CanPlayCard(viewCard.Card)) canPlay = false;
+
             viewCard.SetHighlight(canPlay);
         }
     }

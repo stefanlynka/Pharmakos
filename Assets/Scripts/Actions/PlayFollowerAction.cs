@@ -19,7 +19,6 @@ public class PlayFollowerAction : GameAction
 
         GameAction newAction = new SummonFollowerAction(Follower, Index);
         Follower.GameState.ActionHandler.AddAction(newAction);
-        Follower.GameState.ActionHandler.StartEvaluating();
 
         base.Execute(simulated);
     }

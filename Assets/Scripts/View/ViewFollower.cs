@@ -21,23 +21,24 @@ public class ViewFollower : ViewCard
         if (Follower == null) return;
 
         Target = Follower;
-        AttackText.text = Follower.CurrentAttack.ToString();
+        AttackText.text = Follower.GetCurrentAttack().ToString();
         HealthText.text = Follower.CurrentHealth.ToString();
 
         Follower.OnChange -= CardChanged;
         Follower.OnChange += CardChanged;
-        Follower.OnRemove -= CardRemoved;
-        Follower.OnRemove += CardRemoved;
+        //Follower.OnRemove -= CardRemoved;
+        //Follower.OnRemove += CardRemoved;
     }
 
+    // Currently Unused
     private void CardRemoved()
     {
-        View.Instance.RemoveViewCard(this);
+        //View.Instance.RemoveViewCard(this);
     }
 
     private void CardChanged()
     {
-        AttackText.text = Follower.CurrentAttack.ToString();
+        AttackText.text = Follower.GetCurrentAttack().ToString();
         HealthText.text = Follower.CurrentHealth.ToString();
     }
 }

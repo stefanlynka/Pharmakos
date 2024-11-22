@@ -6,11 +6,11 @@ using UnityEngine.UIElements;
 
 public class DealDamageAction : GameAction
 {
-    public Player Source;
+    public ITarget Source;
     public ITarget Target;
     public int Damage;
 
-    public DealDamageAction(Player source, ITarget target, int damage)
+    public DealDamageAction(ITarget source, ITarget target, int damage)
     {
         Source = source;
         Target = target;
@@ -24,11 +24,11 @@ public class DealDamageAction : GameAction
 
         if (follower != null )
         {
-            follower.ChangeHealth(-Damage);
+            follower.ChangeHealth(Source , -Damage);
         }
         else if (player != null )
         {
-            player.ChangeHealth(-Damage);
+            player.ChangeHealth(Source , -Damage);
         }
 
         base.Execute(simulated);

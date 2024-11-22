@@ -32,7 +32,7 @@ public class ScreenHandler : MonoBehaviour
 
         //ShowScreen(ScreenName.Blank, true);
 
-        ShowScreen(ScreenName.Game, false, false);
+        ShowScreen(ScreenName.Game, true, false);
         //ShowScreen(ScreenName.Start, false, false);
     }
 

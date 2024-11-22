@@ -137,6 +137,7 @@ public class Player : ITarget
         copy.Graveyard = DeepCopyCardList(Graveyard, copy);
 
         copy.BattleRow = BattleRow.DeepCopy(copy);
+        copy.BattleRow.ReapplyAllEffects(); // Can only reapply effects after all followers are copied over
 
         copy.Offerings = new Dictionary<OfferingType, int>(Offerings);
         copy.MinorRitual = MinorRitual?.DeepCopy(copy);
@@ -264,7 +265,11 @@ public class Player : ITarget
 
     public void FollowerDied(Follower follower)
     {
-        BattleRow.Followers.Remove(follower);
+        foreach (TriggeredEffectInstance effectInstance in follower.OnDeathEffects)
+        {
+            effectInstance.Trigger();
+        }    
+        BattleRow.RemoveFollower(follower);
     }
     public void PlayCard(Card card)
     {
@@ -275,16 +280,15 @@ public class Player : ITarget
     {
         GameAction newAction = new PlayFollowerAction(follower, index);
         GameState.ActionHandler.AddAction(newAction);
-        GameState.ActionHandler.StartEvaluating();
     }
 
-    public void PlayFollower(Follower follower, int index)
-    {
-        // Pay costs and remove from hand
-        PlayCard(follower);
+    //public void PlayFollower(Follower follower, int index)
+    //{
+    //    // Pay costs and remove from hand
+    //    PlayCard(follower);
 
-        SummonFollower(follower, index);
-    }
+    //    SummonFollower(follower, index);
+    //}
 
     public void TryPlaySpell(Spell spell, ITarget target)
     {
@@ -296,10 +300,20 @@ public class Player : ITarget
     public void SummonFollower(Follower follower, int index, bool createCrop = true)
     {
         // Add to BattleRow
-        BattleRow.Followers.Insert(index, follower);
+        index = Mathf.Min(index, BattleRow.Followers.Count);
+        BattleRow.AddFollower(follower, index);
 
-        // Trigger Effects?
+        // Trigger Offerings
         if (createCrop) GameState.CurrentPlayer.ChangeOffering(OfferingType.Crop, 1);
+
+        // Apply Follower static effects 
+        follower.ApplyInnateEffects();
+
+        // Apply one time on enter effects
+        follower.ApplyOnEnterEffects();
+
+        // Trigger Effects
+        GameState.FireFollowerEnters(follower);
 
         // Update View
         //if (!GameState.IsSimulated) View.Instance.MoveFollowerToBattleRow(follower, index);
@@ -343,12 +357,21 @@ public class Player : ITarget
         }
     }
 
-    public void ChangeHealth(int change)
+    public void ChangeHealth(ITarget source, int value)
     {
-        Health += change;
+        Health += value;
+
+        Follower sourceFollower = source as Follower;
+        if (sourceFollower != null)
+        {
+            if (value < 0) sourceFollower.ApplyOnDamageEffects(this, -value);
+
+            sourceFollower.ApplyOnDrawBloodEffects(this, -value);
+        }
+
         OnHealthChange?.Invoke();
 
-        GameState.CurrentPlayer.ChangeOffering(OfferingType.Blood, Mathf.Abs(change));
+        GameState.CurrentPlayer.ChangeOffering(OfferingType.Blood, Mathf.Abs(value));
     }
 
     public void ChangeOffering(OfferingType offeringType, int amount)
@@ -364,6 +387,7 @@ public class Player : ITarget
         PlaySpellDecision playSpellDecision = playerDecision as PlaySpellDecision;
         UseRitualDecision useRitualDecision = playerDecision as UseRitualDecision;
         AttackWithFollowerDecision attackWithFollowerDecision = playerDecision as AttackWithFollowerDecision;
+        SkipFollowerAttackDecision skipFollowerAttackDecision = playerDecision as SkipFollowerAttackDecision;
 
         if (playFollowerDecision != null)
         {
@@ -406,8 +430,16 @@ public class Player : ITarget
             if (attackingFollower == null || defender == null) return false;
             GameAction newAction = new AttackWithFollowerAction(attackingFollower, defender);
             GameState.ActionHandler.AddAction(newAction);
-            GameState.ActionHandler.StartEvaluating();
             //attackingFollower.AttackTarget(defender);
+        }
+        else if (skipFollowerAttackDecision != null)
+        {
+            if (!GameState.TargetsByID.TryGetValue(attackWithFollowerDecision.FollowerID, out ITarget attacker)) return false;
+            Follower attackingFollower = attacker as Follower;
+            if (attackingFollower == null) return false;
+            GameAction newAction = new SkipFollowerAttackAction(attackingFollower);
+            GameState.ActionHandler.AddAction(newAction);
+
         }
 
         return true;

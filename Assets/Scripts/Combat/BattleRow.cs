@@ -28,6 +28,36 @@ public class BattleRow
         return copy;
     }
 
+    public void AddFollower(Follower newFollower, int index = -1)
+    {
+        if (index == -1) index = Followers.Count - 1;
+
+        Followers.Insert(index, newFollower);
+
+        foreach (Follower follower in Followers)
+        {
+            follower.ApplyOnChanged();
+        }
+    }
+
+    public void RemoveFollower(Follower followerToRemove)
+    {
+        Followers.Remove(followerToRemove);
+
+        foreach (Follower follower in Followers)
+        {
+            follower.ApplyOnChanged();
+        }
+    }
+
+    public void ReapplyAllEffects()
+    {
+        foreach (Follower follower in Followers)
+        {
+            follower.ReapplyEffects();
+        }
+    }
+
     public void Init(Player newOwner)
     {
         Owner = newOwner;
@@ -86,7 +116,11 @@ public class BattleRow
 
         foreach (Follower follower in Followers)
         {
-            if (follower.CanAttack()) followers.Add(follower);
+            if (follower.CanAttack())
+            {
+                followers.Add(follower);
+                return followers;
+            }
         }
 
         return followers;

@@ -19,7 +19,7 @@ public class FollowerDeathAction : GameAction
         Owner.GameState.CurrentPlayer.ChangeOffering(OfferingType.Bone, 1);
         Owner.GameState.TargetsByID.Remove(Follower.ID);
 
-        if (!simulated) Debug.LogError("Follower Death Action");
+        //if (!simulated) Debug.LogError("Follower Death Action");
 
         base.Execute(simulated);
     }

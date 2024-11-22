@@ -21,6 +21,8 @@ public class Controller : MonoBehaviour
     public Ritual PlayerMinorRitual = null;
     public Ritual PlayerMajorRitual = null;
 
+    public int PlayerStartingHealth = 0;
+
     public int CurrentLevel = 0;
 
     public Player CurrentPlayer
@@ -76,6 +78,7 @@ public class Controller : MonoBehaviour
         {
             Player1 = new HumanPlayer();
             CardHandler.LoadPlayer(Player1, CardHandler.DeckName.PlayerStarterDeck);
+            PlayerStartingHealth = Player1.StartingHealth;
             PlayerDeckDefinition = Player1.Deck;
             PlayerMinorRitual = Player1.MinorRitual;
             PlayerMajorRitual = Player1.MajorRitual;
@@ -98,6 +101,7 @@ public class Controller : MonoBehaviour
 
         List<Card> playerDeckCopy = new List<Card>(PlayerDeckDefinition);
         Player1.Deck = playerDeckCopy;
+        Player1.StartingHealth = PlayerStartingHealth;
         Player1.MinorRitual = PlayerMinorRitual.MakeBaseCopy();
         Player1.MajorRitual = PlayerMajorRitual.MakeBaseCopy();
         Player1.Init(0);
@@ -149,6 +153,8 @@ public class Controller : MonoBehaviour
 
         ScreenHandler.Instance.HideScreen(ScreenName.Blank);
         ScreenHandler.Instance.ShowScreen(ScreenName.Game);
+
+        LoadLevel();
     }
     private void GoToGameOverScreen()
     {
@@ -190,9 +196,9 @@ public class Controller : MonoBehaviour
         {
             ClearLevel();
 
-            GoToCardRemovalRewardScreen();
-            //if (CurrentLevel % 2 == 0) GoToCardGainRewardScreen();
-            //else GoToRitualRewardScreen();
+            //GoToCardRemovalRewardScreen();
+            if (CurrentLevel % 2 == 0) GoToCardGainRewardScreen();
+            else GoToRitualRewardScreen();
 
             Player2.Health = 1;
         }

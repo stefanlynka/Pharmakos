@@ -13,8 +13,8 @@ public class View : MonoBehaviour
 
     public static GameObject FollowerCardPrefab;
     public static GameObject SpellCardPrefab;
-    private static ObjectPool<GameObject> followerPool = new ObjectPool<GameObject>(CreateFollowerCard, OnCardGet, OnCardRelease);
-    private static ObjectPool<GameObject> spellPool = new ObjectPool<GameObject>(CreateCard, OnCardGet, OnCardRelease);
+    private static ObjectPool<GameObject> followerPool = new ObjectPool<GameObject>(CreateFollowerCard, OnCardGet, OnCardRelease, null, false);
+    private static ObjectPool<GameObject> spellPool = new ObjectPool<GameObject>(CreateCard, OnCardGet, OnCardRelease, null, false);
 
     public Dictionary<Card, ViewCard> CardMap = new Dictionary<Card, ViewCard>();
 
@@ -141,12 +141,15 @@ public class View : MonoBehaviour
         if (viewFollower != null)
         {
             viewBattleRow.Followers.Remove(viewFollower);
-            followerPool.Release(viewCard.gameObject);
+            if (viewCard.gameObject != null)
+            {
+                followerPool.Release(viewCard.gameObject);
+            }
         }
         ViewSpell viewSpell = viewCard as ViewSpell;
         if (viewSpell != null)
         {
-            spellPool.Release(viewCard.gameObject);
+            if (viewCard.gameObject != null) spellPool.Release(viewCard.gameObject);
         }
     }
 

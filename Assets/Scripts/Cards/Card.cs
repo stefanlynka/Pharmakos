@@ -19,7 +19,7 @@ public abstract class Card : ICloneable, ITarget
     public Action OnRemove;
 
     
-
+    // Must be called once when a card comes into existence (Becoming a card in deck/hand/play, no longer just part of a deck list)
     public virtual void Init(Player player)
     {
         Owner = player;
@@ -50,6 +50,9 @@ public abstract class Card : ICloneable, ITarget
         Owner.PayCosts(this);
     }
 
+    
+
+    // Initialize a new instance of this class
     public Card MakeBaseCopy()
     {
         // Get the type of the calling class
@@ -61,6 +64,7 @@ public abstract class Card : ICloneable, ITarget
         return newCard;
     }
 
+    // This is for Deep Copying a card into a new GameState
     public Card DeepCopy(Player newOwner)
     {
         Card copy = (Card)Clone();
@@ -71,18 +75,19 @@ public abstract class Card : ICloneable, ITarget
         return copy;
     }
 
-    // Call DeepCopy instead!
-    // Deep copy this. (Be careful about reference type variables)
+    // Call DeepCopy instead for cloning GameStates
+    // Copy this card
     public object Clone()
     {
         Card clone = (Card)this.MemberwiseClone(); // Creates new Card, copies over all variables. (Reference types will point to the original's object, so be careful)
-        HandleCloned(clone);
+        clone.HandleCloned(this); // For Followers this wipes out all Effects
         return clone;
     }
+
     // Children can implement this to handle specifics
-    protected virtual void HandleCloned(Card clone)
+    protected virtual void HandleCloned(Card original)
     {
-        // TODO: How will effects work and how will they be copied over?
+        
     }
 
     public int GetID()

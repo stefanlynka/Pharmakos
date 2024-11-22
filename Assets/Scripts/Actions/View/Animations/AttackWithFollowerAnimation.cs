@@ -56,7 +56,7 @@ public class AttackWithFollowerAnimation : AnimationAction
         attackSequence.Add(new SequenceAction(CallCallback));
         attackSequence.Start();
 
-        Debug.LogError("Attack Animation");
+        //Debug.LogError("Attack Animation");
     }
 
     private void MoveAttacker(float progress)

@@ -49,7 +49,6 @@ public class ZeusMinor : Ritual
 
         GameAction newAction = new SummonFollowerAction(copy, index);
         Owner.GameState.ActionHandler.AddAction(newAction);
-        Owner.GameState.ActionHandler.StartEvaluating();
         //Owner.SummonFollower(copy, index);
     }
 }
@@ -83,16 +82,20 @@ public class ZeusMajor : Ritual
     public override void Play(ITarget target)
     {
         base.Play(target);
-        Follower follower = target as Follower;
-        Player player = target as Player;
-        if (follower != null)
-        {
-            follower.ChangeHealth(-damage);
-        }
-        else if (player != null)
-        {
-            player.ChangeHealth(-damage);
-        }
+
+        DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
+        Owner.GameState.ActionHandler.AddAction(damageAction, true, true);
+
+        //Follower follower = target as Follower;
+        //Player player = target as Player;
+        //if (follower != null)
+        //{
+        //    follower.ChangeHealth(-damage);
+        //}
+        //else if (player != null)
+        //{
+        //    player.ChangeHealth(-damage);
+        //}
     }
 }
 
@@ -141,7 +144,6 @@ public class HadesMinor : Ritual
 
         GameAction newAction = new SummonFollowerAction(copy, index);
         Owner.GameState.ActionHandler.AddAction(newAction);
-        Owner.GameState.ActionHandler.StartEvaluating();
         //Owner.SummonFollower(copy, index);
     }
 }
@@ -175,15 +177,8 @@ public class HadesMajor : Ritual
     public override void Play(ITarget target)
     {
         base.Play(target);
-        Follower follower = target as Follower;
-        Player player = target as Player;
-        if (follower != null)
-        {
-            follower.ChangeHealth(-damage);
-        }
-        else if (player != null)
-        {
-            player.ChangeHealth(-damage);
-        }
+
+        DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
+        Owner.GameState.ActionHandler.AddAction(damageAction, true, true);
     }
 }

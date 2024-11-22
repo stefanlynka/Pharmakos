@@ -242,7 +242,6 @@ public class SelectionHandler
         {
             GameAction newAction = new AttackWithFollowerAction(AttackingFollower.Follower, CurrentHover.Target);
             AttackingFollower.Follower.GameState.ActionHandler.AddAction(newAction);
-            AttackingFollower.Follower.GameState.ActionHandler.StartEvaluating();
 
             //Controller.Instance.Player1.PerformAttack(AttackingFollower.Follower, attackTarget);
         }

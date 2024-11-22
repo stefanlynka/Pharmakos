@@ -6,6 +6,8 @@ public class AttackWithFollowerAction : GameAction
     public Follower Attacker;
     public ITarget Target;
 
+    private bool attackHappened = false;
+
     public AttackWithFollowerAction(Follower attacker, ITarget target)
     {
         Attacker = attacker;
@@ -14,13 +16,15 @@ public class AttackWithFollowerAction : GameAction
 
     public override void Execute(bool simulated = false)
     {
-        base.Execute(simulated);
+        attackHappened = Attacker.AttackTarget(Target);
 
-        Attacker.AttackTarget(Target);
+        base.Execute(simulated);
     }
 
     public override List<AnimationAction> GetAnimationActions()
     {
+        if (!attackHappened) return new List<AnimationAction>();
+
         List<AnimationAction> animationActions = new List<AnimationAction>(AnimationActions)
         {
             new AttackWithFollowerAnimation(this)
