@@ -41,6 +41,18 @@ public abstract class Card : ICloneable, ITarget
         return GetType().Name;
     }
 
+    public virtual bool CanPlay()
+    {
+        if (Owner == null) return false;
+
+        foreach (KeyValuePair<OfferingType, int> cost in GetCosts())
+        {
+            if (Owner.Offerings[cost.Key] < cost.Value) return false;
+        }
+
+        return true;
+    }
+
     public virtual void Play(ITarget target) 
     {
         //PayCosts();
@@ -49,8 +61,12 @@ public abstract class Card : ICloneable, ITarget
     {
         Owner.PayCosts(this);
     }
+    public virtual Dictionary<OfferingType, int> GetCosts()
+    {
+        return Costs;
+    }
 
-    
+
 
     // Initialize a new instance of this class
     public Card MakeBaseCopy()
@@ -131,6 +147,25 @@ public interface ITarget
             player,
             player.GameState.GetOtherPlayer(player.PlayerID)
         };
+        return targets;
+    }
+
+    public static List<ITarget> GetAllFollowersOnEdges(Player player)
+    {
+        List<ITarget> targets = new List<ITarget>();
+        if (player.BattleRow.Followers.Count > 1)
+        {
+            targets.Add(player.BattleRow.Followers[0]);
+            targets.Add(player.BattleRow.Followers[player.BattleRow.Followers.Count-1]);
+        }
+
+        Player otherPlayer = player.GameState.GetOtherPlayer(player.PlayerID);
+        if (otherPlayer.BattleRow.Followers.Count > 1)
+        {
+            targets.Add(otherPlayer.BattleRow.Followers[0]);
+            targets.Add(otherPlayer.BattleRow.Followers[player.BattleRow.Followers.Count - 1]);
+        }
+
         return targets;
     }
 }

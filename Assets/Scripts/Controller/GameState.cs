@@ -5,7 +5,9 @@ using UnityEngine;
 
 public class GameState
 {
+    //
     // Deep copied
+    //
     public ActionHandler ActionHandler = new ActionHandler();
     public Player Human;
     public Player AI;
@@ -17,12 +19,13 @@ public class GameState
     public Action<Follower> FollowerEnters;
     public void FireFollowerDies(Follower follower) { if (FollowerDies != null) FollowerDies(follower); }
     public Action<Follower> FollowerDies;
-    //public void FireFollowerAttacks(Follower follower) { if (FollowerDies != null) FollowerDies(follower); }
-    //public Action<Follower> FollowerDies;
-    //public void FireFollowerDies(Follower follower) { if (FollowerDies != null) FollowerDies(follower); }
-    //public Action<Follower> FollowerDies;
 
+    public int FollowerDeathsThisTurn = 0;
     public bool IsSimulated = false;
+
+    //
+    // Not Deep Copied
+    //
 
     public Player CurrentPlayer { get
         {
@@ -56,6 +59,16 @@ public class GameState
 
         Human = original.Human.DeepCopy(this);
         AI = original.AI.DeepCopy(this);
+
+        // Deep Copy Effects /after/ Deep Copying Players so all targets are added to the GameState
+        original.Human.DeepCopyPlayerEffects(Human);
+        original.AI.DeepCopyPlayerEffects(AI);
+
+        original.Human.DeepCopyDelayedEffects(Human);
+        original.AI.DeepCopyDelayedEffects(AI);
+
+
+        FollowerDeathsThisTurn = original.FollowerDeathsThisTurn;
     }
 
     public void TryAssignID(ITarget target)
@@ -96,4 +109,13 @@ public class GameState
     {
         return Human.PlayerID == ID ? AI : Human;
     }
+
+    public T GetTargetByID<T>(int ID) where T : class, ITarget
+    {
+        if (!TargetsByID.TryGetValue(ID, out ITarget target))
+            return null;
+
+        return target as T;
+    }
+
 }

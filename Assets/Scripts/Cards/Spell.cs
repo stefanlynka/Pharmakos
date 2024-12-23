@@ -14,8 +14,12 @@ public class Spell : Card, ITarget
     {
         base.Play(target);
 
-
         GameState.CurrentPlayer.ChangeOffering(OfferingType.Scroll, 1);
+
+        if (target is Follower followerTarget)
+        {
+            followerTarget.ApplyOnTargetedEffects();
+        }
     }
 
     public bool HasPlayableTargets()

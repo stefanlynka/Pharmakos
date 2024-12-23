@@ -127,7 +127,7 @@ public class SelectionHandler
             return;
         }
         ViewCard viewCard = target as ViewCard;
-        if (viewCard == null || !viewCard.Card.Owner.CanPlayCard(viewCard.Card)) return;
+        if (viewCard == null || !viewCard.Card.CanPlay()) return;
 
         ViewFollower viewFollower = target as ViewFollower;
         ViewSpell viewSpell = target as ViewSpell;

@@ -1,9 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using static UnityEditor.Progress;
 
 public class AIPlayer : Player
 {
@@ -266,7 +263,7 @@ public class AIPlayer : Player
             Follower follower = card as Follower;
             if (follower != null)
             {
-                if (CanPlayCard(follower))
+                if (follower.CanPlay())
                 {
                     playableCards.Add(follower);
                 }
@@ -275,7 +272,7 @@ public class AIPlayer : Player
             Spell spell = card as Spell;
             if (spell != null)
             {
-                if (CanPlayCard(spell))
+                if (spell.CanPlay())
                 {
                     playableCards.Add(spell);
                 }

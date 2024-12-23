@@ -74,6 +74,8 @@ public class Controller : MonoBehaviour
     }
     private void FirstTimeSetup()
     {
+        CardHandler.LoadCards();
+
         if (Player1 == null)
         {
             Player1 = new HumanPlayer();

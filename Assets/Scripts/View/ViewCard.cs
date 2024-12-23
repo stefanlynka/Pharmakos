@@ -26,7 +26,7 @@ public class ViewCard : ViewTarget
     public virtual void Load(Card cardData, Action<ViewTarget> onClick = null)
     {
         Card = cardData;
-        ViewOfferingCost.Load(Card.Costs);
+        ViewOfferingCost.Load(Card.GetCosts());
 
         ArtRenderer.sprite = CardHandler.GetSprite(cardData);
         NameText.text = cardData.GetType().Name;

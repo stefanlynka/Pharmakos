@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using static Unity.VisualScripting.Member;
+using static UnityEngine.GraphicsBuffer;
 
 public class ZeusMinor : Ritual
 {
@@ -180,5 +182,177 @@ public class HadesMajor : Ritual
 
         DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
         Owner.GameState.ActionHandler.AddAction(damageAction, true, true);
+    }
+}
+
+public class DemeterMajor : Ritual
+{
+    private int attackGain = 0;
+    private int healthGain = 1;
+    public DemeterMajor()
+    {
+        Description = "When a Follower enters Target Player's BattleRow, your Followers gain +0/+1";
+
+        Costs = new Dictionary<OfferingType, int>()
+            {
+                {OfferingType.Blood, 0 },
+                {OfferingType.Bone, 0 },
+                {OfferingType.Crop, 0 },
+                {OfferingType.Scroll, 0 },
+            };
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        var targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllPlayers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        if (target is not Player targetPlayer) return;
+
+        DemeterMajorEffectDef demeterMajorEffectDef = new DemeterMajorEffectDef(Owner, targetPlayer, attackGain, healthGain);
+        Owner.AddPlayerEffect(demeterMajorEffectDef);
+    }
+}
+
+
+public class DemeterMajorEffectDef : PlayerEffect
+{
+    public Player Owner;
+    public Player Target;
+    private int attackGain = 0;
+    private int healthGain = 0;
+
+    public DemeterMajorEffectDef(Player owner, Player target, int attackGain, int healthGain)
+    {
+        Owner = owner; 
+        Target = target;
+        this.attackGain = attackGain;
+        this.healthGain = healthGain;
+    }
+
+    public override void Apply()
+    {
+        Owner.GameState.FollowerEnters += FollowerEnters;
+    }
+
+    public override void Unapply()
+    {
+        Owner.GameState.FollowerEnters -= FollowerEnters;
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        DemeterMajorEffectDef copy = (DemeterMajorEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.Target = newOwner.GameState.GetTargetByID<Player>(Target.GetID());
+
+        return copy;
+    }
+
+    protected void FollowerEnters(Follower follower)
+    {
+        if (follower.Owner != Target) return;
+
+        foreach (Follower alliedFollower in Owner.BattleRow.Followers)
+        {
+            if (alliedFollower == follower) continue; 
+
+            ChangeStatsAction action = new ChangeStatsAction(alliedFollower, attackGain, healthGain);
+            Owner.GameState.ActionHandler.AddAction(action, true);
+        }
+    }
+}
+
+public class DemeterMinor : Ritual
+{
+    private int attackGain = 1;
+    private int healthGain = 0;
+    public DemeterMinor()
+    {
+        Description = "When one of Target Player's Followers dies, your Followers gain +1/+0";
+
+        Costs = new Dictionary<OfferingType, int>()
+            {
+                {OfferingType.Blood, 0 },
+                {OfferingType.Bone, 0 },
+                {OfferingType.Crop, 0 },
+                {OfferingType.Scroll, 0 },
+            };
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        var targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllPlayers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        if (target is not Player targetPlayer) return;
+
+        DemeterMinorEffectDef demeterMajorEffectDef = new DemeterMinorEffectDef(Owner, targetPlayer, attackGain, healthGain);
+        Owner.AddPlayerEffect(demeterMajorEffectDef);
+    }
+}
+
+
+public class DemeterMinorEffectDef : PlayerEffect
+{
+    public Player Owner;
+    public Player Target;
+    private int attackGain = 0;
+    private int healthGain = 0;
+
+    public DemeterMinorEffectDef(Player owner, Player target, int attackGain, int healthGain)
+    {
+        Owner = owner;
+        Target = target;
+        this.attackGain = attackGain;
+        this.healthGain = healthGain;
+    }
+
+    public override void Apply()
+    {
+        Owner.GameState.FollowerDies += FollowerDies;
+    }
+
+    public override void Unapply()
+    {
+        Owner.GameState.FollowerDies -= FollowerDies;
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        DemeterMajorEffectDef copy = (DemeterMajorEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.Target = newOwner.GameState.GetTargetByID<Player>(Target.GetID());
+
+        return copy;
+    }
+
+    protected void FollowerDies(Follower follower)
+    {
+        if (follower.Owner != Target) return;
+
+        foreach (Follower alliedFollower in Owner.BattleRow.Followers)
+        {
+            if (alliedFollower == follower) continue;
+
+            ChangeStatsAction action = new ChangeStatsAction(alliedFollower, attackGain, healthGain);
+            Owner.GameState.ActionHandler.AddAction(action, true);
+        }
     }
 }

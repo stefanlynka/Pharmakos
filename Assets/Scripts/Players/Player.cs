@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Player : ITarget
 {
-    ///
     /// Deep Copied
     ///
     public List<Card> Deck = new List<Card>();
@@ -40,7 +39,15 @@ public class Player : ITarget
     public int CardsPerTurn = 5;
     public int GoldPerTurn = 3;
 
-    ///
+    // Delayed Effects
+    public List<DelayedGameAction> StartOfTurnActions = new List<DelayedGameAction>();
+    public List<DelayedGameAction> EndOfTurnActions = new List<DelayedGameAction>();
+    public List<DelayedGameAction> StartOfEveryTurnActions = new List<DelayedGameAction>();
+    public List<DelayedGameAction> EndOfEveryTurnActions = new List<DelayedGameAction>();
+
+    // Player Effects (Rituals)
+    public List<PlayerEffect> PlayerEffects = new List<PlayerEffect>();
+
     /// Not Deep Copied
     ///
     public GameState GameState {  get; private set; }
@@ -143,6 +150,7 @@ public class Player : ITarget
         copy.MinorRitual = MinorRitual?.DeepCopy(copy);
         copy.MajorRitual = MajorRitual?.DeepCopy(copy);
 
+
         return copy;
     }
 
@@ -157,6 +165,34 @@ public class Player : ITarget
         }
 
         return copy;
+    }
+
+    public void DeepCopyDelayedEffects(Player copy)
+    {
+        foreach (DelayedGameAction delayedGameAction in StartOfTurnActions)
+        {
+            copy.StartOfTurnActions.Add(delayedGameAction.DeepCopy(copy));
+        }
+        foreach (DelayedGameAction delayedGameAction in StartOfEveryTurnActions)
+        {
+            copy.StartOfEveryTurnActions.Add(delayedGameAction.DeepCopy(copy));
+        }
+        foreach (DelayedGameAction delayedGameAction in EndOfTurnActions)
+        {
+            copy.EndOfTurnActions.Add(delayedGameAction.DeepCopy(copy));
+        }
+        foreach (DelayedGameAction delayedGameAction in EndOfEveryTurnActions)
+        {
+            copy.EndOfEveryTurnActions.Add(delayedGameAction.DeepCopy(copy));
+        }
+    }
+
+    public void DeepCopyPlayerEffects(Player copy)
+    {
+        foreach (PlayerEffect playerEffectDef in PlayerEffects)
+        {
+            copy.AddPlayerEffect(playerEffectDef.DeepCopy(copy));
+        }
     }
 
     public void AttachToGameState(GameState gameState)
@@ -196,6 +232,23 @@ public class Player : ITarget
     public virtual void StartTurn()
     {
         DrawHand();
+
+        foreach (Follower follower in BattleRow.Followers)
+        {
+            follower.DoStartOfMyTurnEffects();
+            follower.DoStartOfEachTurnEffects();
+        }
+
+        Player otherPlayer = GameState.GetOtherPlayer(PlayerID);
+        foreach (Follower follower in otherPlayer.BattleRow.Followers)
+        {
+            follower.DoStartOfEachTurnEffects();
+        }
+
+        DoStartOfTurnPlayerActions();
+        DoStartOfEveryTurnPlayerActions();
+
+        otherPlayer.DoStartOfEveryTurnPlayerActions();
     }
 
     // Cleanup for this Player. Should only be called by GameState.EndTurn()
@@ -209,8 +262,77 @@ public class Player : ITarget
 
         foreach (Follower follower in BattleRow.Followers)
         {
-            follower.DoEndOfTurnEffects();
+            follower.DoEndOfMyTurnEffects();
+            follower.DoEndOfEachTurnEffects();
         }
+
+        Player otherPlayer = GameState.GetOtherPlayer(PlayerID);
+        if (otherPlayer != null)
+        {
+            foreach (Follower follower in otherPlayer.BattleRow.Followers)
+            {
+                follower.DoEndOfEachTurnEffects();
+            }
+        }
+
+        GameState.FollowerDeathsThisTurn = 0;
+
+        DoEndOfTurnPlayerActions();
+        DoEndOfEveryTurnPlayerActions();
+
+        otherPlayer.DoEndOfEveryTurnPlayerActions();
+    }
+
+    private void DoEndOfTurnPlayerActions()
+    {
+        List<DelayedGameAction> actions = new List<DelayedGameAction>();
+        foreach (DelayedGameAction delayedGameAction in EndOfTurnActions)
+        {
+            bool actionShouldPersist = delayedGameAction.TryExecute();
+            if (actionShouldPersist) actions.Add(delayedGameAction);
+        }
+
+        EndOfTurnActions = actions;
+    }
+    private void DoEndOfEveryTurnPlayerActions()
+    {
+        List<DelayedGameAction> actions = new List<DelayedGameAction>();
+        foreach (DelayedGameAction delayedGameAction in EndOfEveryTurnActions)
+        {
+            bool actionShouldPersist = delayedGameAction.TryExecute();
+            if (actionShouldPersist) actions.Add(delayedGameAction);
+        }
+
+        EndOfTurnActions = actions;
+    }
+
+    private void DoStartOfTurnPlayerActions()
+    {
+        List<DelayedGameAction> actions = new List<DelayedGameAction>();
+        foreach (DelayedGameAction delayedGameAction in StartOfTurnActions)
+        {
+            bool actionShouldPersist = delayedGameAction.TryExecute();
+            if (actionShouldPersist) actions.Add(delayedGameAction);
+        }
+
+        EndOfTurnActions = actions;
+    }
+    private void DoStartOfEveryTurnPlayerActions()
+    {
+        List<DelayedGameAction> actions = new List<DelayedGameAction>();
+        foreach (DelayedGameAction delayedGameAction in StartOfEveryTurnActions)
+        {
+            bool actionShouldPersist = delayedGameAction.TryExecute();
+            if (actionShouldPersist) actions.Add(delayedGameAction);
+        }
+
+        EndOfTurnActions = actions;
+    }
+
+    public void AddPlayerEffect(PlayerEffect playerEffectDef)
+    {
+        PlayerEffects.Add(playerEffectDef);
+        playerEffectDef.Apply();
     }
 
 
@@ -265,7 +387,7 @@ public class Player : ITarget
 
     public void FollowerDied(Follower follower)
     {
-        foreach (TriggeredEffectInstance effectInstance in follower.OnDeathEffects)
+        foreach (TriggeredFollowerEffectInstance effectInstance in follower.OnDeathEffects)
         {
             effectInstance.Trigger();
         }    
@@ -306,14 +428,15 @@ public class Player : ITarget
         // Trigger Offerings
         if (createCrop) GameState.CurrentPlayer.ChangeOffering(OfferingType.Crop, 1);
 
+        // Trigger Effects
+        GameState.FireFollowerEnters(follower);
+
         // Apply Follower static effects 
         follower.ApplyInnateEffects();
 
         // Apply one time on enter effects
         follower.ApplyOnEnterEffects();
 
-        // Trigger Effects
-        GameState.FireFollowerEnters(follower);
 
         // Update View
         //if (!GameState.IsSimulated) View.Instance.MoveFollowerToBattleRow(follower, index);
@@ -321,22 +444,12 @@ public class Player : ITarget
 
     public void PayCosts(Card card)
     {
-        foreach (KeyValuePair<OfferingType, int> cost in card.Costs)
+        foreach (KeyValuePair<OfferingType, int> cost in card.GetCosts())
         {
             Offerings[cost.Key] -= cost.Value;
         }
         OnOfferingsChange?.Invoke();
         //View.Instance.UpdateResources(this);
-    }
-
-    public bool CanPlayCard(Card card)
-    {
-        foreach (KeyValuePair<OfferingType, int> cost in card.Costs)
-        {
-            if (Offerings[cost.Key] < cost.Value) return false;
-        }
-
-        return true;
     }
 
     public bool CanPayForRitual(Ritual ritual)
@@ -445,4 +558,8 @@ public class Player : ITarget
         return true;
     }
 
+    public Player GetOtherPlayer()
+    {
+        return GameState.GetOtherPlayer(PlayerID);
+    }
 }
