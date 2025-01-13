@@ -29,6 +29,7 @@ public class FollowerDeathAction : GameAction
 
         Owner.GameState.FireFollowerDies(Follower);
         Owner.GameState.FollowerDeathsThisTurn++;
+        Owner.GameState.LastFollowerThatDied = Follower.MakeBaseCopy() as Follower;
 
         //if (!simulated) Debug.LogError("Follower Death Action");
 

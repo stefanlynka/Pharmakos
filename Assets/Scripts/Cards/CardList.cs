@@ -1823,6 +1823,7 @@ public class Restoration : Spell
     }
 }
 
+// Deal 4 Damage (costs 1 less per Follower that died this turn)
 public class Vengeance : Spell
 {
     private int damage = 4;
@@ -1962,7 +1963,7 @@ public class Reflection : Spell
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -1971,6 +1972,13 @@ public class Reflection : Spell
 
         Text = "Create a copy of a Follower with exactly 1 neighbour";
         HasTargets = true;
+    }
+
+    public override bool CanPlay()
+    {
+        if (!base.CanPlay()) return false;
+
+        return GetTargets().Count > 0;
     }
 
     public override List<ITarget> GetTargets()
@@ -2000,6 +2008,7 @@ public class Reflection : Spell
 
         Follower newFollower = (Follower)followerTarget.Clone();
         newFollower.Init(followerTarget.Owner);
+        newFollower.RefreshAttacks();
 
         //Follower copy = (Follower)followerTarget.MakeBaseCopy();
         //copy.Owner = Owner;
@@ -2019,7 +2028,7 @@ public class Titanomachy : Spell
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},

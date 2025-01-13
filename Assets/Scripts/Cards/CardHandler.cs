@@ -82,6 +82,8 @@ public static class CardHandler
     public static List<Follower> AllFollowers = new List<Follower>();
     public static List<Follower> AllMonsters = new List<Follower>();
     public static List<Spell> AllSpells = new List<Spell>();
+    public static Dictionary<int, List<Spell>> SpellsByCost = new Dictionary<int, List<Spell>>();
+    public static int HighestSpellCost = 0;
 
     public enum DeckName
     {
@@ -99,6 +101,8 @@ public static class CardHandler
 
         foreach (Card card in AllCards)
         {
+            int cost = card.Costs[OfferingType.Gold];
+
             if (card is Follower follower)
             {
                 AllFollowers.Add(follower);
@@ -108,7 +112,14 @@ public static class CardHandler
             else if (card is Spell spell)
             {
                 AllSpells.Add(spell);
-            }
+
+                if (!SpellsByCost.ContainsKey(cost))
+                {
+                    SpellsByCost[cost] = new List<Spell>();
+                }
+                SpellsByCost[cost].Add(spell);
+                if (cost > HighestSpellCost) HighestSpellCost = cost;
+            }            
         }
     }
 
@@ -120,14 +131,14 @@ public static class CardHandler
                 {
                     player.IsHuman = true;
                     player.StartingHealth = 20;
-                    player.MinorRitual = new DemeterMinor();
-                    player.MajorRitual = new DemeterMajor();
+                    player.MinorRitual = new AthenaMajor();
+                    player.MajorRitual = new HephaestusMajor();
                     player.Deck = new List<Card>
                     {
-                        new Chariot(),
-                        new Chariot(),
+                        new PriceOfProfit(),
                         new Peltast(),
-                        new Peltast(),
+                        new Hippeis(),
+                        new Myrmidon(),
                         new Smite(),
                         //new Ekdromos(),
                         //new Ekdromos(),
@@ -301,7 +312,7 @@ public static class CardHandler
 
         if (level >= 0)
         {
-            rewards.Add(new HadesMinor());
+            rewards.Add(new PoseidonMinor());
             rewards.Add(new HadesMajor());
         }
         if (level >= 2)

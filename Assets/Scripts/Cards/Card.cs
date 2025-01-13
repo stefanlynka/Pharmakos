@@ -76,7 +76,7 @@ public abstract class Card : ICloneable, ITarget
 
         // Create a new instance of the calling class
         Card newCard = (Card)Activator.CreateInstance(callingType);
-        newCard.Init(Owner);
+        
         return newCard;
     }
 
@@ -120,9 +120,9 @@ public interface ITarget
 
     public string GetName();
 
-    public static List<ITarget> GetAllFollowers(Player player)
+    public static List<Follower> GetAllFollowers(Player player)
     {
-        List<ITarget> targets = new List<ITarget>();
+        List<Follower> targets = new List<Follower>();
         targets.AddRange(player.BattleRow.Followers);
         
         targets.AddRange(player.GameState.GetOtherPlayer(player.PlayerID).BattleRow.Followers);

@@ -18,7 +18,7 @@ public class Spell : Card, ITarget
 
         if (target is Follower followerTarget)
         {
-            followerTarget.ApplyOnTargetedEffects();
+            followerTarget.ApplyOnTargetedEffects(this);
         }
     }
 

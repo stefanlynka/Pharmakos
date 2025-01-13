@@ -8,5 +8,5 @@ public abstract class PlayerEffect
     public abstract PlayerEffect DeepCopy(Player newOwner);
 
     public abstract void Apply();
-    public abstract void Unapply();
+    public abstract void Unapply(); // Currently not used. PlayerEffects are remade when deep copied so no need for now.
 }

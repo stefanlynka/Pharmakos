@@ -419,3 +419,55 @@ public class SummonRandomMonsterInstance : TriggeredFollowerEffectInstance
         AffectedFollower.Owner.GameState.ActionHandler.AddAction(newAction);
     }
 }
+
+public class AddRandomFreeSpellToHandInstance : TriggeredFollowerEffectInstance
+{
+    Player EffectOwner;
+    public AddRandomFreeSpellToHandInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
+
+    // The EffectOwner is the player who gets the free spell
+    public void Init(Player effectOwner)
+    {
+        EffectOwner = effectOwner;
+    }
+
+    public override void Trigger(ITarget target = null, int amount = 0)
+    {
+        amount = Mathf.Min(CardHandler.HighestSpellCost, amount);
+        if (!CardHandler.SpellsByCost.ContainsKey(amount)) return;
+
+        Spell randomSpell = CardHandler.SpellsByCost[amount][UnityEngine.Random.Range(0, CardHandler.SpellsByCost[amount].Count - 1)];
+        if (randomSpell == null) return;
+
+        randomSpell.Costs[OfferingType.Gold] = 0;
+        randomSpell.Init(AffectedFollower.Owner);
+        AddCardCopyToHandAction action = new AddCardCopyToHandAction(randomSpell);
+        EffectOwner.GameState.ActionHandler.AddAction(action, true, true);
+    }
+}
+
+public class AddSpellsCastOnThisToHandInstance : TriggeredFollowerEffectInstance
+{
+    Player SpellReceivingPlayer;
+    public AddSpellsCastOnThisToHandInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
+
+    public void Init(Player spellReceivingPlayer)
+    {
+        SpellReceivingPlayer = spellReceivingPlayer;
+    }
+
+    public override void Trigger(ITarget target = null, int amount = 0)
+    {
+        amount = Mathf.Min(CardHandler.HighestSpellCost, amount);
+        if (!CardHandler.SpellsByCost.ContainsKey(amount)) return;
+
+        foreach (Spell spell in AffectedFollower.SpellsCastOnThisByOwner)
+        {
+            Spell spellCopy = spell.MakeBaseCopy() as Spell;
+            spellCopy.Init(SpellReceivingPlayer);
+            spellCopy.Costs[OfferingType.Gold] = Mathf.Max(spellCopy.Costs[OfferingType.Gold] - 1, 0);
+            AddCardCopyToHandAction action = new AddCardCopyToHandAction(spellCopy);
+            SpellReceivingPlayer.GameState.ActionHandler.AddAction(action);
+        }
+    }
+}

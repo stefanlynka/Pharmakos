@@ -192,6 +192,12 @@ public class ViewBattleRow : MonoBehaviour
         viewFollower.transform.SetParent(UnitHolderTransform);
         Followers.Insert(index, viewFollower);
     }
+
+    public void TryRemoveFollower(ViewFollower viewFollower)
+    {
+        Followers.Remove(viewFollower);
+        RefreshPositions();
+    }
     public void FollowerInPlayClicked(ViewTarget viewTarget)
     {
         ViewEventHandler.Instance.FireViewTargetInPlayClicked(viewTarget);

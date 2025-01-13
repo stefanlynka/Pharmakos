@@ -22,13 +22,21 @@ public class DelayedGameAction
         UsesRemaining = usesRemaining;
     }
 
-    public virtual bool TryExecute()
+    public virtual void TryExecute()
     {
-        if (!LimitedUses || UsesRemaining > 0)
+        if (!LimitedUses)
         {
             GameAction.Execute();
         }
+        else if (UsesRemaining > 0)
+        {
+            GameAction.Execute();
+            UsesRemaining--;
+        }
+    }
 
+    public virtual bool HasUsesRemaining()
+    {
         return LimitedUses ? UsesRemaining > 0 : true;
     }
 

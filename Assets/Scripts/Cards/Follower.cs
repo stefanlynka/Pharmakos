@@ -29,6 +29,9 @@ public class Follower : Card, ITarget
     public SortedSet<TriggeredFollowerEffectInstance> OnKillEffects = new SortedSet<TriggeredFollowerEffectInstance>();
     public SortedSet<TriggeredFollowerEffectInstance> OnTargetedEffects = new SortedSet<TriggeredFollowerEffectInstance>();
 
+    public List<Spell> SpellsCastOnThisByOwner = new List<Spell>();
+    //public List<Spell> SpellsCastOnThisByOpponent = new List<Spell>();
+
     //public static int IDIndex = 0;
     //public int Index = 0;
 
@@ -45,8 +48,6 @@ public class Follower : Card, ITarget
         Beast,
         Divine
     }
-
-
 
 
     public override List<ITarget> GetTargets()
@@ -97,14 +98,19 @@ public class Follower : Card, ITarget
     public virtual void DoEndOfMyTurnEffects()
     {
         PlayedThisTurn = false;
-        TimesThisAttackedThisTurn = 0;
-        SkippedAttack = false;
+        RefreshAttacks();
     }
 
     // Trigger on own and opponent's turn
     public virtual void DoEndOfEachTurnEffects()
     {
 
+    }
+
+    public void RefreshAttacks()
+    {
+        TimesThisAttackedThisTurn = 0;
+        SkippedAttack = false;
     }
 
     public override void Reset()
@@ -379,11 +385,13 @@ public class Follower : Card, ITarget
         OnChange?.Invoke();
     }
 
-    public void ApplyOnTargetedEffects()
+    public void ApplyOnTargetedEffects(Spell spell)
     {
         foreach (TriggeredFollowerEffectInstance effect in OnTargetedEffects)
         {
             effect.Trigger(null);
         }
+
+        SpellsCastOnThisByOwner.Add(spell.MakeBaseCopy() as Spell);
     }
 }

@@ -30,7 +30,7 @@ public class BattleRow
 
     public void AddFollower(Follower newFollower, int index = -1)
     {
-        if (index == -1) index = Followers.Count - 1;
+        if (index == -1) index = Followers.Count;
 
         Followers.Insert(index, newFollower);
 

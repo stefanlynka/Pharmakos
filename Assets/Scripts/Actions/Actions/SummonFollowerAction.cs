@@ -2,15 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static Unity.VisualScripting.Member;
+using static UnityEngine.UI.GridLayoutGroup;
 
 public class SummonFollowerAction : GameAction
 {
     public Follower Follower;
     public int Index;
-    public SummonFollowerAction(Follower follower, int index)
+    public SummonFollowerAction(Follower follower, int index = -1)
     {
         Follower = follower;
-        Index = index;
+        if (index == -1) 
+        {
+            Index = Follower.Owner.BattleRow.Followers.Count;
+        }
+        else
+        {
+            Index = index;
+        }
     }
 
     public override GameAction DeepCopy(Player newOwner)

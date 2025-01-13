@@ -126,7 +126,7 @@ public class Player : ITarget
 
     public Player DeepCopy(GameState newGameState)
     {
-        Player copy = MakeBaseCopy();
+        Player copy = MakeBaseCopy(); // Brand new Player instance
 
         copy.AttachToGameState(newGameState);
 
@@ -260,6 +260,9 @@ public class Player : ITarget
         Offerings[OfferingType.Gold] = GoldPerTurn;
         View.Instance.UpdateResources(this);
 
+        DoEndOfTurnPlayerActions();
+        DoEndOfEveryTurnPlayerActions();
+
         foreach (Follower follower in BattleRow.Followers)
         {
             follower.DoEndOfMyTurnEffects();
@@ -275,12 +278,9 @@ public class Player : ITarget
             }
         }
 
-        GameState.FollowerDeathsThisTurn = 0;
-
-        DoEndOfTurnPlayerActions();
-        DoEndOfEveryTurnPlayerActions();
-
         otherPlayer.DoEndOfEveryTurnPlayerActions();
+
+        GameState.FollowerDeathsThisTurn = 0;
     }
 
     private void DoEndOfTurnPlayerActions()
@@ -288,7 +288,8 @@ public class Player : ITarget
         List<DelayedGameAction> actions = new List<DelayedGameAction>();
         foreach (DelayedGameAction delayedGameAction in EndOfTurnActions)
         {
-            bool actionShouldPersist = delayedGameAction.TryExecute();
+            delayedGameAction.TryExecute();
+            bool actionShouldPersist = delayedGameAction.HasUsesRemaining();
             if (actionShouldPersist) actions.Add(delayedGameAction);
         }
 
@@ -299,11 +300,12 @@ public class Player : ITarget
         List<DelayedGameAction> actions = new List<DelayedGameAction>();
         foreach (DelayedGameAction delayedGameAction in EndOfEveryTurnActions)
         {
-            bool actionShouldPersist = delayedGameAction.TryExecute();
+            delayedGameAction.TryExecute();
+            bool actionShouldPersist = delayedGameAction.HasUsesRemaining();
             if (actionShouldPersist) actions.Add(delayedGameAction);
         }
 
-        EndOfTurnActions = actions;
+        EndOfEveryTurnActions = actions;
     }
 
     private void DoStartOfTurnPlayerActions()
@@ -311,22 +313,24 @@ public class Player : ITarget
         List<DelayedGameAction> actions = new List<DelayedGameAction>();
         foreach (DelayedGameAction delayedGameAction in StartOfTurnActions)
         {
-            bool actionShouldPersist = delayedGameAction.TryExecute();
+            delayedGameAction.TryExecute();
+            bool actionShouldPersist = delayedGameAction.HasUsesRemaining();
             if (actionShouldPersist) actions.Add(delayedGameAction);
         }
 
-        EndOfTurnActions = actions;
+        StartOfTurnActions = actions;
     }
     private void DoStartOfEveryTurnPlayerActions()
     {
         List<DelayedGameAction> actions = new List<DelayedGameAction>();
         foreach (DelayedGameAction delayedGameAction in StartOfEveryTurnActions)
         {
-            bool actionShouldPersist = delayedGameAction.TryExecute();
+            delayedGameAction.TryExecute();
+            bool actionShouldPersist = delayedGameAction.HasUsesRemaining();
             if (actionShouldPersist) actions.Add(delayedGameAction);
         }
 
-        EndOfTurnActions = actions;
+        StartOfEveryTurnActions = actions;
     }
 
     public void AddPlayerEffect(PlayerEffect playerEffectDef)
