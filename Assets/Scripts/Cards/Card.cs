@@ -11,6 +11,7 @@ public abstract class Card : ICloneable, ITarget
 
     public Dictionary<OfferingType, int> Costs = new Dictionary<OfferingType, int>();
 
+    public string OverrideName = "";
     public string Text = "";
 
     public int ID = -1;
@@ -38,12 +39,15 @@ public abstract class Card : ICloneable, ITarget
 
     public string GetName()
     {
-        return GetType().Name;
+        if (OverrideName == "") OverrideName = GetType().Name;
+
+        return OverrideName;
     }
 
     public virtual bool CanPlay()
     {
         if (Owner == null) return false;
+        if (!Owner.IsMyTurn) return false;
 
         foreach (KeyValuePair<OfferingType, int> cost in GetCosts())
         {

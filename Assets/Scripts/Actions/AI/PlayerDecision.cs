@@ -29,7 +29,7 @@ public class PlayFollowerDecision : PlayerDecision
         Follower follower = Controller.Instance.CanonGameState.TargetsByID[CardID] as Follower;
         if (follower != null)
         {
-            return "Play " + follower.GetName() + " at index: " + PlacementIndex;
+            return "Play " + follower.GetName() + " ID:" + follower.ID + " at index: " + PlacementIndex;
         }
         return "Follower not found";
     }

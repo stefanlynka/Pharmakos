@@ -23,16 +23,22 @@ public enum EffectTrigger
     OnDrawBlood,
     OnKill,
     OnTargeted,
+    OnAnyFollowerDeath,
+    OnAnySpellCast,
 }
 
 public enum StaticEffect
 {
     None,
     Sprint,
+    Shield,
+    ImmuneWhileAttacking,
     Cleave,
     Taunt,
     RangedAttacker,
     Frenzy,
+    CantAttack,
+    LowVision,
 }
 
 /**
@@ -218,7 +224,7 @@ public class DealAttackDamageOnAttackEffectDef : FollowerEffect
     }
 }
 
-// Deal this Follower's attack damage to attack when attacked
+// Deal this Follower's attack damage to attacker when attacked
 public class DealAttackDamageOnAttackedEffectDef : FollowerEffect
 {
     public DealAttackDamageOnAttackedEffectDef(EffectTarget target) : base(target) { }
@@ -234,7 +240,7 @@ public class DealAttackDamageOnAttackedEffectDef : FollowerEffect
     }
 }
 
-// Deal a constant amount of damage to attack when attacked
+// Deal a constant amount of damage to attacker when attacked
 public class DamageOnAttackedEffectDef : FollowerEffect
 {
     private int damage = 0;

@@ -85,6 +85,7 @@ public class ViewBattleRow : MonoBehaviour
             bool highlighted = false;
 
             if ((!isHuman && BattleRow.Owner.IsMyTurn) || AnimationHandler.IsAnimating) highlighted = false;
+            else if (isHuman && !BattleRow.Owner.IsMyTurn) highlighted = false;
             else if (View.Instance.SelectionHandler.AttackingFollower == viewFollower) highlighted = true; // If it's attacking
             else if (View.Instance.SelectionHandler.AttackableTargets.Contains(viewFollower.Follower)) highlighted = true; // If it's a potential attack target
             else if (isHuman && !View.Instance.SelectionHandler.IsHoldingCard() && viewFollower.Follower.CanAttack()) highlighted = true; // nothing's held and it can attack
@@ -195,8 +196,15 @@ public class ViewBattleRow : MonoBehaviour
 
     public void TryRemoveFollower(ViewFollower viewFollower)
     {
-        Followers.Remove(viewFollower);
-        RefreshPositions();
+        foreach (ViewFollower follower in Followers)
+        {
+            if (follower.Follower.ID == viewFollower.Follower.ID)
+            {
+                Followers.Remove(viewFollower);
+                RefreshPositions();
+                return;
+            }
+        }
     }
     public void FollowerInPlayClicked(ViewTarget viewTarget)
     {
@@ -211,8 +219,10 @@ public class ViewBattleRow : MonoBehaviour
         }
     }
 
-    public Vector3 GetPotentialFollowerPosition(int index)
+    public Vector3 GetPotentialFollowerPosition(int index = -1)
     {
+        if (index == -1) index = Followers.Count;
+
         float battleRowOffset = transform.position.z;
         Vector3 position = transform.position;
         int cardCount = Followers.Count + 1;

@@ -9,7 +9,7 @@ public class AttackWithFollowerAnimation : AnimationAction
     AttackWithFollowerAction attackAction;
 
     private float attackMoveDuration = 0.15f;
-    private float moveDistance = 1f;
+    //private float moveDistance = 1f;
     private float cardSize = 3f;
     private ViewFollower attackerViewFollower;
     private Vector3 startPosition;

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
+using static Unity.VisualScripting.Member;
 using static UnityEngine.GraphicsBuffer;
 
 public class Follower : Card, ITarget
@@ -35,6 +37,7 @@ public class Follower : Card, ITarget
     //public static int IDIndex = 0;
     //public int Index = 0;
 
+    public int BaseAttacksPerTurn = 1;
     public int TimesThisAttackedThisTurn = 0;
     public bool PlayedThisTurn = true;
     public bool SkippedAttack = false;
@@ -46,7 +49,8 @@ public class Follower : Card, ITarget
         Monster,
         Mortal,
         Beast,
-        Divine
+        Divine,
+        Object
     }
 
 
@@ -59,10 +63,10 @@ public class Follower : Card, ITarget
     // Cards are 1.0 apart. Center = 0.
     // Odd number of Followers:  Center position is 0. Left of that is -1, another one left is -2, etc
     // Even number of Followers: Slightly left of center is -0.5, left of that is -1.5, etc
-    public virtual List<ITarget> GetAttackTargets()
+    public virtual List<ITarget> GetAttackTargets(bool forceCheck = false)
     {
         List<ITarget> targets = new List<ITarget>();
-        if (!CanAttack()) return targets;
+        if (!forceCheck && !CanAttack()) return targets;
 
         int index = Owner.BattleRow.GetIndexOfFollower(this);
         if (index < 0) return targets;
@@ -75,13 +79,49 @@ public class Follower : Card, ITarget
         {
             targets = otherPlayer.BattleRow.GetTargetsInRangeOfRangedAttack(position);
         }
+        else if (HasStaticEffect(StaticEffect.LowVision))
+        {
+            targets = otherPlayer.BattleRow.GetTargetsInLowVisionRange(position);
+        }
         else
         {
             targets = otherPlayer.BattleRow.GetTargetsInRange(position);
         }
-        
+
 
         return targets;
+    }
+
+    public List<Follower> GetAdjacentFollowers()
+    {
+        return Owner.BattleRow.GetAdjacentFollowers(this);
+    }
+
+    public Follower GetClosestEnemy()
+    {
+        int index = Owner.BattleRow.GetIndexOfFollower(this);
+        if (index < 0) return null;
+        float position = -0.5f * (Owner.BattleRow.Followers.Count - 1) + index;
+
+        List<ITarget> targets = Owner.GetOtherPlayer().BattleRow.GetTargetsInRange(position, true);
+        List<Follower> followerTargets = new List<Follower>();
+        foreach (ITarget target in targets)
+        {
+            Follower followerTarget = target as Follower;
+            if (followerTarget != null) followerTargets.Add(followerTarget);
+        }
+
+        if (followerTargets.Count == 1 || followerTargets.Count == 2) return followerTargets[0];
+        if (followerTargets.Count == 3) return followerTargets[1];
+
+        return null;
+    }
+
+    public int GetAttacksPerTurn()
+    {
+        if (HasStaticEffect(StaticEffect.CantAttack)) return 0;
+        else if (HasStaticEffect(StaticEffect.Frenzy)) return 2;
+        return 1;
     }
 
     // Only trigger on your turn
@@ -201,7 +241,9 @@ public class Follower : Card, ITarget
     public void ChangeStats(int attackChange, int healthChange)
     {
         BaseAttack += attackChange;
+        BaseAttack = Mathf.Max(BaseAttack, 0);
         CurrentAttack += attackChange;
+        CurrentAttack = Mathf.Max(CurrentAttack, 0);
 
         BaseHealth += healthChange;
         CurrentHealth += healthChange;
@@ -211,8 +253,19 @@ public class Follower : Card, ITarget
         ApplyOnChanged();
     }
 
+    public void SetStats(int newAttack, int newHealth)
+    {
+        CurrentAttack = newAttack;
+        CurrentHealth = newHealth;
+    }
+
     public virtual void ChangeHealth(ITarget source, int value)
     {
+        // Reduce damage by Shield amount
+        if (value < 0 && StaticEffects.ContainsKey(StaticEffect.Shield))
+        {
+            value = Mathf.Min(0, value - StaticEffects[StaticEffect.Shield].Count);
+        }
         CurrentHealth += value;
 
         Follower sourceFollower = source as Follower;
@@ -296,7 +349,7 @@ public class Follower : Card, ITarget
 
     public bool CanAttack()
     {
-        return (TimesThisAttackedThisTurn == 0 || (TimesThisAttackedThisTurn <= 1 && HasStaticEffect(StaticEffect.Frenzy))) && (!PlayedThisTurn || HasStaticEffect(StaticEffect.Sprint)) && !SkippedAttack;
+        return (TimesThisAttackedThisTurn < GetAttacksPerTurn()) && (!PlayedThisTurn || HasStaticEffect(StaticEffect.Sprint)) && !SkippedAttack;
     }
 
     // Return true if attack happened
@@ -314,12 +367,14 @@ public class Follower : Card, ITarget
             if (CurrentHealth > 0 && defendingFollower.CurrentHealth > 0)
             {
                 AttackFollower(defendingFollower);
+                //TimesThisAttackedThisTurn++;
                 return true;
             }
         }
         else if (defendingPlayer != null && CurrentHealth > 0 && defendingPlayer.Health > 0)
         {
             AttackPlayer(defendingPlayer);
+            //TimesThisAttackedThisTurn++;
             return true;
         }
 
@@ -365,7 +420,7 @@ public class Follower : Card, ITarget
             leftOfTarget?.ChangeHealth(this, -attackerAttack);
         }
 
-        if (!HasStaticEffect(StaticEffect.RangedAttacker)) ChangeHealth(defender, -defenderAttack);
+        if (!HasStaticEffect(StaticEffect.RangedAttacker) && !HasStaticEffect(StaticEffect.ImmuneWhileAttacking)) ChangeHealth(defender, -defenderAttack);
         defender.ChangeHealth(this, -attackerAttack);
 
         rightOfTarget?.ChangeHealth(this, -attackerAttack);

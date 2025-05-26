@@ -74,7 +74,16 @@ public class View : MonoBehaviour
 
         SelectionHandler.Clear();
         // TODO: Check if everything in CardMap is getting cleared up
-
+        List<Card> cardsInCardMap = new List<Card>();
+        foreach (KeyValuePair<Card, ViewCard> kvp in CardMap)
+        {
+            cardsInCardMap.Add(kvp.Key);
+        }
+        foreach (Card card in cardsInCardMap)
+        {
+            RemoveCard(card);
+        }
+        CardMap.Clear();
     }
 
     public void DoUpdate()
@@ -90,7 +99,7 @@ public class View : MonoBehaviour
 
     
 
-    public ViewCard MakeNewViewCard(Card card)
+    public ViewCard MakeNewViewCard(Card card, bool addToCardMap = true)
     {
         GameObject newCard = null;
 
@@ -107,7 +116,7 @@ public class View : MonoBehaviour
         {
             viewCard.Load(card);
             viewCard.SetHighlight(false);
-            CardMap[card] = viewCard;
+            if (addToCardMap) CardMap[card] = viewCard;
 
             return viewCard;
         }
@@ -130,7 +139,7 @@ public class View : MonoBehaviour
             Debug.LogError("Hm");
             return;
         }
-        //Debug.LogError("Remove View Card");
+        
         // Remove it from hand
         ViewHandHandler viewHandHandler = viewCard.Card.Owner.IsHuman ? Player1.HandHandler : Player2.HandHandler;
         ViewBattleRow viewBattleRow = viewCard.Card.Owner.IsHuman ? Player1.BattleRow : Player2.BattleRow;
@@ -235,6 +244,11 @@ public class View : MonoBehaviour
     {
         ViewCard viewCard = MakeNewViewCard(card);
 
+        if (card == null || card.Owner == null)
+        {
+            Debug.LogError("oops");
+        }
+
         if (viewCard != null)
         {
             ViewHandHandler handHandler = card.Owner.IsHuman ? Player1.HandHandler : Player2.HandHandler;
@@ -264,11 +278,12 @@ public class View : MonoBehaviour
         viewPlayer.ViewResources.RefreshResources();
     }
 
-    public void MoveFollowerToBattleRow(Follower follower, int index)
+    public void MoveFollowerToBattleRow(Follower follower, int index = -1)
     {
         RemoveCard(follower);
         ViewFollower viewFollower = (ViewFollower)MakeNewViewCard(follower);
         ViewBattleRow battleRow = follower.Owner.IsHuman ? Player1.BattleRow : Player2.BattleRow;
+        if (index == -1) index = battleRow.Followers.Count;
         battleRow.AddFollower(viewFollower, index);
         CardMap[follower] = viewFollower;
     }

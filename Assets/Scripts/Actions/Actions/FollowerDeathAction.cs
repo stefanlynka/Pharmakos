@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class FollowerDeathAction : GameAction
 {
@@ -43,5 +45,10 @@ public class FollowerDeathAction : GameAction
             new FollowerDeathAnimation(this)
         };
         return animationActions;
+    }
+
+    public override void LogAction()
+    {
+        Debug.LogWarning(Follower.Owner.GetName() + "'s " + Follower.GetName() + " died");
     }
 }

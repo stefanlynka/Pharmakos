@@ -10,8 +10,18 @@ public abstract class GameAction
 
     public virtual void Execute(bool simulated = false)
     {
-        if (!simulated) View.Instance.AnimationHandler.AddGameActionToQueue(this);
-    }    
+        if (!simulated) 
+        {
+            View.Instance.AnimationHandler.AddGameActionToQueue(this);
+
+            LogAction();
+        }
+    }
+
+    public virtual void LogAction()
+    {
+
+    }
 
     //public void AddAnimationAction(AnimationAction action)
     //{

@@ -19,10 +19,14 @@ public class GameState
     public Action<Follower> FollowerEnters;
     public void FireFollowerDies(Follower follower) { if (FollowerDies != null) FollowerDies(follower); }
     public Action<Follower> FollowerDies;
+    public void FireSpellPlayed(Spell spell) { if (SpellPlayed != null) SpellPlayed(spell); }
+    public Action<Spell> SpellPlayed;
 
     public Follower LastFollowerThatDied = null;
     public int FollowerDeathsThisTurn = 0;
     public bool IsSimulated = false;
+
+    public CustomRandom RNG;
 
     //
     // Not Deep Copied
@@ -46,6 +50,8 @@ public class GameState
         AI = ai;
         CurrentTeamID = 0;
 
+        RNG = new CustomRandom(1);
+
         //ActionManager.GameState = this;
     }
 
@@ -68,6 +74,7 @@ public class GameState
         original.Human.DeepCopyDelayedEffects(Human);
         original.AI.DeepCopyDelayedEffects(AI);
 
+        RNG = new CustomRandom(original.RNG.GetCurrentState());
 
         FollowerDeathsThisTurn = original.FollowerDeathsThisTurn;
         LastFollowerThatDied = original.LastFollowerThatDied;
@@ -120,4 +127,13 @@ public class GameState
         return target as T;
     }
 
+}
+
+public enum GameZone
+{
+    Deck,
+    Hand,
+    Discard,
+    BattleRow,
+    Offscreen,
 }

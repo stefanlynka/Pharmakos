@@ -12,7 +12,7 @@ public class MoveFollowerAnimation : AnimationAction
     private Vector3 startPos;
     private Vector3 endPos;
 
-    private float duration = 0.25f;
+    private float duration = 1f; //0.25f;
 
     private Follower follower;
     private int battleRowIndex;

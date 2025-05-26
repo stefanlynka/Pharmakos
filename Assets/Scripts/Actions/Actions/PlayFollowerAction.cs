@@ -40,4 +40,9 @@ public class PlayFollowerAction : GameAction
         };
         return animationActions;
     }
+
+    public override void LogAction()
+    {
+        Debug.LogWarning(Follower.Owner.GetName() + " played " + Follower.GetName() + " " + Follower.ID);
+    }
 }

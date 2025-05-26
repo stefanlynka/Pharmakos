@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading.Tasks;
+using UnityEditor.Playables;
 
 public class AIPlayer : Player
 {
@@ -23,7 +25,8 @@ public class AIPlayer : Player
         base.StartTurn();
     }
 
-
+    private Task planningTask = null;
+    private bool planningCompleted = false;
     public override void RunUpdate()
     {
         base.RunUpdate();
@@ -33,17 +36,23 @@ public class AIPlayer : Player
         {
             case AITurnPhase.Setup:
                 Debug.Log("Start Planning AI Turn");
-                Debug.Log("Start Preparing");
                 TurnPhase = AITurnPhase.Preparing;
-                //var t = Task.Run(() => PlanActions());
-                PlanActions();
+                planningCompleted = false;
+                planningTask = Task.Run(() => PlanActions());
+
+                //PlanActions();
                 break;
             case AITurnPhase.Preparing:
-                //Debug.LogError("Thonking");
-                //TurnPhase = AITurnPhase.Executing;
+                if (planningCompleted)
+                {
+                    Debug.LogWarning("Planning Completed: Preparing");
+                    TurnPhase = AITurnPhase.Executing;
+                    planningTask = null; // Clear the task reference
+                    planningCompleted = false; // Reset the flag
+                }
                 break;
             case AITurnPhase.Executing:
-                //Debug.LogError("Executing");
+                Debug.LogWarning("Starting AI Turn");
                 foreach (PlayerDecision playerDecision in playerDecisions.Decisions)
                 {
                     Debug.LogWarning("Decision: " + playerDecision.GetString());
@@ -59,7 +68,7 @@ public class AIPlayer : Player
                 TurnPhase = AITurnPhase.Ending;
                 break;
             case AITurnPhase.Ending:
-                Debug.Log("Ending");
+                Debug.LogWarning("Ending AI Turn");
                 TurnPhase = AITurnPhase.Setup;
                 GameState.EndTurn();
                 break;
@@ -69,29 +78,30 @@ public class AIPlayer : Player
 
     private void PlanActions()
     {
-        //depth = 0;
+        Debug.Log("PlanActions started on thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+        playerDecisions = new DecisionSet(new List<PlayerDecision>(), 0);
+        //System.Threading.Thread.Sleep(2000);
         playerDecisions = GetBestOptions(GameState);
-
-        Debug.Log("Start Executing");
-        TurnPhase = AITurnPhase.Executing;
+        planningCompleted = true;
+        Debug.Log("PlanActions completed on thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
     }
 
     //static int deepestDepth = 0;
-    public DecisionSet GetBestOptions(GameState gameState)
+    public static DecisionSet GetBestOptions(GameState gameState)
     {
         var options = new List<PlayerDecision>();
 
-        //depth++;
-        //if (depth > deepestDepth)
+        //// Try playing cards
+        //if (!gameState.AI.DoneWithPlayingCards)
         //{
-        //    deepestDepth = depth;
-        //    Debug.LogError("New Depth: " + deepestDepth);
-        //}
-        //if (depth > 3) return new DecisionSet();
 
-        List<Card> playableCards = GetPlayableCards();
-        List<Follower> playableFollowers = new List<Follower>();
-        List<Spell> playableSpells = new List<Spell>();
+        //}
+
+        List<Card> playableCards = gameState.AI.GetPlayableCards();
+        Dictionary<string, Follower> followersByName = new Dictionary<string, Follower>();
+        Dictionary<string, Spell> spellsByName = new Dictionary<string, Spell>();
+        //List<Follower> playableFollowers = new List<Follower>();
+        //List<Spell> playableSpells = new List<Spell>();
 
         foreach (Card card in playableCards)
         {
@@ -99,13 +109,13 @@ public class AIPlayer : Player
             Spell spell = card as Spell;
             if (follower != null)
             {
-                playableFollowers.Add(follower);
+                followersByName[follower.GetName()] = follower;
                 //PlayerDecision playFollower = new PlayFollowerDecision(follower.ID, BattleRow.Followers.Count);
                 //bestOptions.Add(playFollower);
             }
             else if (spell != null)
             {
-                playableSpells.Add(spell);
+                spellsByName[spell.GetName()] = spell;
             }
         }
 
@@ -115,15 +125,15 @@ public class AIPlayer : Player
         // if (playableFollowers.Count > 0)
         if (playableCards.Count > 0)
         {
-            foreach (Follower follower in playableFollowers)
+            foreach (Follower follower in followersByName.Values)
             {
-                PlayerDecision playFollower = new PlayFollowerDecision(follower.ID, BattleRow.Followers.Count);
+                PlayerDecision playFollower = new PlayFollowerDecision(follower.ID, gameState.AI.BattleRow.Followers.Count);
                 options.Add(playFollower);
             }
         //}
         //else if (playableSpells.Count > 0)
         //{
-            foreach (Spell spell in playableSpells)
+            foreach (Spell spell in spellsByName.Values)
             {
                 List<ITarget> possibleTargets = spell.GetTargets();
                 foreach (ITarget target in possibleTargets)
@@ -134,42 +144,58 @@ public class AIPlayer : Player
                 }
             }
         }
-        else if (MajorRitual != null && MajorRitual.CanPlay())
+        else if (gameState.AI.MajorRitual != null && gameState.AI.MajorRitual.CanPlay())
         {
-            List<ITarget> possibleTargets = MajorRitual.GetTargets();
+            List<ITarget> possibleTargets = gameState.AI.MajorRitual.GetTargets();
             foreach (ITarget target in possibleTargets)
             {
                 int ritualTargetID = target.GetID();
-                UseRitualDecision useRitualDecision = new UseRitualDecision(MajorRitual.ID, ritualTargetID);
+                UseRitualDecision useRitualDecision = new UseRitualDecision(gameState.AI.MajorRitual.ID, ritualTargetID);
                 options.Add(useRitualDecision);
             }
         }
-        else if (MinorRitual != null && MinorRitual.CanPlay())
+        else if (gameState.AI.MinorRitual != null && gameState.AI.MinorRitual.CanPlay())
         {
-            List<ITarget> possibleTargets = MinorRitual.GetTargets();
+            List<ITarget> possibleTargets = gameState.AI.MinorRitual.GetTargets();
             foreach (ITarget target in possibleTargets)
             {
                 int ritualTargetID = target.GetID();
-                UseRitualDecision useRitualDecision = new UseRitualDecision(MinorRitual.ID, ritualTargetID);
+                UseRitualDecision useRitualDecision = new UseRitualDecision(gameState.AI.MinorRitual.ID, ritualTargetID);
                 options.Add(useRitualDecision);
             }
         }
         else
         {
-            List<Follower> followersThatCanAttack = BattleRow.GetFollowersThatCanAttack();
-
-            foreach (Follower follower in followersThatCanAttack)
+            // Attack with Followers in order
+            Follower followerThatCanAttack = gameState.AI.BattleRow.GetFirstFollowerThatCanAttack();
+            if (followerThatCanAttack != null)
             {
-                List<ITarget> attackTargets = follower.GetAttackTargets();
+                List<ITarget> attackTargets = followerThatCanAttack.GetAttackTargets();
                 foreach (ITarget attackTarget in attackTargets)
                 {
                     int targetID = attackTarget.GetID();
-                    AttackWithFollowerDecision attackDecision = new AttackWithFollowerDecision(follower.ID, attackTarget.GetID());
+                    AttackWithFollowerDecision attackDecision = new AttackWithFollowerDecision(followerThatCanAttack.ID, attackTarget.GetID());
                     options.Add(attackDecision);
                 }
 
-                //SkipFollowerAttackDecision
+                SkipFollowerAttackDecision skipAttackDecision = new SkipFollowerAttackDecision(followerThatCanAttack.ID);
+                options.Add(skipAttackDecision);
             }
+
+            // Attack with Followers in any order
+            //List<Follower> followersThatCanAttack = gameState.AI.BattleRow.GetFollowersThatCanAttack();
+            //foreach (Follower follower in followersThatCanAttack)
+            //{
+            //    List<ITarget> attackTargets = follower.GetAttackTargets();
+            //    foreach (ITarget attackTarget in attackTargets)
+            //    {
+            //        int targetID = attackTarget.GetID();
+            //        AttackWithFollowerDecision attackDecision = new AttackWithFollowerDecision(follower.ID, attackTarget.GetID());
+            //        options.Add(attackDecision);
+            //    }
+            //    SkipFollowerAttackDecision skipAttackDecision = new SkipFollowerAttackDecision(follower.ID);
+            //    options.Add(skipAttackDecision);
+            //}
         }
 
 
@@ -187,9 +213,9 @@ public class AIPlayer : Player
         {
             GameState simulatedGameState = new GameState(gameState, true);
 
-            AIPlayer thisPlayer = simulatedGameState.GetPlayer(PlayerID) as AIPlayer;
+            AIPlayer thisPlayer = simulatedGameState.GetPlayer(gameState.AI.PlayerID) as AIPlayer;
 
-            if (thisPlayer  == null)
+            if (thisPlayer == null)
             {
                 Debug.LogError("ThisPlayer Should be AI");
                 // HOWTO Debugger break
@@ -204,7 +230,7 @@ public class AIPlayer : Player
             }
 
             // Recursively explore future options, returning the best one
-            DecisionSet bestOption = thisPlayer.GetBestOptions(simulatedGameState);
+            DecisionSet bestOption = GetBestOptions(simulatedGameState);
             if (bestOption.Utility > bestOptionSoFar.Utility)
             {
                 List<PlayerDecision> updatedList = bestOption.Decisions;
@@ -228,12 +254,12 @@ public class AIPlayer : Player
         }
     }
 
-    private float GetUtility(GameState gameState)
+    private static float GetUtility(GameState gameState)
     {
         float utility = 0;
 
         // Positive utility
-        Player thisPlayer = gameState.GetPlayer(PlayerID);
+        Player thisPlayer = gameState.GetPlayer(gameState.AI.PlayerID);
         foreach (Follower follower in thisPlayer.BattleRow.Followers)
         {
             utility += follower.GetCurrentAttack();
@@ -242,7 +268,7 @@ public class AIPlayer : Player
         utility += thisPlayer.Health;
 
         // Negative utility
-        Player otherPlayer = gameState.GetOtherPlayer(PlayerID);
+        Player otherPlayer = gameState.GetOtherPlayer(gameState.AI.PlayerID);
         foreach (Follower follower in otherPlayer.BattleRow.Followers)
         {
             utility -= follower.GetCurrentAttack()*2;
@@ -252,34 +278,4 @@ public class AIPlayer : Player
 
         return utility;
     }
-
-
-    private List<Card> GetPlayableCards()
-    {
-        var playableCards = new List<Card>();
-
-        foreach (Card card in Hand)
-        {
-            Follower follower = card as Follower;
-            if (follower != null)
-            {
-                if (follower.CanPlay())
-                {
-                    playableCards.Add(follower);
-                }
-            }
-
-            Spell spell = card as Spell;
-            if (spell != null)
-            {
-                if (spell.CanPlay())
-                {
-                    playableCards.Add(spell);
-                }
-            }
-        }
-
-        return playableCards;
-    }
-
 }

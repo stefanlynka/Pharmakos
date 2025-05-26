@@ -11,25 +11,34 @@ public class ViewRitual : ViewTarget
     public TextMeshPro CropsText;
     public TextMeshPro ScrollsText;
 
-    public TextMeshPro CardText;
+    public TextMeshPro Title;
+    public TextMeshPro Description;
 
     public MeshRenderer Highlight;
 
 
-    public void Init(Ritual ritual)
+    public void Init(Ritual ritual, bool clickable = true)
     {
         Ritual = ritual;
         Target = Ritual;
 
         OnClick = RitualClicked;
         Refresh();
+
+        BoxCollider collider = GetComponent<BoxCollider>();
+        if (collider != null) collider.enabled = clickable;
     }
 
     public void Refresh()
     {
-        if (Ritual == null) return;
-
-        CardText.text = Ritual.Description;
+        if (Ritual == null)
+        {
+            Title.text = "";
+            Description.text = "";
+            return;
+        }
+        Title.text = Ritual.Name;
+        Description.text = Ritual.Description;
 
         BloodText.text = Ritual.Costs[OfferingType.Blood].ToString();
         BonesText.text = Ritual.Costs[OfferingType.Bone].ToString();

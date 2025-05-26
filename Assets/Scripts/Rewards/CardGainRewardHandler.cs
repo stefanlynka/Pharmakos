@@ -20,10 +20,10 @@ public class CardGainRewardHandler : MonoBehaviour
         };
         for (int i = 0; i < 3; i++)
         {
-            possibleRewards = CardHandler.GetPossibleCardRewards(levelCompleted);
+            possibleRewards = Controller.Instance.ProgressionHandler.GetPossibleCardRewards();
             for (int j = 0; j < 3; j++)
             {
-                int randomIndex = Random.Range(0, possibleRewards.Count);
+                int randomIndex = Controller.Instance.CanonGameState.RNG.Next(0, possibleRewards.Count);
                 cardBuckets[i].Add(possibleRewards[randomIndex]);
                 possibleRewards.RemoveAt(randomIndex);
             }
@@ -49,6 +49,8 @@ public class CardGainRewardHandler : MonoBehaviour
 
 
         Controller.Instance.AddCardsToPlayerDeck(cards);
+
+        View.Instance.Clear();
 
         Controller.Instance.StartNextLevel();
         gameObject.SetActive(false);

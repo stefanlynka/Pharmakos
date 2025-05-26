@@ -23,6 +23,8 @@ public class SummonFollowerAnimation : AnimationAction
 
     public override void Play(Action onFinish = null)
     {
+        //Debug.LogWarning(summonFollowerAction.Follower.Owner.GetName() + " played " + summonFollowerAction.Follower.GetName() + " " + summonFollowerAction.Follower.ID + " Animation start");
+
         OnFinish = onFinish;
 
         if (summonFollowerAction == null)
@@ -64,7 +66,8 @@ public class SummonFollowerAnimation : AnimationAction
 
     private void Complete()
     {
-        OnFinish?.Invoke();
         View.Instance.MoveFollowerToBattleRow(summonFollowerAction.Follower, summonFollowerAction.Index);
+        //Debug.LogWarning(summonFollowerAction.Follower.Owner.GetName() + " played " + summonFollowerAction.Follower.GetName() + " " + summonFollowerAction.Follower.ID + " Animation end");
+        OnFinish?.Invoke();
     }
 }

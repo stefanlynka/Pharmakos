@@ -16,11 +16,13 @@ public class FollowerDeathAnimation : AnimationAction
     public FollowerDeathAnimation(GameAction gameAction) : base(gameAction)
     {
         if (gameAction is FollowerDeathAction) followerDeathAction = gameAction as FollowerDeathAction;
-        Simultaneous = true;
+        Simultaneous = false;
     }
 
     public override void Play(Action onFinish = null)
     {
+        //Debug.LogWarning(followerDeathAction.Follower.GetName() + " " + followerDeathAction.Follower.ID + " death Animation start");
+
         OnFinish = onFinish;
 
         if (followerDeathAction == null)
@@ -54,6 +56,7 @@ public class FollowerDeathAnimation : AnimationAction
 
     private void RemoveFollower()
     {
+        //Debug.LogWarning(ViewFollower.Follower.GetName() + " " + ViewFollower.Follower.ID + " death Animation end");
         View.Instance.RemoveViewCard(ViewFollower);
     }
 }

@@ -20,6 +20,9 @@ public class Spell : Card, ITarget
         {
             followerTarget.ApplyOnTargetedEffects(this);
         }
+
+        // Trigger all "OnSpellPlayed" triggers
+        GameState.FireSpellPlayed(this);
     }
 
     public bool HasPlayableTargets()

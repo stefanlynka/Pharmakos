@@ -11,6 +11,7 @@ public class Ritual : ITarget
 
     public int ID = -1;
     public bool NeedsTargets = true;
+    public string Name = "No Name";
     public string Description = "No Desc";
 
     //public Ritual(){ }

@@ -29,7 +29,7 @@ public class ViewCard : ViewTarget
         ViewOfferingCost.Load(Card.GetCosts());
 
         ArtRenderer.sprite = CardHandler.GetSprite(cardData);
-        NameText.text = cardData.GetType().Name;
+        NameText.text = cardData.GetName() + " " + cardData.ID;
         AbilityText.text = cardData.Text;
 
         OnClick = onClick;

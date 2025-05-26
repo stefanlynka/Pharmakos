@@ -11,6 +11,7 @@ public class ZeusMinor : Ritual
 {
     public ZeusMinor()
     {
+        Name = "Zeus\nMinor";
         Description = "Summon a 1/1 copy of a Follower";
 
         Costs = new Dictionary<OfferingType, int>()
@@ -61,6 +62,7 @@ public class ZeusMajor : Ritual
     private int damage = 5;
     public ZeusMajor()
     {
+        Name = "Zeus\nMajor";
         Description = "Deal 5 Damage";
 
         Costs = new Dictionary<OfferingType, int>()
@@ -107,14 +109,15 @@ public class PoseidonMinor : Ritual
 {
     public PoseidonMinor()
     {
+        Name = "Poseidon\nMinor";
         Description = "Destroy all Followers with the least attack";
 
         Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 0 },
+                {OfferingType.Blood, 3 },
+                {OfferingType.Bone, 3 },
                 {OfferingType.Crop, 0 },
-                {OfferingType.Scroll, 0 },
+                {OfferingType.Scroll, 3 },
             };
     }
 
@@ -141,13 +144,14 @@ public class DionysusMinor : Ritual
 {
     public DionysusMinor()
     {
+        Name = "Dionysus\nMinor";
         Description = "Sacrifice a Follower: Gain 1 Gold, Draw 2 Cards, Gain 3 Life";
 
         Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 0 },
+                {OfferingType.Blood, 6 },
                 {OfferingType.Bone, 0 },
-                {OfferingType.Crop, 0 },
+                {OfferingType.Crop, 3 },
                 {OfferingType.Scroll, 0 },
             };
     }
@@ -184,14 +188,15 @@ public class ApolloMinor : Ritual
 {
     public ApolloMinor()
     {
+        Name = "Apollo\nMinor";
         Description = "Next Turn: Gain 2 Gold, Draw 2 Cards";
 
         Costs = new Dictionary<OfferingType, int>()
             {
                 {OfferingType.Blood, 0 },
                 {OfferingType.Bone, 0 },
-                {OfferingType.Crop, 0 },
-                {OfferingType.Scroll, 0 },
+                {OfferingType.Crop, 3 },
+                {OfferingType.Scroll, 3 },
             };
     }
 
@@ -221,15 +226,15 @@ public class ApolloMinor : Ritual
 // At the end of each of target Player's turns, they summon a copy of the last Follower that died
 public class HadesMajor : Ritual
 {
-    private int damage = 5;
     public HadesMajor()
     {
+        Name = "Hades\nMajor";
         Description = "At the end of each of target Player's turns, they summon a copy of the last Follower that died";
 
         Costs = new Dictionary<OfferingType, int>()
             {
                 {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 0 },
+                {OfferingType.Bone, 12 },
                 {OfferingType.Crop, 0 },
                 {OfferingType.Scroll, 0 },
             };
@@ -253,6 +258,42 @@ public class HadesMajor : Ritual
         playerTarget.EndOfTurnActions.Add(new DelayedGameAction(summonAction, false));
     }
 }
+// Summon a copy of the last Follower that died
+public class HadesMinor : Ritual
+{
+    public HadesMinor()
+    {
+        Name = "Hades\nMinor";
+        Description = "Summon a copy of the last Follower that died";
+
+        Costs = new Dictionary<OfferingType, int>()
+            {
+                {OfferingType.Blood, 0 },
+                {OfferingType.Bone, 4 },
+                {OfferingType.Crop, 0 },
+                {OfferingType.Scroll, 0 },
+            };
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        var targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllPlayers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+        if (target is not Player playerTarget) return;
+
+        SummonLastDeadFollowerAction summonAction = new SummonLastDeadFollowerAction(playerTarget);
+        Owner.GameState.ActionHandler.AddAction(summonAction);
+    }
+}
+
 
 // When a Follower enters Target Player's BattleRow, your Followers gain +0/+1
 public class DemeterMajor : Ritual
@@ -261,13 +302,14 @@ public class DemeterMajor : Ritual
     private int healthGain = 1;
     public DemeterMajor()
     {
+        Name = "Demeter\nMajor";
         Description = "When a Follower enters Target Player's BattleRow, your Followers gain +0/+1";
 
         Costs = new Dictionary<OfferingType, int>()
             {
                 {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 0 },
-                {OfferingType.Crop, 0 },
+                {OfferingType.Bone, 4 },
+                {OfferingType.Crop, 8 },
                 {OfferingType.Scroll, 0 },
             };
     }
@@ -348,13 +390,14 @@ public class DemeterMinor : Ritual
     private int healthGain = 0;
     public DemeterMinor()
     {
+        Name = "Demeter\nMinor";
         Description = "When one of Target Player's Followers dies, your Followers gain +1/+0";
 
         Costs = new Dictionary<OfferingType, int>()
             {
                 {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 0 },
-                {OfferingType.Crop, 0 },
+                {OfferingType.Bone, 8 },
+                {OfferingType.Crop, 4 },
                 {OfferingType.Scroll, 0 },
             };
     }
@@ -435,12 +478,13 @@ public class AresMajor : Ritual
     private int healthGain = 1;
     public AresMajor()
     {
+        Name = "Ares\nMajor";
         Description = "When one of your Followers kills an enemy, it gains +1/+1 and can attack again";
 
         Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 0 },
+                {OfferingType.Blood, 6 },
+                {OfferingType.Bone, 6 },
                 {OfferingType.Crop, 0 },
                 {OfferingType.Scroll, 0 },
             };
@@ -465,7 +509,6 @@ public class AresMajor : Ritual
         Owner.AddPlayerEffect(aresMajorEffectDef);
     }
 }
-
 public class AresMajorEffectDef : PlayerEffect
 {
     public Player Owner;
@@ -541,12 +584,13 @@ public class AresMinor : Ritual
 {
     public AresMinor()
     {
+        Name = "Ares\nMinor";
         Description = "Your Followers have Sprint";
 
         Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 0 },
+                {OfferingType.Blood, 6 },
+                {OfferingType.Bone, 3 },
                 {OfferingType.Crop, 0 },
                 {OfferingType.Scroll, 0 },
             };
@@ -571,7 +615,6 @@ public class AresMinor : Ritual
         Owner.AddPlayerEffect(aresMinorEffectDef);
     }
 }
-
 public class AresMinorEffectDef : PlayerEffect
 {
     public Player Owner;
@@ -625,15 +668,16 @@ public class AresMinorEffectDef : PlayerEffect
 }
 
 // Target Follower switches sides
-public class AphroditeMinor : Ritual
+public class AphroditeMajor : Ritual
 {
-    public AphroditeMinor()
+    public AphroditeMajor()
     {
+        Name = "Aphrodite\nMajor";
         Description = "Target Follower switches sides";
 
         Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 0 },
+                {OfferingType.Blood, 10 },
                 {OfferingType.Bone, 0 },
                 {OfferingType.Crop, 0 },
                 {OfferingType.Scroll, 0 },
@@ -662,20 +706,59 @@ public class AphroditeMinor : Ritual
     }
 }
 
+// Target Follower runs away with its closest enemy
+public class AphroditeMinor : Ritual
+{
+    public AphroditeMinor()
+    {
+        Name = "Aphrodite\nMinor";
+        Description = "Target Follower runs away with its closest enemy";
+
+        Costs = new Dictionary<OfferingType, int>()
+            {
+                {OfferingType.Blood, 5 },
+                {OfferingType.Bone, 0 },
+                {OfferingType.Crop, 0 },
+                {OfferingType.Scroll, 0 },
+            };
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        var targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllFollowers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+        Follower follower = target as Follower;
+        if (follower == null) return;
+
+        Player newOwner = follower.Owner.GetOtherPlayer();
+
+        GameAction newAction = new FollowerElopesAction(follower);
+        Owner.GameState.ActionHandler.AddAction(newAction);
+    }
+}
 
 // When one of target Player's Followers draws blood, get a free spell with cost equal to the damage dealt
 public class AthenaMajor : Ritual
 {
     public AthenaMajor()
     {
+        Name = "Athena\nMajor";
         Description = "When one of target Player's Followers draws blood, get a free spell with cost equal to the damage dealt";
 
         Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 0 },
+                {OfferingType.Blood, 8 },
                 {OfferingType.Bone, 0 },
                 {OfferingType.Crop, 0 },
-                {OfferingType.Scroll, 0 },
+                {OfferingType.Scroll, 5 },
             };
     }
 
@@ -698,7 +781,6 @@ public class AthenaMajor : Ritual
         Owner.AddPlayerEffect(aresMajorEffectDef);
     }
 }
-
 public class AthenaMajorEffectDef : PlayerEffect
 {
     public Player Owner;
@@ -765,14 +847,15 @@ public class HephaestusMajor : Ritual
 {
     public HephaestusMajor()
     {
+        Name = "Hephaestus\nMajor";
         Description = "When one of target Player's Followers dies, get a copy of every spell that Player cast on on it. The copies costs 1 less.";
 
         Costs = new Dictionary<OfferingType, int>()
             {
                 {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 0 },
+                {OfferingType.Bone, 5 },
                 {OfferingType.Crop, 0 },
-                {OfferingType.Scroll, 0 },
+                {OfferingType.Scroll, 5 },
             };
     }
 
@@ -796,7 +879,6 @@ public class HephaestusMajor : Ritual
         Owner.AddPlayerEffect(aresMajorEffectDef);
     }
 }
-
 public class HephaestusMajorEffectDef : PlayerEffect
 {
     public Player Owner;
@@ -855,5 +937,85 @@ public class HephaestusMajorEffectDef : PlayerEffect
         AddSpellsCastOnThisToHandInstance gainSpellEffectInstance = new AddSpellsCastOnThisToHandInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
         gainSpellEffectInstance.Init(Target);
         effectDef.EffectInstances.Add(gainSpellEffectInstance);
+    }
+}
+
+// Steal a card from your opponent's hand. It costs 0 Gold.
+public class HermesMinor : Ritual
+{
+    public HermesMinor()
+    {
+        Name = "Hermes\nMinor";
+        Description = "Steal a card from your opponent's hand. It costs 0 Gold.";
+
+        Costs = new Dictionary<OfferingType, int>()
+            {
+                {OfferingType.Blood, 0 },
+                {OfferingType.Bone, 0 },
+                {OfferingType.Crop, 0 },
+                {OfferingType.Scroll, 4 },
+            };
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        var targets = new List<ITarget>();
+
+        targets.Add(Owner.GetOtherPlayer());
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+        Player playerTarget = target as Player;
+        if (playerTarget == null) return;
+
+        GameAction newAction = new StealCardAction(Owner, playerTarget);
+        Owner.GameState.ActionHandler.AddAction(newAction);
+    }
+}
+
+// Give all Followers you summoned this turn +1/+1
+public class HestiaMinor : Ritual
+{
+    public HestiaMinor()
+    {
+        Name = "Hestia\nMinor";
+        Description = "Give all Followers you summoned this turn +1/+1";
+
+        Costs = new Dictionary<OfferingType, int>()
+            {
+                {OfferingType.Blood, 0 },
+                {OfferingType.Bone, 0 },
+                {OfferingType.Crop, 5 },
+                {OfferingType.Scroll, 0 },
+            };
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        var targets = new List<ITarget>();
+
+        targets.Add(Owner);
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+        Player playerTarget = target as Player;
+        if (playerTarget == null) return;
+
+        foreach (Follower follower in playerTarget.BattleRow.Followers)
+        {
+            if (follower.PlayedThisTurn)
+            {
+                ChangeStatsAction newAction = new ChangeStatsAction(follower, 1, 1);
+                Owner.GameState.ActionHandler.AddAction(newAction);
+            }
+        }
     }
 }

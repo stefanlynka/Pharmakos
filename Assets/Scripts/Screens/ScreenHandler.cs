@@ -113,5 +113,6 @@ public enum ScreenName
     CardRemovalRewards,
     CardGainRewards,
     Pause,
+    StarterBundle,
 }
 

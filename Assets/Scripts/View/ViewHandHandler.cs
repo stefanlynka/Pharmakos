@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -49,8 +50,15 @@ public class ViewHandHandler : MonoBehaviour
 
     public void RemoveCard(ViewCard viewCard)
     {
-        ViewCards.Remove(viewCard);
-        RefreshPositions();
+        foreach (ViewCard card in ViewCards)
+        {
+            if (card.Card.ID == viewCard.Card.ID)
+            {
+                ViewCards.Remove(card);
+                RefreshPositions();
+                return;
+            }
+        }
     }
 
     public void CardInHandClicked(ViewTarget viewTarget)
@@ -91,5 +99,18 @@ public class ViewHandHandler : MonoBehaviour
         }
     }
 
-    
+    public Vector3 GetPotentialCardPosition(int index = -1)
+    {
+        if (index == -1) index = ViewCards.Count;
+
+        int cardCount = ViewCards.Count + 1;
+        if (index >= cardCount) return new Vector3();
+
+        float spacing = Mathf.Min(MaxSpacing, (HandWidth - CardWidth * cardCount) / cardCount);
+
+        Vector3 newPos = transform.position + new Vector3(CardWidth / 2 + CardWidth * index + spacing * index, CardY, CardZ - CardZOffset * index);
+        return newPos;
+    }
+
+
 }

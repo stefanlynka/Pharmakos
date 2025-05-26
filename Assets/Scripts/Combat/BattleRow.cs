@@ -109,8 +109,8 @@ public class BattleRow
         return adjacentFollowers;
     }
 
-    // Get Followers from this BattleRow that can be attacked from the opponent's attackerPosition index
-    public List<ITarget> GetTargetsInRange(float attackerPosition)
+    // Get Followers from this BattleRow (and maybe the player) that can be attacked from the opponent's attackerPosition index
+    public List<ITarget> GetTargetsInRange(float attackerPosition, bool ignoreTaunt = false)
     {
         bool foundTargetWithTaunt = false;
         List<ITarget> targets = new List<ITarget>();
@@ -121,7 +121,7 @@ public class BattleRow
             if (Mathf.Abs(attackerPosition - currentPosition) <= 1)
             {
                 targets.Add(Followers[i]);
-                if (Followers[i].HasStaticEffect(StaticEffect.Taunt)) foundTargetWithTaunt = true;
+                if (Followers[i].HasStaticEffect(StaticEffect.Taunt) && !ignoreTaunt) foundTargetWithTaunt = true;
             }
 
             currentPosition++;
@@ -132,7 +132,7 @@ public class BattleRow
 
         bool rowsAreAligned = evenAttackerCount == evenDefenderCount;
 
-        // If you are aligned
+        // Determine if attacker can attack the player
         int expectedTargetCount = rowsAreAligned ? 3 : 2;
         if (targets.Count != expectedTargetCount) targets.Add(Owner);
 
@@ -170,6 +170,7 @@ public class BattleRow
             currentPosition++;
         }
 
+        // Ranged attackers can always attack the player
         targets.Add(Owner);
 
         if (foundTargetWithTaunt)
@@ -190,6 +191,35 @@ public class BattleRow
         return targets;
     }
 
+    // Get Followers from this BattleRow that can be attacked from the opponent's attackerPosition index
+    public List<ITarget> GetTargetsInLowVisionRange(float attackerPosition)
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        // If there are no followers, it can attack the Player
+        if (Followers.Count == 0) return new List<ITarget>{Owner};
+
+        
+        float edgePosition = -0.5f * (Followers.Count - 1);
+        // If attacker is past this BattleRow's edge, it can attack the Player
+        if (Mathf.Abs(attackerPosition) > -edgePosition) return new List<ITarget> { Owner };
+
+        // Find followers exactly aligned with attacker
+        float currentPosition = edgePosition;
+        for (int i = 0; i < Followers.Count; i++)
+        {
+            if (attackerPosition - currentPosition == 0)
+            {
+                targets.Add(Followers[i]);
+                break;
+            }
+
+            currentPosition++;
+        }
+
+        return targets;
+    }
+
     public List<Follower> GetFollowersThatCanAttack()
     {
         List<Follower> followers = new List<Follower>();
@@ -204,5 +234,18 @@ public class BattleRow
         }
 
         return followers;
+    }
+
+    public Follower GetFirstFollowerThatCanAttack()
+    {
+        foreach (Follower follower in Followers)
+        {
+            if (follower.CanAttack())
+            {
+                return follower;
+            }
+        }
+
+        return null;
     }
 }

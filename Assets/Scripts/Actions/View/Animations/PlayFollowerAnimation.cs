@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
+// NOT USED
 public class PlayFollowerAnimation : AnimationAction
 {
     private PlayFollowerAction playFollowerAction;
@@ -23,6 +24,8 @@ public class PlayFollowerAnimation : AnimationAction
 
     public override void Play(Action onFinish = null)
     {
+        //Debug.LogWarning(playFollowerAction.Follower.Owner.GetName() + " played " + playFollowerAction.Follower.GetName() + " " + playFollowerAction.Follower.ID + " Animation start");
+
         OnFinish = onFinish;
 
         if (playFollowerAction == null)
@@ -55,7 +58,8 @@ public class PlayFollowerAnimation : AnimationAction
 
     private void Complete()
     {
-        CallCallback();
         View.Instance.MoveFollowerToBattleRow(playFollowerAction.Follower, playFollowerAction.Index);
+        //Debug.LogWarning(playFollowerAction.Follower.Owner.GetName() + " played " + playFollowerAction.Follower.GetName() + " " + playFollowerAction.Follower.ID + " Animation end");
+        CallCallback();
     }
 }

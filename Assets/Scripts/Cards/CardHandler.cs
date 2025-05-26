@@ -8,8 +8,17 @@ public static class CardHandler
 
     public static List<Card> AllCards = new List<Card>
     {
+        // OBJECTS
+        new WallOfTroy(),
+        new Corridor(),
+
         // BEASTS
         new Sheep(),
+        new Boar(),
+        new GoldenHind(),
+        new NemeanLion(),
+        new MareOfDiomedes(),
+        new StymphalianBird(),
 
         // MORTALS
         new Peltast(),
@@ -21,6 +30,12 @@ public static class CardHandler
         new Toxotes(),
         new TrojanHorse(),
         new Chariot(),
+        new Phalangite(),
+        new Satyr(),
+        new Maenad(),
+        new Nereid(),
+
+        // MYTHS
         new Endymion(),
         new OracleOfDelphi(),
         new Charon(),
@@ -29,6 +44,7 @@ public static class CardHandler
         new Medea(),
         new Patroclus(),
         new Hippolyta(),
+        new Amazon(),
         new Agamemnon(),
         new Menelaus(),
         new Pyrrhus(),
@@ -37,13 +53,23 @@ public static class CardHandler
         new Atalanta(),
         new Asclepius(),
         new Melpomene(),
+        new Achilles(),
+        new Paris(),
+        new Hector(),
+        new Sarpedon(),
+        new Cassandra(),
 
         // DIVINE
         new Helios(),
+        new Pan(),
 
         // MONSTERS
         new Pytho(),
         new Hydra(),
+        new Minotaur(),
+        new Scylla(),
+        new Charybdis(),
+        new Gorgon(),
         new Cerberus(),
         new Siren(),
         new Lamia(),
@@ -52,12 +78,17 @@ public static class CardHandler
         new Cyclops(),
         new Empusa(),
         new Keres(),
+        new Erinyes(),
         new Typhon(),
         new Echidna(),
 
         // SPELLS
         new DragonsTeeth(),
+        new ReleasePrey(),
+        new CreateFilth(),
         new Smite(),
+        new ThrowStone(),
+        new Lightning(),
         new Scry(),
         new Blessing(),
         new Talaria(),
@@ -70,6 +101,8 @@ public static class CardHandler
         new RiverStyx(),
         new Reflection(),
         new Titanomachy(),
+        new Drown(),
+
         // SACRIFICES
         new PriceOfProfit(),
         new PriceOfKnowledge(),
@@ -81,17 +114,11 @@ public static class CardHandler
     };
     public static List<Follower> AllFollowers = new List<Follower>();
     public static List<Follower> AllMonsters = new List<Follower>();
+    public static List<Follower> SmallMonsters = new List<Follower>();
     public static List<Spell> AllSpells = new List<Spell>();
     public static Dictionary<int, List<Spell>> SpellsByCost = new Dictionary<int, List<Spell>>();
     public static int HighestSpellCost = 0;
 
-    public enum DeckName
-    {
-        PlayerStarterDeck,
-        Monsters1,
-        Monsters2,
-        Monsters3,
-    }
 
     public static void LoadCards()
     {
@@ -107,178 +134,24 @@ public static class CardHandler
             {
                 AllFollowers.Add(follower);
 
-                if (follower.Type == Follower.FollowerType.Monster) AllMonsters.Add(follower);
+                if (follower.Type == Follower.FollowerType.Monster)
+                {
+                    AllMonsters.Add(follower);
+                    if (follower.Costs[OfferingType.Gold] <= 2) SmallMonsters.Add(follower);
+                }
+                else if (card is Spell spell)
+                {
+                    AllSpells.Add(spell);
+
+                    if (!SpellsByCost.ContainsKey(cost))
+                    {
+                        SpellsByCost[cost] = new List<Spell>();
+                    }
+                    SpellsByCost[cost].Add(spell);
+                    if (cost > HighestSpellCost) HighestSpellCost = cost;
+                }
             }
-            else if (card is Spell spell)
-            {
-                AllSpells.Add(spell);
-
-                if (!SpellsByCost.ContainsKey(cost))
-                {
-                    SpellsByCost[cost] = new List<Spell>();
-                }
-                SpellsByCost[cost].Add(spell);
-                if (cost > HighestSpellCost) HighestSpellCost = cost;
-            }            
         }
-    }
-
-    public static void LoadPlayer(Player player, DeckName name)
-    {
-        switch (name)
-        {
-            case DeckName.PlayerStarterDeck:
-                {
-                    player.IsHuman = true;
-                    player.StartingHealth = 20;
-                    player.MinorRitual = new AthenaMajor();
-                    player.MajorRitual = new HephaestusMajor();
-                    player.Deck = new List<Card>
-                    {
-                        new PriceOfProfit(),
-                        new Peltast(),
-                        new Hippeis(),
-                        new Myrmidon(),
-                        new Smite(),
-                        //new Ekdromos(),
-                        //new Ekdromos(),
-                        //new Ekdromos(),
-                        //new Hoplite(),
-                        //new Hoplite(),
-                        //new Hoplite(),
-                        //new Hoplite(),
-                        //new Hoplite(),
-                        //new Hoplite(),
-                        //new Hoplite(),
-                        //new Hoplite(),
-                    };
-                }
-                break;
-            case DeckName.Monsters1:
-                {
-                    player.StartingHealth = 5;
-                    player.MinorRitual = null;
-                    player.MajorRitual = null;
-                    player.Deck = new List<Card>
-                    {
-                        new Peltast(),
-                        new Hoplite(),
-                        new Hippeis(),
-                        //new Hoplite(),
-                        //new Hoplite(),
-                        //new Hoplite(),
-                        //new Hoplite(),
-                        //new Hoplite(),
-                        //new Hoplite(),
-                    };
-                }
-                break;
-            case DeckName.Monsters2:
-                {
-                    player.StartingHealth = 10;
-                    player.MinorRitual = new ZeusMinor();
-                    player.MajorRitual = null;
-                    player.Deck = new List<Card>
-                    {
-                        new Chariot(),
-                        new Chariot(),
-                        new Chariot(),
-                        new Chariot(),
-                        new Chariot(),
-                        new Chariot(),
-                        new Chariot(),
-                        new Chariot(),
-                        new Chariot(),
-                        new Chariot(),
-                    };
-                }
-                break;
-            case DeckName.Monsters3:
-                {
-                    player.StartingHealth = 15;
-                    player.MinorRitual = null;
-                    player.MajorRitual = new ZeusMajor();
-                    player.Deck = new List<Card>
-                    {
-                        new Sphinx(),
-                        new Sphinx(),
-                        new Sphinx(),
-                        new Sphinx(),
-                        new Sphinx(),
-                        new Sphinx(),
-                        new Sphinx(),
-                        new Sphinx(),
-                        new Sphinx(),
-                        new Sphinx(),
-                    };
-                }
-                break;
-        }
-    }
-
-    public static List<Card> GetDeck(DeckName name)
-    {
-        List<Card> deck;
-        switch (name)
-        {
-            case DeckName.PlayerStarterDeck:
-                deck = new List<Card>
-                {
-                    new Hoplite(),
-                    new Hoplite(),
-                    new Hoplite(),
-                    new Hoplite(),
-                    new Hoplite(),
-                    new Hoplite(),
-                    new Smite(),
-                    new Smite(),
-                    new Smite(),
-                    new Smite(),
-                };
-                return deck;
-            case DeckName.Monsters1:
-                deck = new List<Card>
-                {
-                    new Hoplite(),
-                    new Hoplite(),
-                    new Hoplite(),
-                    new Hoplite(),
-                    new Hoplite(),
-                    new Hoplite(),
-                    new Hoplite(),
-                    new Hoplite(),
-                    //new DragonsTeeth(),
-
-                };
-                return deck;
-            case DeckName.Monsters2:
-                deck = new List<Card>
-                {
-                    new Chariot(),
-                    new Chariot(),
-                    new Chariot(),
-                    new Chariot(),
-                    new Chariot(),
-                    new Chariot(),
-                    new Chariot(),
-                    new Chariot(),
-                };
-                return deck;
-            case DeckName.Monsters3:
-                deck = new List<Card>
-                {
-                    new Sphinx(),
-                    new Sphinx(),
-                    new Sphinx(),
-                    new Sphinx(),
-                    new Sphinx(),
-                    new Sphinx(),
-                    new Sphinx(),
-                    new Sphinx(),
-                };
-                return deck;
-        }
-        return new List<Card>();
     }
 
     public static Sprite GetSprite(Card card)
@@ -322,20 +195,4 @@ public static class CardHandler
 
         return rewards;
     }
-
-    public static DeckName GetCurrentEnemyDeckName(int level)
-    {
-        switch (level)
-        {
-            case 0:
-                return DeckName.Monsters1;
-            case 1:
-                return DeckName.Monsters2;
-            case 2:
-                return DeckName.Monsters3;
-            default:
-                return DeckName.Monsters1;
-        }
-    }
-
 }

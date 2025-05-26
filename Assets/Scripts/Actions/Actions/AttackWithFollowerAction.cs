@@ -42,4 +42,13 @@ public class AttackWithFollowerAction : GameAction
 
         return animationActions;
     }
+
+    public override void LogAction()
+    {
+        if (!attackHappened) Debug.LogWarning("Attack Failed");
+        else
+        {
+            Debug.LogWarning(Attacker.Owner.GetName() + "'s " + Attacker.GetName() + " attacked " + Target.GetName());
+        }
+    }
 }

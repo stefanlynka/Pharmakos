@@ -23,13 +23,17 @@ public class RitualRewardHandler : MonoBehaviour
         CurrentTopRitual.Init(topRitual);
         CurrentBottomRitual.Init(bottomRitual);
 
-        possibleRewards = CardHandler.GetPossibleRitualRewards(levelCompleted);
 
-        int randomIndex = Random.Range(0, possibleRewards.Count);
+        System.Type type1 = topRitual != null ? topRitual.GetType() : null;
+        System.Type type2 = bottomRitual != null ? bottomRitual.GetType() : null;
+        possibleRewards = Controller.Instance.ProgressionHandler.GetPossibleRitualRewards(); //CardHandler.GetPossibleRitualRewards(levelCompleted);
+        possibleRewards.RemoveAll(ritual => ritual.GetType() == type1 || ritual.GetType() == type2);
+
+        int randomIndex = Controller.Instance.CanonGameState.RNG.Next(0, possibleRewards.Count);
         TopRitualReward.Load(possibleRewards[randomIndex], 0, RitualButtonClicked);
         possibleRewards.RemoveAt(randomIndex);
 
-        randomIndex = Random.Range(0, possibleRewards.Count);
+        randomIndex = Controller.Instance.CanonGameState.RNG.Next(0, possibleRewards.Count);
         BottomRitualReward.Load(possibleRewards[randomIndex], 1, RitualButtonClicked);
         possibleRewards.RemoveAt(randomIndex);
     }

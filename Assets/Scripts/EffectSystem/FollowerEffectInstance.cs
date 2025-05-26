@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.UI.GridLayoutGroup;
 
 public class FollowerEffectInstance : IComparable<FollowerEffectInstance>
 {
@@ -111,6 +112,12 @@ public class TriggeredFollowerEffectInstance: FollowerEffectInstance
             case EffectTrigger.OnTargeted:
                 AffectedFollower.OnTargetedEffects.Add(this);
                 break;
+            case EffectTrigger.OnAnyFollowerDeath:
+                AffectedFollower.Owner.GameState.FollowerDies += OnDeath;
+                break;
+            case EffectTrigger.OnAnySpellCast:
+                AffectedFollower.Owner.GameState.SpellPlayed += OnSpellPlayed;
+                break;
         }
     }
 
@@ -149,10 +156,25 @@ public class TriggeredFollowerEffectInstance: FollowerEffectInstance
             case EffectTrigger.OnTargeted:
                 AffectedFollower.OnTargetedEffects.Remove(this);
                 break;
+            case EffectTrigger.OnAnyFollowerDeath:
+                AffectedFollower.Owner.GameState.FollowerDies -= OnDeath;
+                break;
+            case EffectTrigger.OnAnySpellCast:
+                AffectedFollower.Owner.GameState.SpellPlayed -= OnSpellPlayed;
+                break;
         }
     }
 
     public virtual void Trigger(ITarget target = null, int amount = 0){}
+
+    private void OnDeath(Follower follower)
+    {
+        Trigger(follower);
+    }
+    private void OnSpellPlayed(Spell spell)
+    {
+        Trigger(spell);
+    }
 }
 
 public class SummonPeltastInstance : TriggeredFollowerEffectInstance
@@ -218,6 +240,36 @@ public class DamageTargetInstance : TriggeredFollowerEffectInstance
     }
 }
 
+public class DamageAllEnemiesInstance : TriggeredFollowerEffectInstance
+{
+    private int damage = 0;
+    private bool useAttackForDamage = false;
+    public DamageAllEnemiesInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
+
+    public void Init(int damage, bool useAttackForDamage = false)
+    {
+        this.damage = damage;
+        this.useAttackForDamage = useAttackForDamage;
+    }
+
+    public override void Trigger(ITarget target = null, int amount = 0)
+    {
+        int damageToDeal = useAttackForDamage ? AffectedFollower.GetCurrentAttack() : damage;
+
+        Player otherPlayer = AffectedFollower.Owner.GetOtherPlayer();
+
+        List<Follower> enemyFollowers = new List<Follower>(otherPlayer.BattleRow.Followers);
+        foreach (Follower follower in enemyFollowers)
+        {
+            DealDamageAction action = new DealDamageAction(AffectedFollower.Owner, follower, damageToDeal);
+            AffectedFollower.Owner.GameState.ActionHandler.AddAction(action);
+        }
+
+        DealDamageAction actionOnEnemyPlayer = new DealDamageAction(AffectedFollower.Owner, otherPlayer, damageToDeal);
+        AffectedFollower.Owner.GameState.ActionHandler.AddAction(actionOnEnemyPlayer);
+    }
+}
+
 public class ChangeResourceInstance : TriggeredFollowerEffectInstance
 {
     public OfferingType OfferingType = OfferingType.Gold;
@@ -257,29 +309,110 @@ public class ChangeResourceDelayedInstance : TriggeredFollowerEffectInstance
     }
 }
 
+public class DrawCardsDelayedInstance : TriggeredFollowerEffectInstance
+{
+    public int CardAmount = 1;
+    public DrawCardsDelayedInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
+
+    public void Init(int cardAmount = 1)
+    {
+        CardAmount = cardAmount;
+    }
+
+    public override void Trigger(ITarget target = null, int amount = 0)
+    {
+        DrawCardAction action = new DrawCardAction(AffectedFollower.Owner, AffectedFollower.Owner, CardAmount);
+        AffectedFollower.Owner.StartOfTurnActions.Add(new DelayedGameAction(action));
+    }
+}
+
 public class ChangeStatsInstance : TriggeredFollowerEffectInstance
 {
     public int AttackChange = 0;
     public int HealthChange = 0;
     public EffectTarget TargetType;
+    public bool UseTargetInsteadOfType;
 
     public ChangeStatsInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
 
-    public void Init(int attackChange = 0, int healthChange = 0, EffectTarget targetType = EffectTarget.Self)
+    public void Init(int attackChange = 0, int healthChange = 0, EffectTarget targetType = EffectTarget.Self, bool useTargetInsteadOfType = false)
     {
         AttackChange = attackChange;
         HealthChange = healthChange;
         TargetType = targetType;
+        UseTargetInsteadOfType = useTargetInsteadOfType;
     }
     public override void Trigger(ITarget target = null, int amount = 0)
     {
-        List<Follower> targetFollowers = FollowerEffect.GetTargets(AffectedFollower, TargetType, EffectDef);
+        List<Follower> targetFollowers;
+        if (UseTargetInsteadOfType)
+        {
+            targetFollowers = new List<Follower> { target as Follower};
+        }
+        else
+        {
+            targetFollowers = FollowerEffect.GetTargets(AffectedFollower, TargetType, EffectDef);
+        }
 
         foreach (Follower targetFollower in targetFollowers)
         {
             ChangeStatsAction action = new ChangeStatsAction(targetFollower, AttackChange, HealthChange);
             AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
         }
+    }
+}
+
+public class SetStatsInstance : TriggeredFollowerEffectInstance
+{
+    public int NewAttack = 0;
+    public int NewHealth = 0;
+    public EffectTarget TargetType;
+    public bool UseTargetInsteadOfType;
+
+    public SetStatsInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
+
+    public void Init(int newAttack = -1, int newHealth = -1, EffectTarget targetType = EffectTarget.Self, bool useTargetInsteadOfType = false)
+    {
+        NewAttack = newAttack;
+        NewHealth = newHealth;
+        TargetType = targetType;
+        UseTargetInsteadOfType = useTargetInsteadOfType;
+    }
+    public override void Trigger(ITarget target = null, int amount = 0)
+    {
+        List<Follower> targetFollowers;
+        if (UseTargetInsteadOfType)
+        {
+            targetFollowers = new List<Follower> { target as Follower };
+        }
+        else
+        {
+            targetFollowers = FollowerEffect.GetTargets(AffectedFollower, TargetType, EffectDef);
+        }
+
+        foreach (Follower targetFollower in targetFollowers)
+        {
+            SetStatsAction action = new SetStatsAction(targetFollower, NewAttack, NewHealth);
+            AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
+        }
+    }
+}
+
+public class DrawCardsInstance : TriggeredFollowerEffectInstance
+{
+    public int CardsToDraw;
+    public DrawCardsInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
+
+    // Pass in a card with all the properties you want
+    public void Init(int cardsToDraw)
+    {
+        CardsToDraw = cardsToDraw;
+    }
+
+    public override void Trigger(ITarget target = null, int amount = 0)
+    {
+        DrawCardAction action = new DrawCardAction(AffectedFollower.Owner, AffectedFollower.Owner, CardsToDraw);
+        AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
     }
 }
 
@@ -408,9 +541,8 @@ public class SummonRandomMonsterInstance : TriggeredFollowerEffectInstance
     {
         if (CardHandler.AllMonsters.Count == 0) return;
 
-        int randomMonsterIndex = UnityEngine.Random.Range(0, CardHandler.AllMonsters.Count);
-        Follower monster = (Follower)CardHandler.AllMonsters[randomMonsterIndex].Clone(); //CardHandler.AllMonsters.
-        //Peltast peltast = new Peltast();
+        int randomMonsterIndex = AffectedFollower.Owner.GameState.RNG.Next(0, CardHandler.AllMonsters.Count);
+        Follower monster = (Follower)CardHandler.AllMonsters[randomMonsterIndex].Clone(); 
         monster.Init(AffectedFollower.Owner);
 
         int index = AffectedFollower.Owner.BattleRow.GetIndexOfFollower(AffectedFollower) + SummonPositionOffset;
@@ -436,7 +568,7 @@ public class AddRandomFreeSpellToHandInstance : TriggeredFollowerEffectInstance
         amount = Mathf.Min(CardHandler.HighestSpellCost, amount);
         if (!CardHandler.SpellsByCost.ContainsKey(amount)) return;
 
-        Spell randomSpell = CardHandler.SpellsByCost[amount][UnityEngine.Random.Range(0, CardHandler.SpellsByCost[amount].Count - 1)];
+        Spell randomSpell = CardHandler.SpellsByCost[amount][EffectOwner.GameState.RNG.Next(0, CardHandler.SpellsByCost[amount].Count - 1)];
         if (randomSpell == null) return;
 
         randomSpell.Costs[OfferingType.Gold] = 0;

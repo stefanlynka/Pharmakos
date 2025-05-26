@@ -50,9 +50,479 @@ public class Sheep : Follower
     }
 }
 
+// OnDeath: Gain 3 Health
+public class Boar : Follower
+{
+    public Boar() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Beast;
+
+        SetBaseStats(2, 1);
+
+        Text = "On Death: Gain 3 Health";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        changePlayerHealthInstance.Init(3);
+        effectDef.EffectInstances.Add(changePlayerHealthInstance);
+    }
+}
+
+// OnDeath: Lose 2 Health
+public class Prey1 : Follower
+{
+    public Prey1() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Beast;
+
+        SetBaseStats(0, 1);
+
+        OverrideName = "Prey";
+        Text = "On Death: Lose 2 Health";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        changePlayerHealthInstance.Init(-2);
+        effectDef.EffectInstances.Add(changePlayerHealthInstance);
+    }
+}
+// OnDeath: Lose 2 Health
+public class Prey2 : Follower
+{
+    public Prey2() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Beast;
+
+        SetBaseStats(0, 1);
+
+        OverrideName = "Prey";
+        Text = "On Death: Lose 2 Health";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        changePlayerHealthInstance.Init(-2);
+        effectDef.EffectInstances.Add(changePlayerHealthInstance);
+    }
+}
+// OnDeath: Lose 2 Health
+public class Prey3 : Follower
+{
+    public Prey3() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Beast;
+
+        SetBaseStats(0, 1);
+
+        OverrideName = "Prey";
+        Text = "On Death: Lose 2 Health";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        changePlayerHealthInstance.Init(-2);
+        effectDef.EffectInstances.Add(changePlayerHealthInstance);
+    }
+}
+
+// OnAttack: Damage all enemies
+public class GoldenHind : Follower
+{
+    public GoldenHind() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 3},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Beast;
+
+        SetBaseStats(2, 4);
+
+        Text = "On Attack: Damage all enemies equal to Golden Hind's Attack";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        DamageAllEnemiesInstance instance = new DamageAllEnemiesInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAttack);
+        instance.Init(0, true);
+        effectDef.EffectInstances.Add(instance);
+    }
+}
+
+// Only takes 1 damage at a time
+public class NemeanLion : Follower
+{
+    public NemeanLion() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 3},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Beast;
+
+        SetBaseStats(3, 4);
+
+        Text = "Only takes 1 damage at a time";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+    }
+
+    public override void ChangeHealth(ITarget source, int value)
+    {
+        if (value < -1) value = -1;
+
+        base.ChangeHealth(source, value);
+    }
+}
+
+// Sprint 3/1
+public class MareOfDiomedes : Follower
+{
+    public MareOfDiomedes() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Beast;
+
+        SetBaseStats(3, 1);
+
+        Text = "Sprint";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Sprint));
+    }
+}
+
+// 5/1
+public class StymphalianBird : Follower
+{
+    public StymphalianBird() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Beast;
+
+        SetBaseStats(5, 1);
+
+        Text = "";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+    }
+}
+
+// OnDamage: Reduce target's Attack by 1
+public class Rat : Follower
+{
+    public Rat() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Beast;
+
+        SetBaseStats(1, 1);
+
+        Text = "On Damage: Reduce target's Attack by 1";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnDamage);
+        newEffectInstance.Init(-1, 0, EffectTarget.Self, true);
+        effectDef.EffectInstances.Add(newEffectInstance);
+    }
+}
+
+
+
+
+
+
+
+
+/// OBJECTS
+/// 
+
+// OnAttacked: Reduce attacker's Attack by 1
+public class Filth : Follower
+{
+    public Filth() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Object;
+
+        SetBaseStats(0, 1);
+
+        Text = "Taunt\nOn Attacked: Reduce attacker's Attack by 1";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Taunt));
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnAttacked);
+        newEffectInstance.Init(-1, 0, EffectTarget.Self, true);
+        effectDef.EffectInstances.Add(newEffectInstance);
+    }
+}
+
+// Taunt
+public class WallOfTroy : Follower
+{
+    public WallOfTroy() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Object;
+
+        SetBaseStats(0, 5);
+
+        Text = "Taunt";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Taunt));
+    }
+}
+
+// Taunt\nOn Death: Summon a Monster
+public class Corridor : Follower
+{
+    public Corridor() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Object;
+
+        SetBaseStats(0, 2);
+
+        Text = "Taunt\nCan't Attack\nOn Death: Summon a Monster";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Taunt));
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.CantAttack));
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        SummonRandomMonsterInstance newEffectInstance = new SummonRandomMonsterInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnDeath);
+        newEffectInstance.Init(0);
+        effectDef.EffectInstances.Add(newEffectInstance);
+    }
+}
+
+
+
+
+
+
 /// MORTALS
 /// 
 
+// 1/1
 public class Peltast : Follower
 {
     public Peltast() : base()
@@ -79,6 +549,7 @@ public class Peltast : Follower
     }
 }
 
+// 1/3
 public class Hoplite : Follower
 {
     public Hoplite() : base()
@@ -105,6 +576,7 @@ public class Hoplite : Follower
     }
 }
 
+// 2/4
 public class Hippeis : Follower
 {
     public Hippeis() : base()
@@ -131,6 +603,7 @@ public class Hippeis : Follower
     }
 }
 
+// 3/5
 public class Myrmidon : Follower
 {
     public Myrmidon() : base()
@@ -326,6 +799,156 @@ public class Chariot : Follower
         InnateEffects.Add(new StaticEffectDef(EffectTarget.AdjacentAllies, StaticEffect.Sprint));
     }
 }
+// Adjacent Followers take 1 less damage
+public class Phalangite : Follower
+{
+    public Phalangite() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Mortal;
+
+        SetBaseStats(2, 3);
+
+        Text = "Adjacent Followers take 1 less damage";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.AdjacentAllies, StaticEffect.Shield));
+    }
+}
+
+// OnDeath: Draw a card
+public class Satyr : Follower
+{
+    public Satyr() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Mortal;
+
+        SetBaseStats(2, 1);
+
+        Text = "On Death: Draw a card";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        DrawCardsInstance newEffectInstance = new DrawCardsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        newEffectInstance.Init(1);
+        effectDef.EffectInstances.Add(newEffectInstance);
+    }
+}
+// When an adjacent Follower kills: Heal that Follower to full health
+public class Maenad : Follower
+{
+    public Maenad() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 2},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Mortal;
+
+        SetBaseStats(3, 2);
+
+        Text = "When an adjacent Follower kills: Heal that Follower to full health";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.AdjacentAllies);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAttack);
+        newEffectInstance.Init(1, 0);
+        effectDef.EffectInstances.Add(newEffectInstance);
+    }
+}
+// When you play a spell: this gains 1 health
+public class Nereid : Follower
+{
+    public Nereid() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 2},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Mortal;
+
+        SetBaseStats(4, 2);
+
+        Text = "When you play a spell: this gains 2 health";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.AdjacentAllies);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAnySpellCast);
+        newEffectInstance.Init(0, 2);
+        effectDef.EffectInstances.Add(newEffectInstance);
+    }
+}
+
+
+
+// MYTHIC
 
 // OnEnter: Summon 2 Sheep
 public class Endymion : Follower
@@ -334,7 +957,7 @@ public class Endymion : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -378,7 +1001,7 @@ public class OracleOfDelphi : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -387,7 +1010,7 @@ public class OracleOfDelphi : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(1, 6);
+        SetBaseStats(1, 4);
 
         Text = "When an adjacent Follower enters: Gain 1 gold next turn";
 
@@ -417,7 +1040,7 @@ public class Charon : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -426,7 +1049,7 @@ public class Charon : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(1, 6);
+        SetBaseStats(1, 4);
 
         Text = "When an adjacent Follower dies: Gain 1 Gold";
 
@@ -456,7 +1079,7 @@ public class Calchas : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -497,7 +1120,7 @@ public class Podalirius : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -506,7 +1129,7 @@ public class Podalirius : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(1, 6);
+        SetBaseStats(2, 5);
 
         Text = "OnDamage: Heal adjacent Followers the amount dealt";
 
@@ -536,7 +1159,7 @@ public class Medea : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -545,7 +1168,7 @@ public class Medea : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(1, 6);
+        SetBaseStats(2, 5);
 
         Text = "When an adjacent Follower kills: Heal that Follower to full health";
 
@@ -575,7 +1198,7 @@ public class Patroclus : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 1},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -619,7 +1242,7 @@ public class Hippolyta : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -628,9 +1251,52 @@ public class Hippolyta : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(1, 1);
+        SetBaseStats(3, 3);
 
         Text = "OnEnter: Grant adjacent Followers +2 attack and Sprint";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        GiveFollowerStaticEffectInstance newEffectInstance2 = new GiveFollowerStaticEffectInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnEnter);
+        newEffectInstance2.Init(EffectTarget.AdjacentAllies, StaticEffect.Sprint);
+        effectDef.EffectInstances.Add(newEffectInstance2);
+
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnEnter);
+        newEffectInstance.Init(2, 0, EffectTarget.AdjacentAllies);
+        effectDef.EffectInstances.Add(newEffectInstance);
+
+    }
+}
+// 1: 3/2
+public class Amazon : Follower
+{
+    public Amazon() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Mortal;
+
+        SetBaseStats(3, 2);
+
+        Text = "";
 
         SetupInnateEffects();
     }
@@ -663,7 +1329,7 @@ public class Agamemnon : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 3},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -706,7 +1372,7 @@ public class Menelaus : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 3},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -715,7 +1381,7 @@ public class Menelaus : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(3, 3);
+        SetBaseStats(2, 4);
 
         Text = "King 2";
 
@@ -747,7 +1413,7 @@ public class Pyrrhus : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -756,7 +1422,7 @@ public class Pyrrhus : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(3, 2);
+        SetBaseStats(3, 3);
 
         Text = "";
 
@@ -786,7 +1452,7 @@ public class Diomedes : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 3},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -795,7 +1461,7 @@ public class Diomedes : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(3, 2);
+        SetBaseStats(4, 4);
 
         Text = "";
 
@@ -825,7 +1491,7 @@ public class Icarus : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -859,7 +1525,7 @@ public class Atalanta : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -870,7 +1536,7 @@ public class Atalanta : Follower
 
         SetBaseStats(2, 4);
 
-        Text = "";
+        Text = "On Kill: Add free Smite to hand";
 
         SetupInnateEffects();
     }
@@ -894,14 +1560,14 @@ public class Atalanta : Follower
     }
 }
 
-// When an adjacent Follower is targeted by a spell: Heal 2 health
+// When an adjacent Follower is targeted by a spell: Heal 3 health
 public class Asclepius : Follower
 {
     public Asclepius() : base()
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -912,7 +1578,7 @@ public class Asclepius : Follower
 
         SetBaseStats(2, 4);
 
-        Text = "When an adjacent Follower is targeted by a spell: Heal 2 health";
+        Text = "When an adjacent Follower is targeted by a spell: Heal 3 health";
 
         SetupInnateEffects();
     }
@@ -928,7 +1594,7 @@ public class Asclepius : Follower
     private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
     {
         ChangePlayerHealthInstance newEffectInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnTargeted);
-        newEffectInstance.Init(2);
+        newEffectInstance.Init(3);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
 }
@@ -940,7 +1606,7 @@ public class Melpomene : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -951,7 +1617,7 @@ public class Melpomene : Follower
 
         SetBaseStats(2, 4);
 
-        Text = "When an adjacent Follower dies: Add the spell Blessing to your hand";
+        Text = "When an adjacent Follower dies: Add a free Blessing spell to your hand";
 
         SetupInnateEffects();
     }
@@ -973,6 +1639,180 @@ public class Melpomene : Follower
     }
 }
 
+// Sprint + immune while attacking
+public class Achilles : Follower
+{
+    public Achilles() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 3},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Mortal;
+
+        SetBaseStats(3, 3);
+
+        Text = "Sprint\nFrenzy\nImmune while attacking";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Sprint));
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Frenzy));
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.ImmuneWhileAttacking));
+    }
+}
+// Archer 3/1
+public class Paris : Follower
+{
+    public Paris() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 2},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Mortal;
+
+        SetBaseStats(3, 1);
+
+        Text = "Ranged attacker.\nImmune while attacking";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.RangedAttacker));
+    }
+}
+
+// Reduce damage taken by 1
+public class Hector : Follower
+{
+    public Hector() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 3},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Mortal;
+
+        SetBaseStats(5, 5);
+
+        Text = "";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects(); 
+        
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Shield));
+        //InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Shield));
+    }
+}
+
+// OnAttack: Give Adjacent Followers +1/+1
+public class Sarpedon : Follower
+{
+    public Sarpedon() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 3},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Mortal;
+
+        SetBaseStats(2, 5);
+
+        Text = "On Attack: Give Adjacent Followers +1/+1";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAttack);
+        newEffectInstance.Init(1, 1, EffectTarget.AdjacentAllies);
+        effectDef.EffectInstances.Add(newEffectInstance);
+    }
+}
+
+// When an adjacent Follower enters: Draw 1 card next turn
+public class Cassandra : Follower
+{
+    public Cassandra() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 2},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Mortal;
+
+        SetBaseStats(1, 4);
+
+        Text = "When an adjacent Follower enters: Draw 1 card next turn";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.AdjacentAllies);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        DrawCardsDelayedInstance newEffectInstance = new DrawCardsDelayedInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnEnter);
+        newEffectInstance.Init(1);
+        effectDef.EffectInstances.Add(newEffectInstance);
+    }
+}
+
+
 
 // GODS
 //
@@ -985,7 +1825,7 @@ public class Helios : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 6},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -994,9 +1834,9 @@ public class Helios : Follower
 
         Type = FollowerType.Divine;
 
-        SetBaseStats(1, 5);
+        SetBaseStats(6, 6);
 
-        Text = "Heal damage at end of each turn and Gain that much attack";
+        Text = "The sun destroys enemies as it rises and sets";
 
         SetupInnateEffects();
     }
@@ -1033,6 +1873,54 @@ public class Helios : Follower
     }
 }
 
+// Sprint + OnAttack: Draw 2 cards + Gain 3 health
+public class Pan : Follower
+{
+    public Pan() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 5},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Divine;
+
+        SetBaseStats(5, 5);
+
+        Text = "Sprint\nOn Attack: Draw 2 cards + Gain 3 Life\n";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Sprint));
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        DrawCardsInstance drawCardInstance = new DrawCardsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAttack);
+        drawCardInstance.Init(2);
+        effectDef.EffectInstances.Add(drawCardInstance);
+
+        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnAttack);
+        changePlayerHealthInstance.Init(3);
+        effectDef.EffectInstances.Add(changePlayerHealthInstance);
+    }
+}
+
+
+
 
 // MONSTERS
 // 
@@ -1044,7 +1932,7 @@ public class Pytho : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -1086,7 +1974,7 @@ public class Hydra : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 3},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -1119,6 +2007,167 @@ public class Hydra : Follower
     }
 }
 
+// At the end of each turn, if this has two neighbours: This heals 2 damage
+public class Minotaur : Follower
+{
+    public Minotaur() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 3},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Monster;
+
+        SetBaseStats(3, 6);
+
+        Text = "At the end of each turn, if this has two neighbours: This heals 2 damage";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+    }
+
+    public override void DoEndOfEachTurnEffects()
+    {
+        base.DoEndOfEachTurnEffects();
+
+        Heal(2);
+    }
+}
+
+// At the end of your turn, Deal 1 damage to an adjacent enemy 6 times
+public class Scylla : Follower
+{
+    public Scylla() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 3},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Monster;
+
+        SetBaseStats(0, 6);
+
+        Text = "At the end of your turn, Deal 1 damage to an adjacent enemy 6 times";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+    }
+
+    public override void DoEndOfEachTurnEffects()
+    {
+        base.DoEndOfEachTurnEffects();
+
+        for (int i = 0; i < 6; i++)
+        {
+            DealDamageToAdjacentEnemyAction dealDamageToAdjacentEnemyAction = new DealDamageToAdjacentEnemyAction(this, 1);
+            Owner.GameState.ActionHandler.AddAction(dealDamageToAdjacentEnemyAction);
+        }
+    }
+}
+
+// At the end of your turn, Destroy all adjacent followers with less attack
+public class Charybdis : Follower
+{
+    public Charybdis() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 3},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Monster;
+
+        SetBaseStats(2, 5);
+
+        Text = "At the end of your turn, Destroy all adjacent followers with less attack";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+    }
+
+    public override void DoEndOfEachTurnEffects()
+    {
+        base.DoEndOfEachTurnEffects();
+
+        List<Follower> adjacentFollowers = GetAdjacentFollowers();
+
+        foreach (Follower follower in adjacentFollowers)
+        {
+            if (follower.GetCurrentAttack() < GetCurrentAttack())
+            {
+                KillFollowerAction killFollowerAction = new KillFollowerAction(this, follower);
+                Owner.GameState.ActionHandler.AddAction(killFollowerAction);
+            }
+        }
+    }
+}
+
+// OnAttack: Turn the target to stone if it has less attack
+public class Gorgon : Follower
+{
+    public Gorgon() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 3},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Monster;
+
+        SetBaseStats(3, 5);
+
+        Text = "OnAttack: Turn the target to stone if it has less attack";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        SetStatsInstance setStatsInstance = new SetStatsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAttack);
+        setStatsInstance.Init(0, -1, useTargetInsteadOfType:true);
+        effectDef.EffectInstances.Add(setStatsInstance);
+    }
+}
+
 // Cleave
 public class Cerberus : Follower
 {
@@ -1126,9 +2175,9 @@ public class Cerberus : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
-            { OfferingType.Blood, 0},
-            { OfferingType.Bone, 0},
+            { OfferingType.Gold, 3},
+            { OfferingType.Blood, 3},
+            { OfferingType.Bone, 3},
             { OfferingType.Crop, 0},
             { OfferingType.Scroll, 0},
         };
@@ -1157,7 +2206,7 @@ public class Siren : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 1},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -1166,7 +2215,7 @@ public class Siren : Follower
 
         Type = FollowerType.Monster;
 
-        SetBaseStats(1, 3);
+        SetBaseStats(1, 2);
 
         Text = "";
 
@@ -1188,7 +2237,7 @@ public class Lamia : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 1},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -1230,7 +2279,7 @@ public class Chimera : Follower
 
         SetBaseStats(3, 3);
 
-        Text = "Hiss!";
+        Text = "Sprint\nOn Attack or Attacked: Deal damage equal to its Attack\n";
 
         SetupInnateEffects();
     }
@@ -1246,13 +2295,14 @@ public class Chimera : Follower
     }
 }
 
+// When an adjacent Follower enters: Gain 1 gold next turn
 public class Sphinx : Follower
 {
-    public Sphinx()
+    public Sphinx() : base()
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 3},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -1261,18 +2311,40 @@ public class Sphinx : Follower
 
         Type = FollowerType.Monster;
 
-        SetBaseStats(2, 6);
+        SetBaseStats(2, 5);
+
+        Text = "When an adjacent Follower enters: Get a Confusion spell";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.AdjacentAllies);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        AddCardCopyToHandInstance newEffectInstance = new AddCardCopyToHandInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnEnter);
+        Confusion newCard = new Confusion();
+        //newCard.Costs[OfferingType.Gold] = 0;
+        newEffectInstance.Init(newCard);
+        effectDef.EffectInstances.Add(newEffectInstance);
     }
 }
 
+// Low Vision
 public class Cyclops : Follower
 {
     public Cyclops()
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 3},
-            { OfferingType.Blood, 3},
+            { OfferingType.Gold, 2},
+            { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
             { OfferingType.Scroll, 0},
@@ -1280,7 +2352,16 @@ public class Cyclops : Follower
 
         Type = FollowerType.Monster;
 
-        SetBaseStats(5, 6);
+        SetBaseStats(3, 4);
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.LowVision));
     }
 }
 
@@ -1291,7 +2372,7 @@ public class Empusa : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -1322,7 +2403,7 @@ public class Keres : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 1},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -1331,7 +2412,7 @@ public class Keres : Follower
 
         Type = FollowerType.Monster;
 
-        SetBaseStats(0, 5);
+        SetBaseStats(0, 4);
 
         Text = "When an adjacent Follower dies: Gain +2 attack";
 
@@ -1353,10 +2434,46 @@ public class Keres : Follower
         effectDef.EffectInstances.Add(newEffectInstance);
     }
 }
+// When any Follower dies: Deal 2 damage to the opponent
+public class Erinyes : Follower
+{
+    public Erinyes() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 2},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
 
+        Type = FollowerType.Monster;
+
+        SetBaseStats(1, 2);
+
+        Text = "When any Follower dies: Deal 2 damage to the opponent";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.AdjacentAllies);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    {
+        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAnyFollowerDeath);
+        changePlayerHealthInstance.Init(-2, false);
+        effectDef.EffectInstances.Add(changePlayerHealthInstance);
+    }
+}
 
 // Adjacent Followers and Typhon have OnKill: Can attack again
-// 
 public class Typhon : Follower
 {
     public Typhon() : base()
@@ -1406,7 +2523,7 @@ public class Echidna : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 1},
+            { OfferingType.Gold, 5},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -1489,7 +2606,114 @@ public class DragonsTeeth : Spell
         }
     }
 }
+// Summon 3 0/1 prey for target player
+public class ReleasePrey : Spell
+{
+    public ReleasePrey()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
 
+        Text = "Summon 3 0/1 Prey for target player";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllPlayers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        if (target is Player playerTarget)
+        {
+            int index = playerTarget.BattleRow.Followers.Count;
+            Prey1 follower = new Prey1();
+            follower.Init(playerTarget);
+            GameAction newAction = new SummonFollowerAction(follower, index);
+            playerTarget.GameState.ActionHandler.AddAction(newAction);
+
+            index = playerTarget.BattleRow.Followers.Count;
+            Prey2 follower2 = new Prey2();
+            follower2.Init(playerTarget);
+            GameAction newAction2 = new SummonFollowerAction(follower2, index);
+            playerTarget.GameState.ActionHandler.AddAction(newAction2);
+
+            index = playerTarget.BattleRow.Followers.Count;
+            Prey3 follower3 = new Prey3();
+            follower3.Init(playerTarget);
+            GameAction newAction3 = new SummonFollowerAction(follower3, index);
+            playerTarget.GameState.ActionHandler.AddAction(newAction3);
+        }
+    }
+}
+// Summon 3 0/1 filth for target player
+public class CreateFilth : Spell
+{
+    public CreateFilth()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Text = "Summon 3 0/1 Filth for target player";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllPlayers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        if (target is Player playerTarget)
+        {
+            int index = playerTarget.BattleRow.Followers.Count;
+            Filth follower = new Filth();
+            follower.Init(playerTarget);
+            GameAction newAction = new SummonFollowerAction(follower, index);
+            playerTarget.GameState.ActionHandler.AddAction(newAction);
+
+            index = playerTarget.BattleRow.Followers.Count;
+            Filth follower2 = new Filth();
+            follower2.Init(playerTarget);
+            GameAction newAction2 = new SummonFollowerAction(follower2, index);
+            playerTarget.GameState.ActionHandler.AddAction(newAction2);
+
+            index = playerTarget.BattleRow.Followers.Count;
+            Filth follower3 = new Filth();
+            follower3.Init(playerTarget);
+            GameAction newAction3 = new SummonFollowerAction(follower3, index);
+            playerTarget.GameState.ActionHandler.AddAction(newAction3);
+        }
+    }
+}
+
+// Deal 3 damage to a Follower
 public class Smite : Spell
 {
     private int damage = 3;
@@ -1504,7 +2728,45 @@ public class Smite : Spell
             { OfferingType.Scroll, 0},
         };
 
-        Text = "Deal 3 Damage";
+        Text = "Deal 3 Damage to a Follower";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        //targets.AddRange(ITarget.GetAllPlayers(Owner));
+        targets.AddRange(ITarget.GetAllFollowers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
+        Owner.GameState.ActionHandler.AddAction(damageAction);
+    }
+}
+
+// Deal 2 damage
+public class ThrowStone : Spell
+{
+    private int damage = 3;
+    public ThrowStone()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Text = "Deal 2 Damage";
         HasTargets = true;
     }
 
@@ -1525,9 +2787,55 @@ public class Smite : Spell
         DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
         Owner.GameState.ActionHandler.AddAction(damageAction);
     }
-
 }
 
+// Deal 2 damage to all enemies
+public class Lightning : Spell
+{
+    private int damage = 2;
+    public Lightning()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 2},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Text = "Deal 2 Damage to all enemies";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        targets.Add(Owner.GetOtherPlayer());
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        Player otherPlayer = Owner.GetOtherPlayer();
+
+        List<Follower> enemyFollowers = new List<Follower>(otherPlayer.BattleRow.Followers);
+        foreach (Follower follower in enemyFollowers)
+        {
+            DealDamageAction action = new DealDamageAction(Owner, follower, damage);
+            Owner.GameState.ActionHandler.AddAction(action);
+        }
+
+        DealDamageAction actionOnEnemyPlayer = new DealDamageAction(Owner, otherPlayer, damage);
+        Owner.GameState.ActionHandler.AddAction(actionOnEnemyPlayer);
+    }
+}
+
+// Draw 2 Cards
 public class Scry : Spell
 {
     private int cardsDrawn = 2;
@@ -1564,11 +2872,89 @@ public class Scry : Spell
     }
 }
 
+// Give a Follower +1/+1
 public class Blessing : Spell
 {
     private int attackGained = 1;
     private int healthGained = 1;
     public Blessing()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Text = "Give a Follower +1/+1";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllFollowers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        ChangeStatsAction newAction = new ChangeStatsAction(target, attackGained, healthGained);
+        Owner.GameState.ActionHandler.AddAction(newAction);
+    }
+}
+
+
+// Give a Follower +1/+0
+public class Contraption : Spell
+{
+    private int attackGained = 1;
+    private int healthGained = 0;
+    public Contraption()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Text = "Give a Follower +1/+0";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllFollowers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        ChangeStatsAction newAction = new ChangeStatsAction(target, attackGained, healthGained);
+        Owner.GameState.ActionHandler.AddAction(newAction);
+    }
+}
+
+// Give a Follower -1/-0
+public class Confusion : Spell
+{
+    private int attackGained = -1;
+    private int healthGained = 0;
+    public Confusion()
     {
         Costs = new Dictionary<OfferingType, int>()
         {
@@ -1579,7 +2965,7 @@ public class Blessing : Spell
             { OfferingType.Scroll, 0},
         };
 
-        Text = "Give a Follower +1/+1";
+        Text = "Give a Follower -1/-0";
         HasTargets = true;
     }
 
@@ -1650,7 +3036,7 @@ public class HarpeOfPerseus : Spell
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 1},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -1695,7 +3081,7 @@ public class ShieldOfAjax : Spell
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 1},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -1740,7 +3126,7 @@ public class StygianPact : Spell
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 1},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -1776,12 +3162,96 @@ public class StygianPact : Spell
     }
 }
 
+// Give a Follower +3 Health and Restore 3 Life
+public class Reverie : Spell
+{
+    private int attackGained = 0;
+    private int healthGained = 3;
+
+    public Reverie()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Text = "Give a Follower +3 Health and Restore 3 Life";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllFollowers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        if (target is Follower targetFollower)
+        {
+            ChangeStatsAction newAction = new ChangeStatsAction(target, attackGained, healthGained);
+            Owner.GameState.ActionHandler.AddAction(newAction);
+
+            ChangePlayerHealthAction gainLifeAction = new ChangePlayerHealthAction(Owner, Owner, healthGained);
+            Owner.GameState.ActionHandler.AddAction(gainLifeAction, true);
+        }
+    }
+}
+
+// Make a Follower attack
+public class Panic : Spell
+{
+    public Panic()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 0},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Text = "Make a Follower attack";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllFollowers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+        Follower attackingFollower = target as Follower;
+        if (attackingFollower == null) return;
+
+        List<ITarget> possibleTargets = attackingFollower.GetAttackTargets(true);
+        if (possibleTargets.Count == 0) return;
+
+        ITarget attackTarget = possibleTargets[Owner.GameState.RNG.Next(0, possibleTargets.Count)];
+        GameAction newAction = new AttackWithFollowerAction(attackingFollower, attackTarget);
+        Owner.GameState.ActionHandler.AddAction(newAction);
+    }
+}
+
 // Heal a Follower to full health. Gain that much health
 public class Restoration : Spell
 {
-    private int attackGained = 0;
-    private int healthGained = 0;
-
     public Restoration()
     {
         Costs = new Dictionary<OfferingType, int>()
@@ -1838,12 +3308,16 @@ public class Vengeance : Spell
             { OfferingType.Scroll, 0},
         };
 
-        Text = "Deal 4 Damage";
+        Text = "Deal 4 Damage (costs 1 less per Follower that died this turn)";
         HasTargets = true;
     }
 
     public override Dictionary<OfferingType, int> GetCosts()
     {
+        if (GameState == null)
+        {
+            return Costs;
+        }
         Dictionary<OfferingType, int> reducedCosts = new Dictionary<OfferingType, int>(Costs);
         foreach (var offeringType in Costs)
         {
@@ -1878,8 +3352,8 @@ public class Vengeance : Spell
 // Spend all your Crops: Gain that much health
 public class LastingGift : Spell
 {
-    private int attackGained = 0;
-    private int healthGained = 0;
+    //private int attackGained = 0;
+    //private int healthGained = 0;
 
     public LastingGift()
     {
@@ -1917,7 +3391,6 @@ public class LastingGift : Spell
     }
 }
 
-// Unimplemented
 // Deal 1 damage to all Characters for each Follower that has died this turn
 public class RiverStyx : Spell
 {
@@ -1925,14 +3398,14 @@ public class RiverStyx : Spell
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 0},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
             { OfferingType.Scroll, 0},
         };
 
-        Text = "Spend all your Crops: Gain that much health";
+        Text = " Deal 1 damage to all Characters for each Follower that has died this turn";
         HasTargets = true;
     }
 
@@ -2106,6 +3579,81 @@ public class Titanomachy : Spell
     }
 }
 
+// Destroy target Follower with the lowest Attack among its allies
+public class Drown : Spell
+{
+    public Drown()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 2},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Text = "Destroy target Follower with the lowest Attack among its allies";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        // Get targets for Owner
+        int lowestAttack = 9999;
+        List<Follower> lowestAttackFollowers = new List<Follower>();
+        foreach (Follower follower in Owner.BattleRow.Followers)
+        {
+            int currentAttack = follower.GetCurrentAttack();
+            if (currentAttack == lowestAttack)
+            {
+                lowestAttackFollowers.Add(follower);
+            }
+            else if (currentAttack < lowestAttack)
+            {
+                lowestAttackFollowers.Clear();
+                lowestAttackFollowers.Add(follower);
+                lowestAttack = currentAttack;
+            }
+        }
+        targets.AddRange(lowestAttackFollowers);
+
+        // Get targets for Opponent
+        lowestAttack = 9999;
+        lowestAttackFollowers.Clear();
+
+        foreach (Follower follower in Owner.GetOtherPlayer().BattleRow.Followers)
+        {
+            int currentAttack = follower.GetCurrentAttack();
+            if (currentAttack == lowestAttack)
+            {
+                lowestAttackFollowers.Add(follower);
+            }
+            else if (currentAttack < lowestAttack)
+            {
+                lowestAttackFollowers.Clear();
+                lowestAttackFollowers.Add(follower);
+                lowestAttack = currentAttack;
+            }
+        }
+        targets.AddRange(lowestAttackFollowers);
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+        Follower targetFollower = target as Follower;
+        if (targetFollower == null) return;
+
+        KillFollowerAction killAction = new KillFollowerAction(Owner, targetFollower);
+        Owner.GameState.ActionHandler.AddAction(killAction);
+    }
+}
+
 
 
 
@@ -2261,7 +3809,7 @@ public class PriceOfInspiration : Spell
     }
 }
 
-// Sacrifice a Follower and lose life equal to its attack to Gain half that much Gold
+// Sacrifice a Follower and lose life equal to its attack to Gain that much Gold
 public class PriceOfWealth : Spell
 {
     public PriceOfWealth()
@@ -2308,11 +3856,10 @@ public class PriceOfWealth : Spell
         KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget);
         Owner.GameState.ActionHandler.AddAction(killAction);
 
-        ChangeResourceAction action = new ChangeResourceAction(Owner, OfferingType.Gold, Mathf.CeilToInt((float)followerAttack/2));
+        ChangeResourceAction action = new ChangeResourceAction(Owner, OfferingType.Gold, followerAttack);
         Owner.GameState.ActionHandler.AddAction(action, true);
     }
 }
-
 
 // Sacrifice a Follower and damage opponent equal to its attack
 public class PriceOfReprisal : Spell
@@ -2363,7 +3910,7 @@ public class PriceOfReprisal : Spell
     }
 }
 
-// Sacrifice a Follower and Gain health equal to its health
+// Sacrifice a Follower and gain life equal to its attack and health
 public class PriceOfRenewal : Spell
 {
     public PriceOfRenewal()
@@ -2377,7 +3924,7 @@ public class PriceOfRenewal : Spell
             { OfferingType.Scroll, 0},
         };
 
-        Text = "Sacrifice a Follower and Gain health equal to its health";
+        Text = "Sacrifice a Follower and gain life equal to its attack and health";
         HasTargets = true;
     }
 
@@ -2406,8 +3953,8 @@ public class PriceOfRenewal : Spell
         KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget);
         Owner.GameState.ActionHandler.AddAction(killAction);
 
-        int followerHealth = followerTarget.CurrentHealth;
-        ChangePlayerHealthAction payLifeAction = new ChangePlayerHealthAction(Owner, Owner, followerHealth);
+        int lifeGain = followerTarget.GetCurrentAttack() + followerTarget.CurrentHealth;
+        ChangePlayerHealthAction payLifeAction = new ChangePlayerHealthAction(Owner, Owner, lifeGain);
         Owner.GameState.ActionHandler.AddAction(payLifeAction, true);
     }
 }

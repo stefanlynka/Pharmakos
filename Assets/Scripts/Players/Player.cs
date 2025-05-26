@@ -6,6 +6,9 @@ public class Player : ITarget
 {
     /// Deep Copied
     ///
+    public PlayerDetails PlayerDetails = new PlayerDetails();
+
+    public List<Card> DeckBlueprint = new List<Card>();
     public List<Card> Deck = new List<Card>();
     public List<Card> Hand = new List<Card>();
     public List<Card> Graveyard = new List<Card>();
@@ -39,6 +42,8 @@ public class Player : ITarget
     public int CardsPerTurn = 5;
     public int GoldPerTurn = 3;
 
+    public bool DoneWithPlayingCards = false; // For AI only 
+
     // Delayed Effects
     public List<DelayedGameAction> StartOfTurnActions = new List<DelayedGameAction>();
     public List<DelayedGameAction> EndOfTurnActions = new List<DelayedGameAction>();
@@ -56,7 +61,11 @@ public class Player : ITarget
 
     public bool IsMyTurn
     {
-        get { return GameState.CurrentTeamID == PlayerID; }
+        get 
+        {
+            if (GameState == null) return false;
+            return GameState.CurrentTeamID == PlayerID; 
+        }
     }
 
     public int GetID()
@@ -88,7 +97,7 @@ public class Player : ITarget
 
         Health = StartingHealth;
 
-        LoadDeck(Deck);
+        LoadDeck(DeckBlueprint);
 
         MinorRitual?.Init(this);
         MajorRitual?.Init(this);
@@ -97,15 +106,45 @@ public class Player : ITarget
 
         Offerings = new Dictionary<OfferingType, int>(InitialOfferings);
         Offerings[OfferingType.Gold] = GoldPerTurn;
+
+        RefreshDeck();
+        DrawHand();
+    }
+
+    public void LoadDetails(PlayerDetails playerDetails)
+    {
+        PlayerDetails = playerDetails;
+        StartingHealth = playerDetails.BaseHealth;
+        Health = playerDetails.BaseHealth;
+        CardsPerTurn = playerDetails.CardsPerTurn;
+        GoldPerTurn = playerDetails.GoldPerTurn;
+        
+        if (playerDetails.MinorRitual != null) MinorRitual = playerDetails.MinorRitual.MakeBaseCopy();
+        if (playerDetails.MajorRitual != null) MajorRitual = playerDetails.MajorRitual.MakeBaseCopy();
+
+        DeckBlueprint.Clear();
+        foreach (Card card in playerDetails.DeckBlueprint)
+        {
+            DeckBlueprint.Add(card.MakeBaseCopy());
+        }
     }
 
     public void LoadDeck(List<Card> deck)
     {
-        Deck = deck;
+        DeckBlueprint = CopyCardList(deck);
+
+        RefreshDeck();
+    }
+
+    public void RefreshDeck()
+    {
+        Deck = CopyCardList(DeckBlueprint);
+
         foreach (Card card in Deck)
         {
             card.Init(this);
         }
+
         ShuffleDeck();
     }
 
@@ -139,6 +178,7 @@ public class Player : ITarget
         copy.ITargetID = ITargetID;
         copy.GameState.TargetsByID[ITargetID] = copy;
 
+        copy.DeckBlueprint = CopyCardList(DeckBlueprint);
         copy.Hand = DeepCopyCardList(Hand, copy);
         copy.Deck = DeepCopyCardList(Deck, copy);
         copy.Graveyard = DeepCopyCardList(Graveyard, copy);
@@ -154,6 +194,18 @@ public class Player : ITarget
         return copy;
     }
 
+    public List<Card> CopyCardList(List<Card> cards)
+    {
+        List<Card> copy = new List<Card>();
+
+        foreach (Card card in cards)
+        {
+            Card newCard = card.MakeBaseCopy();
+            copy.Add(newCard);
+        }
+
+        return copy;
+    }
     public List<Card> DeepCopyCardList(List<Card> cards, Player newOwner)
     {
         List<Card> copy = new List<Card>();
@@ -202,6 +254,7 @@ public class Player : ITarget
 
     public void Clear()
     {
+        DeckBlueprint.Clear();
         Deck.Clear();
         Hand.Clear();
         Graveyard.Clear();
@@ -231,8 +284,6 @@ public class Player : ITarget
     // Setup for this Player. Should only be called by GameState.EndTurn()
     public virtual void StartTurn()
     {
-        DrawHand();
-
         foreach (Follower follower in BattleRow.Followers)
         {
             follower.DoStartOfMyTurnEffects();
@@ -257,6 +308,7 @@ public class Player : ITarget
         if (!IsMyTurn) return;
 
         DiscardHand();
+        DrawHand();
         Offerings[OfferingType.Gold] = GoldPerTurn;
         View.Instance.UpdateResources(this);
 
@@ -345,7 +397,7 @@ public class Player : ITarget
         for (var i = 0; i < Deck.Count; i++)
         {
             Card temp = Deck[i];
-            int randIndex = UnityEngine.Random.Range(0, Deck.Count);
+            int randIndex = GameState.RNG.Next(0, Deck.Count);
             Deck[i] = Deck[randIndex];
             Deck[randIndex] = temp;
         }
@@ -362,16 +414,15 @@ public class Player : ITarget
     {
         if (Deck.Count == 0)
         {
-            if (Graveyard.Count == 0) return;
+            RefreshDeck();
 
-            Deck = new List<Card>(Graveyard);
             Graveyard.Clear();
         }
 
         Card card = Deck[0];
         Deck.RemoveAt(0);
         Hand.Add(card);
-        View.Instance.DrawCard(card);
+        if (!GameState.IsSimulated) View.Instance.DrawCard(card);
     }
 
     public void DiscardHand()
@@ -498,6 +549,33 @@ public class Player : ITarget
         OnOfferingsChange?.Invoke();
     }
 
+    public List<Card> GetPlayableCards()
+    {
+        var playableCards = new List<Card>();
+
+        foreach (Card card in Hand)
+        {
+            Follower follower = card as Follower;
+            if (follower != null)
+            {
+                if (follower.CanPlay())
+                {
+                    playableCards.Add(follower);
+                }
+            }
+
+            Spell spell = card as Spell;
+            if (spell != null)
+            {
+                if (spell.CanPlay())
+                {
+                    playableCards.Add(spell);
+                }
+            }
+        }
+
+        return playableCards;
+    }
     public bool DoDecision(PlayerDecision playerDecision)
     {
         PlayFollowerDecision playFollowerDecision = playerDecision as PlayFollowerDecision;
@@ -551,7 +629,7 @@ public class Player : ITarget
         }
         else if (skipFollowerAttackDecision != null)
         {
-            if (!GameState.TargetsByID.TryGetValue(attackWithFollowerDecision.FollowerID, out ITarget attacker)) return false;
+            if (!GameState.TargetsByID.TryGetValue(skipFollowerAttackDecision.FollowerID, out ITarget attacker)) return false;
             Follower attackingFollower = attacker as Follower;
             if (attackingFollower == null) return false;
             GameAction newAction = new SkipFollowerAttackAction(attackingFollower);
@@ -566,4 +644,30 @@ public class Player : ITarget
     {
         return GameState.GetOtherPlayer(PlayerID);
     }
+}
+
+public class PlayerDetails
+{
+    public bool IsEnemy = true;
+    public int BaseHealth = 10;
+    public int CardsPerTurn = 5;
+    public int GoldPerTurn = 3;
+
+    public List<Card> DeckBlueprint = new List<Card>();
+    public Ritual MinorRitual = null;
+    public Ritual MajorRitual = null;
+    public List<Card> Rewards = new List<Card>();
+
+    public int Pool = 1; // Only for enemies. Which 
+
+    public Dictionary<OfferingType, int> InitialOfferings = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 0},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+    public PlayerDetails() { }
 }
