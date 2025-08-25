@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 
@@ -21,20 +20,24 @@ public class FollowerDeathAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool success = true)
     {
         Player Owner = Follower.Owner;
         Owner.FollowerDied(Follower);
 
-        Owner.GameState.CurrentPlayer.ChangeOffering(OfferingType.Bone, 1);
+        GameAction newAction = new CreateOfferingAction(Owner.GameState.CurrentPlayer, OfferingType.Bone, 1, Follower.ID, Owner.GameState.CurrentPlayer.ITargetID);
+        Owner.GameState.ActionHandler.AddAction(newAction);
+
+        //Owner.GameState.CurrentPlayer.ChangeOffering(OfferingType.Bone, 1);
         Owner.GameState.TargetsByID.Remove(Follower.ID);
 
         Owner.GameState.FireFollowerDies(Follower);
         Owner.GameState.FollowerDeathsThisTurn++;
         Owner.GameState.LastFollowerThatDied = Follower.MakeBaseCopy() as Follower;
 
-        //if (!simulated) Debug.LogError("Follower Death Action");
+        Follower.RemoveEffects();
 
+        //if (!simulated) Debug.LogError("Follower Death Action");
         base.Execute(simulated);
     }
 

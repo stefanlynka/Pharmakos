@@ -19,7 +19,10 @@ public class MoveCardAnimation : AnimationAction
     private Vector3 startPos;
     private Vector3 endPos;
 
-    private float duration = 0.25f;
+    private float duration = 0.5f; // 0.25f
+
+    private float startScale = 1;
+    private float endScale = 1;
 
 
     public MoveCardAnimation(GameAction gameAction, Card card, Player previousOwner, GameZone previousZone, Player newOwner, GameZone newZone, int newIndex = -1) : base(gameAction)
@@ -44,6 +47,16 @@ public class MoveCardAnimation : AnimationAction
             // and put it offscreen to the right
             switch (previousZone)
             {
+                case GameZone.BattleRow:
+                    if (previousOwner.IsHuman)
+                    {
+                        viewCard.transform.position = new Vector3(0, -2, 10);
+                    }
+                    else
+                    {
+                        viewCard.transform.position = new Vector3(0, 9, 10);
+                    }
+                    break;
                 case GameZone.Deck:
                     viewCard.transform.position = new Vector3(-40, -20, 10);
                     break;
@@ -53,7 +66,7 @@ public class MoveCardAnimation : AnimationAction
                 default:
                     viewCard.transform.position = new Vector3(50, 0, 10);
                     break;
-            }
+                }
         }
         else
         {
@@ -101,6 +114,9 @@ public class MoveCardAnimation : AnimationAction
             case GameZone.Deck:
                 endPos = new Vector3(-40, -20, 10);
                 break;
+            case GameZone.PlayZone:
+                endPos = new Vector3(-37, 3, 10);
+                break;
             default:
                 endPos = new Vector3(50, 0, 10);
                 break;
@@ -113,9 +129,17 @@ public class MoveCardAnimation : AnimationAction
         moveSequence.Start();
     }
 
+    public void SetScale(float startScale, float endScale)
+    {
+        this.startScale = startScale;
+        this.endScale = endScale;
+    }
+
     private void TweenProgress(float progress)
     {
         viewCard.transform.position = startPos + (endPos - startPos) * progress;
+        float newScale = startScale + (endScale - startScale) * progress;
+        viewCard.transform.localScale = new Vector3(newScale, newScale, newScale);
     }
 
     private void Complete()

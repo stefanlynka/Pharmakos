@@ -134,7 +134,11 @@ public class BattleRow
 
         // Determine if attacker can attack the player
         int expectedTargetCount = rowsAreAligned ? 3 : 2;
-        if (targets.Count != expectedTargetCount) targets.Add(Owner);
+        if (targets.Count != expectedTargetCount)
+        {
+            if (attackerPosition <= 0) targets.Insert(0, Owner);
+            else targets.Add(Owner);
+        }
 
         if (foundTargetWithTaunt)
         {

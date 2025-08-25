@@ -27,19 +27,14 @@ public class ChangeStatsAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool successful = true)
     {
         Follower follower = Target as Follower;
-        //Player player = Target as Player;
 
-        if (follower != null )
+        if (follower != null)
         {
             follower.ChangeStats(AttackChange, HealthChange);
         }
-        //else if (player != null )
-        //{
-        //    player.ChangeHealth(Source , -Damage);
-        //}
 
         base.Execute(simulated);
     }

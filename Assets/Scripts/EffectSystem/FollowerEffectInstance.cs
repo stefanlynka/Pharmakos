@@ -173,7 +173,7 @@ public class TriggeredFollowerEffectInstance: FollowerEffectInstance
     }
     private void OnSpellPlayed(Spell spell)
     {
-        Trigger(spell);
+        if (spell.Owner == AffectedFollower.Owner) Trigger(spell);
     }
 }
 
@@ -398,6 +398,41 @@ public class SetStatsInstance : TriggeredFollowerEffectInstance
     }
 }
 
+public class TurnToStoneInstance : TriggeredFollowerEffectInstance
+{
+    public EffectTarget TargetType;
+    public bool UseTargetInsteadOfType;
+
+    public TurnToStoneInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
+
+    public void Init(EffectTarget targetType = EffectTarget.Self, bool useTargetInsteadOfType = false)
+    {
+        TargetType = targetType;
+        UseTargetInsteadOfType = useTargetInsteadOfType;
+    }
+    public override void Trigger(ITarget target = null, int amount = 0)
+    {
+        List<Follower> targetFollowers;
+        if (UseTargetInsteadOfType)
+        {
+            targetFollowers = new List<Follower> { target as Follower };
+        }
+        else
+        {
+            targetFollowers = FollowerEffect.GetTargets(AffectedFollower, TargetType, EffectDef);
+        }
+
+        foreach (Follower targetFollower in targetFollowers)
+        {
+            if (targetFollower.GetCurrentAttack() < AffectedFollower.GetCurrentAttack())
+            {
+                SetStatsAction action = new SetStatsAction(targetFollower, 0, -1);
+                AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
+            }
+        }
+    }
+}
+
 public class DrawCardsInstance : TriggeredFollowerEffectInstance
 {
     public int CardsToDraw;
@@ -539,10 +574,10 @@ public class SummonRandomMonsterInstance : TriggeredFollowerEffectInstance
     }
     public override void Trigger(ITarget target = null, int amount = 0)
     {
-        if (CardHandler.AllMonsters.Count == 0) return;
+        if (CardHandler.SmallMonsters.Count == 0) return;
 
-        int randomMonsterIndex = AffectedFollower.Owner.GameState.RNG.Next(0, CardHandler.AllMonsters.Count);
-        Follower monster = (Follower)CardHandler.AllMonsters[randomMonsterIndex].Clone(); 
+        int randomMonsterIndex = AffectedFollower.Owner.GameState.RNG.Next(0, CardHandler.SmallMonsters.Count);
+        Follower monster = (Follower)CardHandler.SmallMonsters[randomMonsterIndex].Clone(); 
         monster.Init(AffectedFollower.Owner);
 
         int index = AffectedFollower.Owner.BattleRow.GetIndexOfFollower(AffectedFollower) + SummonPositionOffset;

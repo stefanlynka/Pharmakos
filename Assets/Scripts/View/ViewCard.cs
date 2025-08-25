@@ -15,7 +15,7 @@ public class ViewCard : ViewTarget
 
     public Card Card;
 
-    public MeshRenderer Highlight;
+    public SpriteRenderer Highlight;
 
     public GameObject CardHolder;
     public BoxCollider CardCollider;
@@ -29,10 +29,12 @@ public class ViewCard : ViewTarget
         ViewOfferingCost.Load(Card.GetCosts());
 
         ArtRenderer.sprite = CardHandler.GetSprite(cardData);
-        NameText.text = cardData.GetName() + " " + cardData.ID;
+        NameText.text = cardData.GetName();
         AbilityText.text = cardData.Text;
 
         OnClick = onClick;
+
+        CardCollider.enabled = true;
     }
 
     public void SetHighlight(bool highlight)
@@ -42,5 +44,10 @@ public class ViewCard : ViewTarget
     public bool IsHighlighted()
     {
         return Highlight.enabled;
+    }
+
+    public void UpdateCost()
+    {
+        ViewOfferingCost.Load(Card.GetCosts());
     }
 }

@@ -16,7 +16,7 @@ public class FollowerDeathAnimation : AnimationAction
     public FollowerDeathAnimation(GameAction gameAction) : base(gameAction)
     {
         if (gameAction is FollowerDeathAction) followerDeathAction = gameAction as FollowerDeathAction;
-        Simultaneous = false;
+        Simultaneous = true;
     }
 
     public override void Play(Action onFinish = null)

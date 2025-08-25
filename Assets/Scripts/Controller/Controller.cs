@@ -1,20 +1,31 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static UnityEditor.Experimental.GraphView.GraphView;
 using static UnityEngine.GraphicsBuffer;
+
 
 public class Controller : MonoBehaviour
 {
     public static Controller Instance;
+
+    public static int starterSeed = 1;
+    public bool gamePaused = false;
+
+    public static bool DebugMode = false;
+    public CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
 
     public View View;
 
     public GameState CanonGameState;
 
     public bool GameRunning = false;
+    public bool IsTestChamber = false;
+    private bool isGameSetup = false;
+
+    public CustomRandom MetaRNG = new CustomRandom(2);
 
     public Player Player1 = null;
     public Player Player2 = null;
@@ -22,8 +33,10 @@ public class Controller : MonoBehaviour
     public List<Card> PlayerDeckDefinition = new List<Card>();
     public Ritual PlayerMinorRitual = null;
     public Ritual PlayerMajorRitual = null;
+    public int PlayerCardsPerTurn = 5;
 
     public int PlayerStartingHealth = 0;
+
 
     public Player CurrentPlayer
     {
@@ -59,11 +72,17 @@ public class Controller : MonoBehaviour
         {
             Destroy(this);
         }
+
+        starterSeed = UnityEngine.Random.Range(0, 1000);
+        Debug.Log("MetaSeed: " + starterSeed);
+
+        MetaRNG = new CustomRandom(starterSeed);
     }
 
     private void Start()
     {
-        FirstTimeSetup();
+        //FirstTimeSetup();
+        GoToStartScreen();
     }
 
     private void Update()
@@ -73,29 +92,66 @@ public class Controller : MonoBehaviour
         Player1.RunUpdate();
         Player2.RunUpdate();
         View.Instance.DoUpdate();
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (gamePaused)
+            {
+                UnPauseGame();
+            }
+            else
+            {
+                PauseGame();
+            }
+        }
     }
+
+    void OnDisable() // Called when exiting Play Mode
+    {
+        AlertCancelToken();
+    }
+    void OnApplicationQuit()
+    {
+        AlertCancelToken();
+    }
+    private void AlertCancelToken()
+    {
+        if (CancellationTokenSource != null)
+        {
+            CancellationTokenSource.Cancel(); // Request cancellation
+            CancellationTokenSource.Dispose();
+            CancellationTokenSource = null;
+        }
+    }
+
     private void FirstTimeSetup()
     {
+        if (isGameSetup) return;
+
         CardHandler.LoadCards();
 
         if (Player1 == null)
         {
             Player1 = new HumanPlayer();
-            ProgressionHandler.LoadPlayer(Player1, ProgressionHandler.DeckName.PlayerStarterDeck);
+            ProgressionHandler.DeckName playerDeckName = IsTestChamber ? ProgressionHandler.DeckName.TestPlayer : ProgressionHandler.DeckName.PlayerStarterDeck;
+            ProgressionHandler.LoadPlayer(Player1, playerDeckName);
             PlayerStartingHealth = Player1.StartingHealth;
             PlayerDeckDefinition = Player1.DeckBlueprint;
             PlayerMinorRitual = Player1.MinorRitual;
             PlayerMajorRitual = Player1.MajorRitual;
+            PlayerCardsPerTurn = Player1.CardsPerTurn;
         }
 
         Player1 = new HumanPlayer();
         Player2 = new AIPlayer();
         CanonGameState = new GameState(Player1, Player2);
-        ProgressionHandler.Reset();
-        ProgressionHandler.SetupNextEnemy();
+        ProgressionHandler = new ProgressionHandler();
+        //ProgressionHandler.Reset();
+        ProgressionHandler.SetupNextEnemy(IsTestChamber);
 
-        GoToStartScreen();
+        //GoToStartScreen();
         //LoadLevel();
+        isGameSetup = true;
     }
     private void LoadLevel()
     {
@@ -112,7 +168,8 @@ public class Controller : MonoBehaviour
 
         List<Card> playerDeckCopy = new List<Card>(PlayerDeckDefinition);
         Player1.DeckBlueprint = playerDeckCopy;
-        Player1.StartingHealth = PlayerStartingHealth;
+        Player1.StartingHealth = ProgressionHandler.GetPlayerHealth();
+        Player1.CardsPerTurn = PlayerCardsPerTurn;
         if (PlayerMinorRitual != null) Player1.MinorRitual = PlayerMinorRitual.MakeBaseCopy();
         if (PlayerMajorRitual != null) Player1.MajorRitual = PlayerMajorRitual.MakeBaseCopy();
         Player1.Init(0);
@@ -121,8 +178,10 @@ public class Controller : MonoBehaviour
         //Player2.LoadDeck(Player2.DeckBlueprint);
         Player2.Init(1);
 
-
         View.Instance.Setup();
+
+        // Load Starting BattleRow
+        LoadStartingBattleRow();
 
         GameRunning = true;
 
@@ -157,6 +216,10 @@ public class Controller : MonoBehaviour
 
     public void RestartGame()
     {
+        ClearLevel();
+        isGameSetup = false;
+        FirstTimeSetup();
+        gamePaused = false;
         ScreenHandler.Instance.ShowScreen(ScreenName.Blank, true, false);
         ScreenHandler.Instance.ShowScreen(ScreenName.Start);
     }
@@ -169,11 +232,19 @@ public class Controller : MonoBehaviour
     {
         //ProgressionHandler.CurrentLevel = 0;
 
+        FirstTimeSetup();
+
         ScreenHandler.Instance.HideScreen(ScreenName.StarterBundle);
         ScreenHandler.Instance.HideScreen(ScreenName.Blank);
         ScreenHandler.Instance.ShowScreen(ScreenName.Game);
 
         LoadLevel();
+    }
+    public void StartTestChamber()
+    {
+        IsTestChamber = true;
+
+        StartGame();
     }
     private void GoToGameOverScreen()
     {
@@ -187,7 +258,7 @@ public class Controller : MonoBehaviour
         //ScreenHandler.Instance.ShowScreen(ScreenName.Blank, true, false);
         ScreenHandler.Instance.ShowScreen(ScreenName.CardRemovalRewards);
     }
-    private void GoToRitualRewardScreen()
+    public void GoToRitualRewardScreen()
     {
         GameField.SetActive(false);
         RitualRewardHandler.gameObject.SetActive(true);
@@ -204,11 +275,35 @@ public class Controller : MonoBehaviour
 
     public void GoToStarterBundleScreen()
     {
+        FirstTimeSetup();
+
         GameField.SetActive(false);
         StarterBundleHandler.gameObject.SetActive(true);
         StarterBundleHandler.Load();
         ScreenHandler.Instance.HideScreen(ScreenName.Blank);
         ScreenHandler.Instance.ShowScreen(ScreenName.StarterBundle);
+    }
+
+    public void PauseGame()
+    {
+        gamePaused = true;
+        GameField.SetActive(false);
+        ScreenHandler.Instance.ShowScreen(ScreenName.Pause);
+    }
+    public void UnPauseGame()
+    {
+        gamePaused = false;
+        GameField.SetActive(true);
+        ScreenHandler.Instance.HideScreen(ScreenName.Pause);
+    }
+    public void QuitGame()
+    {
+#if UNITY_STANDALONE
+        Application.Quit();
+#endif
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
     public void HideStarterBundleScreen()
     {
@@ -228,9 +323,18 @@ public class Controller : MonoBehaviour
         {
             ClearLevel();
 
-            //GoToCardRemovalRewardScreen();
-            if (ProgressionHandler.CurrentLevel % 2 != 0) GoToCardGainRewardScreen();
-            else GoToRitualRewardScreen();
+            if (ProgressionHandler.CurrentLevel >= 10)
+            {
+                ScreenHandler.Instance.ShowScreen(ScreenName.Success);
+            }
+            else if (ProgressionHandler.CurrentLevel % 2 != 0)
+            {
+                GoToCardGainRewardScreen();
+            }
+            else
+            {
+                GoToCardRemovalRewardScreen();
+            }
 
             Player2.Health = 1;
         }
@@ -251,5 +355,18 @@ public class Controller : MonoBehaviour
         {
             PlayerDeckDefinition.Remove(card);
         }
+    }
+
+    private void LoadStartingBattleRow()
+    {
+        foreach (Follower follower in Player2.PlayerDetails.StartingBattleRow)
+        {
+            int index = Player2.BattleRow.Followers.Count;
+            follower.Init(Player2);
+            //follower.Owner.SummonFollower(follower, index, false);
+            GameAction newAction = new SummonFollowerAction(follower, index, false);
+            Player2.GameState.ActionHandler.AddAction(newAction);
+        }
+        
     }
 }

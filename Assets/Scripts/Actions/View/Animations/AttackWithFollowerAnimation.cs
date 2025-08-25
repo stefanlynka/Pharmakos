@@ -8,7 +8,7 @@ public class AttackWithFollowerAnimation : AnimationAction
 {
     AttackWithFollowerAction attackAction;
 
-    private float attackMoveDuration = 0.15f;
+    private float attackMoveDuration = 0.25f;
     //private float moveDistance = 1f;
     private float cardSize = 3f;
     private ViewFollower attackerViewFollower;
@@ -30,6 +30,8 @@ public class AttackWithFollowerAnimation : AnimationAction
             return;
         }
         startPosition = attackerViewFollower.transform.position;
+
+        //Debug.LogWarning(attackAction.Attacker.GetName() + " attacked " + attackAction.Target.GetName() + " Animation start");
 
         Vector3 targetPosition = Vector3.zero;
 
@@ -53,6 +55,7 @@ public class AttackWithFollowerAnimation : AnimationAction
         Sequence attackSequence = new Sequence();
         attackSequence.Add(new Tween(MoveAttacker, 0, 1, attackMoveDuration));
         attackSequence.Add(new Tween(MoveAttacker, 1, 0, attackMoveDuration));
+        //attackSequence.Add(new SequenceAction(AnimationOver));
         attackSequence.Add(new SequenceAction(CallCallback));
         attackSequence.Start();
 
@@ -64,5 +67,8 @@ public class AttackWithFollowerAnimation : AnimationAction
         attackerViewFollower.transform.position = Vector2.Lerp(startPosition, endPosition, progress);
     }
 
- 
+    private void AnimationOver()
+    {
+        //Debug.LogWarning(attackerViewFollower.Follower.GetName() + " attacked " + attackAction.Target.GetName() + " Animation end");
+    }
 }

@@ -37,11 +37,18 @@ public abstract class Card : ICloneable, ITarget
 
     public abstract List<ITarget> GetTargets();
 
+    private string myType = "";
+    public string GetCardType()
+    {
+        if (myType == "") myType = GetType().Name;
+
+        return myType;
+    }
     public string GetName()
     {
         if (OverrideName == "") OverrideName = GetType().Name;
 
-        return OverrideName;
+        return OverrideName + " " + ID;
     }
 
     public virtual bool CanPlay()
@@ -167,7 +174,7 @@ public interface ITarget
         if (otherPlayer.BattleRow.Followers.Count > 1)
         {
             targets.Add(otherPlayer.BattleRow.Followers[0]);
-            targets.Add(otherPlayer.BattleRow.Followers[player.BattleRow.Followers.Count - 1]);
+            targets.Add(otherPlayer.BattleRow.Followers[otherPlayer.BattleRow.Followers.Count - 1]);
         }
 
         return targets;

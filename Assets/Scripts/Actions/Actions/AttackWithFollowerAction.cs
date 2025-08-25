@@ -24,7 +24,7 @@ public class AttackWithFollowerAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool success = true)
     {
         attackHappened = Attacker.AttackTarget(Target);
 

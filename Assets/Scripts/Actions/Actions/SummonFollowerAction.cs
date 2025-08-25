@@ -8,7 +8,8 @@ public class SummonFollowerAction : GameAction
 {
     public Follower Follower;
     public int Index;
-    public SummonFollowerAction(Follower follower, int index = -1)
+    public bool CreateCrops = true;
+    public SummonFollowerAction(Follower follower, int index = -1, bool createCrops = true)
     {
         Follower = follower;
         if (index == -1) 
@@ -19,6 +20,8 @@ public class SummonFollowerAction : GameAction
         {
             Index = index;
         }
+
+        CreateCrops = createCrops;
     }
 
     public override GameAction DeepCopy(Player newOwner)
@@ -29,11 +32,11 @@ public class SummonFollowerAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool successful = true)
     {
-        Follower.Owner.SummonFollower(Follower, Index);
+        bool success = Follower.Owner.SummonFollower(Follower, Index, CreateCrops);
 
-        base.Execute(simulated);
+        base.Execute(simulated, success);
     }
 
     public override List<AnimationAction> GetAnimationActions()

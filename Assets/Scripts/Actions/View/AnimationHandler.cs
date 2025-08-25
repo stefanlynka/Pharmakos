@@ -105,6 +105,20 @@ public class AnimationHandler
         }
 
     }
+
+    public void AddAnimationActionToQueue(AnimationAction animationAction, bool immediate = false)
+    {
+        AnimationQueueItem animationStackItem = new AnimationQueueItem(animationAction, immediate);
+        if (immediate)
+        {
+            AnimationActionQueue.Insert(0, animationStackItem);
+        }
+        else
+        {
+            AnimationActionQueue.Add(animationStackItem);
+        }
+    }
+
     public bool AnimationsComplete()
     {
         return (!IsAnimating && AnimationActionQueue.Count == 0);

@@ -176,7 +176,7 @@ public class SelectionHandler
         if (HeldCard != null) return;
 
         ViewRitual viewRitual = target as ViewRitual;
-        if (viewRitual == null) return;
+        if (viewRitual == null || viewRitual.Ritual == null) return;
 
         if (SelectedRitual != null) return;
         if (!viewRitual.Ritual.CanPlay()) return;

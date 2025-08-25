@@ -28,7 +28,7 @@ public class DrawCardAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool success = true)
     {
         Player player = Target as Player;
 

@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public abstract class GameAction
@@ -8,13 +7,14 @@ public abstract class GameAction
     public ActionName ActionName;
     //protected List<AnimationAction> AnimationActions = new List<AnimationAction>();
 
-    public virtual void Execute(bool simulated = false)
+    public virtual void Execute(bool simulated = false, bool successful = true)
     {
         if (!simulated) 
         {
-            View.Instance.AnimationHandler.AddGameActionToQueue(this);
+            if (successful) View.Instance.AnimationHandler.AddGameActionToQueue(this);
 
             LogAction();
+            if (!successful) Debug.LogWarning("This Action Failed");
         }
     }
 

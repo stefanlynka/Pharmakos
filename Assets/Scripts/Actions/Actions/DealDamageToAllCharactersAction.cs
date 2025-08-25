@@ -24,7 +24,7 @@ public class DealDamageToAllCharactersAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool success = true)
     {
         Player playerSource = Source as Player;
         if (playerSource == null)
@@ -36,7 +36,8 @@ public class DealDamageToAllCharactersAction : GameAction
         }
 
         // Owner Followers
-        foreach (Follower follower in playerSource.BattleRow.Followers)
+        List<Follower> myFollowers = new List<Follower>(playerSource.BattleRow.Followers);
+        foreach (Follower follower in myFollowers)
         {
             DealDamageAction damageAction = new DealDamageAction(Source, follower, Damage);
             playerSource.GameState.ActionHandler.AddAction(damageAction);
@@ -44,7 +45,8 @@ public class DealDamageToAllCharactersAction : GameAction
 
         Player otherPlayer = playerSource.GetOtherPlayer();
         // Enemy Followers
-        foreach (Follower follower in otherPlayer.BattleRow.Followers)
+        List<Follower> enemyFollowers = new List<Follower>(otherPlayer.BattleRow.Followers);
+        foreach (Follower follower in enemyFollowers)
         {
             DealDamageAction damageAction = new DealDamageAction(Source, follower, Damage);
             playerSource.GameState.ActionHandler.AddAction(damageAction);

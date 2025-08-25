@@ -26,7 +26,7 @@ public class GiveFollowerStaticEffectAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool success = true)
     {
         if (Target is Follower followerTarget)
         {

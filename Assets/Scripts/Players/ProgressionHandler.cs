@@ -9,7 +9,8 @@ public class ProgressionHandler
     {
         None,
         PlayerStarterDeck,
-        TestDeck,
+        TestPlayer,
+        TestEnemy,
         Cyclops,
         Bacchanalia,
         Labyrinth,
@@ -35,6 +36,83 @@ public class ProgressionHandler
 
     public ProgressionHandler()
     {
+        DetailsByDeckName[DeckName.TestEnemy] = new PlayerDetails
+        {
+            IsEnemy = true,
+            BaseHealth = 100,
+            Pool = 0,
+            MinorRitual = null,
+            MajorRitual = null,
+            DeckBlueprint = new List<Card>
+            {
+                //new Boar(),
+                new Satyr(),
+                new Satyr(),
+                new Satyr(),
+                new Satyr(),
+                new Satyr(),
+                new Satyr(),
+                new Satyr(),
+                new Satyr(),
+                new Satyr(),
+                new Satyr(),
+
+                //new PriceOfProfit(),
+                //new PriceOfProfit(),
+                //new PriceOfProfit(),
+                //new PriceOfProfit(),
+                //new PriceOfProfit(),
+
+                //new Panic(),
+                //new Panic(),
+                //new Panic(),
+            },
+            StartingBattleRow = new List<Follower>
+            {
+                //new Satyr(),
+                //new Satyr(),
+                //new Satyr(),
+                //new Satyr(),
+                //new Satyr(),
+                //new Satyr(),
+            }
+        };
+        DetailsByDeckName[DeckName.TestPlayer] = new PlayerDetails
+        {
+            IsEnemy = false,
+            BaseHealth = 100,
+            CardsPerTurn = 5,
+            Pool = 0,
+            MinorRitual = null,
+            MajorRitual = null,
+            DeckBlueprint = new List<Card>
+            {
+                new Peltast(),
+                new Peltast(),
+                new Peltast(),
+                new Peltast(),
+                new Smite(),
+
+                //new Melpomene(),
+                //new Ekdromos(),
+                //new Peltast(),
+                //new PriceOfProfit(),
+                //new PriceOfProfit(),
+                //new ReleasePrey(),
+                //new ReleasePrey(),
+                //new ReleasePrey(),
+                //new ReleasePrey(),
+                //new Sheep(),
+                //new Sheep(),
+                //new Sheep(),
+                //new PriceOfProfit(),
+                ////new Phalangite(),
+                //new Phalangite(),
+                //new Smite(),
+                ////new Panic(),
+            }
+        };
+        
         DetailsByDeckName[DeckName.PlayerStarterDeck] = new PlayerDetails
         {
             IsEnemy = false,
@@ -48,24 +126,17 @@ public class ProgressionHandler
                 new Peltast(),
                 new Sheep(),
                 new Ekdromos(),
-                new Ekdromos(),
                 new Thureophoros(),
                 new Thureophoros(),
                 new Chariot(),
                 new Chariot(),
-                new Chariot(),
+                new Hippeis(),
+                new Hippeis(),
                 new Myrmidon(),
                 new PriceOfProfit(),
                 new PriceOfProfit(),
                 new Blessing(),
                 new Blessing(),
-                //new Smite(),
-                //new Smite(),
-                //new Panic(),
-                //new Panic(),
-                //new Panic(),
-                //new Panic(),
-                //new Panic(),
             }
         };
 
@@ -98,6 +169,10 @@ public class ProgressionHandler
                 new ThrowStone(),
                 new ThrowStone(),
             },
+            StartingBattleRow = new List<Follower>
+            {
+                new Cyclops(),
+            },
             Rewards = new List<Card>
             {
                 new Sheep(),
@@ -119,58 +194,13 @@ public class ProgressionHandler
                 //new Pan(),
                 //new Boar(),
                 //new Boar(),
-                //new Boar(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Maenad(),
-                //new Maenad(),
-                //new Maenad(),
-                //new Maenad(),
-                //new Panic(),
-                //new Panic(),
-                //new Panic(),
-                //new Reverie(),
-                //new Reverie(),
-                //new Reverie(),
-                //new PriceOfProfit(),
-                //new PriceOfProfit(),
-                //new PriceOfProfit(),
-                //new PriceOfProfit(),
-                //new PriceOfProfit(),
-                //new PriceOfProfit(),
-                //new PriceOfProfit(),
-                //new PriceOfProfit(),
-                //new PriceOfProfit(),
-                //new Boar(),
-                //new Boar(),
-                //new Boar(),
-                //new Boar(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Peltast(),
-                //new Peltast(),
-                //new Peltast(),
-                //new PriceOfInspiration(),
-
-
-
-
-                new Pan(),
-                new Boar(),
-                new Boar(),
                 new Boar(),
                 new Satyr(),
                 new Satyr(),
                 new Satyr(),
                 new Satyr(),
+                new Satyr(),
+                new Maenad(),
                 new Maenad(),
                 new Maenad(),
                 new Maenad(),
@@ -178,11 +208,19 @@ public class ProgressionHandler
                 new Panic(),
                 new Panic(),
                 new Panic(),
+                new Panic(),
+                new Panic(),
                 new Reverie(),
                 new Reverie(),
-                new Reverie(),
-                new PriceOfInspiration(),
-                new PriceOfInspiration(),
+                new Restoration(),
+                new Restoration(),
+                //new PriceOfRenewal(),
+                //new PriceOfRenewal(),
+            },
+            StartingBattleRow = new List<Follower>
+            {
+                new Satyr(),
+                new Boar(),
             },
             Rewards = new List<Card>
             {
@@ -192,9 +230,10 @@ public class ProgressionHandler
                 new Maenad(),
                 new Panic(),
                 new Reverie(),
-                new PriceOfInspiration(),
                 new Medea(),
                 new Podalirius(),
+                new PriceOfInspiration(),
+                new PriceOfRenewal(),
             }
         };
         DetailsByDeckName[DeckName.Labyrinth] = new PlayerDetails
@@ -226,13 +265,18 @@ public class ProgressionHandler
                 new Contraption(),
                 new Contraption(),
             },
+            StartingBattleRow = new List<Follower>
+            {
+                new Corridor(),
+                new Rat(),
+                //new Corridor(),
+            },
             Rewards = new List<Card>
             {
                 new Minotaur(),
                 new Cyclops(),
                 new Rat(),
                 new Icarus(),
-                new Contraption(),
                 new Calchas(),
                 new PriceOfKnowledge(),
                 new HarpeOfPerseus(),
@@ -269,12 +313,18 @@ public class ProgressionHandler
                 new Sarpedon(),
                 new Cassandra(),
             },
+            StartingBattleRow = new List<Follower>
+            {
+                new WallOfTroy(),
+                new Toxotes(),
+                new WallOfTroy(),
+            },
             Rewards = new List<Card>
             {
                 new WallOfTroy(),
                 new Toxotes(),
-                new Hoplite(),
-                new Ekdromos(),
+                //new Hoplite(),
+                //new Ekdromos(),
                 new Chariot(),
                 new Hector(),
                 new Paris(),
@@ -320,6 +370,12 @@ public class ProgressionHandler
                 new PriceOfWealth(),
                 new PriceOfWealth(),
             },
+            StartingBattleRow = new List<Follower>
+            {
+                new Prey1(),
+                new Atalanta(),
+                new Prey2(),
+            },
             Rewards = new List<Card>
             {
                 new Boar(),
@@ -362,6 +418,12 @@ public class ProgressionHandler
                 new PriceOfReprisal(),
                 new Drown(),
                 new Drown(),
+            },
+            StartingBattleRow = new List<Follower>
+            {
+                new Siren(),
+                new Siren(),
+                new Siren(),
             },
             Rewards = new List<Card>
             {
@@ -406,6 +468,12 @@ public class ProgressionHandler
                 new PriceOfRenewal(),
                 new PriceOfRenewal(),
             },
+            StartingBattleRow = new List<Follower>
+            {
+                new Lamia(),
+                new Gorgon(),
+                new Lamia(),
+            },
             Rewards = new List<Card>
             {
                 new Rat(),
@@ -445,6 +513,12 @@ public class ProgressionHandler
                 new MareOfDiomedes(),
                 new Hippolyta(),
                 new Amazon(),
+                new Amazon(),
+            },
+            StartingBattleRow = new List<Follower>
+            {
+                new Amazon(),
+                new Hippolyta(),
                 new Amazon(),
             },
             Rewards = new List<Card>
@@ -489,6 +563,13 @@ public class ProgressionHandler
                 new Reflection(),
                 new Reflection(),
             },
+            StartingBattleRow = new List<Follower>
+            {
+                new Sheep(),
+                new OracleOfDelphi(),
+                new Sheep(),
+
+            },
             Rewards = new List<Card>
             {
                 new Helios(),
@@ -531,6 +612,13 @@ public class ProgressionHandler
                 new PriceOfProfit(),
                 new PriceOfProfit(),
                 new PriceOfLegacy(),
+            },
+            StartingBattleRow = new List<Follower>
+            {
+                new Cerberus(),
+                //new Keres(),
+                //new Charon(),
+                //new Keres(),
             },
             Rewards = new List<Card>
             {
@@ -599,7 +687,6 @@ public class ProgressionHandler
                 new Hippolyta(),
                 new DragonsTeeth(),
             }));
-        
     }
 
     public List<Ritual> GetPossibleRitualRewards()
@@ -660,8 +747,16 @@ public class ProgressionHandler
 
         //EnemyPools[CurrentPool].Remove(CurrentEnemy);
     }
-    public void SetupNextEnemy()
+    public void SetupNextEnemy(bool isTestChamber = false)
     {
+        if (isTestChamber)
+        {
+            CurrentLevel++;
+            CurrentEnemy = DeckName.TestEnemy;
+
+            return;
+        }
+
         CurrentLevel++;
         int possibleEnemyCount = EnemyPools[CurrentPool].Count;
         while (possibleEnemyCount == 0)
@@ -675,7 +770,7 @@ public class ProgressionHandler
             possibleEnemyCount = EnemyPools[CurrentPool].Count;
         }
 
-        int randomTarget = Controller.Instance.CanonGameState.RNG.Next(0, EnemyPools[CurrentPool].Count);
+        int randomTarget = Controller.Instance.MetaRNG.Next(0, EnemyPools[CurrentPool].Count);
         CurrentEnemy = EnemyPools[CurrentPool][randomTarget];
         EnemyPools[CurrentPool].Remove(CurrentEnemy);
     }
@@ -699,6 +794,11 @@ public class ProgressionHandler
         LoadPlayer(player, CurrentEnemy);
     }
 
+    public int GetPlayerHealth()
+    {
+        return 5 + CurrentPool * 5;
+    }
+
     public List<StarterBundle> GetStarterBundles()
     {
         List<StarterBundle> allBundles = new List<StarterBundle>(starterBundles);
@@ -707,7 +807,7 @@ public class ProgressionHandler
 
         for (int i = 0; i < 3; i++)
         {
-            int randIndex = Controller.Instance.CanonGameState.RNG.Next(0, allBundles.Count);
+            int randIndex = Controller.Instance.MetaRNG.Next(0, allBundles.Count);
             StarterBundle starterBundle = allBundles[randIndex];
             bundles.Add(starterBundle);
             allBundles.RemoveAt(randIndex);

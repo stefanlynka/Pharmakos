@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 
@@ -26,7 +25,7 @@ public class ChangePlayerHealthAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool success = true)
     {
         target.ChangeHealth(source, amount);
 

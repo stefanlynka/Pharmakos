@@ -21,9 +21,11 @@ public class CardGainRewardHandler : MonoBehaviour
         for (int i = 0; i < 3; i++)
         {
             possibleRewards = Controller.Instance.ProgressionHandler.GetPossibleCardRewards();
+            if (possibleRewards.Count == 0) continue;
+
             for (int j = 0; j < 3; j++)
             {
-                int randomIndex = Controller.Instance.CanonGameState.RNG.Next(0, possibleRewards.Count);
+                int randomIndex = Controller.Instance.MetaRNG.Next(0, possibleRewards.Count);
                 cardBuckets[i].Add(possibleRewards[randomIndex]);
                 possibleRewards.RemoveAt(randomIndex);
             }

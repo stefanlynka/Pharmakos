@@ -23,7 +23,7 @@ public class KillLowestAttackFollowersAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool successful = true)
     {
         Player playerSource = Source as Player;
         if (playerSource == null)

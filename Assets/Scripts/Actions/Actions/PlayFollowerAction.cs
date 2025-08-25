@@ -22,7 +22,7 @@ public class PlayFollowerAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool success = true)
     {
         Follower.Owner.PlayCard(Follower);
 
@@ -43,6 +43,6 @@ public class PlayFollowerAction : GameAction
 
     public override void LogAction()
     {
-        Debug.LogWarning(Follower.Owner.GetName() + " played " + Follower.GetName() + " " + Follower.ID);
+        Debug.LogWarning(Follower.Owner.GetName() + " played " + Follower.GetName());
     }
 }

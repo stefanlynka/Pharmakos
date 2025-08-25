@@ -189,6 +189,8 @@ public class ViewBattleRow : MonoBehaviour
 
     public void AddFollower(ViewFollower viewFollower, int index)
     {
+        if (index > Followers.Count) return;
+
         viewFollower.OnClick = FollowerInPlayClicked;
         viewFollower.transform.SetParent(UnitHolderTransform);
         Followers.Insert(index, viewFollower);
@@ -217,6 +219,18 @@ public class ViewBattleRow : MonoBehaviour
             if (targets.Contains(follower.Follower)) follower.SetHighlight(true);
             else follower.SetHighlight(false);
         }
+    }
+
+    public ViewFollower GetViewFollowerByID(int targetID)
+    {
+        foreach (ViewFollower follower in Followers)
+        {
+            if (follower.Follower.ID == targetID)
+            {
+                return follower;
+            }
+        }
+        return null;
     }
 
     public Vector3 GetPotentialFollowerPosition(int index = -1)

@@ -20,7 +20,7 @@ public class FollowerElopesAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool success = true)
     {
         // Get target
         Follower target = Follower.GetClosestEnemy();

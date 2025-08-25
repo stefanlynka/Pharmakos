@@ -96,6 +96,7 @@ public class ViewHandHandler : MonoBehaviour
             bool canPlay = viewCard.Card.CanPlay();
 
             viewCard.SetHighlight(!skipHighlighting && canPlay);
+            viewCard.UpdateCost();
         }
     }
 
@@ -112,5 +113,15 @@ public class ViewHandHandler : MonoBehaviour
         return newPos;
     }
 
-
+    public ViewCard GetViewCardByITargetID(int targetID)
+    {
+        foreach (ViewCard viewCard in ViewCards)
+        {
+            if (viewCard.Card.ID == targetID)
+            {
+                return viewCard;
+            }
+        }
+        return null;
+    }
 }

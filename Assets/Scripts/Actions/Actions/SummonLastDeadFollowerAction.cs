@@ -20,7 +20,7 @@ public class SummonLastDeadFollowerAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool success = true)
     {
         if (Player.GameState.LastFollowerThatDied == null) return;
         Follower followerCopy = Player.GameState.LastFollowerThatDied.MakeBaseCopy() as Follower;

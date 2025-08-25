@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEngine.GraphicsBuffer;
 
 public class DealDamageToAdjacentEnemyAction : GameAction
 {
@@ -23,7 +24,7 @@ public class DealDamageToAdjacentEnemyAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool success = true)
     {
         Follower follower = Source as Follower;
 
@@ -31,10 +32,13 @@ public class DealDamageToAdjacentEnemyAction : GameAction
         if (targets.Count != 0)
         {
             ITarget target = targets[follower.GameState.RNG.Next(0, targets.Count)];
-            Follower targetFollower = target as Follower;
-            if (targetFollower != null)
+            if (target is Follower targetFollower)
             {
-                follower.ChangeHealth(Source, -Damage);
+                targetFollower.ChangeHealth(Source, -Damage);
+            }
+            else if (target is Player targetPlayer)
+            {
+                targetPlayer.ChangeHealth(Source, -Damage);
             }
         }
 

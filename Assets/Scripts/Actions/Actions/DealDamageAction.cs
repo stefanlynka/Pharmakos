@@ -26,7 +26,7 @@ public class DealDamageAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool success = true)
     {
         Follower follower = Target as Follower;
         Player player = Target as Player;

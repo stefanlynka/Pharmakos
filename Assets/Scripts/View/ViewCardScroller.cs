@@ -57,7 +57,7 @@ public class ViewCardScroller : MonoBehaviour
     
     private void CardClicked(ViewTarget viewTarget)
     {
-        Debug.LogError("Card Clicked");
+        //Debug.LogError("Card Clicked");
         ViewCard viewCard = viewTarget as ViewCard;
         if (viewCard == null) return;
 

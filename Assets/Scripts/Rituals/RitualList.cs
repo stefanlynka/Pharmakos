@@ -27,7 +27,7 @@ public class ZeusMinor : Ritual
     {
         var targets = new List<ITarget>();
 
-        targets.AddRange(ITarget.GetOwnFollowers(Owner));
+        targets.AddRange(ITarget.GetAllFollowers(Owner));
 
         return targets;
     }
@@ -566,13 +566,13 @@ public class AresMajorEffectDef : PlayerEffect
         follower.InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
         ChangeStatsInstance gainStatsEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnKill);
         gainStatsEffectInstance.Init(attackGain, healthGain);
         effectDef.EffectInstances.Add(gainStatsEffectInstance);
 
-        RefreshFollowerAttackInstance refreshAttackEffectInstance = new RefreshFollowerAttackInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnKill);
+        RefreshFollowerAttackInstance refreshAttackEffectInstance = new RefreshFollowerAttackInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnKill);
         refreshAttackEffectInstance.Init(1);
         effectDef.EffectInstances.Add(refreshAttackEffectInstance);
     }
@@ -834,9 +834,9 @@ public class AthenaMajorEffectDef : PlayerEffect
         follower.InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        AddRandomFreeSpellToHandInstance gainSpellEffectInstance = new AddRandomFreeSpellToHandInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDrawBlood);
+        AddRandomFreeSpellToHandInstance gainSpellEffectInstance = new AddRandomFreeSpellToHandInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDrawBlood);
         gainSpellEffectInstance.Init(Target);
         effectDef.EffectInstances.Add(gainSpellEffectInstance);
     }
@@ -932,9 +932,9 @@ public class HephaestusMajorEffectDef : PlayerEffect
         follower.InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        AddSpellsCastOnThisToHandInstance gainSpellEffectInstance = new AddSpellsCastOnThisToHandInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        AddSpellsCastOnThisToHandInstance gainSpellEffectInstance = new AddSpellsCastOnThisToHandInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
         gainSpellEffectInstance.Init(Target);
         effectDef.EffectInstances.Add(gainSpellEffectInstance);
     }

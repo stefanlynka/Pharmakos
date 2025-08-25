@@ -22,19 +22,18 @@ public class AddCardCopyToHandAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool successful = true)
     {
-        Card.Owner.Hand.Add(Card);
-        View.Instance.DrawCard(Card);
+        bool success = Card.Owner.AddCardToHand(Card);
 
-        base.Execute(simulated);
+        base.Execute(simulated, success);
     }
 
     public override List<AnimationAction> GetAnimationActions()
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new SummonFollowerAnimation(this)
+            new MoveCardAnimation(this, Card, Card.Owner, GameZone.BattleRow, Card.Owner, GameZone.Hand)
         };
         return animationActions;
     }

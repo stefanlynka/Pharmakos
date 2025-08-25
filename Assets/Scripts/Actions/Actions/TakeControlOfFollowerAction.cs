@@ -24,7 +24,7 @@ public class TakeControlOfFollowerAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool success = true)
     {
         if (Follower.Owner == NewOwner) return;
 

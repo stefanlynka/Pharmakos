@@ -104,6 +104,13 @@ public class Follower : Card, ITarget
         float position = -0.5f * (Owner.BattleRow.Followers.Count - 1) + index;
 
         List<ITarget> targets = Owner.GetOtherPlayer().BattleRow.GetTargetsInRange(position, true);
+
+        // If there are three targets, choose the middle
+        if (targets.Count == 3 && targets[1] is Follower targetFollower)
+        {
+            return targetFollower;
+        }
+
         List<Follower> followerTargets = new List<Follower>();
         foreach (ITarget target in targets)
         {
@@ -111,10 +118,11 @@ public class Follower : Card, ITarget
             if (followerTarget != null) followerTargets.Add(followerTarget);
         }
 
-        if (followerTargets.Count == 1 || followerTargets.Count == 2) return followerTargets[0];
-        if (followerTargets.Count == 3) return followerTargets[1];
+        // If no targets, return null
+        if (followerTargets.Count == 0) return null;
 
-        return null;
+        // If there is only one target, choose it. If there are two targets, choose the left one.
+        return followerTargets[0];
     }
 
     public int GetAttacksPerTurn()
@@ -138,13 +146,12 @@ public class Follower : Card, ITarget
     public virtual void DoEndOfMyTurnEffects()
     {
         PlayedThisTurn = false;
-        RefreshAttacks();
     }
 
     // Trigger on own and opponent's turn
     public virtual void DoEndOfEachTurnEffects()
     {
-
+        RefreshAttacks();
     }
 
     public void RefreshAttacks()
@@ -248,7 +255,7 @@ public class Follower : Card, ITarget
         BaseHealth += healthChange;
         CurrentHealth += healthChange;
 
-        ResolveDamage();
+        if (healthChange != 0) ResolveDamage();
 
         ApplyOnChanged();
     }
@@ -264,7 +271,7 @@ public class Follower : Card, ITarget
         // Reduce damage by Shield amount
         if (value < 0 && StaticEffects.ContainsKey(StaticEffect.Shield))
         {
-            value = Mathf.Min(0, value - StaticEffects[StaticEffect.Shield].Count);
+            value = Mathf.Min(0, value + StaticEffects[StaticEffect.Shield].Count);
         }
         CurrentHealth += value;
 
@@ -304,9 +311,20 @@ public class Follower : Card, ITarget
         GameState.ActionHandler.AddAction(newAction);
     }
 
+    public void RemoveEffects()
+    {
+        foreach (FollowerEffect followerEffect in InnateEffects)
+        {
+            followerEffect.Unapply();
+        }
+
+        InnateEffects.Clear();
+    }
+
     public void ApplyOnDamageEffects(ITarget target, int amount)
     {
-        foreach (TriggeredFollowerEffectInstance effect in OnDamageEffects)
+        SortedSet<TriggeredFollowerEffectInstance> triggers = new SortedSet<TriggeredFollowerEffectInstance>(OnDamageEffects);
+        foreach (TriggeredFollowerEffectInstance effect in triggers)
         {
             effect.Trigger(target, amount);
         }
@@ -346,6 +364,13 @@ public class Follower : Card, ITarget
     //        }
     //    }
     //}
+
+    public override bool CanPlay()
+    {
+        if (Owner.BattleRow.Followers.Count >= Player.MaxFollowerCount) return false;
+
+        return base.CanPlay();
+    }
 
     public bool CanAttack()
     {

@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.UI.GridLayoutGroup;
 
 public class Player : ITarget
 {
+    public static int MaxHandSize = 10;
+    public static int MaxFollowerCount = 8;
     /// Deep Copied
     ///
     public PlayerDetails PlayerDetails = new PlayerDetails();
@@ -315,8 +318,12 @@ public class Player : ITarget
         DoEndOfTurnPlayerActions();
         DoEndOfEveryTurnPlayerActions();
 
-        foreach (Follower follower in BattleRow.Followers)
+        List<Follower> myFollowers = new List<Follower>(BattleRow.Followers);
+
+        foreach (Follower follower in myFollowers)
         {
+            if (follower == null || follower.CurrentHealth <= 0) continue;
+
             follower.DoEndOfMyTurnEffects();
             follower.DoEndOfEachTurnEffects();
         }
@@ -412,6 +419,11 @@ public class Player : ITarget
     }
     public void DrawCard()
     {
+        if (Hand.Count >= MaxHandSize)
+        {
+            return;
+        }
+
         if (Deck.Count == 0)
         {
             RefreshDeck();
@@ -423,6 +435,17 @@ public class Player : ITarget
         Deck.RemoveAt(0);
         Hand.Add(card);
         if (!GameState.IsSimulated) View.Instance.DrawCard(card);
+    }
+    public bool AddCardToHand(Card card)
+    {
+        if (Hand.Count >= MaxHandSize)
+        {
+            return false;
+        }
+
+        Hand.Add(card);
+
+        return true;
     }
 
     public void DiscardHand()
@@ -442,7 +465,8 @@ public class Player : ITarget
 
     public void FollowerDied(Follower follower)
     {
-        foreach (TriggeredFollowerEffectInstance effectInstance in follower.OnDeathEffects)
+        SortedSet<TriggeredFollowerEffectInstance> triggers = new SortedSet<TriggeredFollowerEffectInstance>(follower.OnDeathEffects);
+        foreach (TriggeredFollowerEffectInstance effectInstance in triggers)
         {
             effectInstance.Trigger();
         }    
@@ -451,8 +475,18 @@ public class Player : ITarget
     public void PlayCard(Card card)
     {
         card.PayCosts();
-        Hand.Remove(card);
+        //Hand.Remove(card);
+        for (int i = 0; i < Hand.Count; i++)
+        {
+            Card cardInHand = Hand[i];
+            if (cardInHand.ID == card.ID)
+            {
+                Hand.RemoveAt(i);
+                break;
+            }
+        }
     }
+
     public void TryPlayFollower(Follower follower, int index)
     {
         GameAction newAction = new PlayFollowerAction(follower, index);
@@ -471,17 +505,24 @@ public class Player : ITarget
     {
         PlayCard(spell);
         spell.Play(target);
-        View.Instance.RemoveCard(spell);
+        //View.Instance.RemoveCard(spell);
     }
 
-    public void SummonFollower(Follower follower, int index, bool createCrop = true)
+    public bool SummonFollower(Follower follower, int index, bool createCrop = true)
     {
+        if (BattleRow.Followers.Count >= MaxFollowerCount) return false;
+
         // Add to BattleRow
         index = Mathf.Min(index, BattleRow.Followers.Count);
         BattleRow.AddFollower(follower, index);
 
         // Trigger Offerings
-        if (createCrop) GameState.CurrentPlayer.ChangeOffering(OfferingType.Crop, 1);
+        if (createCrop)
+        {
+            GameAction newAction = new CreateOfferingAction(this, OfferingType.Crop, 1, follower.ID, GameState.CurrentPlayer.ITargetID);
+            GameState.ActionHandler.AddAction(newAction);
+            //if (createCrop) GameState.CurrentPlayer.ChangeOffering(OfferingType.Crop, 1);
+        }
 
         // Trigger Effects
         GameState.FireFollowerEnters(follower);
@@ -493,8 +534,7 @@ public class Player : ITarget
         follower.ApplyOnEnterEffects();
 
 
-        // Update View
-        //if (!GameState.IsSimulated) View.Instance.MoveFollowerToBattleRow(follower, index);
+        return true;
     }
 
     public void PayCosts(Card card)
@@ -536,10 +576,11 @@ public class Player : ITarget
 
             sourceFollower.ApplyOnDrawBloodEffects(this, -value);
         }
-
         OnHealthChange?.Invoke();
 
-        GameState.CurrentPlayer.ChangeOffering(OfferingType.Blood, Mathf.Abs(value));
+        GameAction newAction = new CreateOfferingAction(GameState.CurrentPlayer, OfferingType.Blood, Mathf.Abs(value), ITargetID, GameState.CurrentPlayer.ITargetID);
+        GameState.ActionHandler.AddAction(newAction);
+        //GameState.CurrentPlayer.ChangeOffering(OfferingType.Blood, Mathf.Abs(value));
     }
 
     public void ChangeOffering(OfferingType offeringType, int amount)
@@ -657,6 +698,7 @@ public class PlayerDetails
     public Ritual MinorRitual = null;
     public Ritual MajorRitual = null;
     public List<Card> Rewards = new List<Card>();
+    public List<Follower> StartingBattleRow = new List<Follower>();
 
     public int Pool = 1; // Only for enemies. Which 
 

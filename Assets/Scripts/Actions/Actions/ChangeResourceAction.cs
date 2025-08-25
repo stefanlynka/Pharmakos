@@ -25,7 +25,7 @@ public class ChangeResourceAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool successful = true)
     {
         owner.ChangeOffering(offeringType, amount);
 

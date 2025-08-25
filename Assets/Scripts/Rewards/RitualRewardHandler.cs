@@ -29,11 +29,11 @@ public class RitualRewardHandler : MonoBehaviour
         possibleRewards = Controller.Instance.ProgressionHandler.GetPossibleRitualRewards(); //CardHandler.GetPossibleRitualRewards(levelCompleted);
         possibleRewards.RemoveAll(ritual => ritual.GetType() == type1 || ritual.GetType() == type2);
 
-        int randomIndex = Controller.Instance.CanonGameState.RNG.Next(0, possibleRewards.Count);
+        int randomIndex = Controller.Instance.MetaRNG.Next(0, possibleRewards.Count);
         TopRitualReward.Load(possibleRewards[randomIndex], 0, RitualButtonClicked);
         possibleRewards.RemoveAt(randomIndex);
 
-        randomIndex = Controller.Instance.CanonGameState.RNG.Next(0, possibleRewards.Count);
+        randomIndex = Controller.Instance.MetaRNG.Next(0, possibleRewards.Count);
         BottomRitualReward.Load(possibleRewards[randomIndex], 1, RitualButtonClicked);
         possibleRewards.RemoveAt(randomIndex);
     }

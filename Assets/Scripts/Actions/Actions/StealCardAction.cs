@@ -11,7 +11,7 @@ public class StealCardAction : GameAction
 
     private Card stolenCard;
 
-    private int targetIndex = -1;
+    private int targetIndex = 0;
 
     public StealCardAction(Player thief, Player target)
     {
@@ -28,12 +28,15 @@ public class StealCardAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool successful = true)
     {
-        if (Thief == Target) return;
-        if (Target.Hand.Count == 0) return;
+        if (Thief == Target || Target.Hand.Count == 0) 
+        {
+            base.Execute(simulated, false);
+            return;
+        }
 
-        stolenCard = Target.Hand[0];
+        stolenCard = Target.Hand[targetIndex];
         Target.Hand.Remove(stolenCard);
         stolenCard.Costs[OfferingType.Gold] = 0;
         stolenCard.Owner = Thief;

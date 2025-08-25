@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class GameState
 {
+    public static int starterSeed;
     //
     // Deep copied
     //
@@ -38,7 +39,6 @@ public class GameState
         } 
     }
 
-
     public GameState()
     {
 
@@ -50,7 +50,10 @@ public class GameState
         AI = ai;
         CurrentTeamID = 0;
 
-        RNG = new CustomRandom(1);
+        starterSeed = UnityEngine.Random.Range(0, 1000);
+        Debug.Log("MetaSeed: " + starterSeed);
+
+        RNG = new CustomRandom(starterSeed);
 
         //ActionManager.GameState = this;
     }
@@ -74,7 +77,9 @@ public class GameState
         original.Human.DeepCopyDelayedEffects(Human);
         original.AI.DeepCopyDelayedEffects(AI);
 
-        RNG = new CustomRandom(original.RNG.GetCurrentState());
+        RNG = new CustomRandom(original.RNG);
+        //int oldResult = original.RNG.Next(0, 2);
+        //int newResult = RNG.Next(0, 2);
 
         FollowerDeathsThisTurn = original.FollowerDeathsThisTurn;
         LastFollowerThatDied = original.LastFollowerThatDied;
@@ -127,6 +132,62 @@ public class GameState
         return target as T;
     }
 
+    public void ResetFrom(GameState original, bool simulated)
+    {
+        // Reset or reinitialize all fields to match the original GameState
+        ActionHandler = new ActionHandler(simulated);
+        IsSimulated = simulated;
+
+        HighestTargetID = original.HighestTargetID;
+        CurrentTeamID = original.CurrentTeamID;
+
+        // Clear TargetsByID (they're repopulated later)
+        TargetsByID.Clear();
+
+        // Deep copy players and their effects/delayed effects
+        if (Human == null)
+            Human = original.Human.DeepCopy(this);
+        else
+            Human = original.Human.DeepCopy(this); // If you have a ResetFrom for Player, use it here
+
+        if (AI == null)
+            AI = original.AI.DeepCopy(this);
+        else
+            AI = original.AI.DeepCopy(this);
+
+        // Deep copy effects after players
+        original.Human.DeepCopyPlayerEffects(Human);
+        original.AI.DeepCopyPlayerEffects(AI);
+
+        original.Human.DeepCopyDelayedEffects(Human);
+        original.AI.DeepCopyDelayedEffects(AI);
+
+        RNG.SetSeed(original.RNG.CurrentSeed); // = new CustomRandom(original.RNG);
+
+        FollowerDeathsThisTurn = original.FollowerDeathsThisTurn;
+        LastFollowerThatDied = original.LastFollowerThatDied;
+    }
+
+    public void Cleanup()
+    {
+        // Null out references and clear collections to prepare for reuse
+        ActionHandler = null;
+        Human = null;
+        AI = null;
+        //RNG = null;
+        LastFollowerThatDied = null;
+
+        TargetsByID.Clear();
+
+        FollowerEnters = null;
+        FollowerDies = null;
+        SpellPlayed = null;
+        // Reset other fields as needed
+        FollowerDeathsThisTurn = 0;
+        CurrentTeamID = 0;
+        HighestTargetID = 0;
+        IsSimulated = false;
+    }
 }
 
 public enum GameZone
@@ -136,4 +197,31 @@ public enum GameZone
     Discard,
     BattleRow,
     Offscreen,
+    PlayZone,
+}
+
+public class GameStatePool
+{
+    private Stack<GameState> pool = new Stack<GameState>();
+
+    public GameState Get(GameState original, bool simulated)
+    {
+        GameState state;
+        if (pool.Count > 0)
+        {
+            state = pool.Pop();
+            state.ResetFrom(original, simulated); // You must implement this
+        }
+        else
+        {
+            state = new GameState(original, simulated);
+        }
+        return state;
+    }
+
+    public void Return(GameState state)
+    {
+        state.Cleanup(); // Clear lists, null references, etc.
+        pool.Push(state);
+    }
 }

@@ -66,6 +66,7 @@ public class SummonFollowerAnimation : AnimationAction
 
     private void Complete()
     {
+        ViewFollower.transform.position = endPos;
         View.Instance.MoveFollowerToBattleRow(summonFollowerAction.Follower, summonFollowerAction.Index);
         //Debug.LogWarning(summonFollowerAction.Follower.Owner.GetName() + " played " + summonFollowerAction.Follower.GetName() + " " + summonFollowerAction.Follower.ID + " Animation end");
         OnFinish?.Invoke();

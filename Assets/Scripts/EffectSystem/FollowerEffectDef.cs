@@ -58,8 +58,10 @@ public abstract class FollowerEffect
     // Let's Clone
     public FollowerEffect Clone()
     {
-        return (FollowerEffect)MemberwiseClone();
-        //Card clone = (Card)this.MemberwiseClone();
+        FollowerEffect newEffect = (FollowerEffect)MemberwiseClone();
+        newEffect.EffectInstances = new List<FollowerEffectInstance>();
+
+        return newEffect;
     }
 
     public virtual void Apply(Follower source)
@@ -71,7 +73,7 @@ public abstract class FollowerEffect
         {
             case EffectTarget.Self:
                 // Apply effect instance to self
-                ApplyInstance(EffectSource);
+                ApplyInstance(EffectSource, 0);
 
                 break;
             case EffectTarget.AdjacentAllies:
@@ -89,7 +91,7 @@ public abstract class FollowerEffect
                     Follower leftNeighbour = source.Owner.BattleRow.Followers[sourceIndex - 1];
                     if (leftNeighbour != null)
                     {
-                        ApplyInstance(leftNeighbour);
+                        ApplyInstance(leftNeighbour, -1);
                     }
                 }
                 if (sourceIndex < followersInBattleRow - 1)
@@ -97,7 +99,7 @@ public abstract class FollowerEffect
                     Follower rightNeighbour = source.Owner.BattleRow.Followers[sourceIndex + 1];
                     if (rightNeighbour != null)
                     {
-                        ApplyInstance(rightNeighbour);
+                        ApplyInstance(rightNeighbour, 1);
                     }
                 }
 
@@ -116,7 +118,7 @@ public abstract class FollowerEffect
         Apply(EffectSource);
     }
 
-    protected virtual void Unapply()
+    public virtual void Unapply()
     {
         switch (TargetType)
         {
@@ -134,7 +136,7 @@ public abstract class FollowerEffect
         EffectInstances.Clear();
     }
 
-    protected virtual void ApplyInstance(Follower instanceTarget){}
+    protected virtual void ApplyInstance(Follower instanceTarget, int offset){}
 
     public static List<Follower> GetTargets(Follower source, EffectTarget targetType, FollowerEffect effectDef)
     {
@@ -162,14 +164,14 @@ public abstract class FollowerEffect
 
 public class CustomEffectDef : FollowerEffect
 {
-    public Action<FollowerEffect, Follower> ApplyInstanceAction = null;
+    public Action<FollowerEffect, Follower, int> ApplyInstanceAction = null;
     public CustomEffectDef(EffectTarget target) : base(target){}
 
-    protected override void ApplyInstance(Follower source)
+    protected override void ApplyInstance(Follower source, int offset)
     {
-        base.ApplyInstance(source);
+        base.ApplyInstance(source, offset);
 
-        ApplyInstanceAction?.Invoke(this, source);
+        ApplyInstanceAction?.Invoke(this, source, offset);
     }
 }
 
@@ -186,7 +188,7 @@ public class StaticEffectDef : FollowerEffect
         base.Apply(source);
     }
 
-    protected override void ApplyInstance(Follower instanceTarget)
+    protected override void ApplyInstance(Follower instanceTarget, int offset)
     {
         StaticFollowerEffectInstance newEffectInstance = new StaticFollowerEffectInstance(this, instanceTarget, 0, 0, staticEffectName);
         EffectInstances.Add(newEffectInstance);
@@ -198,9 +200,9 @@ public class LifeSiphonEffectDef : FollowerEffect
 {
     public LifeSiphonEffectDef(EffectTarget target) : base(target) { }
 
-    protected override void ApplyInstance(Follower instanceTarget)
+    protected override void ApplyInstance(Follower instanceTarget, int offset)
     {
-        base.ApplyInstance(instanceTarget);
+        base.ApplyInstance(instanceTarget, 0);
 
         ChangePlayerHealthInstance newEffectInstance = new ChangePlayerHealthInstance(this, instanceTarget, 0, 0, EffectTrigger.OnDamage);
         newEffectInstance.Init(0, true, true);
@@ -213,9 +215,9 @@ public class DealAttackDamageOnAttackEffectDef : FollowerEffect
 {
     public DealAttackDamageOnAttackEffectDef(EffectTarget target) : base(target) { }
 
-    protected override void ApplyInstance(Follower instanceTarget)
+    protected override void ApplyInstance(Follower instanceTarget, int offset)
     {
-        base.ApplyInstance(instanceTarget);
+        base.ApplyInstance(instanceTarget, 0);
 
         DamageTargetInstance newEffectInstance = new DamageTargetInstance(this, instanceTarget, 0, 0, EffectTrigger.OnAttack);
         newEffectInstance.Init(0, true);
@@ -229,9 +231,9 @@ public class DealAttackDamageOnAttackedEffectDef : FollowerEffect
 {
     public DealAttackDamageOnAttackedEffectDef(EffectTarget target) : base(target) { }
 
-    protected override void ApplyInstance(Follower instanceTarget)
+    protected override void ApplyInstance(Follower instanceTarget, int offset)
     {
-        base.ApplyInstance(instanceTarget);
+        base.ApplyInstance(instanceTarget, 0);
 
         DamageTargetInstance newEffectInstance = new DamageTargetInstance(this, instanceTarget, 0, 0, EffectTrigger.OnAttacked);
         newEffectInstance.Init(0, true);
@@ -249,9 +251,9 @@ public class DamageOnAttackedEffectDef : FollowerEffect
         this.damage = damage;
     }
 
-    protected override void ApplyInstance(Follower instanceTarget)
+    protected override void ApplyInstance(Follower instanceTarget, int offset)
     {
-        base.ApplyInstance(instanceTarget);
+        base.ApplyInstance(instanceTarget, 0);
 
         DamageTargetInstance newEffectInstance = new DamageTargetInstance(this, instanceTarget, 0, 0, EffectTrigger.OnAttacked);
         newEffectInstance.Init(damage);

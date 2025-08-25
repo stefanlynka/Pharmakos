@@ -42,9 +42,9 @@ public class Sheep : Follower
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangeResourceInstance newEffectInstance = new ChangeResourceInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        ChangeResourceInstance newEffectInstance = new ChangeResourceInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
         newEffectInstance.Init(OfferingType.Gold, 1);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -82,15 +82,15 @@ public class Boar : Follower
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
         changePlayerHealthInstance.Init(3);
         effectDef.EffectInstances.Add(changePlayerHealthInstance);
     }
 }
 
-// OnDeath: Lose 2 Health
+// OnDeath: Lose 1 Health
 public class Prey1 : Follower
 {
     public Prey1() : base()
@@ -109,7 +109,7 @@ public class Prey1 : Follower
         SetBaseStats(0, 1);
 
         OverrideName = "Prey";
-        Text = "On Death: Lose 2 Health";
+        Text = "On Death: Lose 1 Health";
 
         SetupInnateEffects();
     }
@@ -123,14 +123,14 @@ public class Prey1 : Follower
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
-        changePlayerHealthInstance.Init(-2);
+        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
+        changePlayerHealthInstance.Init(-1);
         effectDef.EffectInstances.Add(changePlayerHealthInstance);
     }
 }
-// OnDeath: Lose 2 Health
+// OnDeath: Lose 1 Health
 public class Prey2 : Follower
 {
     public Prey2() : base()
@@ -149,7 +149,7 @@ public class Prey2 : Follower
         SetBaseStats(0, 1);
 
         OverrideName = "Prey";
-        Text = "On Death: Lose 2 Health";
+        Text = "On Death: Lose 1 Health";
 
         SetupInnateEffects();
     }
@@ -163,14 +163,14 @@ public class Prey2 : Follower
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
-        changePlayerHealthInstance.Init(-2);
+        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
+        changePlayerHealthInstance.Init(-1);
         effectDef.EffectInstances.Add(changePlayerHealthInstance);
     }
 }
-// OnDeath: Lose 2 Health
+// OnDeath: Lose 1 Health
 public class Prey3 : Follower
 {
     public Prey3() : base()
@@ -189,7 +189,7 @@ public class Prey3 : Follower
         SetBaseStats(0, 1);
 
         OverrideName = "Prey";
-        Text = "On Death: Lose 2 Health";
+        Text = "On Death: Lose 1 Health";
 
         SetupInnateEffects();
     }
@@ -203,10 +203,10 @@ public class Prey3 : Follower
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
-        changePlayerHealthInstance.Init(-2);
+        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
+        changePlayerHealthInstance.Init(-1);
         effectDef.EffectInstances.Add(changePlayerHealthInstance);
     }
 }
@@ -243,9 +243,9 @@ public class GoldenHind : Follower
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        DamageAllEnemiesInstance instance = new DamageAllEnemiesInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAttack);
+        DamageAllEnemiesInstance instance = new DamageAllEnemiesInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnAttack);
         instance.Init(0, true);
         effectDef.EffectInstances.Add(instance);
     }
@@ -379,9 +379,9 @@ public class Rat : Follower
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnDamage);
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnDamage);
         newEffectInstance.Init(-1, 0, EffectTarget.Self, true);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -425,15 +425,16 @@ public class Filth : Follower
         base.SetupInnateEffects();
 
         InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Taunt));
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.CantAttack));
 
         CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnAttacked);
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnAttacked);
         newEffectInstance.Init(-1, 0, EffectTarget.Self, true);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -467,6 +468,7 @@ public class WallOfTroy : Follower
         base.SetupInnateEffects();
 
         InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Taunt));
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.CantAttack));
     }
 }
 
@@ -506,9 +508,9 @@ public class Corridor : Follower
         InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.CantAttack));
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        SummonRandomMonsterInstance newEffectInstance = new SummonRandomMonsterInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnDeath);
+        SummonRandomMonsterInstance newEffectInstance = new SummonRandomMonsterInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnDeath);
         newEffectInstance.Init(0);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -756,15 +758,15 @@ public class TrojanHorse : Follower
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        SummonPeltastInstance newEffectInstance1 = new SummonPeltastInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        SummonPeltastInstance newEffectInstance1 = new SummonPeltastInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
         effectDef.EffectInstances.Add(newEffectInstance1);
 
-        SummonPeltastInstance newEffectInstance2 = new SummonPeltastInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnDeath);
+        SummonPeltastInstance newEffectInstance2 = new SummonPeltastInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnDeath);
         effectDef.EffectInstances.Add(newEffectInstance2);
 
-        SummonPeltastInstance newEffectInstance3 = new SummonPeltastInstance(effectDef, instanceTarget, 0, 2, EffectTrigger.OnDeath);
+        SummonPeltastInstance newEffectInstance3 = new SummonPeltastInstance(effectDef, instanceTarget, offset, 2, EffectTrigger.OnDeath);
         effectDef.EffectInstances.Add(newEffectInstance3);
     }
 }
@@ -785,7 +787,7 @@ public class Chariot : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(1, 5);
+        SetBaseStats(0, 4);
 
         Text = "Adjacent Followers have Sprint";
 
@@ -806,7 +808,7 @@ public class Phalangite : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 1},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -862,14 +864,14 @@ public class Satyr : Follower
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        DrawCardsInstance newEffectInstance = new DrawCardsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        DrawCardsInstance newEffectInstance = new DrawCardsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
         newEffectInstance.Init(1);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
 }
-// When an adjacent Follower kills: Heal that Follower to full health
+// When an adjacent Follower attacks: give it +1/+0
 public class Maenad : Follower
 {
     public Maenad() : base()
@@ -887,7 +889,7 @@ public class Maenad : Follower
 
         SetBaseStats(3, 2);
 
-        Text = "When an adjacent Follower kills: Heal that Follower to full health";
+        Text = "When an adjacent Follower attacks: give it +1/+0";
 
         SetupInnateEffects();
     }
@@ -900,14 +902,14 @@ public class Maenad : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAttack);
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnAttack);
         newEffectInstance.Init(1, 0);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
 }
-// When you play a spell: this gains 1 health
+// When you play a spell: this gains 2 health
 public class Nereid : Follower
 {
     public Nereid() : base()
@@ -934,13 +936,13 @@ public class Nereid : Follower
     {
         base.SetupInnateEffects();
 
-        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.AdjacentAllies);
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAnySpellCast);
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnAnySpellCast);
         newEffectInstance.Init(0, 2);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -982,13 +984,13 @@ public class Endymion : Follower
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        SummonFollowerInstance newEffectInstance = new SummonFollowerInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnEnter);
+        SummonFollowerInstance newEffectInstance = new SummonFollowerInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnEnter);
         newEffectInstance.Init(typeof(Sheep));
         effectDef.EffectInstances.Add(newEffectInstance);
 
-        SummonFollowerInstance newEffectInstance2 = new SummonFollowerInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnEnter);
+        SummonFollowerInstance newEffectInstance2 = new SummonFollowerInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnEnter);
         newEffectInstance2.Init(typeof(Sheep), 1);
         effectDef.EffectInstances.Add(newEffectInstance2);
     }
@@ -1025,9 +1027,9 @@ public class OracleOfDelphi : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangeResourceDelayedInstance newEffectInstance = new ChangeResourceDelayedInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnEnter);
+        ChangeResourceDelayedInstance newEffectInstance = new ChangeResourceDelayedInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnEnter);
         newEffectInstance.Init(OfferingType.Gold, 1);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -1064,9 +1066,9 @@ public class Charon : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangeResourceInstance newEffectInstance = new ChangeResourceInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        ChangeResourceInstance newEffectInstance = new ChangeResourceInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
         newEffectInstance.Init(OfferingType.Gold, 1);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -1103,9 +1105,9 @@ public class Calchas : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        AddCardCopyToHandInstance newEffectInstance = new AddCardCopyToHandInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnKill);
+        AddCardCopyToHandInstance newEffectInstance = new AddCardCopyToHandInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnKill);
         Scry newCard = new Scry();
         newCard.Costs[OfferingType.Gold] = 0;
         newEffectInstance.Init(newCard);
@@ -1144,9 +1146,9 @@ public class Podalirius : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        HealFollowersInstance newEffectInstance = new HealFollowersInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDamage);
+        HealFollowersInstance newEffectInstance = new HealFollowersInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDamage);
         newEffectInstance.Init(0, EffectTarget.AdjacentAllies, true);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -1183,9 +1185,9 @@ public class Medea : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        HealFollowersInstance newEffectInstance = new HealFollowersInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnKill);
+        HealFollowersInstance newEffectInstance = new HealFollowersInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnKill);
         newEffectInstance.Init(999, EffectTarget.Self);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -1209,7 +1211,7 @@ public class Patroclus : Follower
 
         SetBaseStats(1, 1);
 
-        Text = "OnDeath: Grant adjacent Followers +2 attack and Frenzy";
+        Text = "On Death: Grant adjacent Followers +2 attack and Frenzy";
 
         SetupInnateEffects();
     }
@@ -1222,13 +1224,13 @@ public class Patroclus : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        GiveFollowerStaticEffectInstance newEffectInstance2 = new GiveFollowerStaticEffectInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        GiveFollowerStaticEffectInstance newEffectInstance2 = new GiveFollowerStaticEffectInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
         newEffectInstance2.Init(EffectTarget.AdjacentAllies, StaticEffect.Frenzy);
         effectDef.EffectInstances.Add(newEffectInstance2);
 
-        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnDeath);
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnDeath);
         newEffectInstance.Init(2, 0, EffectTarget.AdjacentAllies);
         effectDef.EffectInstances.Add(newEffectInstance);
 
@@ -1266,13 +1268,13 @@ public class Hippolyta : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        GiveFollowerStaticEffectInstance newEffectInstance2 = new GiveFollowerStaticEffectInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnEnter);
+        GiveFollowerStaticEffectInstance newEffectInstance2 = new GiveFollowerStaticEffectInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnEnter);
         newEffectInstance2.Init(EffectTarget.AdjacentAllies, StaticEffect.Sprint);
         effectDef.EffectInstances.Add(newEffectInstance2);
 
-        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnEnter);
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnEnter);
         newEffectInstance.Init(2, 0, EffectTarget.AdjacentAllies);
         effectDef.EffectInstances.Add(newEffectInstance);
 
@@ -1309,13 +1311,13 @@ public class Amazon : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        GiveFollowerStaticEffectInstance newEffectInstance2 = new GiveFollowerStaticEffectInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnEnter);
+        GiveFollowerStaticEffectInstance newEffectInstance2 = new GiveFollowerStaticEffectInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnEnter);
         newEffectInstance2.Init(EffectTarget.AdjacentAllies, StaticEffect.Sprint);
         effectDef.EffectInstances.Add(newEffectInstance2);
 
-        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnEnter);
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnEnter);
         newEffectInstance.Init(2, 0, EffectTarget.AdjacentAllies);
         effectDef.EffectInstances.Add(newEffectInstance);
 
@@ -1354,12 +1356,12 @@ public class Agamemnon : Follower
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        SummonPeltastInstance newEffectInstance = new SummonPeltastInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAttack);
+        SummonPeltastInstance newEffectInstance = new SummonPeltastInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnAttack);
         effectDef.EffectInstances.Add(newEffectInstance);
 
-        SummonPeltastInstance newEffectInstance2 = new SummonPeltastInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnAttack);
+        SummonPeltastInstance newEffectInstance2 = new SummonPeltastInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnAttack);
         newEffectInstance2.SummonPositionOffset = 1;
         effectDef.EffectInstances.Add(newEffectInstance2);
     }
@@ -1395,12 +1397,12 @@ public class Menelaus : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        SummonPeltastInstance newEffectInstance = new SummonPeltastInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDamaged);
+        SummonPeltastInstance newEffectInstance = new SummonPeltastInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDamaged);
         effectDef.EffectInstances.Add(newEffectInstance);
 
-        SummonPeltastInstance newEffectInstance2 = new SummonPeltastInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnDamaged);
+        SummonPeltastInstance newEffectInstance2 = new SummonPeltastInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnDamaged);
         newEffectInstance2.SummonPositionOffset = 1;
         effectDef.EffectInstances.Add(newEffectInstance2);
     }
@@ -1437,9 +1439,9 @@ public class Pyrrhus : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangeResourceInstance newEffectInstance = new ChangeResourceInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnKill);
+        ChangeResourceInstance newEffectInstance = new ChangeResourceInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnKill);
         newEffectInstance.Init(OfferingType.Gold, 1);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -1463,7 +1465,7 @@ public class Diomedes : Follower
 
         SetBaseStats(4, 4);
 
-        Text = "";
+        Text = "On Draw Blood: Gain +1/+1";
 
         SetupInnateEffects();
     }
@@ -1476,9 +1478,9 @@ public class Diomedes : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDrawBlood);
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDrawBlood);
         newEffectInstance.Init(1, 1);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -1502,7 +1504,7 @@ public class Icarus : Follower
 
         SetBaseStats(0, 7);
 
-        Text = "";
+        Text = "Attack equals Icarus' missing health";
 
         SetupInnateEffects();
     }
@@ -1549,9 +1551,9 @@ public class Atalanta : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        AddCardCopyToHandInstance newEffectInstance = new AddCardCopyToHandInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnKill);
+        AddCardCopyToHandInstance newEffectInstance = new AddCardCopyToHandInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnKill);
         Smite newCard = new Smite();
         newCard.Costs[OfferingType.Gold] = 0;
         newEffectInstance.Init(newCard);
@@ -1591,9 +1593,9 @@ public class Asclepius : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangePlayerHealthInstance newEffectInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnTargeted);
+        ChangePlayerHealthInstance newEffectInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnTargeted);
         newEffectInstance.Init(3);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -1617,7 +1619,7 @@ public class Melpomene : Follower
 
         SetBaseStats(2, 4);
 
-        Text = "When an adjacent Follower dies: Add a free Blessing spell to your hand";
+        Text = "When an adjacent Follower dies:\nAdd a free Blessing spell to your hand";
 
         SetupInnateEffects();
     }
@@ -1630,9 +1632,9 @@ public class Melpomene : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        AddCardCopyToHandInstance newEffectInstance = new AddCardCopyToHandInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        AddCardCopyToHandInstance newEffectInstance = new AddCardCopyToHandInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
         Blessing newCard = new Blessing();
         newCard.Costs[OfferingType.Gold] = 0;
         newEffectInstance.Init(newCard);
@@ -1671,7 +1673,7 @@ public class Achilles : Follower
         InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.ImmuneWhileAttacking));
     }
 }
-// Archer 3/1
+// Archer 3/2
 public class Paris : Follower
 {
     public Paris() : base()
@@ -1687,7 +1689,7 @@ public class Paris : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(3, 1);
+        SetBaseStats(3, 2);
 
         Text = "Ranged attacker.\nImmune while attacking";
 
@@ -1720,7 +1722,7 @@ public class Hector : Follower
 
         SetBaseStats(5, 5);
 
-        Text = "";
+        Text = "Reduce damage taken by 1";
 
         SetupInnateEffects();
     }
@@ -1765,9 +1767,9 @@ public class Sarpedon : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAttack);
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnAttack);
         newEffectInstance.Init(1, 1, EffectTarget.AdjacentAllies);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -1804,9 +1806,9 @@ public class Cassandra : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        DrawCardsDelayedInstance newEffectInstance = new DrawCardsDelayedInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnEnter);
+        DrawCardsDelayedInstance newEffectInstance = new DrawCardsDelayedInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnEnter);
         newEffectInstance.Init(1);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -1907,13 +1909,13 @@ public class Pan : Follower
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        DrawCardsInstance drawCardInstance = new DrawCardsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAttack);
+        DrawCardsInstance drawCardInstance = new DrawCardsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnAttack);
         drawCardInstance.Init(2);
         effectDef.EffectInstances.Add(drawCardInstance);
 
-        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 1, EffectTrigger.OnAttack);
+        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnAttack);
         changePlayerHealthInstance.Init(3);
         effectDef.EffectInstances.Add(changePlayerHealthInstance);
     }
@@ -1943,7 +1945,7 @@ public class Pytho : Follower
 
         SetBaseStats(0, 5);
 
-        Text = "";
+        Text = "+5 Attack when in middle of formation";
 
         SetupInnateEffects();
     }
@@ -2007,7 +2009,7 @@ public class Hydra : Follower
     }
 }
 
-// At the end of each turn, if this has two neighbours: This heals 2 damage
+// At the end of your turn, if this has two neighbours: This heals 2 damage
 public class Minotaur : Follower
 {
     public Minotaur() : base()
@@ -2025,7 +2027,7 @@ public class Minotaur : Follower
 
         SetBaseStats(3, 6);
 
-        Text = "At the end of each turn, if this has two neighbours: This heals 2 damage";
+        Text = "At the end of your turn, if this has two neighbours: This heals 2 damage";
 
         SetupInnateEffects();
     }
@@ -2035,11 +2037,12 @@ public class Minotaur : Follower
         base.SetupInnateEffects();
     }
 
-    public override void DoEndOfEachTurnEffects()
+    public override void DoEndOfMyTurnEffects()
     {
-        base.DoEndOfEachTurnEffects();
+        base.DoEndOfMyTurnEffects();
 
-        Heal(2);
+        List<Follower> neighbours = Owner.BattleRow.GetAdjacentFollowers(this);
+        if (neighbours.Count >= 2) Heal(2);
     }
 }
 
@@ -2071,9 +2074,9 @@ public class Scylla : Follower
         base.SetupInnateEffects();
     }
 
-    public override void DoEndOfEachTurnEffects()
+    public override void DoEndOfMyTurnEffects()
     {
-        base.DoEndOfEachTurnEffects();
+        base.DoEndOfMyTurnEffects();
 
         for (int i = 0; i < 6; i++)
         {
@@ -2160,10 +2163,10 @@ public class Gorgon : Follower
         InnateEffects.Add(customEffectDef);
     }
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        SetStatsInstance setStatsInstance = new SetStatsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAttack);
-        setStatsInstance.Init(0, -1, useTargetInsteadOfType:true);
+        TurnToStoneInstance setStatsInstance = new TurnToStoneInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnAttack);
+        setStatsInstance.Init(useTargetInsteadOfType:true);
         effectDef.EffectInstances.Add(setStatsInstance);
     }
 }
@@ -2186,7 +2189,7 @@ public class Cerberus : Follower
 
         SetBaseStats(3, 9);
 
-        Text = "";
+        Text = "Cleave";
 
         SetupInnateEffects();
     }
@@ -2217,7 +2220,7 @@ public class Siren : Follower
 
         SetBaseStats(1, 2);
 
-        Text = "";
+        Text = "On Attacked:\nDeal 3 damage";
 
         SetupInnateEffects();
     }
@@ -2248,7 +2251,7 @@ public class Lamia : Follower
 
         SetBaseStats(1, 3);
 
-        Text = "";
+        Text = "Life Siphon";
 
         SetupInnateEffects();
     }
@@ -2268,7 +2271,7 @@ public class Chimera : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 1},
+            { OfferingType.Gold, 2},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -2326,9 +2329,9 @@ public class Sphinx : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        AddCardCopyToHandInstance newEffectInstance = new AddCardCopyToHandInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnEnter);
+        AddCardCopyToHandInstance newEffectInstance = new AddCardCopyToHandInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnEnter);
         Confusion newCard = new Confusion();
         //newCard.Costs[OfferingType.Gold] = 0;
         newEffectInstance.Init(newCard);
@@ -2353,6 +2356,8 @@ public class Cyclops : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(3, 4);
+
+        Text = "Can only attack Followers directly in front of this";
 
         SetupInnateEffects();
     }
@@ -2427,9 +2432,9 @@ public class Keres : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnDeath);
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
         newEffectInstance.Init(2, 0, EffectTarget.EffectSource);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -2461,13 +2466,13 @@ public class Erinyes : Follower
     {
         base.SetupInnateEffects();
 
-        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.AdjacentAllies);
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnAnyFollowerDeath);
+        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnAnyFollowerDeath);
         changePlayerHealthInstance.Init(-2, false);
         effectDef.EffectInstances.Add(changePlayerHealthInstance);
     }
@@ -2480,7 +2485,7 @@ public class Typhon : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 1},
+            { OfferingType.Gold, 5},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -2491,7 +2496,7 @@ public class Typhon : Follower
 
         SetBaseStats(4, 6);
 
-        Text = "Adjacent Followers and Typhon have OnKill: Can attack again";
+        Text = "Adjacent Followers and Typhon have 'On Kill: Can attack again'";
 
         SetupInnateEffects();
     }
@@ -2508,9 +2513,9 @@ public class Typhon : Follower
         adjacentCustomEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(adjacentCustomEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        RefreshFollowerAttackInstance newEffectInstance = new RefreshFollowerAttackInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnKill);
+        RefreshFollowerAttackInstance newEffectInstance = new RefreshFollowerAttackInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnKill);
         newEffectInstance.Init(1);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -2547,9 +2552,9 @@ public class Echidna : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
     }
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget)
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        SummonRandomMonsterInstance newEffectInstance = new SummonRandomMonsterInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnKill);
+        SummonRandomMonsterInstance newEffectInstance = new SummonRandomMonsterInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnKill);
         newEffectInstance.Init(1);
         effectDef.EffectInstances.Add(newEffectInstance);
     }
@@ -2620,6 +2625,7 @@ public class ReleasePrey : Spell
             { OfferingType.Scroll, 0},
         };
 
+        OverrideName = "Release Prey";
         Text = "Summon 3 0/1 Prey for target player";
         HasTargets = true;
     }
@@ -2673,6 +2679,7 @@ public class CreateFilth : Spell
             { OfferingType.Scroll, 0},
         };
 
+        OverrideName = "Create Filth";
         Text = "Summon 3 0/1 Filth for target player";
         HasTargets = true;
     }
@@ -2754,7 +2761,7 @@ public class Smite : Spell
 // Deal 2 damage
 public class ThrowStone : Spell
 {
-    private int damage = 3;
+    private int damage = 2;
     public ThrowStone()
     {
         Costs = new Dictionary<OfferingType, int>()
@@ -2766,6 +2773,7 @@ public class ThrowStone : Spell
             { OfferingType.Scroll, 0},
         };
 
+        OverrideName = "Throw Stone";
         Text = "Deal 2 Damage";
         HasTargets = true;
     }
@@ -2872,11 +2880,11 @@ public class Scry : Spell
     }
 }
 
-// Give a Follower +1/+1
+// Give a Follower +2/+0
 public class Blessing : Spell
 {
-    private int attackGained = 1;
-    private int healthGained = 1;
+    private int attackGained = 2;
+    private int healthGained = 0;
     public Blessing()
     {
         Costs = new Dictionary<OfferingType, int>()
@@ -2888,7 +2896,7 @@ public class Blessing : Spell
             { OfferingType.Scroll, 0},
         };
 
-        Text = "Give a Follower +1/+1";
+        Text = "Give a Follower +2 Attack";
         HasTargets = true;
     }
 
@@ -2965,7 +2973,7 @@ public class Confusion : Spell
             { OfferingType.Scroll, 0},
         };
 
-        Text = "Give a Follower -1/-0";
+        Text = "Give a Follower \n-1/-0";
         HasTargets = true;
     }
 
@@ -3675,6 +3683,7 @@ public class PriceOfProfit : Spell
             { OfferingType.Scroll, 0},
         };
 
+        OverrideName = "Price Of Profit";
         Text = "Sacrifice a Follower to Gain 1 Gold";
         HasTargets = true;
     }
@@ -3723,6 +3732,7 @@ public class PriceOfKnowledge : Spell
             { OfferingType.Scroll, 0},
         };
 
+        OverrideName = "Price of Knowledge";
         Text = "Sacrifice a Follower to Draw 2 Cards";
         HasTargets = true;
     }
@@ -3771,6 +3781,7 @@ public class PriceOfInspiration : Spell
             { OfferingType.Scroll, 0},
         };
 
+        OverrideName = "Price of Inspiration";
         Text = "Sacrifice a Follower and lose life equal to its health to Draw that many Cards";
         HasTargets = true;
     }
@@ -3823,7 +3834,8 @@ public class PriceOfWealth : Spell
             { OfferingType.Scroll, 0},
         };
 
-        Text = "Sacrifice a Follower and lose life equal to its attack to Gain half that much Gold";
+        OverrideName = "Price of Wealth";
+        Text = "Sacrifice a Follower and lose life equal to its attack to Gain that much Gold";
         HasTargets = true;
     }
 
@@ -3875,6 +3887,7 @@ public class PriceOfReprisal : Spell
             { OfferingType.Scroll, 0},
         };
 
+        OverrideName = "Price of Reprisal";
         Text = "Sacrifice a Follower and damage opponent equal to its attack";
         HasTargets = true;
     }
@@ -3924,6 +3937,7 @@ public class PriceOfRenewal : Spell
             { OfferingType.Scroll, 0},
         };
 
+        OverrideName = "Price of Renewal";
         Text = "Sacrifice a Follower and gain life equal to its attack and health";
         HasTargets = true;
     }
@@ -3973,6 +3987,7 @@ public class PriceOfLegacy : Spell
             { OfferingType.Scroll, 0},
         };
 
+        OverrideName = "Price of Legacy";
         Text = "Sacrifice a Follower and lose life equal to its attack to Summon that many 1/1s";
         HasTargets = true;
     }

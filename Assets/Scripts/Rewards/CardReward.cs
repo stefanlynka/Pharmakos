@@ -16,12 +16,12 @@ public class CardReward : MonoBehaviour
             ViewCard = View.Instance.MakeNewViewCard(card, false);
             ViewCard.transform.parent = transform;
             ViewCard.transform.localPosition = new Vector3();
+            
             ViewCard.gameObject.SetActive(true);
         }
 
-        BoxCollider collider = ViewCard.GetComponent<BoxCollider>();
-        if (collider != null) collider.enabled = clickable;
-
         ViewCard.Load(card, CardClicked);
+
+        if (ViewCard.CardCollider != null) ViewCard.CardCollider.enabled = clickable;
     }
 }

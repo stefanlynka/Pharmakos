@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class HealAction : GameAction
@@ -25,7 +24,7 @@ public class HealAction : GameAction
         return copy;
     }
 
-    public override void Execute(bool simulated = false)
+    public override void Execute(bool simulated = false, bool success = true)
     {
         Follower followerTarget = target as Follower;
         Player playerTarget = target as Player;

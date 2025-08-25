@@ -26,10 +26,19 @@ public class PlayFollowerDecision : PlayerDecision
 
     public override string GetString()
     {
-        Follower follower = Controller.Instance.CanonGameState.TargetsByID[CardID] as Follower;
+        Follower follower = null;
+        if (!Controller.Instance.CanonGameState.TargetsByID.ContainsKey(CardID))
+        {
+            if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+        }
+        else
+        {
+            follower = Controller.Instance.CanonGameState.TargetsByID[CardID] as Follower;
+        }
+
         if (follower != null)
         {
-            return "Play " + follower.GetName() + " ID:" + follower.ID + " at index: " + PlacementIndex;
+            return "Play " + follower.GetName() + " at index: " + PlacementIndex;
         }
         return "Follower not found";
     }
@@ -48,8 +57,18 @@ public class PlaySpellDecision : PlayerDecision
 
     public override string GetString()
     {
-        Spell spell = Controller.Instance.CanonGameState.TargetsByID[CardID] as Spell;
-        ITarget target = Controller.Instance.CanonGameState.TargetsByID[TargetID];
+        Spell spell = null;
+        ITarget target = null;
+        if (!Controller.Instance.CanonGameState.TargetsByID.ContainsKey(CardID) || !Controller.Instance.CanonGameState.TargetsByID.ContainsKey(TargetID))
+        {
+            if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+        }
+        else
+        {
+            spell = Controller.Instance.CanonGameState.TargetsByID[CardID] as Spell;
+            target = Controller.Instance.CanonGameState.TargetsByID[TargetID];
+        }
+         
         if (spell != null && target != null)
         {
             return "Play " + spell.GetName() + " targeting " + target.GetName();
@@ -71,6 +90,10 @@ public class UseRitualDecision : PlayerDecision
 
     public override string GetString()
     {
+        if (!Controller.Instance.CanonGameState.TargetsByID.ContainsKey(RitualID) || !Controller.Instance.CanonGameState.TargetsByID.ContainsKey(TargetID))
+        {
+            if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+        }
         Ritual ritual = Controller.Instance.CanonGameState.TargetsByID[RitualID] as Ritual;
         ITarget target = Controller.Instance.CanonGameState.TargetsByID[TargetID];
         if (ritual != null)
@@ -95,10 +118,18 @@ public class AttackWithFollowerDecision : PlayerDecision
 
     public override string GetString()
     {
+        Follower follower = null;
         //if (!Controller.Instance.CanonGameState.TargetsByID.ContainsKey(FollowerID)) return ""; // TODO : remove, this shouldn't happen
         //if (!Controller.Instance.CanonGameState.TargetsByID.ContainsKey(TargetID)) return ""; // TODO : remove, this shouldn't happen
+        if (!Controller.Instance.CanonGameState.TargetsByID.ContainsKey(FollowerID) || !Controller.Instance.CanonGameState.TargetsByID.ContainsKey(TargetID))
+        {
+            if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+        }
+        else
+        {
+            follower = Controller.Instance.CanonGameState.TargetsByID[FollowerID] as Follower;
+        }
 
-        Follower follower = Controller.Instance.CanonGameState.TargetsByID[FollowerID] as Follower;
         ITarget target = Controller.Instance.CanonGameState.TargetsByID[TargetID];
         if (follower == null) return "Attacker not found";
         if (target == null) return "Attack target not found";

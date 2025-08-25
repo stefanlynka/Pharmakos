@@ -2,13 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
-using UnityEditor.Playables;
+using System.Threading;
+using System;
 
 public class AIPlayer : Player
 {
     public AITurnPhase TurnPhase = AITurnPhase.Setup;
 
     private DecisionSet playerDecisions = new DecisionSet();
+
+    GameStatePool pool;
+    private const int maxBranchSize = 5;
 
     public enum AITurnPhase
     {
@@ -20,13 +24,11 @@ public class AIPlayer : Player
 
     public AIPlayer() { }
 
-    public override void StartTurn()
-    {
-        base.StartTurn();
-    }
-
     private Task planningTask = null;
-    private bool planningCompleted = false;
+    private volatile bool planningCompleted = false;
+    private CancellationTokenSource planningTimeoutCts = null;
+    private CancellationTokenSource planningLinkedCts = null;
+
     public override void RunUpdate()
     {
         base.RunUpdate();
@@ -38,17 +40,60 @@ public class AIPlayer : Player
                 Debug.Log("Start Planning AI Turn");
                 TurnPhase = AITurnPhase.Preparing;
                 planningCompleted = false;
-                planningTask = Task.Run(() => PlanActions());
 
-                //PlanActions();
+                // Dispose previous tokens if any
+                planningTimeoutCts?.Dispose();
+                planningLinkedCts?.Dispose();
+
+                // Setup cancellation tokens
+                var globalToken = Controller.Instance.CancellationTokenSource.Token;
+                planningTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                planningLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(globalToken, planningTimeoutCts.Token);
+
+                if (Controller.DebugMode)
+                {
+                    PlanActionsSync();
+                    planningCompleted = true;
+                }
+                else
+                {
+                    planningTask = Task.Run(() => PlanActions(planningLinkedCts.Token), planningLinkedCts.Token);
+
+                    // Start a timer to enforce the 5 second timeout
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var completedTask = await Task.WhenAny(planningTask, Task.Delay(5000, planningLinkedCts.Token));
+                            if (completedTask != planningTask)
+                            {
+                                // Timeout occurred
+                                planningTimeoutCts.Cancel();
+                                Debug.LogWarning("AI planning timed out. Forcing simple actions.");
+                                // Ensure ForceChooseSimpleActions runs on main thread
+                                UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                                {
+                                    ForceChooseSimpleActions();
+                                    planningCompleted = true;
+                                });
+                            }
+                        }
+                        catch (TaskCanceledException) { }
+                    });
+                }
                 break;
             case AITurnPhase.Preparing:
                 if (planningCompleted)
                 {
                     Debug.LogWarning("Planning Completed: Preparing");
                     TurnPhase = AITurnPhase.Executing;
-                    planningTask = null; // Clear the task reference
-                    planningCompleted = false; // Reset the flag
+                    planningTask = null;
+                    planningCompleted = false;
+
+                    planningTimeoutCts?.Dispose();
+                    planningTimeoutCts = null;
+                    planningLinkedCts?.Dispose();
+                    planningLinkedCts = null;
                 }
                 break;
             case AITurnPhase.Executing:
@@ -61,8 +106,6 @@ public class AIPlayer : Player
                     {
                         Debug.LogWarning("Decision Failed");
                     }
-                    //Debug.LogError("Do Decision!");
-                    //Debug.Log(playerDecision.GetString());
                 }
 
                 TurnPhase = AITurnPhase.Ending;
@@ -76,21 +119,50 @@ public class AIPlayer : Player
     }
 
 
-    private void PlanActions()
+    private void PlanActionsSync()
     {
-        Debug.Log("PlanActions started on thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+        System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
         playerDecisions = new DecisionSet(new List<PlayerDecision>(), 0);
-        //System.Threading.Thread.Sleep(2000);
-        playerDecisions = GetBestOptions(GameState);
+        pool = new GameStatePool();
+        playerDecisions = GetBestOptions(GameState, pool, Controller.Instance.CancellationTokenSource.Token, 0);
+        Debug.LogError($"[AI] PlanActions (sync) took {stopwatch.ElapsedMilliseconds / 1000f} seconds");
         planningCompleted = true;
-        Debug.Log("PlanActions completed on thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
     }
 
-    //static int deepestDepth = 0;
-    public static DecisionSet GetBestOptions(GameState gameState)
+    private void PlanActions(CancellationToken cancellationToken)
     {
+        System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        playerDecisions = new DecisionSet(new List<PlayerDecision>(), 0);
+        pool = new GameStatePool();
+        playerDecisions = GetBestOptions(GameState, pool, cancellationToken, 0);
+        stopwatch.Stop();
+        Debug.LogError($"[AI] PlanActions (async) took {stopwatch.ElapsedMilliseconds/1000f} seconds");
+        planningCompleted = true;
+    }
+
+    private void ForceChooseSimpleActions()
+    {
+        // This is a fallback method to force the AI to choose simple actions
+        // when the planning is taking too long or is cancelled.
+        playerDecisions = new DecisionSet(new List<PlayerDecision>(), 0);
+        playerDecisions.Decisions.Add(new SkipFollowerAttackDecision(-1)); // Just skip attacks
+        Debug.LogWarning("Forced simple actions due to planning timeout or cancellation.");
+    }
+
+    static int deepestDepth = 15;
+    public static DecisionSet GetBestOptions(GameState gameState, GameStatePool pool, CancellationToken cancellationToken, int currentDepth)
+    {
+        if (cancellationToken.IsCancellationRequested) return new DecisionSet(new List<PlayerDecision>(), float.NegativeInfinity);
+
         var options = new List<PlayerDecision>();
 
+        currentDepth++;
+        if (currentDepth > deepestDepth)
+        {
+            // If we've reached the maximum depth, return a utility value
+            float utility = GetUtility(gameState);
+            return new DecisionSet(new List<PlayerDecision>(), utility);
+        }
         //// Try playing cards
         //if (!gameState.AI.DoneWithPlayingCards)
         //{
@@ -102,6 +174,8 @@ public class AIPlayer : Player
         Dictionary<string, Spell> spellsByName = new Dictionary<string, Spell>();
         //List<Follower> playableFollowers = new List<Follower>();
         //List<Spell> playableSpells = new List<Spell>();
+        Dictionary<string, Follower> freeFollowersByName = new Dictionary<string, Follower>();
+        Dictionary<string, Spell> freeSpellsByName = new Dictionary<string, Spell>();
 
         foreach (Card card in playableCards)
         {
@@ -109,38 +183,77 @@ public class AIPlayer : Player
             Spell spell = card as Spell;
             if (follower != null)
             {
-                followersByName[follower.GetName()] = follower;
+                if (follower.Costs[OfferingType.Gold] == 0)
+                {
+                    freeFollowersByName[follower.GetCardType()] = follower;
+                }
+                else
+                {
+                    followersByName[follower.GetCardType()] = follower;
+                }
+                //followersByName[follower.GetCardType()] = follower;
                 //PlayerDecision playFollower = new PlayFollowerDecision(follower.ID, BattleRow.Followers.Count);
                 //bestOptions.Add(playFollower);
             }
             else if (spell != null)
             {
-                spellsByName[spell.GetName()] = spell;
+                if (spell.Costs[OfferingType.Gold] == 0)
+                {
+                    freeSpellsByName[spell.GetCardType()] = spell;
+                }
+                else
+                {
+                    spellsByName[spell.GetCardType()] = spell;
+                }
+                //spellsByName[spell.GetCardType()] = spell;
             }
         }
 
 
 
         // Get all options for this player in this GameState
-        // if (playableFollowers.Count > 0)
+        bool pickingAttacks = false;
         if (playableCards.Count > 0)
         {
-            foreach (Follower follower in followersByName.Values)
+            if (followersByName.Count > 0 || spellsByName.Count > 0)
             {
-                PlayerDecision playFollower = new PlayFollowerDecision(follower.ID, gameState.AI.BattleRow.Followers.Count);
-                options.Add(playFollower);
-            }
-        //}
-        //else if (playableSpells.Count > 0)
-        //{
-            foreach (Spell spell in spellsByName.Values)
-            {
-                List<ITarget> possibleTargets = spell.GetTargets();
-                foreach (ITarget target in possibleTargets)
+                // Play Followers
+                foreach (Follower follower in followersByName.Values)
                 {
-                    int spellTargetID = target.GetID();
-                    PlaySpellDecision playSpell = new PlaySpellDecision(spell.ID, spellTargetID);
-                    options.Add(playSpell);
+                    PlayerDecision playFollower = new PlayFollowerDecision(follower.ID, gameState.AI.BattleRow.Followers.Count);
+                    options.Add(playFollower);
+                }
+
+                // Play Spells
+                foreach (Spell spell in spellsByName.Values)
+                {
+                    List<ITarget> possibleTargets = spell.GetTargets();
+                    foreach (ITarget target in possibleTargets)
+                    {
+                        int spellTargetID = target.GetID();
+                        PlaySpellDecision playSpell = new PlaySpellDecision(spell.ID, spellTargetID);
+                        options.Add(playSpell);
+                    }
+                }
+            }
+            else
+            {
+                // Play Free Followers
+                foreach (Follower follower in freeFollowersByName.Values)
+                {
+                    PlayerDecision playFollower = new PlayFollowerDecision(follower.ID, gameState.AI.BattleRow.Followers.Count);
+                    options.Add(playFollower);
+                }
+                // Play Free Spells
+                foreach (Spell spell in freeSpellsByName.Values)
+                {
+                    List<ITarget> possibleTargets = spell.GetTargets();
+                    foreach (ITarget target in possibleTargets)
+                    {
+                        int spellTargetID = target.GetID();
+                        PlaySpellDecision playSpell = new PlaySpellDecision(spell.ID, spellTargetID);
+                        options.Add(playSpell);
+                    }
                 }
             }
         }
@@ -166,6 +279,7 @@ public class AIPlayer : Player
         }
         else
         {
+            pickingAttacks = true;
             // Attack with Followers in order
             Follower followerThatCanAttack = gameState.AI.BattleRow.GetFirstFollowerThatCanAttack();
             if (followerThatCanAttack != null)
@@ -206,40 +320,78 @@ public class AIPlayer : Player
             return new DecisionSet(new List<PlayerDecision>(), utility);
         }
 
+        //Debug.Log("Count: " + options.Count);
 
-        // Recursively test all options
         DecisionSet bestOptionSoFar = new DecisionSet(new List<PlayerDecision>(), -9999f);
+
+        // Get and store the utility of each option in a list
+        List<OptionSet> optionSets = new List<OptionSet>(options.Count);
         foreach (PlayerDecision option in options)
         {
-            GameState simulatedGameState = new GameState(gameState, true);
-
+            GameState simulatedGameState = pool.Get(gameState, true);
             AIPlayer thisPlayer = simulatedGameState.GetPlayer(gameState.AI.PlayerID) as AIPlayer;
-
-            if (thisPlayer == null)
-            {
-                Debug.LogError("ThisPlayer Should be AI");
-                // HOWTO Debugger break
-                //if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
-            }
-
-            // Apply this option to the simulatedGameState
             bool result = thisPlayer.DoDecision(option);
-            if (!result)
-            {
-                Debug.LogError("Decision Failed");
-            }
+            if (!result) Debug.LogError("Decision Failed");
+            float utility = GetUtility(simulatedGameState);
+            optionSets.Add(new OptionSet(simulatedGameState, option, utility));
+        }
 
+        // Sort the options by utility, descending
+        optionSets.Sort((a, b) => b.Utility.CompareTo(a.Utility));
+        // Keep the top maxBranchSize options
+        int branchSize = pickingAttacks ? 1 : maxBranchSize;
+        List<OptionSet> topOptions = optionSets.GetRange(0, Mathf.Min(branchSize, optionSets.Count));
+
+        foreach (OptionSet optionSet in topOptions)
+        {
             // Recursively explore future options, returning the best one
-            DecisionSet bestOption = GetBestOptions(simulatedGameState);
+            DecisionSet bestOption = GetBestOptions(optionSet.GameState, pool, cancellationToken, currentDepth);
             if (bestOption.Utility > bestOptionSoFar.Utility)
             {
                 List<PlayerDecision> updatedList = bestOption.Decisions;
-                updatedList.Insert(0, option);
+                updatedList.Insert(0, optionSet.PlayerDecision);
                 bestOptionSoFar = new DecisionSet(updatedList, bestOption.Utility);
             }
         }
 
+        foreach (OptionSet optionSet in optionSets)
+        {
+            pool.Return(optionSet.GameState);
+        }
+
         return bestOptionSoFar;
+
+        //// Recursively test all options
+        //foreach (PlayerDecision option in options)
+        //{
+        //    //GameState simulatedGameState = new GameState(gameState, true);
+        //    GameState simulatedGameState = pool.Get(gameState, true);
+
+        //    AIPlayer thisPlayer = simulatedGameState.GetPlayer(gameState.AI.PlayerID) as AIPlayer;
+
+        //    if (thisPlayer == null)
+        //    {
+        //        Debug.LogError("ThisPlayer Should be AI");
+        //        // HOWTO Debugger break
+        //        //if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+        //    }
+
+        //    // Apply this option to the simulatedGameState
+        //    bool result = thisPlayer.DoDecision(option);
+        //    if (!result)
+        //    {
+        //        Debug.LogError("Decision Failed");
+        //    }
+
+        //    // Recursively explore future options, returning the best one
+        //    DecisionSet bestOption = GetBestOptions(simulatedGameState, pool, cancellationToken);
+        //    if (bestOption.Utility > bestOptionSoFar.Utility)
+        //    {
+        //        List<PlayerDecision> updatedList = bestOption.Decisions;
+        //        updatedList.Insert(0, option);
+        //        bestOptionSoFar = new DecisionSet(updatedList, bestOption.Utility);
+        //    }
+        //}
     }
 
     public struct DecisionSet
@@ -250,6 +402,20 @@ public class AIPlayer : Player
         public DecisionSet(List<PlayerDecision> decisions, float utility)
         {
             Decisions = decisions;
+            Utility = utility;
+        }
+    }
+
+    public struct OptionSet
+    {
+        public GameState GameState;
+        public PlayerDecision PlayerDecision;
+        public float Utility;
+
+        public OptionSet(GameState gameState, PlayerDecision playerDecision, float utility)
+        {
+            GameState = gameState;
+            PlayerDecision = playerDecision;
             Utility = utility;
         }
     }
