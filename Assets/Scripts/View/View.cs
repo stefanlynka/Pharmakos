@@ -67,8 +67,8 @@ public class View : MonoBehaviour
         //Application.targetFrameRate = target;
 
 
-        FollowerCardPrefab = Resources.Load<GameObject>("Prefabs/Cards/Follower");
-        SpellCardPrefab = Resources.Load<GameObject>("Prefabs/Cards/Spell");
+        FollowerCardPrefab = Resources.Load<GameObject>("Prefabs/Cards/Follower2");
+        SpellCardPrefab = Resources.Load<GameObject>("Prefabs/Cards/Spell2");
 
         OfferingPrefab = Resources.Load<GameObject>("Prefabs/Offerings/Offering");
 
@@ -399,5 +399,18 @@ public class View : MonoBehaviour
         if (index == -1) index = battleRow.Followers.Count;
         battleRow.AddFollower(viewFollower, index);
         CardMap[follower] = viewFollower;
+    }
+
+    public void UpdatePlayerBuffs()
+    {
+        foreach (PlayerEffect playerEffect in Player1.Player.PlayerEffects)
+        {
+            ViewPlayer effectTarget = Player1;
+            if (playerEffect is RitualPlayerEffect ritualPlayerEffect)
+            {
+                effectTarget = ritualPlayerEffect.Target == Player1.Player ? Player1 : Player2;
+            }
+            effectTarget.AddBuff(playerEffect);
+        }
     }
 }

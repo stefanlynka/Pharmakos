@@ -396,6 +396,11 @@ public class Player : ITarget
     {
         PlayerEffects.Add(playerEffectDef);
         playerEffectDef.Apply();
+
+        if (!GameState.IsSimulated)
+        {
+            View.Instance.UpdatePlayerBuffs();
+        }
     }
 
 

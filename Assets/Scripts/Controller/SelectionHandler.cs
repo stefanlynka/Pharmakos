@@ -283,4 +283,9 @@ public class SelectionHandler
     {
         return HeldCard != null && HeldCard is ViewFollower;
     }
+
+    public bool IsHoveringOverThisCard(ViewCard card)
+    {
+        return CurrentHover == card;
+    }
 }

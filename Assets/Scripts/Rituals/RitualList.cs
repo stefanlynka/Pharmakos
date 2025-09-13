@@ -234,7 +234,7 @@ public class HadesMajor : Ritual
         Costs = new Dictionary<OfferingType, int>()
             {
                 {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 12 },
+                {OfferingType.Bone, 0 }, // 12
                 {OfferingType.Crop, 0 },
                 {OfferingType.Scroll, 0 },
             };
@@ -254,10 +254,56 @@ public class HadesMajor : Ritual
         base.Play(target);
         if (target is not Player playerTarget) return;
 
-        SummonLastDeadFollowerAction summonAction = new SummonLastDeadFollowerAction(playerTarget);
-        playerTarget.EndOfTurnActions.Add(new DelayedGameAction(summonAction, false));
+        HadesMajorEffectDef hadesMajorEffectDef = new HadesMajorEffectDef(Owner, playerTarget);
+        Owner.AddPlayerEffect(hadesMajorEffectDef);
+
+
+        //SummonLastDeadFollowerAction summonAction = new SummonLastDeadFollowerAction(playerTarget);
+        //playerTarget.EndOfTurnActions.Add(new DelayedGameAction(summonAction, false));
     }
 }
+
+public class HadesMajorEffectDef : RitualPlayerEffect
+{
+    SummonLastDeadFollowerAction summonAction;
+    DelayedGameAction delayedAction;
+
+    public HadesMajorEffectDef(Player owner, Player target)
+    {
+        Owner = owner;
+        Target = target;
+    }
+
+    public override void Apply()
+    {
+        summonAction = new SummonLastDeadFollowerAction(Target);
+        delayedAction = new DelayedGameAction(summonAction, false);
+        Target.EndOfTurnActions.Add(delayedAction);
+    }
+
+    public override void Unapply()
+    {
+        Target.EndOfTurnActions.Remove(delayedAction);
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        HadesMajorEffectDef copy = (HadesMajorEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.Target = newOwner.GameState.GetTargetByID<Player>(Target.GetID());
+
+        return copy;
+    }
+
+    protected override string GetDescription()
+    {
+        string myTarget = Target.IsHuman ? "your" : "this player's";
+        string myTargetSingular = Target.IsHuman ? "you" : "they";
+        return "At the end of each of " + myTarget + " turns, "+ myTargetSingular+" summon a copy of the last Follower that died (Defenders die second)";
+    }
+}
+
+
 // Summon a copy of the last Follower that died
 public class HadesMinor : Ritual
 {
@@ -334,10 +380,8 @@ public class DemeterMajor : Ritual
     }
 }
 
-public class DemeterMajorEffectDef : PlayerEffect
+public class DemeterMajorEffectDef : RitualPlayerEffect
 {
-    public Player Owner;
-    public Player Target;
     private int attackGain = 0;
     private int healthGain = 0;
 
@@ -379,6 +423,12 @@ public class DemeterMajorEffectDef : PlayerEffect
             ChangeStatsAction action = new ChangeStatsAction(alliedFollower, attackGain, healthGain);
             Owner.GameState.ActionHandler.AddAction(action, true);
         }
+    }
+    protected override string GetDescription()
+    {
+        string myTarget = Target.IsHuman ? "your" : "your opponent's";
+        string myOwner = Owner.IsHuman ? "your" : "your opponent's";
+        return "When a Follower enters "+myTarget+" BattleRow, "+ myOwner + " Followers gain +0/+1";
     }
 }
 
@@ -422,10 +472,8 @@ public class DemeterMinor : Ritual
     }
 }
 
-public class DemeterMinorEffectDef : PlayerEffect
+public class DemeterMinorEffectDef : RitualPlayerEffect
 {
-    public Player Owner;
-    public Player Target;
     private int attackGain = 0;
     private int healthGain = 0;
 
@@ -468,6 +516,12 @@ public class DemeterMinorEffectDef : PlayerEffect
             Owner.GameState.ActionHandler.AddAction(action, true);
         }
     }
+    protected override string GetDescription()
+    {
+        string myTarget = Target.IsHuman ? "your" : "your opponent's";
+        string myOwner = Owner.IsHuman ? "your" : "your opponent's";
+        return "When one of "+ myTarget + " Followers dies, " + myOwner + " Followers gain +1/+0";
+    }
 }
 
 
@@ -509,10 +563,8 @@ public class AresMajor : Ritual
         Owner.AddPlayerEffect(aresMajorEffectDef);
     }
 }
-public class AresMajorEffectDef : PlayerEffect
+public class AresMajorEffectDef : RitualPlayerEffect
 {
-    public Player Owner;
-    public Player Target;
     private int attackGain = 0;
     private int healthGain = 0;
 
@@ -576,7 +628,12 @@ public class AresMajorEffectDef : PlayerEffect
         refreshAttackEffectInstance.Init(1);
         effectDef.EffectInstances.Add(refreshAttackEffectInstance);
     }
-
+    protected override string GetDescription()
+    {
+        string myTarget = Target.IsHuman ? "your" : "your opponent's";
+        string myOwner = Owner.IsHuman ? "your" : "your opponent's";
+        return "When one of " + myTarget + " Followers kills an enemy, it gains +1/+1 and can attack again";
+    }
 }
 
 // Your Followers have Sprint
@@ -615,11 +672,8 @@ public class AresMinor : Ritual
         Owner.AddPlayerEffect(aresMinorEffectDef);
     }
 }
-public class AresMinorEffectDef : PlayerEffect
+public class AresMinorEffectDef : RitualPlayerEffect
 {
-    public Player Owner;
-    public Player Target;
-
     public AresMinorEffectDef(Player owner, Player target)
     {
         Owner = owner;
@@ -664,6 +718,12 @@ public class AresMinorEffectDef : PlayerEffect
         // Grant the Follower an innate effect
         StaticEffectDef sprintEffectDef = new StaticEffectDef(EffectTarget.Self, StaticEffect.Sprint);
         follower.InnateEffects.Add(sprintEffectDef);
+    }
+    protected override string GetDescription()
+    {
+        string myTarget = Target.IsHuman ? "Your" : "Your opponent's";
+        string myOwner = Owner.IsHuman ? "your" : "your opponent's";
+        return myTarget + " Followers have sprint";
     }
 }
 
@@ -781,11 +841,8 @@ public class AthenaMajor : Ritual
         Owner.AddPlayerEffect(aresMajorEffectDef);
     }
 }
-public class AthenaMajorEffectDef : PlayerEffect
+public class AthenaMajorEffectDef : RitualPlayerEffect
 {
-    public Player Owner;
-    public Player Target;
-
     public AthenaMajorEffectDef(Player owner, Player target)
     {
         Owner = owner;
@@ -840,6 +897,12 @@ public class AthenaMajorEffectDef : PlayerEffect
         gainSpellEffectInstance.Init(Target);
         effectDef.EffectInstances.Add(gainSpellEffectInstance);
     }
+    protected override string GetDescription()
+    {
+        string myTarget = Target.IsHuman ? "your" : "your opponent's";
+        string myOwner = Owner.IsHuman ? "you get" : "your opponent gets";
+        return "When one of " + myTarget + " Followers draws blood, " + myOwner + " a free spell with cost equal to the damage dealt";
+    }
 }
 
 // When one of target Player's Followers dies, get a copy of every spell that Player cast on on it. The copies costs 1 less.
@@ -879,11 +942,8 @@ public class HephaestusMajor : Ritual
         Owner.AddPlayerEffect(aresMajorEffectDef);
     }
 }
-public class HephaestusMajorEffectDef : PlayerEffect
+public class HephaestusMajorEffectDef : RitualPlayerEffect
 {
-    public Player Owner;
-    public Player Target;
-
     public HephaestusMajorEffectDef(Player owner, Player target)
     {
         Owner = owner;
@@ -937,6 +997,13 @@ public class HephaestusMajorEffectDef : PlayerEffect
         AddSpellsCastOnThisToHandInstance gainSpellEffectInstance = new AddSpellsCastOnThisToHandInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
         gainSpellEffectInstance.Init(Target);
         effectDef.EffectInstances.Add(gainSpellEffectInstance);
+    }
+    protected override string GetDescription()
+    {
+        string myTarget = Target.IsHuman ? "your" : "your opponent's";
+        string myOwner = Owner.IsHuman ? "you get" : "your opponent gets";
+        string singularTarget = Target.IsHuman ? "you" : "your opponent";
+        return "When one of " + myTarget + " Followers dies, " + myOwner + " a copy of every spell " + singularTarget + " cast on on it. The copies costs 1 less.";
     }
 }
 

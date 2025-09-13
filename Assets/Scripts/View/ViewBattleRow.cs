@@ -17,6 +17,9 @@ public class ViewBattleRow : MonoBehaviour
 
     public Transform UnitHolderTransform;
 
+    public ViewFollower PopupCard;
+    Vector3 PopupOffset = new Vector3(10.5f, 0, -2);
+
     public float MaxSpacing = 1;
     public float CardWidth = 0;
     public float HandWidth = 0;
@@ -28,6 +31,10 @@ public class ViewBattleRow : MonoBehaviour
     public void Setup(BattleRow battleRow)
     {
         BattleRow = battleRow;
+
+        PopupCard.SetDescriptiveMode(true);
+        PopupCard.transform.localScale = ViewHandHandler.HighlightScaleVector;
+        PopupCard.gameObject.SetActive(false);
     }
 
     public void Clear()
@@ -39,6 +46,8 @@ public class ViewBattleRow : MonoBehaviour
         }
 
         Followers.Clear();
+
+        PopupCard.gameObject.SetActive(false);
     }
 
 
@@ -68,6 +77,8 @@ public class ViewBattleRow : MonoBehaviour
         int cardCount = Followers.Count;
         if (cardCount == 0) return;
 
+        PopupCard.gameObject.SetActive(false); // Hide popup by default
+
         xPositions.Clear();
 
         float totalWidth = (cardCount * CardWidth) + (cardCount - 1 * MaxSpacing);
@@ -93,7 +104,18 @@ public class ViewBattleRow : MonoBehaviour
             else if (View.Instance.SelectionHandler.SelectedRitual != null && View.Instance.SelectionHandler.PotentialRitualTargets.Contains(viewFollower.Follower)) highlighted = true; // Is a potential target of a ritual
 
             viewFollower.SetHighlight(highlighted);
+
+            // If we're not holding a card and we're hovering over a card, show a popup of that card
+            if (!View.Instance.SelectionHandler.IsHoldingFollower() &&
+                View.Instance.SelectionHandler.IsHoveringOverThisCard(viewFollower))
+            {
+                PopupCard.gameObject.SetActive(true);
+                PopupCard.Load(viewFollower.Follower);
+                PopupCard.SetDescriptiveMode(true);
+                PopupCard.transform.position = viewFollower.transform.position + PopupOffset;
+            }
         }
+        
 
         if (!View.Instance.SelectionHandler.IsHoldingFollower() || !IsMouseOverThis() || !isHuman)
         {

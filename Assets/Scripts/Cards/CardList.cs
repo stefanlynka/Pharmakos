@@ -29,6 +29,7 @@ public class Sheep : Follower
         SetBaseStats(0, 1);
 
         Text = "On Death: Gain 1 Gold";
+        Icon = IconType.Skull;
 
         SetupInnateEffects();
     }
@@ -69,6 +70,7 @@ public class Boar : Follower
         SetBaseStats(2, 1);
 
         Text = "On Death: Gain 3 Health";
+        Icon = IconType.Skull;
 
         SetupInnateEffects();
     }
@@ -110,6 +112,7 @@ public class Prey1 : Follower
 
         OverrideName = "Prey";
         Text = "On Death: Lose 1 Health";
+        Icon = IconType.Skull;
 
         SetupInnateEffects();
     }
@@ -150,6 +153,7 @@ public class Prey2 : Follower
 
         OverrideName = "Prey";
         Text = "On Death: Lose 1 Health";
+        Icon = IconType.Skull;
 
         SetupInnateEffects();
     }
@@ -190,6 +194,7 @@ public class Prey3 : Follower
 
         OverrideName = "Prey";
         Text = "On Death: Lose 1 Health";
+        Icon = IconType.Skull;
 
         SetupInnateEffects();
     }
@@ -230,6 +235,7 @@ public class GoldenHind : Follower
         SetBaseStats(2, 4);
 
         Text = "On Attack: Damage all enemies equal to Golden Hind's Attack";
+        Icon = IconType.Sword;
 
         SetupInnateEffects();
     }
@@ -270,6 +276,7 @@ public class NemeanLion : Follower
         SetBaseStats(3, 4);
 
         Text = "Only takes 1 damage at a time";
+        Icon = IconType.Shield;
 
         SetupInnateEffects();
     }
@@ -306,6 +313,7 @@ public class MareOfDiomedes : Follower
         SetBaseStats(3, 1);
 
         Text = "Sprint";
+        Icon = IconType.Bolt;
 
         SetupInnateEffects();
     }
@@ -366,6 +374,7 @@ public class Rat : Follower
         SetBaseStats(1, 1);
 
         Text = "On Damage: Reduce target's Attack by 1";
+        Icon = IconType.Fangs;
 
         SetupInnateEffects();
     }
@@ -416,6 +425,7 @@ public class Filth : Follower
         SetBaseStats(0, 1);
 
         Text = "Taunt\nOn Attacked: Reduce attacker's Attack by 1";
+        Icon = IconType.Shield;
 
         SetupInnateEffects();
     }
@@ -459,6 +469,7 @@ public class WallOfTroy : Follower
         SetBaseStats(0, 5);
 
         Text = "Taunt";
+        Icon = IconType.Shield;
 
         SetupInnateEffects();
     }
@@ -491,6 +502,7 @@ public class Corridor : Follower
         SetBaseStats(0, 2);
 
         Text = "Taunt\nCan't Attack\nOn Death: Summon a Monster";
+        Icon = IconType.Skull;
 
         SetupInnateEffects();
     }
@@ -652,6 +664,7 @@ public class Ekdromos : Follower
         SetBaseStats(2, 1);
 
         Text = "Sprint";
+        Icon = IconType.Bolt;
 
         SetupInnateEffects();
     }
@@ -683,6 +696,7 @@ public class Thureophoros : Follower
         SetBaseStats(1, 4);
 
         Text = "Taunt";
+        Icon = IconType.Target;
 
         SetupInnateEffects();
     }
@@ -714,6 +728,7 @@ public class Toxotes : Follower
         SetBaseStats(1, 2);
 
         Text = "Ranged attacker.\nImmune while attacking";
+        Icon = IconType.Bow;
 
         SetupInnateEffects();
     }
@@ -745,6 +760,7 @@ public class TrojanHorse : Follower
         SetBaseStats(0, 2);
 
         Text = "On Death: Summon 3 1/1's";
+        Icon = IconType.Skull;
 
         SetupInnateEffects();
     }
@@ -790,6 +806,8 @@ public class Chariot : Follower
         SetBaseStats(0, 4);
 
         Text = "Adjacent Followers have Sprint";
+        Icon = IconType.Bolt;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -820,6 +838,8 @@ public class Phalangite : Follower
         SetBaseStats(2, 3);
 
         Text = "Adjacent Followers take 1 less damage";
+        Icon = IconType.Shield;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -851,6 +871,7 @@ public class Satyr : Follower
         SetBaseStats(2, 1);
 
         Text = "On Death: Draw a card";
+        Icon = IconType.Skull;
 
         SetupInnateEffects();
     }
@@ -890,6 +911,8 @@ public class Maenad : Follower
         SetBaseStats(3, 2);
 
         Text = "When an adjacent Follower attacks: give it +1/+0";
+        Icon = IconType.Sword;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -928,6 +951,7 @@ public class Nereid : Follower
         SetBaseStats(4, 2);
 
         Text = "When you play a spell: this gains 2 health";
+        Icon = IconType.Scroll;
 
         SetupInnateEffects();
     }
@@ -971,6 +995,7 @@ public class Endymion : Follower
         SetBaseStats(2, 1);
 
         Text = "On Enter: Summon 2 Sheep";
+        Icon = IconType.Horn;
 
         SetupInnateEffects();
     }
@@ -1015,6 +1040,8 @@ public class OracleOfDelphi : Follower
         SetBaseStats(1, 4);
 
         Text = "When an adjacent Follower enters: Gain 1 gold next turn";
+        Icon = IconType.Horn;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -1054,6 +1081,8 @@ public class Charon : Follower
         SetBaseStats(1, 4);
 
         Text = "When an adjacent Follower dies: Gain 1 Gold";
+        Icon = IconType.Skull;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -1093,6 +1122,8 @@ public class Calchas : Follower
         SetBaseStats(1, 6);
 
         Text = "When an adjacent Follower kills: Add the spell Scry to your hand";
+        Icon = IconType.Sickle;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -1134,6 +1165,8 @@ public class Podalirius : Follower
         SetBaseStats(2, 5);
 
         Text = "OnDamage: Heal adjacent Followers the amount dealt";
+        Icon = IconType.Fangs;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -1173,6 +1206,8 @@ public class Medea : Follower
         SetBaseStats(2, 5);
 
         Text = "When an adjacent Follower kills: Heal that Follower to full health";
+        Icon = IconType.Sickle;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -1212,6 +1247,8 @@ public class Patroclus : Follower
         SetBaseStats(1, 1);
 
         Text = "On Death: Grant adjacent Followers +2 attack and Frenzy";
+        Icon = IconType.Skull;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -1256,6 +1293,8 @@ public class Hippolyta : Follower
         SetBaseStats(3, 3);
 
         Text = "OnEnter: Grant adjacent Followers +2 attack and Sprint";
+        Icon = IconType.Horn;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -1343,6 +1382,8 @@ public class Agamemnon : Follower
         SetBaseStats(5, 3);
 
         Text = "King 1";
+        Icon = IconType.Sword;
+
 
         SetupInnateEffects();
     }
@@ -1386,6 +1427,7 @@ public class Menelaus : Follower
         SetBaseStats(2, 4);
 
         Text = "King 2";
+        Icon = IconType.Shield;
 
         SetupInnateEffects();
     }
@@ -1427,6 +1469,8 @@ public class Pyrrhus : Follower
         SetBaseStats(3, 3);
 
         Text = "";
+        Icon = IconType.Sickle;
+
 
         SetupInnateEffects();
     }
@@ -1466,6 +1510,7 @@ public class Diomedes : Follower
         SetBaseStats(4, 4);
 
         Text = "On Draw Blood: Gain +1/+1";
+        Icon = IconType.Blood;
 
         SetupInnateEffects();
     }
@@ -1505,6 +1550,7 @@ public class Icarus : Follower
         SetBaseStats(0, 7);
 
         Text = "Attack equals Icarus' missing health";
+        Icon = IconType.Star;
 
         SetupInnateEffects();
     }
@@ -1539,6 +1585,7 @@ public class Atalanta : Follower
         SetBaseStats(2, 4);
 
         Text = "On Kill: Add free Smite to hand";
+        Icon = IconType.Sickle;
 
         SetupInnateEffects();
     }
@@ -1581,6 +1628,8 @@ public class Asclepius : Follower
         SetBaseStats(2, 4);
 
         Text = "When an adjacent Follower is targeted by a spell: Heal 3 health";
+        Icon = IconType.Scroll;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -1620,6 +1669,8 @@ public class Melpomene : Follower
         SetBaseStats(2, 4);
 
         Text = "When an adjacent Follower dies:\nAdd a free Blessing spell to your hand";
+        Icon = IconType.Skull;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -1660,6 +1711,7 @@ public class Achilles : Follower
         SetBaseStats(3, 3);
 
         Text = "Sprint\nFrenzy\nImmune while attacking";
+        Icon = IconType.Bolt;
 
         SetupInnateEffects();
     }
@@ -1692,6 +1744,7 @@ public class Paris : Follower
         SetBaseStats(3, 2);
 
         Text = "Ranged attacker.\nImmune while attacking";
+        Icon = IconType.Bow;
 
         SetupInnateEffects();
     }
@@ -1723,6 +1776,7 @@ public class Hector : Follower
         SetBaseStats(5, 5);
 
         Text = "Reduce damage taken by 1";
+        Icon = IconType.Shield;
 
         SetupInnateEffects();
     }
@@ -1755,6 +1809,8 @@ public class Sarpedon : Follower
         SetBaseStats(2, 5);
 
         Text = "On Attack: Give Adjacent Followers +1/+1";
+        Icon = IconType.Sword;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -1794,6 +1850,8 @@ public class Cassandra : Follower
         SetBaseStats(1, 4);
 
         Text = "When an adjacent Follower enters: Draw 1 card next turn";
+        Icon = IconType.Horn;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -1839,6 +1897,7 @@ public class Helios : Follower
         SetBaseStats(6, 6);
 
         Text = "The sun destroys enemies as it rises and sets";
+        Icon = IconType.Sundial;
 
         SetupInnateEffects();
     }
@@ -1894,6 +1953,7 @@ public class Pan : Follower
         SetBaseStats(5, 5);
 
         Text = "Sprint\nOn Attack: Draw 2 cards + Gain 3 Life\n";
+        Icon = IconType.Sword;
 
         SetupInnateEffects();
     }
@@ -1946,6 +2006,7 @@ public class Pytho : Follower
         SetBaseStats(0, 5);
 
         Text = "+5 Attack when in middle of formation";
+        Icon = IconType.Star;
 
         SetupInnateEffects();
     }
@@ -1988,6 +2049,7 @@ public class Hydra : Follower
         SetBaseStats(1, 5);
 
         Text = "Heal damage at end of each turn and Gain that much attack";
+        Icon = IconType.Sundial;
 
         SetupInnateEffects();
     }
@@ -2028,6 +2090,7 @@ public class Minotaur : Follower
         SetBaseStats(3, 6);
 
         Text = "At the end of your turn, if this has two neighbours: This heals 2 damage";
+        Icon = IconType.Sundial;
 
         SetupInnateEffects();
     }
@@ -2065,6 +2128,7 @@ public class Scylla : Follower
         SetBaseStats(0, 6);
 
         Text = "At the end of your turn, Deal 1 damage to an adjacent enemy 6 times";
+        Icon = IconType.Sundial;
 
         SetupInnateEffects();
     }
@@ -2105,6 +2169,8 @@ public class Charybdis : Follower
         SetBaseStats(2, 5);
 
         Text = "At the end of your turn, Destroy all adjacent followers with less attack";
+        Icon = IconType.Sundial;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -2150,6 +2216,7 @@ public class Gorgon : Follower
         SetBaseStats(3, 5);
 
         Text = "OnAttack: Turn the target to stone if it has less attack";
+        Icon = IconType.Sword;
 
         SetupInnateEffects();
     }
@@ -2190,6 +2257,7 @@ public class Cerberus : Follower
         SetBaseStats(3, 9);
 
         Text = "Cleave";
+        Icon = IconType.Sword;
 
         SetupInnateEffects();
     }
@@ -2221,6 +2289,7 @@ public class Siren : Follower
         SetBaseStats(1, 2);
 
         Text = "On Attacked:\nDeal 3 damage";
+        Icon = IconType.Shield;
 
         SetupInnateEffects();
     }
@@ -2252,6 +2321,7 @@ public class Lamia : Follower
         SetBaseStats(1, 3);
 
         Text = "Life Siphon";
+        Icon = IconType.Fangs;
 
         SetupInnateEffects();
     }
@@ -2283,6 +2353,7 @@ public class Chimera : Follower
         SetBaseStats(3, 3);
 
         Text = "Sprint\nOn Attack or Attacked: Deal damage equal to its Attack\n";
+        Icon = IconType.Sword;
 
         SetupInnateEffects();
     }
@@ -2317,6 +2388,8 @@ public class Sphinx : Follower
         SetBaseStats(2, 5);
 
         Text = "When an adjacent Follower enters: Get a Confusion spell";
+        Icon = IconType.Horn;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -2357,7 +2430,8 @@ public class Cyclops : Follower
 
         SetBaseStats(3, 4);
 
-        Text = "Can only attack Followers directly in front of this";
+        Text = "Can only attack Followers directly in front of it";
+        Icon = IconType.Star;
 
         SetupInnateEffects();
     }
@@ -2389,6 +2463,8 @@ public class Empusa : Follower
         SetBaseStats(2, 4);
 
         Text = "Adjacent Followers have Life Siphon";
+        Icon = IconType.Fangs;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -2420,6 +2496,8 @@ public class Keres : Follower
         SetBaseStats(0, 4);
 
         Text = "When an adjacent Follower dies: Gain +2 attack";
+        Icon = IconType.Skull;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -2458,6 +2536,7 @@ public class Erinyes : Follower
         SetBaseStats(1, 2);
 
         Text = "When any Follower dies: Deal 2 damage to the opponent";
+        Icon = IconType.Skull;
 
         SetupInnateEffects();
     }
@@ -2497,6 +2576,8 @@ public class Typhon : Follower
         SetBaseStats(4, 6);
 
         Text = "Adjacent Followers and Typhon have 'On Kill: Can attack again'";
+        Icon = IconType.Sickle;
+        AffectsAdjacent = true;
 
         SetupInnateEffects();
     }
@@ -2540,6 +2621,7 @@ public class Echidna : Follower
         SetBaseStats(4, 6);
 
         Text = "OnKill: Summon a Monster";
+        Icon = IconType.Sickle;
 
         SetupInnateEffects();
     }
@@ -3169,6 +3251,7 @@ public class StygianPact : Spell
         }
     }
 }
+
 
 // Give a Follower +3 Health and Restore 3 Life
 public class Reverie : Spell
@@ -3873,7 +3956,7 @@ public class PriceOfWealth : Spell
     }
 }
 
-// Sacrifice a Follower and damage opponent equal to its attack
+// Sacrifice a Follower and deal damage to your opponent equal to twice its attack
 public class PriceOfReprisal : Spell
 {
     public PriceOfReprisal()
@@ -3888,7 +3971,7 @@ public class PriceOfReprisal : Spell
         };
 
         OverrideName = "Price of Reprisal";
-        Text = "Sacrifice a Follower and damage opponent equal to its attack";
+        Text = "Sacrifice a Follower and deal damage to your opponent equal to twice its attack";
         HasTargets = true;
     }
 
@@ -3918,8 +4001,8 @@ public class PriceOfReprisal : Spell
         Owner.GameState.ActionHandler.AddAction(killAction);
 
         int followerAttack = followerTarget.CurrentAttack;
-        ChangePlayerHealthAction payLifeAction = new ChangePlayerHealthAction(Owner.GetOtherPlayer(), Owner, -followerAttack);
-        Owner.GameState.ActionHandler.AddAction(payLifeAction, true);
+        ChangePlayerHealthAction dealDamageAction = new ChangePlayerHealthAction(Owner.GetOtherPlayer(), Owner, -(followerAttack * 2));
+        Owner.GameState.ActionHandler.AddAction(dealDamageAction, true);
     }
 }
 

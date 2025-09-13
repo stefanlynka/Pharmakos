@@ -19,6 +19,10 @@ public class ViewCard : ViewTarget
 
     public GameObject CardHolder;
     public BoxCollider CardCollider;
+
+    public GameObject FullTextBox;
+
+    protected bool inDescriptiveMode = false;
     
     //public Action<ViewCard> OnClick = null;
 
@@ -35,6 +39,8 @@ public class ViewCard : ViewTarget
         OnClick = onClick;
 
         CardCollider.enabled = true;
+
+        SetDescriptiveMode(false);
     }
 
     public void SetHighlight(bool highlight)
@@ -49,5 +55,15 @@ public class ViewCard : ViewTarget
     public void UpdateCost()
     {
         ViewOfferingCost.Load(Card.GetCosts());
+    }
+
+    public virtual void SetDescriptiveMode(bool value)
+    {
+        //if (inDescriptiveMode == value) return;
+        if (Card.Text == string.Empty) value = false;
+
+        inDescriptiveMode = value;
+
+        FullTextBox.SetActive(value);
     }
 }

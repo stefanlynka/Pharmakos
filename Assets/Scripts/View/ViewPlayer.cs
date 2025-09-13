@@ -18,6 +18,8 @@ public class ViewPlayer : ViewTarget
     public ViewRitual ViewMinorRitual;
     public ViewRitual ViewMajorRitual;
 
+    public List<ViewBuff> Buffs = new List<ViewBuff>();
+
     public void Load(Player player)
     {
         Player = player;
@@ -63,4 +65,25 @@ public class ViewPlayer : ViewTarget
         HealthText.text = Player.Health.ToString();
     }
 
+    public void ClearBuffs()
+    {
+        foreach (ViewBuff buff in Buffs)
+        {
+            buff.gameObject.SetActive(false);
+        }
+    }
+    public void AddBuff(PlayerEffect playerEffect)
+    {
+        foreach (ViewBuff buff in Buffs)
+        {
+            if (!buff.gameObject.activeSelf)
+            {
+                PlayerEffectDescriptionData descriptionData = playerEffect.GetDescriptionData();
+                buff.Icon.sprite = descriptionData.Icon;
+                buff.SummaryText.text = descriptionData.Description;
+                buff.gameObject.SetActive(true);
+                return;
+            }
+        }
+    }
 }

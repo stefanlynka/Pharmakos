@@ -21,8 +21,16 @@ public class OfferingHandler : MonoBehaviour
 
     public Sprite GetOfferingSprite(OfferingType type)
     {
-        Sprite sprite = Resources.Load<Sprite>("Images/Offerings/" + type.ToString());
+        Sprite sprite = Resources.Load<Sprite>("Images/Icons/Offerings/Tokens/" + type.ToString());
         if (sprite == null) Debug.LogError("Sprite: " + type.ToString() + " not found in resources");
+        
+        return sprite;
+    }
+    public Sprite GetOfferingFrameSprite(OfferingType type)
+    {
+        Sprite sprite = Resources.Load<Sprite>("Images/Icons/Offerings/Frames/" + type.ToString());
+        if (sprite == null) Debug.LogError("Sprite: " + type.ToString() + " not found in resources");
+        
         return sprite;
     }
 

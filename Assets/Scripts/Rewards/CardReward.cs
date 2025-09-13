@@ -9,18 +9,23 @@ public class CardReward : MonoBehaviour
 
     public void Load(Card card, Action<ViewTarget> CardClicked, bool clickable = true)
     {
-        if (card is Follower != ViewCard is ViewFollower)
+        if (ViewCard == null || card is Follower != ViewCard is ViewFollower)
         {
-            View.Instance.ReleaseCard(ViewCard);
-            ViewCard.transform.parent = null;
+            if (ViewCard != null)
+            {
+                View.Instance.ReleaseCard(ViewCard);
+                ViewCard.transform.parent = null;
+            }
+            
             ViewCard = View.Instance.MakeNewViewCard(card, false);
             ViewCard.transform.parent = transform;
-            ViewCard.transform.localPosition = new Vector3();
+            ViewCard.transform.localPosition = new Vector3(0, 0, -0.1f);
             
             ViewCard.gameObject.SetActive(true);
         }
 
         ViewCard.Load(card, CardClicked);
+        ViewCard.SetDescriptiveMode(true);
 
         if (ViewCard.CardCollider != null) ViewCard.CardCollider.enabled = clickable;
     }

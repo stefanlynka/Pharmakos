@@ -20,3 +20,15 @@ public static class DictionaryExtensions
         dict[key].Add(value);
     }
 }
+public static class StringExtensions
+{
+    public static string TrimEnd(this string source, string valueToRemove)
+    {
+        if (!string.IsNullOrEmpty(source) && source.EndsWith(valueToRemove))
+        {
+            return source.Substring(0, source.Length - valueToRemove.Length);
+        }
+
+        return source;
+    }
+}

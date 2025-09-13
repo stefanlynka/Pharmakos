@@ -160,6 +160,14 @@ public static class CardHandler
         return Resources.Load<Sprite>("Images/Cards/" + cardName);
     }
 
+    public static Sprite GetSummaryIcon(Card card)
+    {
+        if (card.Icon == IconType.None) return null;
+
+        string iconName = card.Icon.ToString().ToLower();
+        return Resources.Load<Sprite>("Images/Icons/Summary/" + iconName);
+    }
+
     public static List<Card> GetPossibleCardRewards(int level)
     {
         List<Card> rewards = new List<Card>();

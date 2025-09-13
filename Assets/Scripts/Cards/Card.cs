@@ -19,7 +19,9 @@ public abstract class Card : ICloneable, ITarget
     public Action OnChange;
     public Action OnRemove;
 
-    
+    public IconType Icon = IconType.None;
+    public bool AffectsAdjacent = false;
+
     // Must be called once when a card comes into existence (Becoming a card in deck/hand/play, no longer just part of a deck list)
     public virtual void Init(Player player)
     {
@@ -98,6 +100,8 @@ public abstract class Card : ICloneable, ITarget
         copy.Owner = newOwner;
         copy.GameState = newOwner.GameState;
         copy.GameState.TargetsByID[ID] = copy;
+
+        copy.Icon = Icon;
 
         return copy;
     }
@@ -179,4 +183,23 @@ public interface ITarget
 
         return targets;
     }
+}
+
+public enum  IconType
+{
+    None,
+    Blood, // OnDrawBlood
+    Bolt, // Sprint
+    Bow, // Ranged
+    Fangs, // OnDamage (+lifesiphon)
+    Horn, // OnEnter
+    Scroll, // OnSpellCast
+    Shield, // DamageReduction
+    Sickle, // OnKill
+    Skull, // OnDeath
+    Sundial, // TurnStart/End
+    Sword, // OnAttack (+cleave)
+    Target, // Taunt
+
+    Star, // Other
 }

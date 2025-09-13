@@ -69,7 +69,7 @@ public class ProgressionHandler
             },
             StartingBattleRow = new List<Follower>
             {
-                //new Satyr(),
+                new Satyr(),
                 //new Satyr(),
                 //new Satyr(),
                 //new Satyr(),
@@ -84,10 +84,10 @@ public class ProgressionHandler
             CardsPerTurn = 5,
             Pool = 0,
             MinorRitual = null,
-            MajorRitual = null,
+            MajorRitual = new HadesMajor(),
             DeckBlueprint = new List<Card>
             {
-                new Peltast(),
+                new Ekdromos(),
                 new Peltast(),
                 new Peltast(),
                 new Peltast(),
@@ -165,7 +165,8 @@ public class ProgressionHandler
                 new Cyclops(),
                 new Cyclops(),
                 new PriceOfReprisal(),
-                new PriceOfReprisal(),
+                //new PriceOfReprisal(),
+                new ThrowStone(),
                 new ThrowStone(),
                 new ThrowStone(),
             },
@@ -784,7 +785,7 @@ public class ProgressionHandler
         }
 
         PlayerDetails newDetails = DetailsByDeckName[deckName];
-        if (newDetails.IsEnemy) newDetails.BaseHealth = CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5; // 1
+        if (newDetails.IsEnemy) newDetails.BaseHealth = 1; // CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5; // 1
 
         player.LoadDetails(newDetails);
     }

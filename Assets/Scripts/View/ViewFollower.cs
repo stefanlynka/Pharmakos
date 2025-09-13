@@ -12,7 +12,13 @@ public class ViewFollower : ViewCard
 
     public SpriteRenderer SkullRenderer;
 
+    public GameObject ReminderTextBox;
+
     public Follower Follower;
+
+    public SpriteRenderer SummaryIcon;
+    public SpriteRenderer SummaryLeftArrow;
+    public SpriteRenderer SummaryRightArrow;
 
     public override void Load(Card cardData, Action<ViewTarget> onClick = null)
     {
@@ -23,6 +29,11 @@ public class ViewFollower : ViewCard
         Target = Follower;
         AttackText.text = Follower.GetCurrentAttack().ToString();
         HealthText.text = Follower.CurrentHealth.ToString();
+
+        SummaryIcon.sprite = CardHandler.GetSummaryIcon(Follower);
+        SummaryIcon.enabled = SummaryIcon.sprite != null;
+        SummaryLeftArrow.enabled = Follower.AffectsAdjacent;
+        SummaryRightArrow.enabled = Follower.AffectsAdjacent;
 
         Follower.OnChange -= CardChanged;
         Follower.OnChange += CardChanged;
@@ -40,5 +51,14 @@ public class ViewFollower : ViewCard
     {
         AttackText.text = Follower.GetCurrentAttack().ToString();
         HealthText.text = Follower.CurrentHealth.ToString();
+    }
+
+    public override void SetDescriptiveMode(bool value)
+    {
+        if (Card == null) return;
+
+        ReminderTextBox.SetActive(Card.Text != string.Empty);
+
+        base.SetDescriptiveMode(value);
     }
 }

@@ -20,7 +20,7 @@ public class ViewHandHandler : MonoBehaviour
     public float HighlightY = 0;
     public float HighlightZ = 0;
 
-    public Vector3 HighlightScaleVector = new Vector3(2,2,2);
+    public static Vector3 HighlightScaleVector = new Vector3(2,2,2);
 
     public void UpdateHand()
     {
@@ -86,10 +86,14 @@ public class ViewHandHandler : MonoBehaviour
 
                 newPos.y = HighlightY;
                 newPos.z = HighlightZ;
+
+                viewCard.SetDescriptiveMode(true);
             }
             else
             {
                 viewCard.transform.localScale = Scale;
+
+                viewCard.SetDescriptiveMode(false);
             }
             viewCard.transform.localPosition = newPos;
 
