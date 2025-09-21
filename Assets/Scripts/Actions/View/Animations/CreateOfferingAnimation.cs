@@ -23,6 +23,8 @@ public class CreateOfferingAnimation : AnimationAction
 
     public CreateOfferingAnimation(GameAction gameAction, Player owner,  OfferingType offeringType, int amount, int sourceID, int destinationID) : base(gameAction)
     {
+        Stackable = true;
+
         if (gameAction is CreateOfferingAction)
         {
             createOfferingAction = gameAction as CreateOfferingAction;

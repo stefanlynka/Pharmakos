@@ -5,7 +5,7 @@ using UnityEngine;
 
 public abstract class AnimationAction
 {
-    public bool Simultaneous = false;
+    public bool Stackable = false;
     public GameAction GameAction;
     public Action OnFinish;
 
