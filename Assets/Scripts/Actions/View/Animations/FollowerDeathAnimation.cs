@@ -21,7 +21,7 @@ public class FollowerDeathAnimation : AnimationAction
 
     public override void Play(Action onFinish = null)
     {
-        //Debug.LogWarning(followerDeathAction.Follower.GetName() + " " + followerDeathAction.Follower.ID + " death Animation start");
+        Debug.LogWarning(followerDeathAction.Follower.GetName() + " " + followerDeathAction.Follower.ID + " death Animation start");
 
         OnFinish = onFinish;
 

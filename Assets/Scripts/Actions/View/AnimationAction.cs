@@ -9,7 +9,10 @@ public abstract class AnimationAction
     public GameAction GameAction;
     public Action OnFinish;
 
-    public abstract void Play(Action onFinish = null);
+    public virtual void Play(Action onFinish = null)
+    {
+        OnFinish = onFinish;
+    }
 
     public AnimationAction(GameAction gameAction)
     {

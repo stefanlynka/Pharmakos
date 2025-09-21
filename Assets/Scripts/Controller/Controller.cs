@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEditor.Experimental.GraphView.GraphView;
 using static UnityEngine.GraphicsBuffer;
 
 
@@ -31,6 +32,7 @@ public class Controller : MonoBehaviour
     public Player Player2 = null;
 
     public List<Card> PlayerDeckDefinition = new List<Card>();
+    public List<Follower> PlayerStartingBattleRow = new List<Follower>();
     public Ritual PlayerMinorRitual = null;
     public Ritual PlayerMajorRitual = null;
     public int PlayerCardsPerTurn = 5;
@@ -130,6 +132,7 @@ public class Controller : MonoBehaviour
 
         CardHandler.LoadCards();
 
+        // This should be changed. We shouldn't save "PlayerStartingHealth" we should be saving PlayerDetails which stores everything
         if (Player1 == null)
         {
             Player1 = new HumanPlayer();
@@ -137,6 +140,7 @@ public class Controller : MonoBehaviour
             ProgressionHandler.LoadPlayer(Player1, playerDeckName);
             PlayerStartingHealth = Player1.StartingHealth;
             PlayerDeckDefinition = Player1.DeckBlueprint;
+            PlayerStartingBattleRow = ProgressionHandler.GetPlayerStartingFollowers();
             PlayerMinorRitual = Player1.MinorRitual;
             PlayerMajorRitual = Player1.MajorRitual;
             PlayerCardsPerTurn = Player1.CardsPerTurn;
@@ -167,9 +171,11 @@ public class Controller : MonoBehaviour
         Player2.AttachToGameState(CanonGameState);
 
         List<Card> playerDeckCopy = new List<Card>(PlayerDeckDefinition);
+        //Player1.PlayerDetails.StartingBattleRow = PlayerDeckDefinition.
         Player1.DeckBlueprint = playerDeckCopy;
         Player1.StartingHealth = ProgressionHandler.GetPlayerHealth();
         Player1.CardsPerTurn = PlayerCardsPerTurn;
+        Player1.PlayerDetails.StartingBattleRow = PlayerStartingBattleRow;
         if (PlayerMinorRitual != null) Player1.MinorRitual = PlayerMinorRitual.MakeBaseCopy();
         if (PlayerMajorRitual != null) Player1.MajorRitual = PlayerMajorRitual.MakeBaseCopy();
         Player1.Init(0);
@@ -187,6 +193,7 @@ public class Controller : MonoBehaviour
 
         CurrentPlayer.StartTurn();
     }
+
 
     public void ClearLevel()
     {
@@ -359,6 +366,15 @@ public class Controller : MonoBehaviour
 
     private void LoadStartingBattleRow()
     {
+        foreach (Follower follower in Player1.PlayerDetails.StartingBattleRow)
+        {
+            int index = Player1.BattleRow.Followers.Count;
+            follower.Init(Player1);
+            //follower.Owner.SummonFollower(follower, index, false);
+            GameAction newAction = new SummonFollowerAction(follower, index, false);
+            Player1.GameState.ActionHandler.AddAction(newAction);
+        }
+
         foreach (Follower follower in Player2.PlayerDetails.StartingBattleRow)
         {
             int index = Player2.BattleRow.Followers.Count;

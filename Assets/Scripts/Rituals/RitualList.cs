@@ -234,7 +234,7 @@ public class HadesMajor : Ritual
         Costs = new Dictionary<OfferingType, int>()
             {
                 {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 0 }, // 12
+                {OfferingType.Bone, 0 },  // 12
                 {OfferingType.Crop, 0 },
                 {OfferingType.Scroll, 0 },
             };

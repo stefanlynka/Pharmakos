@@ -57,6 +57,7 @@ public abstract class Card : ICloneable, ITarget
     {
         if (Owner == null) return false;
         if (!Owner.IsMyTurn) return false;
+        if (this is Spell spell && !spell.HasPlayableTargets()) return false;
 
         foreach (KeyValuePair<OfferingType, int> cost in GetCosts())
         {

@@ -39,7 +39,9 @@ public class CreateOfferingAnimation : AnimationAction
 
     public override void Play(Action onFinish = null)
     {
-        OnFinish = onFinish;
+        base.Play(onFinish);
+
+        Debug.LogWarning("Create Offering Animation for "+ sourceID);
 
         if (createOfferingAction == null)
         {

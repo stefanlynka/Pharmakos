@@ -403,9 +403,22 @@ public class View : MonoBehaviour
 
     public void UpdatePlayerBuffs()
     {
+        Player1.ClearBuffs();
+        Player2.ClearBuffs();
+
         foreach (PlayerEffect playerEffect in Player1.Player.PlayerEffects)
         {
             ViewPlayer effectTarget = Player1;
+            if (playerEffect is RitualPlayerEffect ritualPlayerEffect)
+            {
+                effectTarget = ritualPlayerEffect.Target == Player1.Player ? Player1 : Player2;
+            }
+            effectTarget.AddBuff(playerEffect);
+        }
+
+        foreach (PlayerEffect playerEffect in Player2.Player.PlayerEffects)
+        {
+            ViewPlayer effectTarget = Player2;
             if (playerEffect is RitualPlayerEffect ritualPlayerEffect)
             {
                 effectTarget = ritualPlayerEffect.Target == Player1.Player ? Player1 : Player2;

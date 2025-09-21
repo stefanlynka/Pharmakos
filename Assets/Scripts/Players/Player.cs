@@ -121,7 +121,8 @@ public class Player : ITarget
         Health = playerDetails.BaseHealth;
         CardsPerTurn = playerDetails.CardsPerTurn;
         GoldPerTurn = playerDetails.GoldPerTurn;
-        
+
+
         if (playerDetails.MinorRitual != null) MinorRitual = playerDetails.MinorRitual.MakeBaseCopy();
         if (playerDetails.MajorRitual != null) MajorRitual = playerDetails.MajorRitual.MakeBaseCopy();
 

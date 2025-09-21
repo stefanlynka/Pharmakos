@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static CardHandler;
+using static ProgressionHandler;
 
 public class ProgressionHandler
 {
@@ -110,6 +111,10 @@ public class ProgressionHandler
                 //new Phalangite(),
                 //new Smite(),
                 ////new Panic(),
+            },
+            StartingBattleRow = new List<Follower>
+            {
+                new Ekdromos(),
             }
         };
         
@@ -785,9 +790,14 @@ public class ProgressionHandler
         }
 
         PlayerDetails newDetails = DetailsByDeckName[deckName];
-        if (newDetails.IsEnemy) newDetails.BaseHealth = 1; // CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5; // 1
+        if (newDetails.IsEnemy) newDetails.BaseHealth = CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5; // 1
 
         player.LoadDetails(newDetails);
+    }
+    public List<Follower> GetPlayerStartingFollowers()
+    {
+        PlayerDetails newDetails = DetailsByDeckName[DeckName.TestPlayer];
+        return newDetails.StartingBattleRow;
     }
 
     public void LoadEnemy(Player player)
