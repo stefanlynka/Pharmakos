@@ -70,12 +70,9 @@ public class ProgressionHandler
             },
             StartingBattleRow = new List<Follower>
             {
-                new Satyr(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Satyr(),
+                new Keres(),
+                new Cerberus(),
+                new Keres(),
             }
         };
         DetailsByDeckName[DeckName.TestPlayer] = new PlayerDetails
@@ -84,15 +81,15 @@ public class ProgressionHandler
             BaseHealth = 100,
             CardsPerTurn = 5,
             Pool = 0,
-            MinorRitual = null,
-            MajorRitual = new HadesMajor(),
+            MinorRitual = new AthenaMajor(),
+            MajorRitual = new HephaestusMajor(), //new HadesMajor(),
             DeckBlueprint = new List<Card>
             {
-                new Ekdromos(),
-                new Peltast(),
-                new Peltast(),
-                new Peltast(),
-                new Smite(),
+                new Sheep(),
+                new PriceOfProfit(),
+                new Asclepius(),
+                new HarpeOfPerseus(),
+                new Reflection(),
 
                 //new Melpomene(),
                 //new Ekdromos(),
@@ -114,7 +111,7 @@ public class ProgressionHandler
             },
             StartingBattleRow = new List<Follower>
             {
-                new Ekdromos(),
+                //new Ekdromos(),
             }
         };
         
@@ -790,7 +787,8 @@ public class ProgressionHandler
         }
 
         PlayerDetails newDetails = DetailsByDeckName[deckName];
-        if (newDetails.IsEnemy) newDetails.BaseHealth = CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5; // 1
+        if (newDetails.IsEnemy) newDetails.BaseHealth = 50; // CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5; // 1
+        else newDetails.BaseHealth = 30; // GetPlayerHealth();
 
         player.LoadDetails(newDetails);
     }

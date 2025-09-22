@@ -35,7 +35,7 @@ public class View : MonoBehaviour
     public SpriteRenderer BackgroundRenderer;
     public Dictionary<DeckName, string> backgroundNamesByDeckName = new Dictionary<DeckName, string>()
     {
-        { DeckName.TestEnemy, "Images/Backgrounds/Labyrinth" },
+        { DeckName.TestEnemy, "Images/Backgrounds/Underworld" },
         { DeckName.Cyclops, "Images/Backgrounds/Cyclops" },
         { DeckName.Labyrinth, "Images/Backgrounds/Labyrinth" },
         { DeckName.Bacchanalia, "Images/Backgrounds/Bacchanalia" },

@@ -114,5 +114,6 @@ public enum ScreenName
     CardGainRewards,
     Pause,
     StarterBundle,
+    Tutorial,
 }
 

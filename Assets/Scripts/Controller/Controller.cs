@@ -16,6 +16,9 @@ public class Controller : MonoBehaviour
     public bool gamePaused = false;
 
     public static bool DebugMode = false;
+    public static bool ShowCardIDs = false;
+
+
     public CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
 
     public View View;
@@ -61,6 +64,7 @@ public class Controller : MonoBehaviour
     public RitualRewardHandler RitualRewardHandler;
     public CardRemovalRewardHandler CardRemovalRewardHandler;
     public StarterBundleHandler StarterBundleHandler;
+    public TutorialHandler TutorialHandler;
     public ProgressionHandler ProgressionHandler = new ProgressionHandler();
 
 
@@ -384,5 +388,16 @@ public class Controller : MonoBehaviour
             Player2.GameState.ActionHandler.AddAction(newAction);
         }
         
+    }
+
+    public void LoadTutorial()
+    {
+        ScreenHandler.Instance.ShowScreen(ScreenName.Tutorial);
+        TutorialHandler.Load();
+    }
+    public void HideTutorial()
+    {
+        ScreenHandler.Instance.HideScreen(ScreenName.Tutorial);
+        ScreenHandler.Instance.ShowScreen(ScreenName.Start);
     }
 }

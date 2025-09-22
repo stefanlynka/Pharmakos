@@ -50,7 +50,7 @@ public abstract class Card : ICloneable, ITarget
     {
         if (OverrideName == "") OverrideName = GetType().Name;
 
-        return OverrideName + " " + ID;
+        return OverrideName + (Controller.ShowCardIDs ? " " + ID : "");
     }
 
     public virtual bool CanPlay()
