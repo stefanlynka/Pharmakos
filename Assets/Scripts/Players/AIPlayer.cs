@@ -163,20 +163,14 @@ public class AIPlayer : Player
             float utility = GetUtility(gameState);
             return new DecisionSet(new List<PlayerDecision>(), utility);
         }
-        //// Try playing cards
-        //if (!gameState.AI.DoneWithPlayingCards)
-        //{
-
-        //}
 
         List<Card> playableCards = gameState.AI.GetPlayableCards();
         Dictionary<string, Follower> followersByName = new Dictionary<string, Follower>();
         Dictionary<string, Spell> spellsByName = new Dictionary<string, Spell>();
-        //List<Follower> playableFollowers = new List<Follower>();
-        //List<Spell> playableSpells = new List<Spell>();
         Dictionary<string, Follower> freeFollowersByName = new Dictionary<string, Follower>();
         Dictionary<string, Spell> freeSpellsByName = new Dictionary<string, Spell>();
 
+        // Sort playable cards into followers and spells, separating free ones
         foreach (Card card in playableCards)
         {
             Follower follower = card as Follower;
@@ -191,9 +185,6 @@ public class AIPlayer : Player
                 {
                     followersByName[follower.GetCardType()] = follower;
                 }
-                //followersByName[follower.GetCardType()] = follower;
-                //PlayerDecision playFollower = new PlayFollowerDecision(follower.ID, BattleRow.Followers.Count);
-                //bestOptions.Add(playFollower);
             }
             else if (spell != null)
             {
@@ -205,7 +196,6 @@ public class AIPlayer : Player
                 {
                     spellsByName[spell.GetCardType()] = spell;
                 }
-                //spellsByName[spell.GetCardType()] = spell;
             }
         }
 
@@ -432,6 +422,7 @@ public class AIPlayer : Player
             utility += follower.CurrentHealth;
         }
         utility += thisPlayer.Health;
+        utility += thisPlayer.PlayerEffects.Count * 5;
 
         // Negative utility
         Player otherPlayer = gameState.GetOtherPlayer(gameState.AI.PlayerID);

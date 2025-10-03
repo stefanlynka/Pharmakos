@@ -137,7 +137,7 @@ public static class CardHandler
                 if (follower.Type == Follower.FollowerType.Monster)
                 {
                     AllMonsters.Add(follower);
-                    if (follower.Costs[OfferingType.Gold] <= 2) SmallMonsters.Add(follower);
+                    if (follower.Costs[OfferingType.Gold] <= 1) SmallMonsters.Add(follower);
                 }
                 else if (card is Spell spell)
                 {

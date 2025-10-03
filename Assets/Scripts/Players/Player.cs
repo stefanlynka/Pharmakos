@@ -19,6 +19,7 @@ public class Player : ITarget
     public BattleRow BattleRow = new BattleRow();
 
     public Dictionary<OfferingType, int> Offerings = new Dictionary<OfferingType, int>();
+    public Dictionary<OfferingType, int> FollowerCostReductions = new Dictionary<OfferingType, int>();
 
     public Dictionary<OfferingType, int> InitialOfferings = new Dictionary<OfferingType, int>()
         {
@@ -110,6 +111,15 @@ public class Player : ITarget
         Offerings = new Dictionary<OfferingType, int>(InitialOfferings);
         Offerings[OfferingType.Gold] = GoldPerTurn;
 
+        FollowerCostReductions = new Dictionary<OfferingType, int>
+        {
+            { OfferingType.Gold, 0},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
         RefreshDeck();
         DrawHand();
     }
@@ -191,6 +201,7 @@ public class Player : ITarget
         copy.BattleRow.ReapplyAllEffects(); // Can only reapply effects after all followers are copied over
 
         copy.Offerings = new Dictionary<OfferingType, int>(Offerings);
+        copy.FollowerCostReductions = new Dictionary<OfferingType, int>(FollowerCostReductions);
         copy.MinorRitual = MinorRitual?.DeepCopy(copy);
         copy.MajorRitual = MajorRitual?.DeepCopy(copy);
 
@@ -275,6 +286,14 @@ public class Player : ITarget
             { OfferingType.Crop, 0},
             { OfferingType.Scroll, 0},
         };
+        FollowerCostReductions = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 0},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
 
         OnHealthChange = null;
         OnOfferingsChange = null;
@@ -332,9 +351,10 @@ public class Player : ITarget
         Player otherPlayer = GameState.GetOtherPlayer(PlayerID);
         if (otherPlayer != null)
         {
-            foreach (Follower follower in otherPlayer.BattleRow.Followers)
+            List<Follower> theirFollowers = new List<Follower>(otherPlayer.BattleRow.Followers);
+            foreach (Follower follower in theirFollowers)
             {
-                follower.DoEndOfEachTurnEffects();
+                follower?.DoEndOfEachTurnEffects();
             }
         }
 
@@ -545,8 +565,17 @@ public class Player : ITarget
 
     public void PayCosts(Card card)
     {
+        bool isFollower = card is Follower;
+
         foreach (KeyValuePair<OfferingType, int> cost in card.GetCosts())
         {
+            int offeringCost = cost.Value;
+            if (isFollower)
+            {
+                offeringCost = Mathf.Max(0, offeringCost - FollowerCostReductions[cost.Key]); // Handle Apollo Major Ritual cost reductions
+                FollowerCostReductions[cost.Key] = 0;
+            }
+
             Offerings[cost.Key] -= cost.Value;
         }
         OnOfferingsChange?.Invoke();
@@ -569,6 +598,7 @@ public class Player : ITarget
             if (Offerings[cost.Key] < cost.Value) return;
             Offerings[cost.Key] -= cost.Value;
         }
+        OnOfferingsChange?.Invoke();
     }
 
     public void ChangeHealth(ITarget source, int value)

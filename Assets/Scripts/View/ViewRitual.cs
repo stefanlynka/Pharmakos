@@ -31,6 +31,8 @@ public class ViewRitual : ViewTarget
 
     public void Refresh()
     {
+        gameObject.SetActive(Ritual != null);
+
         if (Ritual == null)
         {
             Title.text = "";

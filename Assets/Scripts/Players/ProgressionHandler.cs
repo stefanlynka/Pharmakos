@@ -43,36 +43,20 @@ public class ProgressionHandler
             BaseHealth = 100,
             Pool = 0,
             MinorRitual = null,
-            MajorRitual = null,
+            MajorRitual = null, //new HadesMajor(),
             DeckBlueprint = new List<Card>
             {
-                //new Boar(),
+                //new Ekdromos(),
                 new Satyr(),
-                new Satyr(),
-                new Satyr(),
-                new Satyr(),
-                new Satyr(),
-                new Satyr(),
-                new Satyr(),
-                new Satyr(),
-                new Satyr(),
-                new Satyr(),
-
-                //new PriceOfProfit(),
-                //new PriceOfProfit(),
-                //new PriceOfProfit(),
-                //new PriceOfProfit(),
-                //new PriceOfProfit(),
-
-                //new Panic(),
-                //new Panic(),
-                //new Panic(),
+                //new Satyr(),
+                //new Satyr(),
+                //new Satyr(),
             },
             StartingBattleRow = new List<Follower>
             {
-                new Keres(),
-                new Cerberus(),
-                new Keres(),
+                new Peltast(),
+                new Ekdromos(),
+                new Myrmidon(),
             }
         };
         DetailsByDeckName[DeckName.TestPlayer] = new PlayerDetails
@@ -81,37 +65,27 @@ public class ProgressionHandler
             BaseHealth = 100,
             CardsPerTurn = 5,
             Pool = 0,
-            MinorRitual = new AthenaMajor(),
-            MajorRitual = new HephaestusMajor(), //new HadesMajor(),
+            MinorRitual = new ZeusMinor(), //new AphroditeMajor(),
+            MajorRitual = null, // new HephaestusMajor(), //new HadesMajor(),
             DeckBlueprint = new List<Card>
             {
-                new Sheep(),
-                new PriceOfProfit(),
-                new Asclepius(),
-                new HarpeOfPerseus(),
-                new Reflection(),
-
-                //new Melpomene(),
-                //new Ekdromos(),
-                //new Peltast(),
-                //new PriceOfProfit(),
-                //new PriceOfProfit(),
-                //new ReleasePrey(),
-                //new ReleasePrey(),
-                //new ReleasePrey(),
-                //new ReleasePrey(),
                 //new Sheep(),
-                //new Sheep(),
-                //new Sheep(),
-                //new PriceOfProfit(),
-                ////new Phalangite(),
-                //new Phalangite(),
-                //new Smite(),
+                new Peltast(),
+                new Confusion(),
+                new Ekdromos(),
+                new Chariot(),
+                new PriceOfLegacy(),
                 ////new Panic(),
             },
             StartingBattleRow = new List<Follower>
             {
+                new Chariot(),
+                //new Peltast(),
+                //new Peltast(),
+                //new Chariot(),
+                //new Podalirius(),
                 //new Ekdromos(),
+                //new Chariot(),
             }
         };
         
@@ -146,6 +120,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 1,
+            GoldPerTurn = 2,
             MinorRitual = null,
             MajorRitual = null,
             DeckBlueprint = new List<Card>
@@ -166,7 +141,7 @@ public class ProgressionHandler
                 new Cyclops(),
                 new Cyclops(),
                 new Cyclops(),
-                new PriceOfReprisal(),
+                new Cyclops(),
                 //new PriceOfReprisal(),
                 new ThrowStone(),
                 new ThrowStone(),
@@ -190,6 +165,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 1,
+            GoldPerTurn = 2,
             MinorRitual = null,
             MajorRitual = null,
             DeckBlueprint = new List<Card>
@@ -214,7 +190,7 @@ public class ProgressionHandler
                 new Panic(),
                 new Panic(),
                 new Reverie(),
-                new Reverie(),
+                new Restoration(),
                 new Restoration(),
                 new Restoration(),
                 //new PriceOfRenewal(),
@@ -237,12 +213,14 @@ public class ProgressionHandler
                 new Podalirius(),
                 new PriceOfInspiration(),
                 new PriceOfRenewal(),
+                new LastingGift(),
             }
         };
         DetailsByDeckName[DeckName.Labyrinth] = new PlayerDetails
         {
             BaseHealth = 10,
             Pool = 1,
+            GoldPerTurn = 2,
             MinorRitual = null,
             MajorRitual = null,
             DeckBlueprint = new List<Card>
@@ -256,8 +234,8 @@ public class ProgressionHandler
                 new Corridor(),
                 new Corridor(),
                 new Corridor(),
-                new Corridor(),
-                new Corridor(),
+                new Rat(),
+                new Rat(),
                 new Rat(),
                 new Rat(),
                 new Rat(),
@@ -276,6 +254,7 @@ public class ProgressionHandler
             },
             Rewards = new List<Card>
             {
+                new Corridor(),
                 new Minotaur(),
                 new Cyclops(),
                 new Rat(),
@@ -417,8 +396,8 @@ public class ProgressionHandler
                 new Panic(),
                 new Panic(),
                 new Panic(),
-                new PriceOfReprisal(),
-                new PriceOfReprisal(),
+                new PriceOfKnowledge(),
+                new PriceOfKnowledge(),
                 new Drown(),
                 new Drown(),
             },
@@ -446,7 +425,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 3,
-            MinorRitual = null,
+            MinorRitual = new OldOnesMinor(),
             MajorRitual = null,
             DeckBlueprint = new List<Card>
             {
@@ -498,7 +477,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 3,
-            MinorRitual = null,
+            MinorRitual = new HeraMajor(),
             MajorRitual = null,
             DeckBlueprint = new List<Card>
             {
@@ -541,7 +520,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 3,
-            MinorRitual = null,
+            MinorRitual = new ApolloMajor(),
             MajorRitual = null,
             DeckBlueprint = new List<Card>
             {
@@ -592,7 +571,8 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 4,
-            MinorRitual = null,
+            GoldPerTurn = 3,
+            MinorRitual = new HadesMajor(),
             MajorRitual = null,
             DeckBlueprint = new List<Card>
             {
@@ -605,23 +585,25 @@ public class ProgressionHandler
                 new Siren(),
                 new Keres(),
                 new Keres(),
+                new Keres(),
+                new Keres(),
                 new Charon(),
                 new Charon(),
                 new Cerberus(),
                 new Vengeance(),
                 new Vengeance(),
-                new RiverStyx(),
+                //new RiverStyx(),
                 new LastingGift(),
-                new PriceOfProfit(),
+                //new PriceOfProfit(),
                 new PriceOfProfit(),
                 new PriceOfLegacy(),
             },
             StartingBattleRow = new List<Follower>
             {
+                new Keres(),
                 new Cerberus(),
-                //new Keres(),
+                new Keres(),
                 //new Charon(),
-                //new Keres(),
             },
             Rewards = new List<Card>
             {
@@ -663,7 +645,7 @@ public class ProgressionHandler
                 new Atalanta(),
             }));
         starterBundles.Add(new StarterBundle(
-            new HadesMinor(),
+            new HadesMinor(), // HadesMinor
             new List<Card> {
                 new Charon(),
                 new RiverStyx(),
@@ -716,6 +698,10 @@ public class ProgressionHandler
             ritualRewards.Add(new HadesMajor());
             ritualRewards.Add(new HephaestusMajor());
             ritualRewards.Add(new ZeusMajor());
+            ritualRewards.Add(new ApolloMajor());
+            ritualRewards.Add(new OldOnesMinor());
+            ritualRewards.Add(new HeraMajor());
+            
         }
         if (CurrentLevel >= 2)
         {
@@ -787,14 +773,14 @@ public class ProgressionHandler
         }
 
         PlayerDetails newDetails = DetailsByDeckName[deckName];
-        if (newDetails.IsEnemy) newDetails.BaseHealth = 50; // CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5; // 1
-        else newDetails.BaseHealth = 30; // GetPlayerHealth();
+        if (newDetails.IsEnemy) newDetails.BaseHealth = CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5; 
+        else newDetails.BaseHealth = GetPlayerHealth();
 
         player.LoadDetails(newDetails);
     }
-    public List<Follower> GetPlayerStartingFollowers()
+    public List<Follower> GetPlayerStartingFollowers(DeckName deckName)
     {
-        PlayerDetails newDetails = DetailsByDeckName[DeckName.TestPlayer];
+        PlayerDetails newDetails = DetailsByDeckName[deckName];
         return newDetails.StartingBattleRow;
     }
 

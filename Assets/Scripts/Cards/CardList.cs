@@ -499,7 +499,7 @@ public class Corridor : Follower
 
         Type = FollowerType.Object;
 
-        SetBaseStats(0, 2);
+        SetBaseStats(0, 1);
 
         Text = "Taunt\nCan't Attack\nOn Death: Summon a Monster";
         Icon = IconType.Skull;
@@ -992,7 +992,7 @@ public class Endymion : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(2, 1);
+        SetBaseStats(1, 1);
 
         Text = "On Enter: Summon 2 Sheep";
         Icon = IconType.Horn;
@@ -1146,7 +1146,7 @@ public class Calchas : Follower
     }
 }
 
-// OnDamage: Heal adjacent Followers the amount dealt
+// OnDamage: Increase Health of adjacent Followers by the amount dealt
 public class Podalirius : Follower
 {
     public Podalirius() : base()
@@ -1162,9 +1162,9 @@ public class Podalirius : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(2, 5);
+        SetBaseStats(2, 3);
 
-        Text = "OnDamage: Heal adjacent Followers the amount dealt";
+        Text = "OnDamage: Increase Health of adjacent Followers by the amount dealt";
         Icon = IconType.Fangs;
         AffectsAdjacent = true;
 
@@ -1181,9 +1181,13 @@ public class Podalirius : Follower
     }
     private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        HealFollowersInstance newEffectInstance = new HealFollowersInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDamage);
-        newEffectInstance.Init(0, EffectTarget.AdjacentAllies, true);
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDamage);
+        newEffectInstance.Init(0, 0, EffectTarget.AdjacentAllies, false, true);
         effectDef.EffectInstances.Add(newEffectInstance);
+
+        //HealFollowersInstance newEffectInstance = new HealFollowersInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDamage);
+        //newEffectInstance.Init(0, EffectTarget.AdjacentAllies, true);
+        //effectDef.EffectInstances.Add(newEffectInstance);
     }
 }
 
@@ -2071,7 +2075,7 @@ public class Hydra : Follower
     }
 }
 
-// At the end of your turn, if this has two neighbours: This heals 2 damage
+// At the end of your turn, if this has two neighbours: This heals 2 health
 public class Minotaur : Follower
 {
     public Minotaur() : base()
@@ -2089,7 +2093,7 @@ public class Minotaur : Follower
 
         SetBaseStats(3, 6);
 
-        Text = "At the end of your turn, if this has two neighbours: This heals 2 damage";
+        Text = "At the end of your turn, if this has two neighbours: This heals 2 health";
         Icon = IconType.Sundial;
 
         SetupInnateEffects();
@@ -2105,7 +2109,12 @@ public class Minotaur : Follower
         base.DoEndOfMyTurnEffects();
 
         List<Follower> neighbours = Owner.BattleRow.GetAdjacentFollowers(this);
-        if (neighbours.Count >= 2) Heal(2);
+        if (neighbours.Count >= 2)
+        {
+            HealAction healFollowerAction = new HealAction(this, this, 2);
+            Owner.GameState.ActionHandler.AddAction(healFollowerAction, true, true);
+            //Heal(2);
+        }
     }
 }
 
@@ -2180,11 +2189,11 @@ public class Charybdis : Follower
         base.SetupInnateEffects();
     }
 
-    public override void DoEndOfEachTurnEffects()
+    public override void DoEndOfMyTurnEffects()
     {
-        base.DoEndOfEachTurnEffects();
+        base.DoEndOfMyTurnEffects();
 
-        List<Follower> adjacentFollowers = GetAdjacentFollowers();
+        List<Follower> adjacentFollowers = GetAllAdjacentFollowers();
 
         foreach (Follower follower in adjacentFollowers)
         {
@@ -2246,8 +2255,8 @@ public class Cerberus : Follower
         Costs = new Dictionary<OfferingType, int>()
         {
             { OfferingType.Gold, 3},
-            { OfferingType.Blood, 3},
-            { OfferingType.Bone, 3},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
             { OfferingType.Scroll, 0},
         };
@@ -2256,7 +2265,7 @@ public class Cerberus : Follower
 
         SetBaseStats(3, 9);
 
-        Text = "Cleave";
+        Text = "OnAttack: Also damage the target's neighbours";
         Icon = IconType.Sword;
 
         SetupInnateEffects();
@@ -2270,7 +2279,7 @@ public class Cerberus : Follower
     }
 }
 
-// OnAttacked: Deal 3 damage 
+// OnAttacked: Deal 2 damage 
 public class Siren : Follower
 {
     public Siren() : base()
@@ -2286,9 +2295,9 @@ public class Siren : Follower
 
         Type = FollowerType.Monster;
 
-        SetBaseStats(1, 2);
+        SetBaseStats(1, 1);
 
-        Text = "On Attacked:\nDeal 3 damage";
+        Text = "On Attacked:\nDeal 2 damage";
         Icon = IconType.Shield;
 
         SetupInnateEffects();
@@ -2298,7 +2307,7 @@ public class Siren : Follower
     {
         base.SetupInnateEffects();
 
-        InnateEffects.Add(new DamageOnAttackedEffectDef(EffectTarget.Self, 3));
+        InnateEffects.Add(new DamageOnAttackedEffectDef(EffectTarget.Self, 2));
     }
 }
 
@@ -2350,7 +2359,7 @@ public class Chimera : Follower
 
         Type = FollowerType.Monster;
 
-        SetBaseStats(3, 3);
+        SetBaseStats(2, 3);
 
         Text = "Sprint\nOn Attack or Attacked: Deal damage equal to its Attack\n";
         Icon = IconType.Sword;
@@ -3585,21 +3594,21 @@ public class Reflection : Spell
     }
 }
 
-// If there are two or more Followers with at least 5 Attack, destroy all Followers
+// If there are two or more Followers with at least 3 Attack, destroy all Followers
 public class Titanomachy : Spell
 {
     public Titanomachy()
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 2},
+            { OfferingType.Gold, 1},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
             { OfferingType.Scroll, 0},
         };
 
-        Text = "If there are two or more Followers with at least 5 Attack, destroy all Followers";
+        Text = "If there are two or more Followers with at least 3 Attack, destroy all Followers";
         HasTargets = true;
     }
 
@@ -3641,14 +3650,14 @@ public class Titanomachy : Spell
 
         foreach (Follower follower in Owner.BattleRow.Followers)
         {
-            if (follower.CurrentAttack >= 5) giantFollowerCount++;
+            if (follower.CurrentAttack >= 3) giantFollowerCount++;
         }
 
         Player otherPlayer = Owner.GetOtherPlayer();
 
         foreach (Follower follower in otherPlayer.BattleRow.Followers)
         {
-            if (follower.CurrentAttack >= 5) giantFollowerCount++;
+            if (follower.CurrentAttack >= 3) giantFollowerCount++;
         }
         
         if (giantFollowerCount > 1)
@@ -3677,7 +3686,7 @@ public class Drown : Spell
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 2},
+            { OfferingType.Gold, 1},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},

@@ -24,6 +24,7 @@ public class MoveCardAnimation : AnimationAction
     private float startScale = 1;
     private float endScale = 1;
 
+    private bool forceDescriptive = false;
 
     public MoveCardAnimation(GameAction gameAction, Card card, Player previousOwner, GameZone previousZone, Player newOwner, GameZone newZone, int newIndex = -1) : base(gameAction)
     {
@@ -44,6 +45,7 @@ public class MoveCardAnimation : AnimationAction
         {
             // Make a new ViewCard
             viewCard = View.Instance.MakeNewViewCard(card);
+
             // and put it offscreen to the right
             switch (previousZone)
             {
@@ -121,7 +123,8 @@ public class MoveCardAnimation : AnimationAction
                 endPos = new Vector3(50, 0, 10);
                 break;
         }
-        
+
+        if (forceDescriptive) viewCard.SetDescriptiveMode(true);
 
         Sequence moveSequence = new Sequence();
         moveSequence.Add(new Tween(TweenProgress, 0, 1, duration));
@@ -133,6 +136,10 @@ public class MoveCardAnimation : AnimationAction
     {
         this.startScale = startScale;
         this.endScale = endScale;
+    }
+    public void ForceDescriptive(bool value)
+    {
+        forceDescriptive = value;
     }
 
     private void TweenProgress(float progress)

@@ -15,7 +15,7 @@ public class FollowerEffectInstance : IComparable<FollowerEffectInstance>
         EffectDef = def;
         AffectedFollower = affectedFollower;
         OffsetFromOwner = offsetFromOwner;
-        EffectNum = effectNum;
+        EffectNum = affectedFollower.GetEffectCounter(); // effectNum + affectedFollower.GetEffectCounter();
     }
 
     // Required So Followers can have SortedSet<EffectInstance>'s
@@ -332,18 +332,22 @@ public class ChangeStatsInstance : TriggeredFollowerEffectInstance
     public int HealthChange = 0;
     public EffectTarget TargetType;
     public bool UseTargetInsteadOfType;
+    public bool UseAmountForHealth;
 
     public ChangeStatsInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
 
-    public void Init(int attackChange = 0, int healthChange = 0, EffectTarget targetType = EffectTarget.Self, bool useTargetInsteadOfType = false)
+    public void Init(int attackChange = 0, int healthChange = 0, EffectTarget targetType = EffectTarget.Self, bool useTargetInsteadOfType = false, bool useAmountForHealth = false)
     {
         AttackChange = attackChange;
         HealthChange = healthChange;
         TargetType = targetType;
         UseTargetInsteadOfType = useTargetInsteadOfType;
+        UseAmountForHealth = useAmountForHealth;
     }
     public override void Trigger(ITarget target = null, int amount = 0)
     {
+        if (UseAmountForHealth) HealthChange = amount;
+
         List<Follower> targetFollowers;
         if (UseTargetInsteadOfType)
         {
@@ -636,5 +640,26 @@ public class AddSpellsCastOnThisToHandInstance : TriggeredFollowerEffectInstance
             AddCardCopyToHandAction action = new AddCardCopyToHandAction(spellCopy);
             SpellReceivingPlayer.GameState.ActionHandler.AddAction(action);
         }
+    }
+}
+
+public class TakeDamageWhenAttackingPlayerInstance : TriggeredFollowerEffectInstance
+{
+    Player EffectOwner;
+    public TakeDamageWhenAttackingPlayerInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
+
+    // The EffectOwner is the player who gets the free spell
+    public void Init(Player effectOwner)
+    {
+        EffectOwner = effectOwner;
+    }
+
+    public override void Trigger(ITarget target = null, int amount = 0)
+    {
+        Player playerTarget = target as Player;
+        if (playerTarget == null) return;
+
+        DealDamageAction dealDamageAction = new DealDamageAction(EffectOwner, AffectedFollower, 1);
+        EffectOwner.GameState.ActionHandler.AddAction(dealDamageAction, true, true);
     }
 }

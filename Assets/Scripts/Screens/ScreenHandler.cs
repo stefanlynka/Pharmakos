@@ -115,5 +115,6 @@ public enum ScreenName
     Pause,
     StarterBundle,
     Tutorial,
+    DeckScreenButton,
 }
 

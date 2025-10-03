@@ -37,7 +37,7 @@ public class ViewCardScroller : MonoBehaviour
         foreach (Card card in cards)
         {
             ViewCard viewCard = View.Instance.MakeNewViewCard(card);
-            viewCard.OnClick = CardClicked;
+            //viewCard.OnClick = CardClicked;
             viewCard.transform.parent = this.transform;
             viewCard.SetHighlight(false);
             viewCards.Add(viewCard);

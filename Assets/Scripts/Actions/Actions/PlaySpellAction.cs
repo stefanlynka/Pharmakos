@@ -11,7 +11,7 @@ public class PlaySpellAction : GameAction
     public Player Owner;
     public Spell Spell;
 
-    private float showSpellDuration = 0.7f;
+    private float showSpellDuration = 1f;
 
     public PlaySpellAction(Player owner, Spell spell)
     {
@@ -39,7 +39,9 @@ public class PlaySpellAction : GameAction
     {
         MoveCardAnimation moveCardAnimation = new MoveCardAnimation(this, Spell, Owner, GameZone.Hand, Owner, GameZone.PlayZone);
         moveCardAnimation.SetScale(1, 2);
+        moveCardAnimation.ForceDescriptive(true);
 
+        showSpellDuration = Owner.IsHuman ? 0.5f : 0.8f;
         WaitAnimation waitAnimation = new WaitAnimation(this, showSpellDuration);
 
         RemoveCardAnimation removeCardAnimation = new RemoveCardAnimation(this, Spell);

@@ -20,6 +20,8 @@ public class ViewPlayer : ViewTarget
 
     public List<ViewBuff> Buffs = new List<ViewBuff>();
 
+    private int health = 0;
+
     public void Load(Player player)
     {
         Player = player;
@@ -36,6 +38,9 @@ public class ViewPlayer : ViewTarget
 
         ViewMinorRitual.Init(Player.MinorRitual);
         ViewMajorRitual.Init(Player.MajorRitual);
+
+        SetHealth(player.Health);
+        //health = player.Health;
     }
 
     public void Clear()
@@ -45,6 +50,8 @@ public class ViewPlayer : ViewTarget
 
         ViewMinorRitual.Init(null);
         ViewMajorRitual.Init(null);
+
+        ClearBuffs();
     }
 
     public void UpdatePlayer()
@@ -62,9 +69,18 @@ public class ViewPlayer : ViewTarget
 
     private void PlayerChanged()
     {
-        HealthText.text = Player.Health.ToString();
+        //HealthText.text = Player.Health.ToString();
     }
-
+    public void ChangeHealth(int change)
+    {
+        health += change;
+        HealthText.text = health.ToString();
+    }
+    public void SetHealth(int newHealth)
+    {
+        health = newHealth;
+        HealthText.text = health.ToString();
+    }
     public void ClearBuffs()
     {
         foreach (ViewBuff buff in Buffs)

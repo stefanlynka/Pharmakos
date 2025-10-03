@@ -67,7 +67,7 @@ public class DealDamageToAllCharactersAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new DamageAnimation(this)
+            //new DamageAnimation(this)
         };
         //if (LastStep) animationActions.Add(new IdleAnimation(this));
         return animationActions;

@@ -33,6 +33,8 @@ public class ChangeStatsAction : GameAction
 
         if (follower != null)
         {
+            int currentAttack = follower.GetCurrentAttack();
+            if (currentAttack + AttackChange < 0) AttackChange = -currentAttack;
             follower.ChangeStats(AttackChange, HealthChange);
         }
 
@@ -43,6 +45,7 @@ public class ChangeStatsAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
+            new ChangeStatsAnimation(this, Target, AttackChange, HealthChange)
             //new DamageAnimation(this)
         };
         //if (LastStep) animationActions.Add(new IdleAnimation(this));

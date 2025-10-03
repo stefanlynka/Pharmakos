@@ -19,6 +19,7 @@ public class View : MonoBehaviour
 
     public static GameObject OfferingPrefab;
     private static ObjectPool<GameObject> offeringPool = new ObjectPool<GameObject>(CreateOffering, OnOfferingGet, OnOfferingRelease, null, false);
+    private static GameObject RitualAnimationPrefab;
 
     public Dictionary<Card, ViewCard> CardMap = new Dictionary<Card, ViewCard>();
 
@@ -69,6 +70,7 @@ public class View : MonoBehaviour
 
         FollowerCardPrefab = Resources.Load<GameObject>("Prefabs/Cards/Follower2");
         SpellCardPrefab = Resources.Load<GameObject>("Prefabs/Cards/Spell2");
+        RitualAnimationPrefab = Resources.Load<GameObject>("Prefabs/Animations/MagicCircle2");
 
         OfferingPrefab = Resources.Load<GameObject>("Prefabs/Offerings/Offering");
 
@@ -173,17 +175,21 @@ public class View : MonoBehaviour
             Debug.LogError("Hm");
             return;
         }
-        
+
         // Remove it from hand
-        ViewHandHandler viewHandHandler = viewCard.Card.Owner.IsHuman ? Player1.HandHandler : Player2.HandHandler;
-        ViewBattleRow viewBattleRow = viewCard.Card.Owner.IsHuman ? Player1.BattleRow : Player2.BattleRow;
-        viewHandHandler.RemoveCard(viewCard);
+        ViewBattleRow viewBattleRow = null;
+        if (viewCard.Card.Owner != null)
+        {
+            ViewHandHandler viewHandHandler = viewCard.Card.Owner.IsHuman ? Player1.HandHandler : Player2.HandHandler;
+            viewBattleRow = viewCard.Card.Owner.IsHuman ? Player1.BattleRow : Player2.BattleRow;
+            viewHandHandler.RemoveCard(viewCard);
+        }
 
         // Remove from battlerow and release
         ViewFollower viewFollower = viewCard as ViewFollower;
         if (viewFollower != null)
         {
-            viewBattleRow.Followers.Remove(viewFollower);
+            if (viewBattleRow != null) viewBattleRow.Followers.Remove(viewFollower);
             if (viewCard.gameObject != null)
             {
                 viewCard.gameObject.transform.SetParent(null);
@@ -326,6 +332,14 @@ public class View : MonoBehaviour
     private static void OnOfferingRelease(GameObject gameObject)
     {
         gameObject.SetActive(false);
+    }
+
+    public GameObject CreateRitualAnimation()
+    {
+        GameObject animationObject = Instantiate(RitualAnimationPrefab);
+        if (animationObject == null) Debug.LogError("RitualAnimationPrefab was Null when trying to instantiate new RitualAnimation");
+
+        return animationObject;
     }
 
     public void DrawCard(Card card)

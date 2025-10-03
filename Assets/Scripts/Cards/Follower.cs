@@ -42,6 +42,7 @@ public class Follower : Card, ITarget
     public bool PlayedThisTurn = true;
     public bool SkippedAttack = false;
     public bool HasSprint { get { return StaticEffects.ContainsKey(StaticEffect.Sprint) && StaticEffects[StaticEffect.Sprint].Count > 0; } }
+    public int EffectCounter = 0;
     public FollowerType Type = FollowerType.Mortal;
 
     public enum FollowerType
@@ -91,10 +92,22 @@ public class Follower : Card, ITarget
 
         return targets;
     }
-
-    public List<Follower> GetAdjacentFollowers()
+    public float GetPositionInBattleRow()
     {
-        return Owner.BattleRow.GetAdjacentFollowers(this);
+        int index = Owner.BattleRow.GetIndexOfFollower(this);
+        return  -0.5f * (Owner.BattleRow.Followers.Count - 1) + index;
+    }
+
+    public List<Follower> GetAllAdjacentFollowers()
+    {
+        List<Follower> adjacentFollowers = Owner.BattleRow.GetAdjacentFollowers(this);
+        float position = GetPositionInBattleRow();
+        List<ITarget> enemyTargets = Owner.GetOtherPlayer().BattleRow.GetTargetsInRange(position, true);
+        foreach (ITarget target in enemyTargets)
+        {
+            if (target is Follower follower) adjacentFollowers.Add(follower);
+        }
+        return adjacentFollowers;
     }
 
     public Follower GetClosestEnemy()
@@ -332,7 +345,8 @@ public class Follower : Card, ITarget
 
     public void ApplyOnDamagedEffects(ITarget damageSource, int amount)
     {
-        foreach (TriggeredFollowerEffectInstance effect in OnDamagedEffects)
+        List<TriggeredFollowerEffectInstance> onDamagedEffects = new List<TriggeredFollowerEffectInstance>(OnDamagedEffects);
+        foreach (TriggeredFollowerEffectInstance effect in onDamagedEffects)
         {
             effect.Trigger(damageSource, amount);
         }
@@ -340,7 +354,8 @@ public class Follower : Card, ITarget
 
     public void ApplyOnKillEffects(ITarget target)
     {
-        foreach (TriggeredFollowerEffectInstance effect in OnKillEffects)
+        List<TriggeredFollowerEffectInstance> onKillEffects = new List<TriggeredFollowerEffectInstance>(OnKillEffects);
+        foreach (TriggeredFollowerEffectInstance effect in onKillEffects)
         {
             effect.Trigger(target);
         }
@@ -348,7 +363,8 @@ public class Follower : Card, ITarget
 
     public void ApplyOnDrawBloodEffects(ITarget target, int amount)
     {
-        foreach (TriggeredFollowerEffectInstance effect in OnDrawBloodEffects)
+        List<TriggeredFollowerEffectInstance> onDrawBloodEffects = new List<TriggeredFollowerEffectInstance>(OnDrawBloodEffects);
+        foreach (TriggeredFollowerEffectInstance effect in onDrawBloodEffects)
         {
             effect.Trigger(target, amount);
         }
@@ -408,14 +424,16 @@ public class Follower : Card, ITarget
     }
     public void ApplyOnAttackEffects(ITarget target)
     {
-        foreach (TriggeredFollowerEffectInstance effect in OnAttackEffects)
+        List<TriggeredFollowerEffectInstance> attackEffects = new List<TriggeredFollowerEffectInstance>(OnAttackEffects);
+        foreach (TriggeredFollowerEffectInstance effect in attackEffects)
         {
             effect.Trigger(target);
         }
     }
     public void ApplyOnAttackedEffects(ITarget attacker)
     {
-        foreach (TriggeredFollowerEffectInstance effect in OnAttackedEffects)
+        List<TriggeredFollowerEffectInstance> attackedEffects = new List<TriggeredFollowerEffectInstance>(OnAttackedEffects);
+        foreach (TriggeredFollowerEffectInstance effect in attackedEffects)
         {
             effect.Trigger(attacker);
         }
@@ -442,20 +460,40 @@ public class Follower : Card, ITarget
                 rightOfTarget = defender.Owner.BattleRow.Followers[targetIndex + 1];
             }
 
-            leftOfTarget?.ChangeHealth(this, -attackerAttack);
+            if (leftOfTarget != null)
+            {
+                DealDamageAction damageAction = new DealDamageAction(this, leftOfTarget, attackerAttack);
+                defender.GameState.ActionHandler.AddAction(damageAction);
+            }
+            //leftOfTarget?.ChangeHealth(this, -attackerAttack);
         }
 
-        if (!HasStaticEffect(StaticEffect.RangedAttacker) && !HasStaticEffect(StaticEffect.ImmuneWhileAttacking)) ChangeHealth(defender, -defenderAttack);
-        defender.ChangeHealth(this, -attackerAttack);
+        if (!HasStaticEffect(StaticEffect.RangedAttacker) && !HasStaticEffect(StaticEffect.ImmuneWhileAttacking))
+        {
+            DealDamageAction damageAttackerAction = new DealDamageAction(defender, this, defenderAttack);
+            defender.GameState.ActionHandler.AddAction(damageAttackerAction);
+            //ChangeHealth(defender, -defenderAttack);
+        }
+        DealDamageAction damageDefenderAction = new DealDamageAction(this, defender, attackerAttack);
+        defender.GameState.ActionHandler.AddAction(damageDefenderAction);
+        //defender.ChangeHealth(this, -attackerAttack);
 
-        rightOfTarget?.ChangeHealth(this, -attackerAttack);
+        if (rightOfTarget != null)
+        {
+            DealDamageAction damageAction3 = new DealDamageAction(this, rightOfTarget, attackerAttack);
+            defender.GameState.ActionHandler.AddAction(damageAction3);
+        }
+        //rightOfTarget?.ChangeHealth(this, -attackerAttack);
     }
 
     public void AttackPlayer(Player player)
     {
         TimesThisAttackedThisTurn++;
 
-        player.ChangeHealth(this, -GetCurrentAttack());
+        DealDamageAction damageAction = new DealDamageAction(this, player, GetCurrentAttack());
+        GameState.ActionHandler.AddAction(damageAction);
+
+        //player.ChangeHealth(this, -GetCurrentAttack());
     }
 
     public void ApplyOnChanged()
@@ -473,5 +511,23 @@ public class Follower : Card, ITarget
         }
 
         SpellsCastOnThisByOwner.Add(spell.MakeBaseCopy() as Spell);
+    }
+
+    public override Dictionary<OfferingType, int> GetCosts()
+    {
+        if (Owner == null) return Costs;
+
+        Dictionary<OfferingType, int> reducedCosts = new Dictionary<OfferingType, int>();
+        foreach (KeyValuePair<OfferingType, int> kvp in Costs)
+        {
+            reducedCosts[kvp.Key] = Mathf.Max(0, kvp.Value - Owner.FollowerCostReductions[kvp.Key]);
+        }
+
+        return reducedCosts;
+    }
+    public int GetEffectCounter()
+    {
+        EffectCounter++;
+        return EffectCounter;
     }
 }

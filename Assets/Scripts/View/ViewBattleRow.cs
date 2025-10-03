@@ -74,10 +74,11 @@ public class ViewBattleRow : MonoBehaviour
     List<float> xPositions = new List<float>();
     private void RefreshPositions()
     {
+        PopupCard.gameObject.SetActive(false); // Hide popup by default
+
         int cardCount = Followers.Count;
         if (cardCount == 0) return;
 
-        PopupCard.gameObject.SetActive(false); // Hide popup by default
 
         xPositions.Clear();
 
@@ -111,6 +112,7 @@ public class ViewBattleRow : MonoBehaviour
             {
                 PopupCard.gameObject.SetActive(true);
                 PopupCard.Load(viewFollower.Follower);
+                PopupCard.ShowCurrentStats();
                 PopupCard.SetDescriptiveMode(true);
                 PopupCard.transform.position = viewFollower.transform.position + PopupOffset;
             }

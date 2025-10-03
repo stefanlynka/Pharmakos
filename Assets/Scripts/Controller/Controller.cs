@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
-using static UnityEditor.Experimental.GraphView.GraphView;
 using static UnityEngine.GraphicsBuffer;
 
 
@@ -66,7 +66,7 @@ public class Controller : MonoBehaviour
     public StarterBundleHandler StarterBundleHandler;
     public TutorialHandler TutorialHandler;
     public ProgressionHandler ProgressionHandler = new ProgressionHandler();
-
+    public ViewCardScroller DeckViewer;
 
     private void Awake()
     {
@@ -144,7 +144,7 @@ public class Controller : MonoBehaviour
             ProgressionHandler.LoadPlayer(Player1, playerDeckName);
             PlayerStartingHealth = Player1.StartingHealth;
             PlayerDeckDefinition = Player1.DeckBlueprint;
-            PlayerStartingBattleRow = ProgressionHandler.GetPlayerStartingFollowers();
+            PlayerStartingBattleRow = ProgressionHandler.GetPlayerStartingFollowers(playerDeckName);
             PlayerMinorRitual = Player1.MinorRitual;
             PlayerMajorRitual = Player1.MajorRitual;
             PlayerCardsPerTurn = Player1.CardsPerTurn;
@@ -227,12 +227,14 @@ public class Controller : MonoBehaviour
 
     public void RestartGame()
     {
-        ClearLevel();
-        isGameSetup = false;
-        FirstTimeSetup();
-        gamePaused = false;
-        ScreenHandler.Instance.ShowScreen(ScreenName.Blank, true, false);
-        ScreenHandler.Instance.ShowScreen(ScreenName.Start);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
+        //ClearLevel();
+        //isGameSetup = false;
+        //FirstTimeSetup();
+        //gamePaused = false;
+        //ScreenHandler.Instance.ShowScreen(ScreenName.Blank, true, false);
+        //ScreenHandler.Instance.ShowScreen(ScreenName.Start);
     }
     public void GoToStartScreen()
     {
@@ -293,6 +295,7 @@ public class Controller : MonoBehaviour
         StarterBundleHandler.Load();
         ScreenHandler.Instance.HideScreen(ScreenName.Blank);
         ScreenHandler.Instance.ShowScreen(ScreenName.StarterBundle);
+        ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
     }
 
     public void PauseGame()
@@ -306,6 +309,7 @@ public class Controller : MonoBehaviour
         gamePaused = false;
         GameField.SetActive(true);
         ScreenHandler.Instance.HideScreen(ScreenName.Pause);
+        ScreenHandler.Instance.ShowScreen(ScreenName.Game);
     }
     public void QuitGame()
     {
@@ -399,5 +403,41 @@ public class Controller : MonoBehaviour
     {
         ScreenHandler.Instance.HideScreen(ScreenName.Tutorial);
         ScreenHandler.Instance.ShowScreen(ScreenName.Start);
+    }
+    public void ToggleDeckViewer()
+    {
+        if (DeckViewer.gameObject.activeSelf)
+        {
+            HideDeckViewer();
+        }
+        else
+        {
+            LoadDeckViewer();
+        }
+    }
+    public void LoadDeckViewer()
+    {
+        DeckViewer.gameObject.SetActive(true);
+        List<Card> playerDeck = new List<Card>(PlayerDeckDefinition);
+
+        // Sort by Gold cost, then by type (Followers before Spells)
+        playerDeck.Sort((a, b) =>
+        {
+            int costCompare = a.Costs[OfferingType.Gold].CompareTo(b.Costs[OfferingType.Gold]);
+            if (costCompare != 0)
+                return costCompare;
+
+            // Followers before Spells
+            bool aIsFollower = a is Follower;
+            bool bIsFollower = b is Follower;
+            if (aIsFollower && !bIsFollower) return -1;
+            if (!aIsFollower && bIsFollower) return 1;
+            return 0;
+        });
+        DeckViewer.Load(playerDeck);
+    }
+    public void HideDeckViewer()
+    {
+        DeckViewer.gameObject.SetActive(false);
     }
 }

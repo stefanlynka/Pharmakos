@@ -43,7 +43,7 @@ public class CreateOfferingAnimation : AnimationAction
     {
         base.Play(onFinish);
 
-        Debug.LogWarning("Create Offering Animation for "+ sourceID);
+        //Debug.LogWarning("Create Offering Animation for "+ sourceID);
 
         if (createOfferingAction == null)
         {

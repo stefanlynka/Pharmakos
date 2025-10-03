@@ -58,10 +58,14 @@ public abstract class Card : ICloneable, ITarget
         if (Owner == null) return false;
         if (!Owner.IsMyTurn) return false;
         if (this is Spell spell && !spell.HasPlayableTargets()) return false;
+        bool isFollower = this is Follower;
 
         foreach (KeyValuePair<OfferingType, int> cost in GetCosts())
         {
-            if (Owner.Offerings[cost.Key] < cost.Value) return false;
+            int offeringCost = cost.Value;
+            //if (isFollower) offeringCost = Mathf.Max(0, offeringCost - Owner.FollowerCostReductions[cost.Key]); // Handle Apollo Major Ritual cost reductions
+
+            if (Owner.Offerings[cost.Key] < offeringCost) return false;
         }
 
         return true;

@@ -34,11 +34,17 @@ public class DealDamageToAdjacentEnemyAction : GameAction
             ITarget target = targets[follower.GameState.RNG.Next(0, targets.Count)];
             if (target is Follower targetFollower)
             {
-                targetFollower.ChangeHealth(Source, -Damage);
+                DealDamageAction damageAction = new DealDamageAction(Source, targetFollower, Damage);
+                targetFollower.GameState.ActionHandler.AddAction(damageAction);
+
+                //targetFollower.ChangeHealth(Source, -Damage);
             }
             else if (target is Player targetPlayer)
             {
-                targetPlayer.ChangeHealth(Source, -Damage);
+                DealDamageAction damageAction = new DealDamageAction(Source, targetPlayer, Damage);
+                targetPlayer.GameState.ActionHandler.AddAction(damageAction);
+
+                //targetPlayer.ChangeHealth(Source, -Damage);
             }
         }
 
@@ -49,7 +55,7 @@ public class DealDamageToAdjacentEnemyAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new DamageAnimation(this)
+            //new DamageAnimation(this)
         };
 
         return animationActions;

@@ -20,6 +20,12 @@ public class ViewFollower : ViewCard
     public SpriteRenderer SummaryLeftArrow;
     public SpriteRenderer SummaryRightArrow;
 
+    public GameObject DamageIcon;
+    public TextMeshPro DamageText;
+
+    private int attack = 0;
+    private int health = 0;
+
     public override void Load(Card cardData, Action<ViewTarget> onClick = null)
     {
         base.Load(cardData, onClick);
@@ -27,18 +33,22 @@ public class ViewFollower : ViewCard
         if (Follower == null) return;
 
         Target = Follower;
-        AttackText.text = Follower.GetCurrentAttack().ToString();
-        HealthText.text = Follower.CurrentHealth.ToString();
+        AttackText.text = Follower.BaseAttack.ToString(); //GetCurrentAttack().ToString();
+        HealthText.text = Follower.BaseHealth.ToString();
 
         SummaryIcon.sprite = CardHandler.GetSummaryIcon(Follower);
         SummaryIcon.enabled = SummaryIcon.sprite != null;
         SummaryLeftArrow.enabled = Follower.AffectsAdjacent;
         SummaryRightArrow.enabled = Follower.AffectsAdjacent;
 
+        DamageIcon.SetActive(false);
+
         Follower.OnChange -= CardChanged;
         Follower.OnChange += CardChanged;
         //Follower.OnRemove -= CardRemoved;
         //Follower.OnRemove += CardRemoved;
+        attack = Follower.GetCurrentAttack();
+        health = Follower.CurrentHealth;
     }
 
     // Currently Unused
@@ -49,8 +59,36 @@ public class ViewFollower : ViewCard
 
     private void CardChanged()
     {
-        AttackText.text = Follower.GetCurrentAttack().ToString();
-        HealthText.text = Follower.CurrentHealth.ToString();
+        //AttackText.text = Follower.GetCurrentAttack().ToString();
+        //HealthText.text = Follower.CurrentHealth.ToString();
+    }
+
+    public void ShowCurrentStats()
+    {
+        attack = Follower.GetCurrentAttack();
+        health = Follower.CurrentHealth;
+
+        AttackText.text = attack.ToString();
+        HealthText.text = health.ToString();
+    }
+
+    public void SetStats(int attack, int health)
+    {
+        AttackText.text = attack.ToString();
+        HealthText.text = health.ToString();
+    }
+    public void ChangeStats(int attackChange, int healthChange)
+    {
+        attack += attackChange;
+        AttackText.text = attack.ToString();
+
+        health += healthChange;
+        HealthText.text = health.ToString();
+    }
+    public void ChangeHealth(int change)
+    {
+        health += change;
+        HealthText.text = health.ToString();
     }
 
     public override void SetDescriptiveMode(bool value)
@@ -60,5 +98,15 @@ public class ViewFollower : ViewCard
         ReminderTextBox.SetActive(Card.Text != string.Empty);
 
         base.SetDescriptiveMode(value);
+    }
+
+    public void ShowDamage(int damage)
+    {
+        DamageIcon.SetActive(true);
+        DamageText.text = damage.ToString();
+    }
+    public void HideDamage()
+    {
+        DamageIcon.SetActive(false);
     }
 }

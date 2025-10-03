@@ -9,6 +9,8 @@ public class DealDamageAction : GameAction
     public ITarget Source;
     public ITarget Target;
     public int Damage;
+    private int damageDealt = 0;
+    private int attackChange = 0;
 
     public DealDamageAction(ITarget source, ITarget target, int damage)
     {
@@ -33,11 +35,17 @@ public class DealDamageAction : GameAction
 
         if (follower != null )
         {
+            int prevAttack = follower.GetCurrentAttack();
+            int prevHealth = follower.CurrentHealth;
             follower.ChangeHealth(Source , -Damage);
+            damageDealt = prevHealth - follower.CurrentHealth;
+            attackChange = prevAttack - follower.GetCurrentAttack();
         }
         else if (player != null )
         {
+            int prevHealth = player.Health;
             player.ChangeHealth(Source , -Damage);
+            damageDealt = prevHealth - player.Health;
         }
 
         base.Execute(simulated);
@@ -47,7 +55,8 @@ public class DealDamageAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new DamageAnimation(this)
+            new ChangeStatsAnimation(this, Target, -attackChange, -damageDealt)
+            //new DamageAnimation(this)
         };
         //if (LastStep) animationActions.Add(new IdleAnimation(this));
         return animationActions;

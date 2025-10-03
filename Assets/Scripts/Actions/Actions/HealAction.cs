@@ -45,6 +45,7 @@ public class HealAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
+            new ChangeStatsAnimation(this, target, 0, amount)
             //new SummonFollowerAnimation(this)
         };
         return animationActions;

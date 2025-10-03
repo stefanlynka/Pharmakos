@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Ritual : ITarget
+public abstract class Ritual : ITarget
 {
     public Player Owner;
 
@@ -56,6 +56,19 @@ public class Ritual : ITarget
     public virtual void Play(ITarget target)
     {
         Owner.PayRitualCosts(this);
+
+        GameAction action = new PlayRitualAction(this, target);
+        Owner.GameState.ActionHandler.AddAction(action);
+
+        //GameAction action = new PlayRitualAction(this, target);
+        //Owner.GameState.ActionHandler.AddAction(action);
+        //AnimationAction animationAction = new
+        //AnimationHandler.instance.AddAnimationActionToQueue(, true);
+    }
+
+    public virtual void ExecuteEffect(ITarget target)
+    {
+        // Each Ritual subclass should override this to define its effect
     }
 
     public Ritual MakeBaseCopy()
