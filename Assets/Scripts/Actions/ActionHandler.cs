@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ActionHandler
 {
-    public Stack<GameAction> ActionStack = new Stack<GameAction>();
+    public List<GameAction> ActionStack = new List<GameAction>();
     //public GameState GameState;
     public bool Simulated = false;
     private bool Evaluating = false;
@@ -15,9 +15,16 @@ public class ActionHandler
         Evaluating = false;
     }
 
-    public void AddAction(GameAction newAction, bool startEvaluating = true, bool forceStartEvaluating = false)
+    public void AddAction(GameAction newAction, bool startEvaluating = true, bool frontOfQueue = false, bool forceStartEvaluating = false)
     {
-        ActionStack.Push(newAction);
+        if (frontOfQueue)
+        {
+            ActionStack.Insert(0, newAction);
+        }
+        else
+        {
+            ActionStack.Add(newAction);
+        }
 
         if (startEvaluating && (!Evaluating || forceStartEvaluating)) StartEvaluating();
     }
@@ -27,7 +34,8 @@ public class ActionHandler
         Evaluating = true;
         while (ActionStack.Count > 0)
         {
-            GameAction newAction = ActionStack.Pop();
+            GameAction newAction = ActionStack[0];
+            ActionStack.RemoveAt(0);
             newAction.Execute(Simulated);
         }
         Evaluating = false;

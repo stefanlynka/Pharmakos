@@ -8,6 +8,7 @@ public class SummonFollowerAnimation : AnimationAction
 {
     private SummonFollowerAction summonFollowerAction;
     private Tween animationTween;
+    private Follower follower;
 
     private ViewCard ViewFollower;
     private Vector3 startPos;
@@ -17,15 +18,17 @@ public class SummonFollowerAnimation : AnimationAction
 
     public SummonFollowerAnimation(GameAction gameAction) : base(gameAction)
     {
-        if (gameAction is SummonFollowerAction) summonFollowerAction = gameAction as SummonFollowerAction;
+        if (gameAction is SummonFollowerAction)
+        {
+            summonFollowerAction = gameAction as SummonFollowerAction;
+            follower = summonFollowerAction.Follower;
+        }
 
     }
 
     public override void Play(Action onFinish = null)
     {
-        //Debug.LogWarning(summonFollowerAction.Follower.Owner.GetName() + " played " + summonFollowerAction.Follower.GetName() + " " + summonFollowerAction.Follower.ID + " Animation start");
-
-        OnFinish = onFinish;
+        base.Play(onFinish);
 
         if (summonFollowerAction == null)
         {
@@ -34,16 +37,16 @@ public class SummonFollowerAnimation : AnimationAction
         }
 
         // If we can't find a ViewCard for this Follower
-        if (!View.Instance.TryGetViewCard(summonFollowerAction.Follower, out ViewFollower))
+        if (!View.Instance.TryGetViewCard(follower, out ViewFollower))
         {
             // Make a new ViewCard
-            ViewFollower = View.Instance.MakeNewViewCard(summonFollowerAction.Follower);
+            ViewFollower = View.Instance.MakeNewViewCard(follower);
             // and put it offscreen to the right
             ViewFollower.transform.position = new Vector3(50, 0, 10);
         }
 
         startPos = ViewFollower.transform.position;
-        endPos = View.Instance.GetViewPlayer(summonFollowerAction.Follower.Owner).BattleRow.GetPotentialFollowerPosition(summonFollowerAction.Index);
+        endPos = View.Instance.GetViewPlayer(follower.Owner).BattleRow.GetPotentialFollowerPosition(summonFollowerAction.Index);
 
         Sequence summonSequence = new Sequence();
         summonSequence.Add(new Tween(TweenProgress, 0, 1, duration));
@@ -67,8 +70,14 @@ public class SummonFollowerAnimation : AnimationAction
     private void Complete()
     {
         ViewFollower.transform.position = endPos;
-        View.Instance.MoveFollowerToBattleRow(summonFollowerAction.Follower, summonFollowerAction.Index);
-        //Debug.LogWarning(summonFollowerAction.Follower.Owner.GetName() + " played " + summonFollowerAction.Follower.GetName() + " " + summonFollowerAction.Follower.ID + " Animation end");
-        OnFinish?.Invoke();
+        View.Instance.MoveFollowerToBattleRow(follower, summonFollowerAction.Index);
+
+        CallCallback();
     }
+
+    protected override void Log()
+    {
+        if (follower != null) Debug.LogWarning("SummonFollowerAnimation: Summon " + follower.GetName());
+    }
+
 }

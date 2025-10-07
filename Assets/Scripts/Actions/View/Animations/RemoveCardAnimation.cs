@@ -16,11 +16,11 @@ public class RemoveCardAnimation : AnimationAction
 
     public override void Play(Action onFinish = null)
     {
-        OnFinish = onFinish;
+        base.Play(onFinish);
 
         View.Instance.RemoveCard(Card);
 
-        OnFinish?.Invoke();
+        CallCallback();
     }
 
 }

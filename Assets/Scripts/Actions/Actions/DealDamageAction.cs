@@ -11,12 +11,14 @@ public class DealDamageAction : GameAction
     public int Damage;
     private int damageDealt = 0;
     private int attackChange = 0;
+    private bool resolveDamageImmediately = false;
 
-    public DealDamageAction(ITarget source, ITarget target, int damage)
+    public DealDamageAction(ITarget source, ITarget target, int damage, bool resolveDamageImmediately = false)
     {
         Source = source;
         Target = target;
         Damage = damage;
+        this.resolveDamageImmediately = resolveDamageImmediately;
     }
 
     public override GameAction DeepCopy(Player newOwner)
@@ -40,11 +42,14 @@ public class DealDamageAction : GameAction
             follower.ChangeHealth(Source , -Damage);
             damageDealt = prevHealth - follower.CurrentHealth;
             attackChange = prevAttack - follower.GetCurrentAttack();
+
+            ResolveDamageAction resolveDamageAction = new ResolveDamageAction(follower);
+            follower.GameState.ActionHandler.AddAction(resolveDamageAction, true, resolveDamageImmediately);
         }
         else if (player != null )
         {
             int prevHealth = player.Health;
-            player.ChangeHealth(Source , -Damage);
+            player.ChangeHealth(Source, -Damage);
             damageDealt = prevHealth - player.Health;
         }
 
@@ -61,5 +66,8 @@ public class DealDamageAction : GameAction
         //if (LastStep) animationActions.Add(new IdleAnimation(this));
         return animationActions;
     }
-
+    public override void LogAction()
+    {
+        Debug.LogWarning("DealDamageAction: " + Source.GetName() + " Damaged " + Target.GetName());
+    }
 }

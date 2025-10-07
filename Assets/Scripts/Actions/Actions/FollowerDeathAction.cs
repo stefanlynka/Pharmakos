@@ -45,13 +45,13 @@ public class FollowerDeathAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new FollowerDeathAnimation(this)
+            new FollowerDeathAnimation(this, Follower)
         };
         return animationActions;
     }
 
     public override void LogAction()
     {
-        Debug.LogWarning(Follower.Owner.GetName() + "'s " + Follower.GetName() + " died");
+        Debug.LogWarning("FollowerDeathAction: " + Follower.Owner.GetName() + "'s " + Follower.GetName() + " died");
     }
 }

@@ -87,6 +87,7 @@ public class ViewBattleRow : MonoBehaviour
         for (int i = 0; i < Followers.Count; i++)
         {
             ViewFollower viewFollower = Followers[i];
+            viewFollower.transform.SetParent(UnitHolderTransform);
             Vector3 newPos = new Vector3(X, CardY, CardZ - CardZOffset * i);
 
             viewFollower.transform.localPosition = newPos;
@@ -94,9 +95,10 @@ public class ViewBattleRow : MonoBehaviour
 
             X += CardWidth + MaxSpacing;
 
+            // Determine if a card is highlighted
             bool highlighted = false;
 
-            if ((!isHuman && BattleRow.Owner.IsMyTurn) || AnimationHandler.IsAnimating) highlighted = false;
+            if ((!isHuman && BattleRow.Owner.IsMyTurn)) highlighted = false; //  || AnimationHandler.IsAnimating
             else if (isHuman && !BattleRow.Owner.IsMyTurn) highlighted = false;
             else if (View.Instance.SelectionHandler.AttackingFollower == viewFollower) highlighted = true; // If it's attacking
             else if (View.Instance.SelectionHandler.AttackableTargets.Contains(viewFollower.Follower)) highlighted = true; // If it's a potential attack target

@@ -15,8 +15,10 @@ public class Controller : MonoBehaviour
     public static int starterSeed = 1;
     public bool gamePaused = false;
 
-    public static bool DebugMode = false;
-    public static bool ShowCardIDs = false;
+    public static bool ActionDebugMode = true;
+    public static bool AnimationDebugMode = true;
+    public static bool AIDebugMode = true;
+    public static bool ShowCardIDs = true;
 
 
     public CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
@@ -79,7 +81,7 @@ public class Controller : MonoBehaviour
             Destroy(this);
         }
 
-        starterSeed = UnityEngine.Random.Range(0, 1000);
+        starterSeed = GetRandomMetaSeed(); // UnityEngine.Random.Range(0, 1000);
         Debug.Log("MetaSeed: " + starterSeed);
 
         MetaRNG = new CustomRandom(starterSeed);
@@ -95,6 +97,7 @@ public class Controller : MonoBehaviour
     {
         if (Player1 == null || Player2 == null || !GameRunning) return;
 
+        //Debug.LogError("Human Turn: " + CanonGameState.CurrentPlayer.IsHuman);
         Player1.RunUpdate();
         Player2.RunUpdate();
         View.Instance.DoUpdate();
@@ -217,7 +220,12 @@ public class Controller : MonoBehaviour
     }
     public void TryEndTurn()
     {
-        CanonGameState.EndTurn();
+        if (CanonGameState.CurrentPlayer.IsHuman)
+        {
+            var endTurnAction = new EndTurnAction(CanonGameState.CurrentPlayer);
+            CanonGameState.ActionHandler.AddAction(endTurnAction);
+            //CanonGameState.EndTurn();
+        }
     }
 
     public Player GetOtherPlayer(Player player)
@@ -438,6 +446,12 @@ public class Controller : MonoBehaviour
     }
     public void HideDeckViewer()
     {
+        DeckViewer.Exit();
         DeckViewer.gameObject.SetActive(false);
+    }
+    public static int GetRandomMetaSeed()
+    {
+        return 1; // For consistent testing
+        //return UnityEngine.Random.Range(0, 1000);
     }
 }

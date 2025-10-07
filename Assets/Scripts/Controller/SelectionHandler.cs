@@ -240,7 +240,7 @@ public class SelectionHandler
     {
         if (CurrentHover != null && AttackableTargets.Contains(CurrentHover.Target))
         {
-            GameAction newAction = new AttackWithFollowerAction(AttackingFollower.Follower, CurrentHover.Target);
+            GameAction newAction = new PreAttackWithFollowerAction(AttackingFollower.Follower, CurrentHover.Target);
             AttackingFollower.Follower.GameState.ActionHandler.AddAction(newAction);
 
             //Controller.Instance.Player1.PerformAttack(AttackingFollower.Follower, attackTarget);

@@ -8,23 +8,31 @@ public class AttackWithFollowerAnimation : AnimationAction
 {
     AttackWithFollowerAction attackAction;
 
-    private float attackMoveDuration = 0.25f;
+    private float attackMoveDuration = 0.18f;
     //private float moveDistance = 1f;
     private float cardSize = 3f;
     private ViewFollower attackerViewFollower;
     private Vector3 startPosition;
     private Vector3 endPosition;
+    private Follower attacker;
+    private ITarget target;
 
     public AttackWithFollowerAnimation(GameAction gameAction) : base(gameAction)
     {
-        if (gameAction is AttackWithFollowerAction) attackAction = (AttackWithFollowerAction)gameAction;
+        if (gameAction is AttackWithFollowerAction)
+        {
+            attackAction = (AttackWithFollowerAction)gameAction;
+            attacker = attackAction.Attacker;
+            target = attackAction.Target;
+        }
 
     }
 
     public override void Play(Action onFinish = null)
     {
-        OnFinish = onFinish;
-        if (!View.Instance.TryGetViewFollower(attackAction.Attacker, out attackerViewFollower))
+        base.Play(onFinish);
+
+        if (!View.Instance.TryGetViewFollower(attacker, out attackerViewFollower))
         {
             CallCallback();
             return;
@@ -35,8 +43,8 @@ public class AttackWithFollowerAnimation : AnimationAction
 
         Vector3 targetPosition = Vector3.zero;
 
-        Card cardTarget = attackAction.Target as Card;
-        Player playerTarget = attackAction.Target as Player;
+        Card cardTarget = target as Card;
+        Player playerTarget = target as Player;
         if (cardTarget != null && View.Instance.TryGetViewFollower(cardTarget, out ViewFollower targetViewFollower))
         {
             targetPosition = targetViewFollower.transform.position;
@@ -52,6 +60,7 @@ public class AttackWithFollowerAnimation : AnimationAction
 
         endPosition = Vector2.Lerp(startPosition, targetPosition, distanceToTargetPercent);
 
+        attackMoveDuration = View.Instance.IsHumansTurn ? 0.18f : 0.25f;
         Sequence attackSequence = new Sequence();
         attackSequence.Add(new Tween(MoveAttacker, 0, 1, attackMoveDuration));
         attackSequence.Add(new Tween(MoveAttacker, 1, 0, attackMoveDuration));
@@ -65,6 +74,11 @@ public class AttackWithFollowerAnimation : AnimationAction
     private void MoveAttacker(float progress)
     {
         attackerViewFollower.transform.position = Vector2.Lerp(startPosition, endPosition, progress);
+    }
+
+    protected override void Log()
+    {
+        if (attacker != null) Debug.LogWarning("AttackWithFollowerAnimation: " + attacker.GetName() + " attacks " + target.GetName());
     }
 
     private void AnimationOver()

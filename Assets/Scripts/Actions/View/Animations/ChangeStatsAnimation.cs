@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using static Unity.VisualScripting.Member;
 using static UnityEngine.GraphicsBuffer;
@@ -12,8 +13,9 @@ public class ChangeStatsAnimation : AnimationAction
     private int attackChange;
     private int healthChange;
 
+    private ViewPlayer viewPlayer;
     private ViewFollower viewFollower;
-    private float damageDuration = 1.25f;
+    private float damageDuration = 0.6f;
 
     public ChangeStatsAnimation(GameAction gameAction, ITarget target, int attackChange, int healthChange) : base(gameAction)
     {
@@ -31,7 +33,7 @@ public class ChangeStatsAnimation : AnimationAction
         Follower follower = target as Follower;
         Player player = target as Player;
 
-        bool isFollowerDamage = false;
+        bool isDamage = false;
 
         if (follower != null)
         {
@@ -46,20 +48,26 @@ public class ChangeStatsAnimation : AnimationAction
             if (healthChange < 0)
             {
                 viewFollower.ShowDamage(-healthChange);
-                isFollowerDamage = true;
+                isDamage = true;
             }
             //follower.ChangeHealth(Source, -Damage);
         }
         else if (player != null)
         {
-            ViewPlayer viewPlayer = View.Instance.GetViewPlayer(player);
+            viewPlayer = View.Instance.GetViewPlayer(player);
             viewPlayer.ChangeHealth(healthChange);
+
+            if (healthChange < 0)
+            {
+                viewPlayer.ShowDamage(-healthChange);
+                isDamage = true;
+            }
         }
 
 
-        if (isFollowerDamage)
+        if (isDamage)
         {
-            
+            damageDuration = View.Instance.IsHumansTurn ? 0.6f : 0.9f;
             Sequence moveSequence = new Sequence();
             moveSequence.Add(new Tween(TweenProgress, 0, 1, damageDuration));
             moveSequence.Add(new SequenceAction(Complete));
@@ -78,7 +86,14 @@ public class ChangeStatsAnimation : AnimationAction
 
     private void Complete()
     {
-        viewFollower.HideDamage();
+        viewPlayer?.HideDamage();
+        viewFollower?.HideDamage();
         CallCallback();
+    }
+
+    protected override void Log()
+    {
+        base.Log();
+        Debug.LogWarning("ChangeStatsAnimation: " + target.GetName() + ": " + attackChange + "/" + healthChange);
     }
 }

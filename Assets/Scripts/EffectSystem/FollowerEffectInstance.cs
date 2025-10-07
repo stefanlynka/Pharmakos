@@ -235,8 +235,8 @@ public class DamageTargetInstance : TriggeredFollowerEffectInstance
     public override void Trigger(ITarget target = null, int amount = 0)
     {
         int damageToDeal = useAttackForDamage ? AffectedFollower.GetCurrentAttack() : damage;
-        DealDamageAction damageAction = new DealDamageAction(AffectedFollower, target, damageToDeal);
-        AffectedFollower.Owner.GameState.ActionHandler.AddAction(damageAction, true, true);
+        DealDamageAction damageAction = new DealDamageAction(AffectedFollower, target, damageToDeal, true);
+        AffectedFollower.Owner.GameState.ActionHandler.AddAction(damageAction);
     }
 }
 

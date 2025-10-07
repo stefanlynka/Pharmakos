@@ -45,10 +45,9 @@ public class CreateOfferingAction : GameAction
 
     public override List<AnimationAction> GetAnimationActions()
     {
-        List<AnimationAction> animationActions = new List<AnimationAction>()
-        {
-            new CreateOfferingAnimation(this, Owner, Offering, Amount, SourceID, DestinationID)
-        };
+        List<AnimationAction> animationActions = new List<AnimationAction>(){};
+        if (Amount > 0) animationActions.Add(new CreateOfferingAnimation(this, Owner, Offering, Amount, SourceID, DestinationID));
+
         return animationActions;
     }
 }

@@ -33,8 +33,7 @@ public class ViewFollower : ViewCard
         if (Follower == null) return;
 
         Target = Follower;
-        AttackText.text = Follower.BaseAttack.ToString(); //GetCurrentAttack().ToString();
-        HealthText.text = Follower.BaseHealth.ToString();
+        SetStats(Follower.BaseAttack, Follower.BaseHealth);
 
         SummaryIcon.sprite = CardHandler.GetSummaryIcon(Follower);
         SummaryIcon.enabled = SummaryIcon.sprite != null;
@@ -47,8 +46,8 @@ public class ViewFollower : ViewCard
         Follower.OnChange += CardChanged;
         //Follower.OnRemove -= CardRemoved;
         //Follower.OnRemove += CardRemoved;
-        attack = Follower.GetCurrentAttack();
-        health = Follower.CurrentHealth;
+        //attack = Follower.GetCurrentAttack();
+        //health = Follower.CurrentHealth;
     }
 
     // Currently Unused
@@ -72,9 +71,11 @@ public class ViewFollower : ViewCard
         HealthText.text = health.ToString();
     }
 
-    public void SetStats(int attack, int health)
+    public void SetStats(int newAttack, int newHealth)
     {
+        attack = newAttack;
         AttackText.text = attack.ToString();
+        health = newHealth;
         HealthText.text = health.ToString();
     }
     public void ChangeStats(int attackChange, int healthChange)

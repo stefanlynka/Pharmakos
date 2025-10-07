@@ -16,7 +16,7 @@ public class RitualAnimation : AnimationAction
     //private Vector3 startPos;
     //private Vector3 endPos;
 
-    private float duration = 1.0f;
+    private float duration = 0.55f;
 
     public RitualAnimation(GameAction gameAction, ITarget source, ITarget target) : base(gameAction)
     {
@@ -80,6 +80,6 @@ public class RitualAnimation : AnimationAction
             UnityEngine.Object.Destroy(ritualObject); 
         }
 
-        OnFinish?.Invoke();
+        CallCallback();
     }
 }

@@ -50,7 +50,7 @@ public class GameState
         AI = ai;
         CurrentTeamID = 0;
 
-        starterSeed = UnityEngine.Random.Range(0, 1000);
+        starterSeed = Controller.GetRandomMetaSeed(); //UnityEngine.Random.Range(0, 1000);
         Debug.Log("MetaSeed: " + starterSeed);
 
         RNG = new CustomRandom(starterSeed);

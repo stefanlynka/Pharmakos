@@ -26,7 +26,7 @@ public class MoveCardAnimation : AnimationAction
 
     private bool forceDescriptive = false;
 
-    public MoveCardAnimation(GameAction gameAction, Card card, Player previousOwner, GameZone previousZone, Player newOwner, GameZone newZone, int newIndex = -1) : base(gameAction)
+    public MoveCardAnimation(GameAction gameAction, Card card, Player previousOwner, GameZone previousZone, Player newOwner, GameZone newZone, int newIndex = -1, float duration = 0.5f) : base(gameAction)
     {
         this.card = card;
         this.previousOwner = previousOwner;
@@ -34,11 +34,12 @@ public class MoveCardAnimation : AnimationAction
         this.newOwner = newOwner;
         this.newZone = newZone;
         this.newIndex = newIndex;
+        this.duration = duration;
     }
 
     public override void Play(Action onFinish = null)
     {
-        OnFinish = onFinish;
+        base.Play(onFinish);
 
         // If we can't find a ViewCard for this Card
         if (!View.Instance.TryGetViewCard(card, out viewCard))
@@ -179,6 +180,6 @@ public class MoveCardAnimation : AnimationAction
                 break;
         }
 
-        OnFinish?.Invoke();
+        CallCallback();
     }
 }

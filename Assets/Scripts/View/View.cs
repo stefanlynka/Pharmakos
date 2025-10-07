@@ -27,10 +27,15 @@ public class View : MonoBehaviour
     public ViewPlayer Player1;
     public ViewPlayer Player2;
 
+
     public SelectionHandler SelectionHandler;
     public SequenceHandler SequenceHandler;
     //public TweenManager TweenManager;
 
+    public RectTransform PlayerTurnBanner;
+    public RectTransform AITurnBanner;
+
+    public bool IsHumansTurn = true;
     public ViewTarget CurrentHover { get { return SelectionHandler.CurrentHover; } }
 
     public SpriteRenderer BackgroundRenderer;

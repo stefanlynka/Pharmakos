@@ -25,7 +25,7 @@ public class MoveFollowerAnimation : AnimationAction
 
     public override void Play(Action onFinish = null)
     {
-        OnFinish = onFinish;
+        base.Play(onFinish);
 
         // If we can't find a ViewCard for this Follower
         if (!View.Instance.TryGetViewCard(follower, out viewCard))
@@ -59,7 +59,7 @@ public class MoveFollowerAnimation : AnimationAction
 
     private void Complete()
     {
-        OnFinish?.Invoke();
         View.Instance.MoveFollowerToBattleRow(follower, battleRowIndex);
+        CallCallback();
     }
 }

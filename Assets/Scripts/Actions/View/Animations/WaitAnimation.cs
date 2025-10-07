@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using static Unity.VisualScripting.Member;
+using static UnityEngine.GraphicsBuffer;
 
 public class WaitAnimation : AnimationAction
 {
@@ -16,8 +18,7 @@ public class WaitAnimation : AnimationAction
 
     public override void Play(Action onFinish = null)
     {
-        OnFinish = onFinish;
-
+        base.Play(onFinish);
 
         Sequence moveSequence = new Sequence();
         moveSequence.Add(new Tween(TweenProgress, 0, 1, duration));
@@ -32,6 +33,10 @@ public class WaitAnimation : AnimationAction
 
     private void Complete()
     {
-        OnFinish?.Invoke();
+        CallCallback();
+    }
+    protected override void Log()
+    {
+        Debug.LogWarning("WaitAnimation Wait: " + duration + " seconds");
     }
 }

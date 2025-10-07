@@ -50,7 +50,7 @@ public class AIPlayer : Player
                 planningTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                 planningLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(globalToken, planningTimeoutCts.Token);
 
-                if (Controller.DebugMode)
+                if (Controller.AIDebugMode)
                 {
                     PlanActionsSync();
                     planningCompleted = true;
@@ -113,7 +113,10 @@ public class AIPlayer : Player
             case AITurnPhase.Ending:
                 Debug.LogWarning("Ending AI Turn");
                 TurnPhase = AITurnPhase.Setup;
-                GameState.EndTurn();
+                var endTurnAction = new EndTurnAction(this);
+                GameState.ActionHandler.AddAction(endTurnAction);
+                //GameState.EndTurn();
+
                 break;
         }
     }
@@ -420,6 +423,7 @@ public class AIPlayer : Player
         {
             utility += follower.GetCurrentAttack();
             utility += follower.CurrentHealth;
+            utility += follower.InherentValue;
         }
         utility += thisPlayer.Health;
         utility += thisPlayer.PlayerEffects.Count * 5;

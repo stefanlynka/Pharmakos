@@ -5,15 +5,18 @@ using UnityEngine;
 using static Unity.VisualScripting.Member;
 using static UnityEngine.GraphicsBuffer;
 
+// CURRENTLY UNUSED: See ChangeStatsAnimation
 public class DamageAnimation : AnimationAction
 {
     DealDamageAction dealDamageAction;
     ITarget target;
+    int damage = 0;
     public DamageAnimation(GameAction gameAction, ITarget target) : base(gameAction)
     {
         if (gameAction is DealDamageAction) dealDamageAction = (DealDamageAction)gameAction;
         this.target = target;
-        // Setup Tweens
+        
+        damage = dealDamageAction.Damage;
     }
 
     public override void Play(Action onFinish = null)
@@ -30,13 +33,13 @@ public class DamageAnimation : AnimationAction
                 CallCallback();
                 return;
             }
-            viewFollower.ChangeHealth(-dealDamageAction.Damage);
+            viewFollower.ChangeHealth(-damage);
             //follower.ChangeHealth(Source, -Damage);
         }
         else if (player != null)
         {
             ViewPlayer viewPlayer = View.Instance.GetViewPlayer(player);
-            viewPlayer.ChangeHealth(-dealDamageAction.Damage);
+            viewPlayer.ChangeHealth(-damage);
         }
         
 
@@ -45,5 +48,8 @@ public class DamageAnimation : AnimationAction
         // TODO: Add unique int IDs per card. Create dictionaries pointing to those cards and their viewCards. Dictionary<int id, Card Card>
     }
 
- 
+    protected override void Log()
+    {
+        Debug.LogWarning(target.GetName() + " takes " + damage+ " damage");
+    }
 }

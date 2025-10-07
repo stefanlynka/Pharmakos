@@ -1,13 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
-using static Unity.VisualScripting.Member;
 
 public class AttackWithFollowerAction : GameAction
 {
     public Follower Attacker;
     public ITarget Target;
-
-    private bool attackHappened = false;
+    private bool attackSuccessful = false;
 
     public AttackWithFollowerAction(Follower attacker, ITarget target)
     {
@@ -26,14 +24,45 @@ public class AttackWithFollowerAction : GameAction
 
     public override void Execute(bool simulated = false, bool success = true)
     {
-        attackHappened = Attacker.AttackTarget(Target);
+        if (Attacker.CurrentHealth <= 0)
+        {
+            attackSuccessful = false;
+            base.Execute(simulated);
+            return;
+        }
+
+        if (Target is Follower targetFollower)
+        {
+            if (targetFollower.CurrentHealth <= 0)
+            {
+                attackSuccessful = false;
+                base.Execute(simulated);
+                return;
+            }
+
+            Attacker.AttackFollower(targetFollower);
+        }
+        else if (Target is Player targetPlayer)
+        {
+            if (targetPlayer.Health <= 0)
+            {
+                attackSuccessful = false;
+                base.Execute(simulated);
+                return;
+            }
+
+            Attacker.AttackPlayer(targetPlayer);
+        }
+
+        attackSuccessful = true;
+        
 
         base.Execute(simulated);
     }
 
     public override List<AnimationAction> GetAnimationActions()
     {
-        if (!attackHappened) return new List<AnimationAction>();
+        if (!attackSuccessful) return new List<AnimationAction>();
 
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
@@ -45,7 +74,7 @@ public class AttackWithFollowerAction : GameAction
 
     public override void LogAction()
     {
-        if (!attackHappened) Debug.LogWarning("Attack Failed");
+        if (!attackSuccessful) Debug.LogWarning("Attack Failed");
         else
         {
             Debug.LogWarning(Attacker.Owner.GetName() + "'s " + Attacker.GetName() + " attacked " + Target.GetName());

@@ -13,8 +13,11 @@ public abstract class GameAction
         {
             if (successful) View.Instance.AnimationHandler.AddGameActionToQueue(this);
 
-            LogAction();
-            if (!successful) Debug.LogWarning("This Action Failed");
+            if (Controller.ActionDebugMode)
+            {
+                LogAction();
+                if (!successful) Debug.LogWarning("This Action Failed");
+            }
         }
     }
 

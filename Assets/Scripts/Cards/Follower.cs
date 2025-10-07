@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using static Unity.VisualScripting.Member;
@@ -10,11 +11,17 @@ using static UnityEngine.GraphicsBuffer;
 
 public class Follower : Card, ITarget
 {
+    // Attack+Health printed on the card. Unchangeable.
     public int BaseAttack;
     public int BaseHealth;
+    
+    public int MaxHealth;
 
     public int CurrentAttack;
     public int CurrentHealth;
+
+    protected int inherentValue = 0;
+    public int InherentValue { get { return inherentValue; } }
 
     public Action OnEnter;
     public Action OnDeath;
@@ -173,11 +180,11 @@ public class Follower : Card, ITarget
         SkippedAttack = false;
     }
 
-    public override void Reset()
-    {
-        CurrentAttack = BaseAttack;
-        CurrentHealth = BaseHealth;
-    }
+    //public override void Reset()
+    //{
+    //    CurrentAttack = BaseAttack;
+    //    CurrentHealth = MaxHealth;
+    //}
 
     // Called when deep copying
     protected override void HandleCloned(Card original)
@@ -247,9 +254,11 @@ public class Follower : Card, ITarget
     public void SetBaseStats(int attack, int health)
     {
         BaseAttack = attack;
+        BaseHealth = health;
+
         CurrentAttack = attack;
 
-        BaseHealth = health;
+        MaxHealth = health;
         CurrentHealth = health;
     }
 
@@ -260,12 +269,10 @@ public class Follower : Card, ITarget
 
     public void ChangeStats(int attackChange, int healthChange)
     {
-        BaseAttack += attackChange;
-        BaseAttack = Mathf.Max(BaseAttack, 0);
         CurrentAttack += attackChange;
         CurrentAttack = Mathf.Max(CurrentAttack, 0);
 
-        BaseHealth += healthChange;
+        MaxHealth += healthChange;
         CurrentHealth += healthChange;
 
         if (healthChange != 0) ResolveDamage();
@@ -301,14 +308,14 @@ public class Follower : Card, ITarget
 
         ApplyOnDamagedEffects(source, -value);
 
-        ResolveDamage();
+        //ResolveDamage();
 
         ApplyOnChanged();
     }
 
     public virtual void Heal(int value)
     {
-        CurrentHealth = Math.Min(CurrentHealth + value, BaseHealth);
+        CurrentHealth = Math.Min(CurrentHealth + value, MaxHealth);
 
         ApplyOnChanged();
     }
@@ -383,7 +390,7 @@ public class Follower : Card, ITarget
 
     public override bool CanPlay()
     {
-        if (Owner.BattleRow.Followers.Count >= Player.MaxFollowerCount) return false;
+        if (Owner == null || Owner.BattleRow.Followers.Count >= Player.MaxFollowerCount) return false;
 
         return base.CanPlay();
     }
@@ -394,8 +401,10 @@ public class Follower : Card, ITarget
     }
 
     // Return true if attack happened
-    public bool AttackTarget(ITarget target)
+    public void AttackTarget(ITarget target)
     {
+        TimesThisAttackedThisTurn++;
+
         ApplyOnAttackEffects(target);
 
         Follower defendingFollower = target as Follower;
@@ -407,20 +416,25 @@ public class Follower : Card, ITarget
 
             if (CurrentHealth > 0 && defendingFollower.CurrentHealth > 0)
             {
-                AttackFollower(defendingFollower);
-                //TimesThisAttackedThisTurn++;
-                return true;
+                GameAction newAction = new AttackWithFollowerAction(this, defendingFollower);
+                Owner.GameState.ActionHandler.AddAction(newAction);
+
+                //AttackFollower(defendingFollower);
+                
+                return;
             }
         }
         else if (defendingPlayer != null && CurrentHealth > 0 && defendingPlayer.Health > 0)
         {
-            AttackPlayer(defendingPlayer);
-            //TimesThisAttackedThisTurn++;
-            return true;
+            GameAction newAction = new AttackWithFollowerAction(this, defendingPlayer);
+            Owner.GameState.ActionHandler.AddAction(newAction);
+
+            //AttackPlayer(defendingPlayer);
+            
+            return;
         }
 
-        TimesThisAttackedThisTurn++;
-        return false;
+        return;
     }
     public void ApplyOnAttackEffects(ITarget target)
     {
@@ -441,8 +455,6 @@ public class Follower : Card, ITarget
     
     public void AttackFollower(Follower defender)
     {
-        TimesThisAttackedThisTurn++;
-
         int defenderAttack = defender.GetCurrentAttack();
         int attackerAttack = GetCurrentAttack();
 
@@ -462,34 +474,34 @@ public class Follower : Card, ITarget
 
             if (leftOfTarget != null)
             {
-                DealDamageAction damageAction = new DealDamageAction(this, leftOfTarget, attackerAttack);
-                defender.GameState.ActionHandler.AddAction(damageAction);
+                DealDamageAction damageLeft = new DealDamageAction(this, leftOfTarget, attackerAttack);
+                defender.GameState.ActionHandler.AddAction(damageLeft);
             }
-            //leftOfTarget?.ChangeHealth(this, -attackerAttack);
         }
 
         if (!HasStaticEffect(StaticEffect.RangedAttacker) && !HasStaticEffect(StaticEffect.ImmuneWhileAttacking))
         {
             DealDamageAction damageAttackerAction = new DealDamageAction(defender, this, defenderAttack);
             defender.GameState.ActionHandler.AddAction(damageAttackerAction);
-            //ChangeHealth(defender, -defenderAttack);
         }
         DealDamageAction damageDefenderAction = new DealDamageAction(this, defender, attackerAttack);
         defender.GameState.ActionHandler.AddAction(damageDefenderAction);
-        //defender.ChangeHealth(this, -attackerAttack);
 
         if (rightOfTarget != null)
         {
-            DealDamageAction damageAction3 = new DealDamageAction(this, rightOfTarget, attackerAttack);
-            defender.GameState.ActionHandler.AddAction(damageAction3);
+            DealDamageAction damageRight = new DealDamageAction(this, rightOfTarget, attackerAttack);
+            defender.GameState.ActionHandler.AddAction(damageRight);
         }
-        //rightOfTarget?.ChangeHealth(this, -attackerAttack);
+
+        //ResolveDamageAction resolveDamageDefenderAction = new ResolveDamageAction(defender);
+        //defender.GameState.ActionHandler.AddAction(resolveDamageDefenderAction);
+
+        //ResolveDamageAction resolveDamageAttackerAction = new ResolveDamageAction(this);
+        //defender.GameState.ActionHandler.AddAction(resolveDamageAttackerAction);
     }
 
     public void AttackPlayer(Player player)
     {
-        TimesThisAttackedThisTurn++;
-
         DealDamageAction damageAction = new DealDamageAction(this, player, GetCurrentAttack());
         GameState.ActionHandler.AddAction(damageAction);
 

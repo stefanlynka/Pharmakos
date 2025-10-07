@@ -89,6 +89,6 @@ public class CreateOfferingAnimation : AnimationAction
         //offeringObject.transform.position = endPos;
         View.Instance.RemoveOffering(offeringObject);
         //Debug.LogWarning(summonFollowerAction.Follower.Owner.GetName() + " played " + summonFollowerAction.Follower.GetName() + " " + summonFollowerAction.Follower.ID + " Animation end");
-        OnFinish?.Invoke();
+        CallCallback();
     }
 }

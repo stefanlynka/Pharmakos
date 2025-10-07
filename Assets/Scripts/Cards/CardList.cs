@@ -236,6 +236,7 @@ public class GoldenHind : Follower
 
         Text = "On Attack: Damage all enemies equal to Golden Hind's Attack";
         Icon = IconType.Sword;
+        inherentValue = 5;
 
         SetupInnateEffects();
     }
@@ -277,6 +278,7 @@ public class NemeanLion : Follower
 
         Text = "Only takes 1 damage at a time";
         Icon = IconType.Shield;
+        inherentValue = 3;
 
         SetupInnateEffects();
     }
@@ -291,6 +293,8 @@ public class NemeanLion : Follower
         if (value < -1) value = -1;
 
         base.ChangeHealth(source, value);
+        ResolveDamage();
+        ApplyOnChanged();
     }
 }
 
@@ -425,7 +429,7 @@ public class Filth : Follower
         SetBaseStats(0, 1);
 
         Text = "Taunt\nOn Attacked: Reduce attacker's Attack by 1";
-        Icon = IconType.Shield;
+        Icon = IconType.Target;
 
         SetupInnateEffects();
     }
@@ -457,7 +461,7 @@ public class WallOfTroy : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 1},
+            { OfferingType.Gold, 0},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -466,10 +470,10 @@ public class WallOfTroy : Follower
 
         Type = FollowerType.Object;
 
-        SetBaseStats(0, 5);
+        SetBaseStats(0, 3);
 
         Text = "Taunt";
-        Icon = IconType.Shield;
+        Icon = IconType.Target;
 
         SetupInnateEffects();
     }
@@ -502,7 +506,7 @@ public class Corridor : Follower
         SetBaseStats(0, 1);
 
         Text = "Taunt\nCan't Attack\nOn Death: Summon a Monster";
-        Icon = IconType.Skull;
+        Icon = IconType.Target;
 
         SetupInnateEffects();
     }
@@ -729,6 +733,7 @@ public class Toxotes : Follower
 
         Text = "Ranged attacker.\nImmune while attacking";
         Icon = IconType.Bow;
+        inherentValue = 2;
 
         SetupInnateEffects();
     }
@@ -761,6 +766,7 @@ public class TrojanHorse : Follower
 
         Text = "On Death: Summon 3 1/1's";
         Icon = IconType.Skull;
+        inherentValue = 2;
 
         SetupInnateEffects();
     }
@@ -840,6 +846,7 @@ public class Phalangite : Follower
         Text = "Adjacent Followers take 1 less damage";
         Icon = IconType.Shield;
         AffectsAdjacent = true;
+        inherentValue = 2;
 
         SetupInnateEffects();
     }
@@ -913,6 +920,7 @@ public class Maenad : Follower
         Text = "When an adjacent Follower attacks: give it +1/+0";
         Icon = IconType.Sword;
         AffectsAdjacent = true;
+        inherentValue = 2;
 
         SetupInnateEffects();
     }
@@ -948,7 +956,7 @@ public class Nereid : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(4, 2);
+        SetBaseStats(3, 1);
 
         Text = "When you play a spell: this gains 2 health";
         Icon = IconType.Scroll;
@@ -1016,7 +1024,7 @@ public class Endymion : Follower
         effectDef.EffectInstances.Add(newEffectInstance);
 
         SummonFollowerInstance newEffectInstance2 = new SummonFollowerInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnEnter);
-        newEffectInstance2.Init(typeof(Sheep), 1);
+        newEffectInstance2.Init(typeof(Sheep), 2);
         effectDef.EffectInstances.Add(newEffectInstance2);
     }
 }
@@ -1042,6 +1050,7 @@ public class OracleOfDelphi : Follower
         Text = "When an adjacent Follower enters: Gain 1 gold next turn";
         Icon = IconType.Horn;
         AffectsAdjacent = true;
+        inherentValue = 3;
 
         SetupInnateEffects();
     }
@@ -1083,6 +1092,7 @@ public class Charon : Follower
         Text = "When an adjacent Follower dies: Gain 1 Gold";
         Icon = IconType.Skull;
         AffectsAdjacent = true;
+        inherentValue = 3;
 
         SetupInnateEffects();
     }
@@ -1120,6 +1130,7 @@ public class Calchas : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(1, 6);
+        inherentValue = 1;
 
         Text = "When an adjacent Follower kills: Add the spell Scry to your hand";
         Icon = IconType.Sickle;
@@ -1163,6 +1174,7 @@ public class Podalirius : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(2, 3);
+        inherentValue = 2;
 
         Text = "OnDamage: Increase Health of adjacent Followers by the amount dealt";
         Icon = IconType.Fangs;
@@ -1208,6 +1220,7 @@ public class Medea : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(2, 5);
+        inherentValue = 1;
 
         Text = "When an adjacent Follower kills: Heal that Follower to full health";
         Icon = IconType.Sickle;
@@ -1249,6 +1262,7 @@ public class Patroclus : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(1, 1);
+        inherentValue = 3;
 
         Text = "On Death: Grant adjacent Followers +2 attack and Frenzy";
         Icon = IconType.Skull;
@@ -1385,9 +1399,9 @@ public class Agamemnon : Follower
 
         SetBaseStats(5, 3);
 
-        Text = "King 1";
+        Text = "On Attack: summon two 1/1s";
         Icon = IconType.Sword;
-
+        inherentValue = 2;
 
         SetupInnateEffects();
     }
@@ -1429,8 +1443,9 @@ public class Menelaus : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(2, 4);
+        inherentValue = 4;
 
-        Text = "King 2";
+        Text = "On Damaged: Summon two 1/1s";
         Icon = IconType.Shield;
 
         SetupInnateEffects();
@@ -1471,8 +1486,9 @@ public class Pyrrhus : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(3, 3);
+        inherentValue = 2;
 
-        Text = "";
+        Text = "On Kill: Gain 1 Gold";
         Icon = IconType.Sickle;
 
 
@@ -1512,6 +1528,7 @@ public class Diomedes : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(4, 4);
+        inherentValue = 2;
 
         Text = "On Draw Blood: Gain +1/+1";
         Icon = IconType.Blood;
@@ -1566,7 +1583,7 @@ public class Icarus : Follower
 
     public override int GetCurrentAttack()
     {
-        return CurrentAttack + (BaseHealth - CurrentHealth);
+        return CurrentAttack + (MaxHealth - CurrentHealth);
     }
 }
 
@@ -1587,6 +1604,7 @@ public class Atalanta : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(2, 4);
+        inherentValue = 2;
 
         Text = "On Kill: Add free Smite to hand";
         Icon = IconType.Sickle;
@@ -1630,6 +1648,7 @@ public class Asclepius : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(2, 4);
+        inherentValue = 2;
 
         Text = "When an adjacent Follower is targeted by a spell: Heal 3 health";
         Icon = IconType.Scroll;
@@ -1671,6 +1690,7 @@ public class Melpomene : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(2, 4);
+        inherentValue = 2;
 
         Text = "When an adjacent Follower dies:\nAdd a free Blessing spell to your hand";
         Icon = IconType.Skull;
@@ -1693,6 +1713,7 @@ public class Melpomene : Follower
         Blessing newCard = new Blessing();
         newCard.Costs[OfferingType.Gold] = 0;
         newEffectInstance.Init(newCard);
+        effectDef.EffectInstances.Add(newEffectInstance);
     }
 }
 
@@ -1713,6 +1734,7 @@ public class Achilles : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(3, 3);
+        inherentValue = 5;
 
         Text = "Sprint\nFrenzy\nImmune while attacking";
         Icon = IconType.Bolt;
@@ -1746,6 +1768,7 @@ public class Paris : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(3, 2);
+        inherentValue = 3;
 
         Text = "Ranged attacker.\nImmune while attacking";
         Icon = IconType.Bow;
@@ -1778,6 +1801,7 @@ public class Hector : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(5, 5);
+        inherentValue = 1;
 
         Text = "Reduce damage taken by 1";
         Icon = IconType.Shield;
@@ -1811,6 +1835,7 @@ public class Sarpedon : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(2, 5);
+        inherentValue = 3;
 
         Text = "On Attack: Give Adjacent Followers +1/+1";
         Icon = IconType.Sword;
@@ -1852,6 +1877,7 @@ public class Cassandra : Follower
         Type = FollowerType.Mortal;
 
         SetBaseStats(1, 4);
+        inherentValue = 2;
 
         Text = "When an adjacent Follower enters: Draw 1 card next turn";
         Icon = IconType.Horn;
@@ -1899,8 +1925,9 @@ public class Helios : Follower
         Type = FollowerType.Divine;
 
         SetBaseStats(6, 6);
+        inherentValue = 16;
 
-        Text = "The sun destroys enemies as it rises and sets";
+        Text = "Start of turn: Destroy rightmost enemy\nEnd of turn: Destroy leftmost enemy";
         Icon = IconType.Sundial;
 
         SetupInnateEffects();
@@ -1955,6 +1982,7 @@ public class Pan : Follower
         Type = FollowerType.Divine;
 
         SetBaseStats(5, 5);
+        inherentValue = 6;
 
         Text = "Sprint\nOn Attack: Draw 2 cards + Gain 3 Life\n";
         Icon = IconType.Sword;
@@ -2050,7 +2078,8 @@ public class Hydra : Follower
 
         Type = FollowerType.Monster;
 
-        SetBaseStats(1, 5);
+        SetBaseStats(1, 6);
+        inherentValue = 5;
 
         Text = "Heal damage at end of each turn and Gain that much attack";
         Icon = IconType.Sundial;
@@ -2067,7 +2096,7 @@ public class Hydra : Follower
     {
         base.DoEndOfEachTurnEffects();
 
-        int healthHealed = Mathf.Max(BaseHealth - CurrentHealth, 0);
+        int healthHealed = Mathf.Max(MaxHealth - CurrentHealth, 0);
         CurrentHealth += healthHealed;
         CurrentAttack += healthHealed;
 
@@ -2092,6 +2121,7 @@ public class Minotaur : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(3, 6);
+        inherentValue = 1;
 
         Text = "At the end of your turn, if this has two neighbours: This heals 2 health";
         Icon = IconType.Sundial;
@@ -2135,6 +2165,7 @@ public class Scylla : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(0, 6);
+        inherentValue = 5;
 
         Text = "At the end of your turn, Deal 1 damage to an adjacent enemy 6 times";
         Icon = IconType.Sundial;
@@ -2176,6 +2207,7 @@ public class Charybdis : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(2, 5);
+        inherentValue = 3;
 
         Text = "At the end of your turn, Destroy all adjacent followers with less attack";
         Icon = IconType.Sundial;
@@ -2223,6 +2255,7 @@ public class Gorgon : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(3, 5);
+        inherentValue = 2;
 
         Text = "OnAttack: Turn the target to stone if it has less attack";
         Icon = IconType.Sword;
@@ -2264,6 +2297,7 @@ public class Cerberus : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(3, 9);
+        inherentValue = 3;
 
         Text = "OnAttack: Also damage the target's neighbours";
         Icon = IconType.Sword;
@@ -2296,6 +2330,7 @@ public class Siren : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(1, 1);
+        inherentValue = 2;
 
         Text = "On Attacked:\nDeal 2 damage";
         Icon = IconType.Shield;
@@ -2360,6 +2395,7 @@ public class Chimera : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(2, 3);
+        inherentValue = 4;
 
         Text = "Sprint\nOn Attack or Attacked: Deal damage equal to its Attack\n";
         Icon = IconType.Sword;
@@ -2378,7 +2414,7 @@ public class Chimera : Follower
     }
 }
 
-// When an adjacent Follower enters: Gain 1 gold next turn
+// When an adjacent Follower enters: Get a Confusion spell
 public class Sphinx : Follower
 {
     public Sphinx() : base()
@@ -2395,6 +2431,7 @@ public class Sphinx : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(2, 5);
+        inherentValue = 1;
 
         Text = "When an adjacent Follower enters: Get a Confusion spell";
         Icon = IconType.Horn;
@@ -2470,6 +2507,7 @@ public class Empusa : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(2, 4);
+        inherentValue = 1;
 
         Text = "Adjacent Followers have Life Siphon";
         Icon = IconType.Fangs;
@@ -2543,6 +2581,7 @@ public class Erinyes : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(1, 2);
+        inherentValue = 4;
 
         Text = "When any Follower dies: Deal 2 damage to the opponent";
         Icon = IconType.Skull;
@@ -2583,6 +2622,7 @@ public class Typhon : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(4, 6);
+        inherentValue = 8;
 
         Text = "Adjacent Followers and Typhon have 'On Kill: Can attack again'";
         Icon = IconType.Sickle;
@@ -2628,6 +2668,7 @@ public class Echidna : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(4, 6);
+        inherentValue = 8;
 
         Text = "OnKill: Summon a Monster";
         Icon = IconType.Sickle;
@@ -3344,7 +3385,7 @@ public class Panic : Spell
         if (possibleTargets.Count == 0) return;
 
         ITarget attackTarget = possibleTargets[Owner.GameState.RNG.Next(0, possibleTargets.Count)];
-        GameAction newAction = new AttackWithFollowerAction(attackingFollower, attackTarget);
+        GameAction newAction = new PreAttackWithFollowerAction(attackingFollower, attackTarget);
         Owner.GameState.ActionHandler.AddAction(newAction);
     }
 }
@@ -3382,7 +3423,7 @@ public class Restoration : Spell
 
         if (target is Follower targetFollower)
         {
-            int healthToHeal = targetFollower.BaseHealth - targetFollower.CurrentHealth;
+            int healthToHeal = targetFollower.MaxHealth - targetFollower.CurrentHealth;
 
             HealAction healFollowerAction = new HealAction(targetFollower, Owner, healthToHeal);
             Owner.GameState.ActionHandler.AddAction(healFollowerAction, true, true);
@@ -4125,3 +4166,41 @@ public class PriceOfLegacy : Spell
 }
 
 
+// Deal 100 damage
+public class DevKill : Spell
+{
+    private int damage = 100;
+    public DevKill()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 0},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        OverrideName = "Dev Kill";
+        Text = "Deal 100 Damage";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllPlayers(Owner));
+        targets.AddRange(ITarget.GetAllFollowers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
+        Owner.GameState.ActionHandler.AddAction(damageAction);
+    }
+}

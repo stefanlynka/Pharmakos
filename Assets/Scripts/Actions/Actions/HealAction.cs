@@ -7,7 +7,7 @@ public class HealAction : GameAction
     ITarget target;
     ITarget source;
     int amount = 0;
-
+    int amountHealed = 0;
     public HealAction(ITarget target, ITarget source, int amount)
     {
         this.target = target;
@@ -31,7 +31,9 @@ public class HealAction : GameAction
 
         if (followerTarget != null)
         {
+            int healthBefore = followerTarget.CurrentHealth;
             followerTarget.Heal(amount);
+            amountHealed = followerTarget.CurrentHealth - healthBefore;
         }
         else if (playerTarget != null)
         {
@@ -45,7 +47,7 @@ public class HealAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new ChangeStatsAnimation(this, target, 0, amount)
+            new ChangeStatsAnimation(this, target, 0, amountHealed)
             //new SummonFollowerAnimation(this)
         };
         return animationActions;

@@ -614,8 +614,11 @@ public class Player : ITarget
         }
         OnHealthChange?.Invoke();
 
-        GameAction newAction = new CreateOfferingAction(GameState.CurrentPlayer, OfferingType.Blood, Mathf.Abs(value), ITargetID, GameState.CurrentPlayer.ITargetID);
-        GameState.ActionHandler.AddAction(newAction);
+        if (value != 0)
+        {
+            GameAction newAction = new CreateOfferingAction(GameState.CurrentPlayer, OfferingType.Blood, Mathf.Abs(value), ITargetID, GameState.CurrentPlayer.ITargetID);
+            GameState.ActionHandler.AddAction(newAction);
+        }
         //GameState.CurrentPlayer.ChangeOffering(OfferingType.Blood, Mathf.Abs(value));
     }
 
@@ -700,7 +703,7 @@ public class Player : ITarget
             if (!GameState.TargetsByID.TryGetValue(attackWithFollowerDecision.TargetID, out ITarget defender)) return false;
             Follower attackingFollower = attacker as Follower;
             if (attackingFollower == null || defender == null) return false;
-            GameAction newAction = new AttackWithFollowerAction(attackingFollower, defender);
+            GameAction newAction = new PreAttackWithFollowerAction(attackingFollower, defender);
             GameState.ActionHandler.AddAction(newAction);
             //attackingFollower.AttackTarget(defender);
         }

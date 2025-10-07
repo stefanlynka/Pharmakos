@@ -51,5 +51,16 @@ public class ChangeStatsAction : GameAction
         //if (LastStep) animationActions.Add(new IdleAnimation(this));
         return animationActions;
     }
-
+    public override void LogAction()
+    {
+        if (Target is Player player)
+        {
+            Debug.LogWarning("ChangeStatsAction: " + player.GetName() + " changed health: " + HealthChange);
+        }
+        else if (Target is Follower follower)
+        {
+            Debug.LogWarning("ChangeStatsAction: " + follower.GetName() + " changed stats: " + AttackChange + "/" + HealthChange);
+        }
+        
+    }
 }

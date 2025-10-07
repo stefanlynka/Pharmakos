@@ -12,6 +12,7 @@ public abstract class AnimationAction
     public virtual void Play(Action onFinish = null)
     {
         OnFinish = onFinish;
+        if (Controller.AnimationDebugMode) Log();
     }
 
     public AnimationAction(GameAction gameAction)
@@ -25,5 +26,9 @@ public abstract class AnimationAction
             OnFinish();
             OnFinish = null;
         }
+    }
+    protected virtual void Log()
+    {
+
     }
 }

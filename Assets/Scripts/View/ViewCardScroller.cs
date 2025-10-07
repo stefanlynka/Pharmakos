@@ -29,6 +29,10 @@ public class ViewCardScroller : MonoBehaviour
 
         CreateViewCards();
     }
+    public void Exit()
+    {
+        ClearViewCards();
+    }
 
     private void CreateViewCards()
     {
@@ -36,10 +40,11 @@ public class ViewCardScroller : MonoBehaviour
 
         foreach (Card card in cards)
         {
-            ViewCard viewCard = View.Instance.MakeNewViewCard(card);
+            ViewCard viewCard = View.Instance.MakeNewViewCard(card, false);
             //viewCard.OnClick = CardClicked;
             viewCard.transform.parent = this.transform;
             viewCard.SetHighlight(false);
+            viewCard.SetDescriptiveMode(true);
             viewCards.Add(viewCard);
         }
 

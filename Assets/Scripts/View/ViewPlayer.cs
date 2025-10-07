@@ -20,6 +20,9 @@ public class ViewPlayer : ViewTarget
 
     public List<ViewBuff> Buffs = new List<ViewBuff>();
 
+    public GameObject DamageIcon;
+    public TextMeshPro DamageText;
+
     private int health = 0;
 
     public void Load(Player player)
@@ -101,5 +104,15 @@ public class ViewPlayer : ViewTarget
                 return;
             }
         }
+    }
+
+    public void ShowDamage(int damage)
+    {
+        DamageIcon.SetActive(true);
+        DamageText.text = damage.ToString();
+    }
+    public void HideDamage()
+    {
+        DamageIcon.SetActive(false);
     }
 }
