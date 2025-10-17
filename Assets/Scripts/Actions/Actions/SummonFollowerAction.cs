@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Unity.VisualScripting.Member;
-using static UnityEngine.UI.GridLayoutGroup;
 
 public class SummonFollowerAction : GameAction
 {
@@ -43,8 +41,14 @@ public class SummonFollowerAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new SummonFollowerAnimation(this)
+            new MoveCardAnimation(this, Follower, Follower.Owner, GameZone.Hand, Follower.Owner, GameZone.BattleRow, 0.25f, Index),
+            //new SummonFollowerAnimation(this)
         };
         return animationActions;
+    }
+
+    public override void LogAction()
+    {
+        Debug.LogWarning("SummonFollowerAction: " + Follower.Owner.GetName() + " summons " + Follower.GetName());
     }
 }

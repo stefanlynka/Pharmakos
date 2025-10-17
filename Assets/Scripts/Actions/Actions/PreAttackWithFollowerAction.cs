@@ -42,6 +42,6 @@ public class PreAttackWithFollowerAction : GameAction
 
     public override void LogAction()
     {
-        Debug.LogWarning(Attacker.Owner.GetName() + "'s " + Attacker.GetName() + "is about to attack " + Target.GetName());
+        Debug.LogWarning(Attacker.Owner.GetName() + "'s " + Attacker.GetName() + " is about to attack " + Target.GetName());
     }
 }

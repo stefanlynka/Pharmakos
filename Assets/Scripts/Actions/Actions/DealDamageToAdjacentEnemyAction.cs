@@ -28,21 +28,29 @@ public class DealDamageToAdjacentEnemyAction : GameAction
     {
         Follower follower = Source as Follower;
 
+
         List<ITarget> targets = follower.GetAttackTargets(true);
+        for (int i = targets.Count-1; i >= 0; i--)
+        {
+            if (targets[i] is Follower targetFollower)
+            {
+                if (targetFollower.CurrentHealth <= 0) targets.RemoveAt(i);
+            }
+        }
         if (targets.Count != 0)
         {
             ITarget target = targets[follower.GameState.RNG.Next(0, targets.Count)];
             if (target is Follower targetFollower)
             {
                 DealDamageAction damageAction = new DealDamageAction(Source, targetFollower, Damage);
-                targetFollower.GameState.ActionHandler.AddAction(damageAction);
+                targetFollower.GameState.ActionHandler.AddAction(damageAction, true, true);
 
                 //targetFollower.ChangeHealth(Source, -Damage);
             }
             else if (target is Player targetPlayer)
             {
                 DealDamageAction damageAction = new DealDamageAction(Source, targetPlayer, Damage);
-                targetPlayer.GameState.ActionHandler.AddAction(damageAction);
+                targetPlayer.GameState.ActionHandler.AddAction(damageAction, true, true);
 
                 //targetPlayer.ChangeHealth(Source, -Damage);
             }

@@ -21,7 +21,7 @@ public class View : MonoBehaviour
     private static ObjectPool<GameObject> offeringPool = new ObjectPool<GameObject>(CreateOffering, OnOfferingGet, OnOfferingRelease, null, false);
     private static GameObject RitualAnimationPrefab;
 
-    public Dictionary<Card, ViewCard> CardMap = new Dictionary<Card, ViewCard>();
+    public Dictionary<int, ViewCard> CardMap = new Dictionary<int, ViewCard>();
 
 
     public ViewPlayer Player1;
@@ -36,6 +36,8 @@ public class View : MonoBehaviour
     public RectTransform AITurnBanner;
 
     public bool IsHumansTurn = true;
+    public bool TurnIsEnding = false;
+    public bool IsInteractible { get { return IsHumansTurn && !TurnIsEnding; } }
     public ViewTarget CurrentHover { get { return SelectionHandler.CurrentHover; } }
 
     public SpriteRenderer BackgroundRenderer;
@@ -103,14 +105,11 @@ public class View : MonoBehaviour
 
         SelectionHandler.Clear();
         // TODO: Check if everything in CardMap is getting cleared up
-        List<Card> cardsInCardMap = new List<Card>();
-        foreach (KeyValuePair<Card, ViewCard> kvp in CardMap)
+        Dictionary<int, ViewCard> tempCardMap = new Dictionary<int, ViewCard>(CardMap);
+
+        foreach (KeyValuePair<int, ViewCard> kvp in tempCardMap)
         {
-            cardsInCardMap.Add(kvp.Key);
-        }
-        foreach (Card card in cardsInCardMap)
-        {
-            RemoveCard(card);
+            RemoveViewCard(kvp.Value);
         }
         CardMap.Clear();
     }
@@ -141,6 +140,10 @@ public class View : MonoBehaviour
 
     public ViewCard MakeNewViewCard(Card card, bool addToCardMap = true)
     {
+        if (CardMap.ContainsKey(card.ID))
+        {
+            Debug.LogError("FUCK");
+        }
         GameObject newCard = null;
 
         if (card is Follower)
@@ -156,9 +159,7 @@ public class View : MonoBehaviour
         {
             viewCard.Load(card);
             viewCard.SetHighlight(false);
-            if (addToCardMap) CardMap[card] = viewCard;
-
-            viewCard.transform.localScale = new Vector3(1, 1, 1);
+            if (addToCardMap) CardMap[card.ID] = viewCard;
 
             return viewCard;
         }
@@ -166,20 +167,33 @@ public class View : MonoBehaviour
         Debug.LogError("Failed to make ViewCard for: " + card.GetType().Name);
         return null;
     }
-    public void RemoveCard(Card card)
+    public void RemoveCard(int id)
     {
-        if (!CardMap.ContainsKey(card)) return;
+        if (!CardMap.ContainsKey(id))
+        {
+            Debug.LogError("ViewCard: " + id + " not found");
+            return;
+        }
 
-        ViewCard viewCard = CardMap[card];
+        ViewCard viewCard = CardMap[id];
         RemoveViewCard(viewCard);
     }
+
     public void RemoveViewCard(ViewCard viewCard)
     {
         if (viewCard == null)
         {
-            Debug.LogError("Hm");
+            Debug.LogError("Tried to remove null ViewCard");
             return;
         }
+        if (viewCard.Card == null)
+        {
+            Debug.LogError("Removing ViewCard without Card");
+            ReleaseCard(viewCard);
+            return;
+        }
+
+        int cardID = viewCard.Card.ID;
 
         // Remove it from hand
         ViewBattleRow viewBattleRow = null;
@@ -190,34 +204,30 @@ public class View : MonoBehaviour
             viewHandHandler.RemoveCard(viewCard);
         }
 
-        // Remove from battlerow and release
+        // If it's a Follower, remove it from the battlerow and release
         ViewFollower viewFollower = viewCard as ViewFollower;
         if (viewFollower != null)
         {
-            if (viewBattleRow != null) viewBattleRow.Followers.Remove(viewFollower);
-            if (viewCard.gameObject != null)
+            if (viewBattleRow != null)
             {
-                viewCard.gameObject.transform.SetParent(null);
-                followerPool.Release(viewCard.gameObject);
+                viewBattleRow.TryRemoveFollower(viewFollower);
+                //viewBattleRow.Followers.Remove(viewFollower);
             }
+
+            ReleaseCard(viewCard);
         }
+        // Or if it's a Spell, just release it
         ViewSpell viewSpell = viewCard as ViewSpell;
         if (viewSpell != null)
         {
-            if (viewCard.gameObject != null)
-            {
-                viewCard.gameObject.transform.SetParent(null);
-                spellPool.Release(viewCard.gameObject);
-            }
+            ReleaseCard(viewCard);
         }
 
-        CardMap.Remove(viewCard.Card);
+        CardMap.Remove(cardID);
     }
 
     public void ReleaseCard(ViewCard viewCard)
     {
-        viewCard.transform.localScale = new Vector3(1, 1, 1);
-
         ViewFollower viewFollower = viewCard as ViewFollower;
         if (viewFollower != null)
         {
@@ -232,9 +242,9 @@ public class View : MonoBehaviour
 
     public bool TryGetViewCard(Card card, out ViewCard viewCard)
     {
-        if (CardMap.ContainsKey(card))
+        if (CardMap.ContainsKey(card.ID))
         {
-            viewCard = CardMap[card];
+            viewCard = CardMap[card.ID];
             return true;
         }
 
@@ -259,12 +269,6 @@ public class View : MonoBehaviour
         return Player1.Player == player ? Player1 : Player2;
     }
 
-    //public void ReleaseViewCard(ViewCard viewCard)
-    //{
-    //    if (viewCard.Card is Follower) followerPool.Release(viewCard.gameObject);
-    //    else if (viewCard.Card is Spell) spellPool.Release(viewCard.gameObject);
-    //}
-
     private static GameObject CreateFollowerCard()
     {
         if (FollowerCardPrefab != null)
@@ -285,13 +289,25 @@ public class View : MonoBehaviour
         Debug.LogError("SpellCardPrefab was Null when trying to instantiate new Card");
         return null;
     }
-    private static void OnCardGet(GameObject gameObject)
+    private static void OnCardGet(GameObject cardObject)
     {
-        gameObject.SetActive(true);
+        cardObject.SetActive(true);
+        cardObject.transform.SetParent(null);
+        cardObject.transform.localScale = new Vector3(1, 1, 1);
     }
-    private static void OnCardRelease(GameObject gameObject)
+    private static void OnCardRelease(GameObject cardObject)
     {
-        gameObject.SetActive(false);
+        cardObject.transform.localScale = new Vector3(1, 1, 1);
+        cardObject.transform.SetParent(null);
+        
+        // Clear the ViewCard's card reference to prevent cross-contamination
+        ViewCard viewCard = cardObject.GetComponent<ViewCard>();
+        if (viewCard != null)
+        {
+            viewCard.Card = null;
+        }
+
+        cardObject.SetActive(false);
     }
 
 
@@ -354,7 +370,7 @@ public class View : MonoBehaviour
 
         if (card == null || card.Owner == null)
         {
-            Debug.LogError("oops");
+            Debug.LogError("Failed to make and draw ViewCard");
         }
 
         if (viewCard != null)
@@ -367,7 +383,7 @@ public class View : MonoBehaviour
 
     public void DiscardCard(Card card)
     {
-        RemoveCard(card);
+        RemoveCard(card.ID);
     }
 
 
@@ -412,12 +428,30 @@ public class View : MonoBehaviour
 
     public void MoveFollowerToBattleRow(Follower follower, int index = -1)
     {
-        RemoveCard(follower);
-        ViewFollower viewFollower = (ViewFollower)MakeNewViewCard(follower);
+        // If we can't find a ViewCard for this Follower
+        if (!TryGetViewCard(follower, out ViewCard viewCard))
+        {
+            // Make a new ViewCard
+            viewCard = MakeNewViewCard(follower);
+        }
+
+        ViewFollower viewFollower = viewCard as ViewFollower;
+        if (viewFollower == null)
+        {
+            Debug.LogError("Didn't find ViewFollower");
+            return;
+        }
+
+        //View.Instance.Player1.BattleRow.TryRemoveFollower(viewFollower);
+        //View.Instance.Player2.BattleRow.TryRemoveFollower(viewFollower);
+
+        //ViewFollower viewFollower = (ViewFollower)MakeNewViewCard(follower);
         ViewBattleRow battleRow = follower.Owner.IsHuman ? Player1.BattleRow : Player2.BattleRow;
-        if (index == -1) index = battleRow.Followers.Count;
         battleRow.AddFollower(viewFollower, index);
-        CardMap[follower] = viewFollower;
+
+        viewFollower.SetDescriptiveMode(false);
+
+        //CardMap[follower.ID] = viewFollower;
     }
 
     public void UpdatePlayerBuffs()

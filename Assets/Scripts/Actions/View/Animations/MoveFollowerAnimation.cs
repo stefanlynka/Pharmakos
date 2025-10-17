@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
+// DEPRECATED DO NOT USE
 public class MoveFollowerAnimation : AnimationAction
 {
     private Tween animationTween;
@@ -59,7 +60,7 @@ public class MoveFollowerAnimation : AnimationAction
 
     private void Complete()
     {
-        View.Instance.MoveFollowerToBattleRow(follower, battleRowIndex);
+        //View.Instance.MoveFollowerToBattleRow(follower, battleRowIndex);
         CallCallback();
     }
 }

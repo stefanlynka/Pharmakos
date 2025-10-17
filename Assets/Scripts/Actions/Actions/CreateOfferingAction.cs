@@ -50,4 +50,8 @@ public class CreateOfferingAction : GameAction
 
         return animationActions;
     }
+    public override void LogAction()
+    {
+        Debug.LogWarning("CreateOfferingAction: Create " + Amount + " " + Offering.ToString());
+    }
 }

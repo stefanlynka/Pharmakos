@@ -246,7 +246,7 @@ public class HadesMajorEffectDef : RitualPlayerEffect
     {
         string myTarget = Target.IsHuman ? "your" : "this player's";
         string myTargetSingular = Target.IsHuman ? "you" : "they";
-        return "At the end of each of " + myTarget + " turns, " + myTargetSingular + " summon a copy of the last Follower that died (Attackers die second)";
+        return "At the end of each of " + myTarget + " turns, " + myTargetSingular + " summon a copy of the last Follower that died (Defenders die second)";
     }
 }
 
@@ -460,8 +460,8 @@ public class AresMajor : Ritual
         Description = "When one of your Followers kills an enemy, it gains +1/+1 and can attack again";
         Costs = new Dictionary<OfferingType, int>()
         {
-            {OfferingType.Blood, 6 },
-            {OfferingType.Bone, 6 },
+            {OfferingType.Blood, 6 }, // 6
+            {OfferingType.Bone, 6 }, // 6
             {OfferingType.Crop, 0 },
             {OfferingType.Scroll, 0 },
         };
@@ -646,7 +646,7 @@ public class AphroditeMajor : Ritual
         Description = "Target Follower switches sides";
         Costs = new Dictionary<OfferingType, int>()
         {
-            {OfferingType.Blood, 10 },
+            {OfferingType.Blood, 10 }, // 10
             {OfferingType.Bone, 0 },
             {OfferingType.Crop, 0 },
             {OfferingType.Scroll, 0 },
@@ -721,10 +721,10 @@ public class AthenaMajor : Ritual
         Description = "When one of target Player's Followers draws blood, get a free spell with cost equal to the damage dealt";
         Costs = new Dictionary<OfferingType, int>()
         {
-            {OfferingType.Blood, 6 },
+            {OfferingType.Blood, 6 }, // 6
             {OfferingType.Bone, 0 },
             {OfferingType.Crop, 0 },
-            {OfferingType.Scroll, 4 },
+            {OfferingType.Scroll, 4 }, // 4
         };
     }
 
@@ -738,8 +738,8 @@ public class AthenaMajor : Ritual
     public override void ExecuteEffect(ITarget target)
     {
         if (target is not Player targetPlayer) return;
-        AthenaMajorEffectDef aresMajorEffectDef = new AthenaMajorEffectDef(Owner, targetPlayer);
-        Owner.AddPlayerEffect(aresMajorEffectDef);
+        AthenaMajorEffectDef athenaMajorEffectDef = new AthenaMajorEffectDef(Owner, targetPlayer);
+        Owner.AddPlayerEffect(athenaMajorEffectDef);
     }
 }
 
@@ -815,9 +815,9 @@ public class HephaestusMajor : Ritual
         Costs = new Dictionary<OfferingType, int>()
         {
             {OfferingType.Blood, 0 },
-            {OfferingType.Bone, 5 },
+            {OfferingType.Bone, 4 }, // 4
             {OfferingType.Crop, 0 },
-            {OfferingType.Scroll, 5 },
+            {OfferingType.Scroll, 4 }, // 4
         };
     }
 

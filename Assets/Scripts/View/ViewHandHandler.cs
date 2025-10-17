@@ -33,7 +33,7 @@ public class ViewHandHandler : MonoBehaviour
         List<ViewCard> viewCardsCopy = new List<ViewCard>(ViewCards);
         foreach (ViewCard viewCard in viewCardsCopy)
         {
-            View.Instance.RemoveCard(viewCard.Card);
+            View.Instance.RemoveCard(viewCard.Card.ID);
         }
 
         ViewCards.Clear();
@@ -99,7 +99,7 @@ public class ViewHandHandler : MonoBehaviour
 
             bool canPlay = viewCard.Card.CanPlay();
 
-            viewCard.SetHighlight(!skipHighlighting && canPlay);
+            viewCard.SetHighlight(!skipHighlighting && canPlay && View.Instance.IsInteractible);
             viewCard.UpdateCost();
         }
     }
@@ -109,7 +109,10 @@ public class ViewHandHandler : MonoBehaviour
         if (index == -1) index = ViewCards.Count;
 
         int cardCount = ViewCards.Count + 1;
-        if (index >= cardCount) return new Vector3();
+        if (index >= cardCount)
+        {
+            cardCount = index + 1;
+        }
 
         float spacing = Mathf.Min(MaxSpacing, (HandWidth - CardWidth * cardCount) / cardCount);
 

@@ -108,9 +108,12 @@ public class GameState
         TargetsByID[ID] = target;
     }
 
+    public void DoEndOfTurnActions()
+    {
+        CurrentPlayer.DoEndOfTurnActions();
+    }
     public void EndTurn()
     {
-        CurrentPlayer.EndTurn();
         CurrentTeamID = Mathf.Abs(CurrentTeamID - 1);
         CurrentPlayer.StartTurn();
     }

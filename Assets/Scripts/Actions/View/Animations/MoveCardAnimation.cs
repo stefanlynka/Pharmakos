@@ -26,15 +26,15 @@ public class MoveCardAnimation : AnimationAction
 
     private bool forceDescriptive = false;
 
-    public MoveCardAnimation(GameAction gameAction, Card card, Player previousOwner, GameZone previousZone, Player newOwner, GameZone newZone, int newIndex = -1, float duration = 0.5f) : base(gameAction)
+    public MoveCardAnimation(GameAction gameAction, Card card, Player previousOwner, GameZone previousZone, Player newOwner, GameZone newZone, float duration = 0.5f, int newIndex = -1) : base(gameAction)
     {
         this.card = card;
         this.previousOwner = previousOwner;
         this.previousZone = previousZone;
         this.newOwner = newOwner;
         this.newZone = newZone;
-        this.newIndex = newIndex;
         this.duration = duration;
+        this.newIndex = newIndex;
     }
 
     public override void Play(Action onFinish = null)
@@ -61,10 +61,15 @@ public class MoveCardAnimation : AnimationAction
                     }
                     break;
                 case GameZone.Deck:
-                    viewCard.transform.position = new Vector3(-40, -20, 10);
-                    break;
                 case GameZone.Discard:
-                    viewCard.transform.position = new Vector3(22, -20, 10);
+                    if (previousOwner.IsHuman)
+                    {
+                        viewCard.transform.position = new Vector3(0, -32, 10);
+                    }
+                    else
+                    {
+                        viewCard.transform.position = new Vector3(0, 32, 10);
+                    }
                     break;
                 default:
                     viewCard.transform.position = new Vector3(50, 0, 10);
@@ -73,6 +78,7 @@ public class MoveCardAnimation : AnimationAction
         }
         else
         {
+            // If we do have the card, remove it from its current location (hand or battlerow)
             switch (previousZone)
             {
                 case GameZone.BattleRow:
@@ -103,6 +109,7 @@ public class MoveCardAnimation : AnimationAction
 
         startPos = viewCard.transform.position;
 
+        // Determine the card's destination
         switch (newZone)
         {
             case GameZone.BattleRow:
@@ -111,11 +118,16 @@ public class MoveCardAnimation : AnimationAction
             case GameZone.Hand:
                 endPos = View.Instance.GetViewPlayer(newOwner).HandHandler.GetPotentialCardPosition(newIndex);
                 break;
-            case GameZone.Discard:
-                endPos = new Vector3(22, -20, 10);
-                break;
             case GameZone.Deck:
-                endPos = new Vector3(-40, -20, 10);
+            case GameZone.Discard:
+                if (newOwner.IsHuman)
+                {
+                    endPos = new Vector3(0, -32, 10);
+                }
+                else
+                {
+                    endPos = new Vector3(0, 32, 10);
+                }
                 break;
             case GameZone.PlayZone:
                 endPos = new Vector3(-37, 3, 10);
@@ -158,14 +170,6 @@ public class MoveCardAnimation : AnimationAction
                 if (viewCard is ViewFollower viewFollower)
                 {
                     View.Instance.MoveFollowerToBattleRow(viewFollower.Follower, newIndex);
-                    //if (previousOwner == View.Instance.Player1.Player)
-                    //{
-                    //    View.Instance.Player1.BattleRow.TryRemoveFollower(viewFollower);
-                    //}
-                    //else
-                    //{
-                    //    View.Instance.Player2.BattleRow.TryRemoveFollower(viewFollower);
-                    //}
                 }
                 break;
             case GameZone.Hand:
@@ -177,6 +181,9 @@ public class MoveCardAnimation : AnimationAction
                 {
                     View.Instance.Player2.HandHandler.MoveCardToHand(viewCard);
                 }
+                break;
+            case GameZone.Discard:
+                View.Instance.DiscardCard(viewCard.Card);
                 break;
         }
 

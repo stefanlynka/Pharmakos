@@ -1,10 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using static Unity.VisualScripting.Member;
-using static UnityEngine.GraphicsBuffer;
 
 public class ChangeStatsAnimation : AnimationAction
 {
@@ -59,6 +56,8 @@ public class ChangeStatsAnimation : AnimationAction
 
             if (healthChange < 0)
             {
+                //ScreenShakeHandler.Shake(0.2f, 0.3f);
+
                 viewPlayer.ShowDamage(-healthChange);
                 isDamage = true;
             }
@@ -94,6 +93,13 @@ public class ChangeStatsAnimation : AnimationAction
     protected override void Log()
     {
         base.Log();
-        Debug.LogWarning("ChangeStatsAnimation: " + target.GetName() + ": " + attackChange + "/" + healthChange);
+        if (target == null)
+        {
+            Debug.LogError("ChangeStatsAnimation: Target is null");
+        }
+        else
+        {
+            Debug.LogWarning("ChangeStatsAnimation: " + target.GetName() + ": " + attackChange + "/" + healthChange);
+        }
     }
 }

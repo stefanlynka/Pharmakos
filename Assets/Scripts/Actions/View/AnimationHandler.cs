@@ -5,19 +5,17 @@ using UnityEngine;
 
 public class AnimationHandler
 {
-    public static AnimationHandler instance;
-
-    public struct AnimationQueueItem
-    {
-        public AnimationAction AnimationAction;
-        public bool Stackable;
-        public AnimationQueueItem(AnimationAction animationAction, bool stackable)
-        {
-            AnimationAction = animationAction;
-            Stackable = stackable;
-        }
-    }
-    public List<AnimationQueueItem> AnimationActionQueue = new List<AnimationQueueItem>();
+    //public struct AnimationQueueItem
+    //{
+    //    public AnimationAction AnimationAction;
+    //    public bool Stackable;
+    //    public AnimationQueueItem(AnimationAction animationAction, bool stackable)
+    //    {
+    //        AnimationAction = animationAction;
+    //        Stackable = stackable;
+    //    }
+    //}
+    public List<AnimationAction> AnimationActionQueue = new List<AnimationAction>();
     public static bool IsAnimating { get { return ActiveAnimationCount > 0; } }
     public static int ActiveAnimationCount = 0;
 
@@ -29,7 +27,7 @@ public class AnimationHandler
     public bool HasPlayerLost = false;
 
     public Action OnAllAnimationsFinished;
-
+    public bool AnimationsDelayed = false;
 
 
     public void UpdateAnimations()
@@ -47,23 +45,28 @@ public class AnimationHandler
 
     private void StartPerforming()
     {
-        // If a non-stackable animation is already playing and our next animation isn't stackable, early out
-        bool nextActionIsStackable = AnimationActionQueue.Count > 0 && AnimationActionQueue[0].Stackable;
-        if (IsAnimating && (!nextActionIsStackable || !CurrentAnimationIsStackable)) return;
-
-        //Debug.LogError("Start evaluating the first of " + AnimationActionQueue.Count + " animations");
         if (AnimationActionQueue.Count == 0)
         {
             Controller.Instance.CheckForPlayerDeath();
             return;
         }
 
-        AnimationQueueItem animationStackItem = AnimationActionQueue[0];
-        AnimationAction newAction = animationStackItem.AnimationAction;
+        if (AnimationsDelayed)
+        {
+            return;
+        }
+
+        // If a non-stackable animation is already playing and our next animation isn't stackable, early out
+        bool nextActionIsStackable = AnimationActionQueue[0].Stackable;
+        if (IsAnimating && (!nextActionIsStackable || !CurrentAnimationIsStackable)) return;
+
+        //Debug.LogError("Start evaluating the first of " + AnimationActionQueue.Count + " animations");
+
+        AnimationAction newAction = AnimationActionQueue[0];
         AnimationActionQueue.RemoveAt(0);
         ActiveAnimationCount++;
         
-        if (animationStackItem.Stackable)
+        if (newAction.Stackable)
         {
             CurrentAnimationIsStackable = true;
         }
@@ -97,14 +100,13 @@ public class AnimationHandler
         {
             if (animationAction == null) continue;
 
-            AnimationQueueItem animationStackItem = new AnimationQueueItem(animationAction, animationAction.Stackable);
             if (backOfQueue)
             {
-                AnimationActionQueue.Add(animationStackItem);
+                AnimationActionQueue.Add(animationAction);
             }
             else
             {
-                AnimationActionQueue.Insert(0, animationStackItem);
+                AnimationActionQueue.Insert(0, animationAction);
             }
             //AnimationActionQueue.Insert(index, animationStackItem);
         }
@@ -113,14 +115,13 @@ public class AnimationHandler
 
     public void AddAnimationActionToQueue(AnimationAction animationAction, bool immediate = false)
     {
-        AnimationQueueItem animationStackItem = new AnimationQueueItem(animationAction, immediate);
         if (immediate)
         {
-            AnimationActionQueue.Insert(0, animationStackItem);
+            AnimationActionQueue.Insert(0, animationAction);
         }
         else
         {
-            AnimationActionQueue.Add(animationStackItem);
+            AnimationActionQueue.Add(animationAction);
         }
     }
 

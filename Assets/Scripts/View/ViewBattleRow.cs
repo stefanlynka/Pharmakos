@@ -42,7 +42,7 @@ public class ViewBattleRow : MonoBehaviour
         List<ViewFollower> followersCopy = new List<ViewFollower>(Followers);
         foreach (ViewFollower viewFollower in followersCopy)
         {
-            View.Instance.RemoveCard(viewFollower.Card);
+            View.Instance.RemoveCard(viewFollower.Card.ID);
         }
 
         Followers.Clear();
@@ -74,6 +74,8 @@ public class ViewBattleRow : MonoBehaviour
     List<float> xPositions = new List<float>();
     private void RefreshPositions()
     {
+        if (BattleRow.Owner == null) return;
+
         PopupCard.gameObject.SetActive(false); // Hide popup by default
 
         int cardCount = Followers.Count;
@@ -98,7 +100,7 @@ public class ViewBattleRow : MonoBehaviour
             // Determine if a card is highlighted
             bool highlighted = false;
 
-            if ((!isHuman && BattleRow.Owner.IsMyTurn)) highlighted = false; //  || AnimationHandler.IsAnimating
+            if ((!isHuman && BattleRow.Owner.IsMyTurn) || !View.Instance.IsInteractible) highlighted = false; //  || AnimationHandler.IsAnimating
             else if (isHuman && !BattleRow.Owner.IsMyTurn) highlighted = false;
             else if (View.Instance.SelectionHandler.AttackingFollower == viewFollower) highlighted = true; // If it's attacking
             else if (View.Instance.SelectionHandler.AttackableTargets.Contains(viewFollower.Follower)) highlighted = true; // If it's a potential attack target
@@ -215,6 +217,8 @@ public class ViewBattleRow : MonoBehaviour
 
     public void AddFollower(ViewFollower viewFollower, int index)
     {
+        if (index == -1) index = Followers.Count;
+
         if (index > Followers.Count) return;
 
         viewFollower.OnClick = FollowerInPlayClicked;
@@ -224,7 +228,8 @@ public class ViewBattleRow : MonoBehaviour
 
     public void TryRemoveFollower(ViewFollower viewFollower)
     {
-        foreach (ViewFollower follower in Followers)
+        List<ViewFollower> followers = new List<ViewFollower>(Followers);
+        foreach (ViewFollower follower in followers)
         {
             if (follower.Follower.ID == viewFollower.Follower.ID)
             {

@@ -113,8 +113,10 @@ public class AIPlayer : Player
             case AITurnPhase.Ending:
                 Debug.LogWarning("Ending AI Turn");
                 TurnPhase = AITurnPhase.Setup;
-                var endTurnAction = new EndTurnAction(this);
+                var endTurnAction = new TryEndTurnAction(GameState.CurrentPlayer);
                 GameState.ActionHandler.AddAction(endTurnAction);
+                //var endTurnAction = new EndTurnAction(this);
+                //GameState.ActionHandler.AddAction(endTurnAction);
                 //GameState.EndTurn();
 
                 break;
@@ -128,7 +130,7 @@ public class AIPlayer : Player
         playerDecisions = new DecisionSet(new List<PlayerDecision>(), 0);
         pool = new GameStatePool();
         playerDecisions = GetBestOptions(GameState, pool, Controller.Instance.CancellationTokenSource.Token, 0);
-        Debug.LogError($"[AI] PlanActions (sync) took {stopwatch.ElapsedMilliseconds / 1000f} seconds");
+        Debug.Log($"[AI] PlanActions (sync) took {stopwatch.ElapsedMilliseconds / 1000f} seconds");
         planningCompleted = true;
     }
 
@@ -139,7 +141,7 @@ public class AIPlayer : Player
         pool = new GameStatePool();
         playerDecisions = GetBestOptions(GameState, pool, cancellationToken, 0);
         stopwatch.Stop();
-        Debug.LogError($"[AI] PlanActions (async) took {stopwatch.ElapsedMilliseconds/1000f} seconds");
+        Debug.Log($"[AI] PlanActions (async) took {stopwatch.ElapsedMilliseconds/1000f} seconds");
         planningCompleted = true;
     }
 

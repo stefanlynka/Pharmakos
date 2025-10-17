@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class TakeControlOfFollowerAction : GameAction
 {
+    public Player OldOwner;
     public Player NewOwner;
     public Follower Follower;
 
@@ -30,13 +31,14 @@ public class TakeControlOfFollowerAction : GameAction
 
         // Remove Follower from current owner
         Follower.Owner.BattleRow.RemoveFollower(Follower);
-        Follower.Owner.BattleRow.ReapplyAllEffects();
+        //Follower.Owner.BattleRow.ReapplyAllEffects();
 
         // Add Follower to new Owner's Battlerow
+        OldOwner = Follower.Owner;
         Follower.Owner = NewOwner;
         targetIndex = Mathf.Min(Follower.Owner.BattleRow.Followers.Count);
         NewOwner.BattleRow.AddFollower(Follower);
-        NewOwner.BattleRow.ReapplyAllEffects();
+        //NewOwner.BattleRow.ReapplyAllEffects();
 
         base.Execute(simulated);
     }
@@ -45,7 +47,7 @@ public class TakeControlOfFollowerAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new MoveFollowerAnimation(this, Follower, targetIndex)
+            new MoveCardAnimation(this, Follower, OldOwner, GameZone.BattleRow, NewOwner, GameZone.BattleRow, 0.5f, targetIndex),
         };
         return animationActions;
     }

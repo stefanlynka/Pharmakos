@@ -64,7 +64,7 @@ public class ViewRitual : ViewTarget
         {
             if (View.Instance.SelectionHandler.SelectedRitual == this) highlight = true;
         }
-        else if (Ritual != null && Ritual.Owner.IsHuman && Ritual.CanPlay()) // If Playable
+        else if (Ritual != null && Ritual.Owner.IsHuman && Ritual.CanPlay() && View.Instance.IsInteractible) // If Playable
         {
             highlight = true;
         }

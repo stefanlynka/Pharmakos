@@ -11,19 +11,6 @@ public class OfferingLabel : MonoBehaviour
     public TextMeshPro OfferingAmount;
     public SpriteRenderer Icon;
 
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     // This function is called when the mouse enters the Collider.
     void OnMouseEnter()
     {

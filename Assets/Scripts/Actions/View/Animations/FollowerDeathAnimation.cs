@@ -61,6 +61,6 @@ public class FollowerDeathAnimation : AnimationAction
 
     protected override void Log()
     {
-        if (follower != null) Debug.LogWarning("FollowerDeathAnimation: " + follower.GetName() + " dies");
+        if (follower != null && follower.Owner != null) Debug.LogWarning("FollowerDeathAnimation: " + follower .Owner.GetName() + "'s " + follower.GetName() + " dies");
     }
 }

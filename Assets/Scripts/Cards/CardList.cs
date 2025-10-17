@@ -109,6 +109,7 @@ public class Prey1 : Follower
         Type = FollowerType.Beast;
 
         SetBaseStats(0, 1);
+        inherentValue = -2;
 
         OverrideName = "Prey";
         Text = "On Death: Lose 1 Health";
@@ -150,6 +151,7 @@ public class Prey2 : Follower
         Type = FollowerType.Beast;
 
         SetBaseStats(0, 1);
+        inherentValue = -2;
 
         OverrideName = "Prey";
         Text = "On Death: Lose 1 Health";
@@ -191,6 +193,7 @@ public class Prey3 : Follower
         Type = FollowerType.Beast;
 
         SetBaseStats(0, 1);
+        inherentValue = -2;
 
         OverrideName = "Prey";
         Text = "On Death: Lose 1 Health";
@@ -316,6 +319,7 @@ public class MareOfDiomedes : Follower
 
         SetBaseStats(3, 1);
 
+        OverrideName = "Wild Mares";
         Text = "Sprint";
         Icon = IconType.Bolt;
 
@@ -1631,7 +1635,7 @@ public class Atalanta : Follower
     }
 }
 
-// When an adjacent Follower is targeted by a spell: Heal 3 health
+// When an adjacent Follower is targeted by a spell: You gain 3 life
 public class Asclepius : Follower
 {
     public Asclepius() : base()
@@ -1650,7 +1654,7 @@ public class Asclepius : Follower
         SetBaseStats(2, 4);
         inherentValue = 2;
 
-        Text = "When an adjacent Follower is targeted by a spell: Heal 3 health";
+        Text = "When an adjacent Follower is targeted by a spell: You gain 3 life";
         Icon = IconType.Scroll;
         AffectsAdjacent = true;
 
@@ -2097,8 +2101,14 @@ public class Hydra : Follower
         base.DoEndOfEachTurnEffects();
 
         int healthHealed = Mathf.Max(MaxHealth - CurrentHealth, 0);
-        CurrentHealth += healthHealed;
-        CurrentAttack += healthHealed;
+
+        HealAction healFollowerAction = new HealAction(this, this, healthHealed);
+        Owner.GameState.ActionHandler.AddAction(healFollowerAction, true, true);
+
+        ChangeStatsAction newAction = new ChangeStatsAction(this, healthHealed, 0);
+        Owner.GameState.ActionHandler.AddAction(newAction);
+        //CurrentHealth += healthHealed;
+        //CurrentAttack += healthHealed;
 
         ApplyOnChanged();
     }
@@ -2185,7 +2195,7 @@ public class Scylla : Follower
         for (int i = 0; i < 6; i++)
         {
             DealDamageToAdjacentEnemyAction dealDamageToAdjacentEnemyAction = new DealDamageToAdjacentEnemyAction(this, 1);
-            Owner.GameState.ActionHandler.AddAction(dealDamageToAdjacentEnemyAction);
+            Owner.GameState.ActionHandler.AddAction(dealDamageToAdjacentEnemyAction, true, true, true);
         }
     }
 }
@@ -3007,8 +3017,8 @@ public class Scry : Spell
     {
         base.Play(target);
 
-        DrawCardAction damageAction = new DrawCardAction(Owner, target, cardsDrawn);
-        Owner.GameState.ActionHandler.AddAction(damageAction);
+        DrawCardAction drawAction = new DrawCardAction(Owner, target, cardsDrawn);
+        Owner.GameState.ActionHandler.AddAction(drawAction);
     }
 }
 
@@ -3320,7 +3330,7 @@ public class Reverie : Spell
             { OfferingType.Scroll, 0},
         };
 
-        Text = "Give a Follower +3 Health and Restore 3 Life";
+        Text = "Give a Follower +3 Health and gain 3 Life";
         HasTargets = true;
     }
 
@@ -3390,7 +3400,7 @@ public class Panic : Spell
     }
 }
 
-// Heal a Follower to full health. Gain that much health
+// Heal a Follower to full health. Gain that much Life
 public class Restoration : Spell
 {
     public Restoration()
@@ -3404,7 +3414,7 @@ public class Restoration : Spell
             { OfferingType.Scroll, 0},
         };
 
-        Text = "Heal a Follower to full health. Gain that much health";
+        Text = "Heal a Follower to full health. You gain that much Life";
         HasTargets = true;
     }
 
@@ -3426,10 +3436,10 @@ public class Restoration : Spell
             int healthToHeal = targetFollower.MaxHealth - targetFollower.CurrentHealth;
 
             HealAction healFollowerAction = new HealAction(targetFollower, Owner, healthToHeal);
-            Owner.GameState.ActionHandler.AddAction(healFollowerAction, true, true);
+            Owner.GameState.ActionHandler.AddAction(healFollowerAction, true);
 
-            HealAction healPlayerAction = new HealAction(Owner, Owner, healthToHeal);
-            Owner.GameState.ActionHandler.AddAction(healPlayerAction, true, true);
+            ChangePlayerHealthAction gainLifeAction = new ChangePlayerHealthAction(Owner, Owner, healthToHeal);
+            Owner.GameState.ActionHandler.AddAction(gainLifeAction, true);
         }
     }
 }

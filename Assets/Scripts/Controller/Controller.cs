@@ -15,10 +15,10 @@ public class Controller : MonoBehaviour
     public static int starterSeed = 1;
     public bool gamePaused = false;
 
-    public static bool ActionDebugMode = true;
-    public static bool AnimationDebugMode = true;
-    public static bool AIDebugMode = true;
-    public static bool ShowCardIDs = true;
+    public static bool ActionDebugMode = false;
+    public static bool AnimationDebugMode = false;
+    public static bool AIDebugMode = false;
+    public static bool ShowCardIDs = false;
 
 
     public CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
@@ -198,6 +198,8 @@ public class Controller : MonoBehaviour
 
         GameRunning = true;
 
+        Player1.DrawHand();
+        Player2.DrawHand();
         CurrentPlayer.StartTurn();
     }
 
@@ -222,7 +224,7 @@ public class Controller : MonoBehaviour
     {
         if (CanonGameState.CurrentPlayer.IsHuman)
         {
-            var endTurnAction = new EndTurnAction(CanonGameState.CurrentPlayer);
+            var endTurnAction = new TryEndTurnAction(CanonGameState.CurrentPlayer);
             CanonGameState.ActionHandler.AddAction(endTurnAction);
             //CanonGameState.EndTurn();
         }
@@ -451,7 +453,7 @@ public class Controller : MonoBehaviour
     }
     public static int GetRandomMetaSeed()
     {
-        return 1; // For consistent testing
-        //return UnityEngine.Random.Range(0, 1000);
+        //return 1; // For consistent testing
+        return UnityEngine.Random.Range(0, 1000);
     }
 }

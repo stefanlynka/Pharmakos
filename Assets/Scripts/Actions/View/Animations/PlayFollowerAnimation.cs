@@ -61,7 +61,7 @@ public class PlayFollowerAnimation : AnimationAction
 
     private void Complete()
     {
-        View.Instance.MoveFollowerToBattleRow(follower, playFollowerAction.Index);
+        //View.Instance.MoveFollowerToBattleRow(follower, playFollowerAction.Index);
         //Debug.LogWarning(playFollowerAction.Follower.Owner.GetName() + " played " + playFollowerAction.Follower.GetName() + " " + playFollowerAction.Follower.ID + " Animation end");
         CallCallback();
     }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 using static UnityEngine.UI.GridLayoutGroup;
 
 public class Player : ITarget
@@ -121,7 +122,7 @@ public class Player : ITarget
         };
 
         RefreshDeck();
-        DrawHand();
+        //DrawHand();
     }
 
     public void LoadDetails(PlayerDetails playerDetails)
@@ -326,7 +327,7 @@ public class Player : ITarget
     }
 
     // Cleanup for this Player. Should only be called by GameState.EndTurn()
-    public virtual void EndTurn()
+    public virtual void DoEndOfTurnActions()
     {
         if (!IsMyTurn) return;
 
@@ -438,16 +439,19 @@ public class Player : ITarget
 
     public void DrawHand()
     {
-        for (int i = 0; i < CardsPerTurn; i++)
-        {
-            DrawCard();
-        }
+        DrawCardAction action = new DrawCardAction(this, this, CardsPerTurn);
+        GameState.ActionHandler.AddAction(action);
+
+        //for (int i = 0; i < CardsPerTurn; i++)
+        //{
+        //    //DrawCard();
+        //}
     }
-    public void DrawCard()
+    public Card DrawCard()
     {
         if (Hand.Count >= MaxHandSize)
         {
-            return;
+            return null;
         }
 
         if (Deck.Count == 0)
@@ -460,7 +464,8 @@ public class Player : ITarget
         Card card = Deck[0];
         Deck.RemoveAt(0);
         Hand.Add(card);
-        if (!GameState.IsSimulated) View.Instance.DrawCard(card);
+        //if (!GameState.IsSimulated) View.Instance.DrawCard(card);
+        return card;
     }
     public bool AddCardToHand(Card card)
     {
@@ -479,14 +484,19 @@ public class Player : ITarget
         for (int i = Hand.Count - 1; i >= 0; i--)
         {
             Card card = Hand[i];
-            DiscardCard(card);
+            TryDiscardCard(card);
         }
+    }
+    public void TryDiscardCard(Card card)
+    {
+        DiscardCardAction discardAction = new DiscardCardAction(this, this, card);
+        GameState.ActionHandler.AddAction(discardAction);
     }
     public void DiscardCard(Card card)
     {
         Hand.Remove(card);
         Graveyard.Add(card);
-        View.Instance.DiscardCard(card);
+        //View.Instance.DiscardCard(card);
     }
 
     public void FollowerDied(Follower follower)

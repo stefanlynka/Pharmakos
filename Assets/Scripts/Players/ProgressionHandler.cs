@@ -46,17 +46,21 @@ public class ProgressionHandler
             MajorRitual = null, //new HadesMajor(),
             DeckBlueprint = new List<Card>
             {
-                new Ekdromos(),
-                new Reverie(),
+                new Peltast(),
+                //new WallOfTroy(),
                 //new Satyr(),
                 //new Satyr(),
                 //new Satyr(),
             },
             StartingBattleRow = new List<Follower>
             {
-                new Hoplite(),
-                new Peltast(),
-                new Peltast(),
+                //new Rat(),
+                new Rat(),
+                //new Rat(),
+                //new Corridor(),
+                //new Corridor(),
+                //new Rat(),
+                //new Peltast(),
             }
         };
         DetailsByDeckName[DeckName.TestPlayer] = new PlayerDetails
@@ -66,15 +70,18 @@ public class ProgressionHandler
             CardsPerTurn = 5,
             GoldPerTurn = 5,
             Pool = 0,
-            MinorRitual = new AresMajor(), //new AphroditeMajor(),
-            MajorRitual = new OldOnesMinor(), // new HephaestusMajor(), //new HadesMajor(),
+            MinorRitual = new AthenaMajor(), //new AphroditeMajor(),
+            MajorRitual = new HephaestusMajor(), // new HephaestusMajor(), //new HadesMajor(),
             DeckBlueprint = new List<Card>
             {
-                new Smite(),
-                new PriceOfProfit(),
-                new Ekdromos(),
-                new PriceOfLegacy(),
-                new PriceOfReprisal(),
+                //new DevKill(),
+                new Blessing(),
+                new Blessing(),
+                new Talaria(),
+                new Blessing(),
+                new Endymion(),
+                //new Restoration(),
+                //new Blessing(),
                 //new PriceOfLegacy(),
                 ////new Panic(),
                 //new DevKill(),
@@ -82,8 +89,8 @@ public class ProgressionHandler
             StartingBattleRow = new List<Follower>
             {
                 new Ekdromos(),
-                new Ekdromos(),
-                new Ekdromos(),
+                new MareOfDiomedes(),
+                new Peltast(),
                 //new Peltast(),
                 //new Chariot(),
                 //new Podalirius(),
@@ -532,7 +539,7 @@ public class ProgressionHandler
                 new Hydra(),
                 new GoldenHind(),
                 new CreateFilth(),
-                new StymphalianBird(),
+                //new StymphalianBird(),
                 new MareOfDiomedes(),
                 new Hippolyta(),
                 new Amazon(),
@@ -795,8 +802,12 @@ public class ProgressionHandler
         }
 
         PlayerDetails newDetails = DetailsByDeckName[deckName];
-        if (newDetails.IsEnemy) newDetails.BaseHealth = CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5; 
-        else newDetails.BaseHealth = GetPlayerHealth();
+
+        if (deckName != DeckName.TestEnemy)
+        {
+            if (newDetails.IsEnemy) newDetails.BaseHealth = CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5; 
+            else newDetails.BaseHealth = GetPlayerHealth();
+        }
 
         player.LoadDetails(newDetails);
     }

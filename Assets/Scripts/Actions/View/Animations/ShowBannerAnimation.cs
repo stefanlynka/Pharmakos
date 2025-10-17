@@ -24,14 +24,15 @@ public class ShowBannerAnimation : AnimationAction
 
         targetBanner = playerBanner ? View.Instance.PlayerTurnBanner : View.Instance.AITurnBanner;
 
+        View.Instance.IsHumansTurn = playerBanner;
 
-        Sequence attackSequence = new Sequence();
-        attackSequence.Add(new Tween(MoveBanner, 0, 1, moveDuration));
-        attackSequence.Add(new Tween(Wait, 0, 1, pauseDuration));
-        attackSequence.Add(new Tween(MoveBanner, 1, 0, moveDuration));
-        attackSequence.Add(new SequenceAction(AnimationOver));
-        attackSequence.Add(new SequenceAction(CallCallback));
-        attackSequence.Start();
+        Sequence moveBannerSequence = new Sequence();
+        moveBannerSequence.Add(new Tween(MoveBanner, 0, 1, moveDuration));
+        moveBannerSequence.Add(new Tween(Wait, 0, 1, pauseDuration));
+        moveBannerSequence.Add(new Tween(MoveBanner, 1, 0, moveDuration));
+        moveBannerSequence.Add(new SequenceAction(AnimationOver));
+        moveBannerSequence.Add(new SequenceAction(CallCallback));
+        moveBannerSequence.Start();
 
         //Debug.LogError("Attack Animation");
     }
@@ -52,7 +53,7 @@ public class ShowBannerAnimation : AnimationAction
 
     private void AnimationOver()
     {
-        View.Instance.IsHumansTurn = playerBanner;
+        View.Instance.TurnIsEnding = false;
         //Debug.LogWarning(attackerViewFollower.Follower.GetName() + " attacked " + attackAction.Target.GetName() + " Animation end");
     }
 }

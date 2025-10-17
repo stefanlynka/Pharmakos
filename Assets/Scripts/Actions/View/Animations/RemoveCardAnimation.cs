@@ -18,7 +18,7 @@ public class RemoveCardAnimation : AnimationAction
     {
         base.Play(onFinish);
 
-        View.Instance.RemoveCard(Card);
+        View.Instance.RemoveCard(Card.ID);
 
         CallCallback();
     }

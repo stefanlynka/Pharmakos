@@ -63,6 +63,7 @@ public class AttackWithFollowerAnimation : AnimationAction
         attackMoveDuration = View.Instance.IsHumansTurn ? 0.18f : 0.25f;
         Sequence attackSequence = new Sequence();
         attackSequence.Add(new Tween(MoveAttacker, 0, 1, attackMoveDuration));
+        attackSequence.Add(new SequenceAction(ShakeScreen));
         attackSequence.Add(new Tween(MoveAttacker, 1, 0, attackMoveDuration));
         //attackSequence.Add(new SequenceAction(AnimationOver));
         attackSequence.Add(new SequenceAction(CallCallback));
@@ -78,11 +79,27 @@ public class AttackWithFollowerAnimation : AnimationAction
 
     protected override void Log()
     {
-        if (attacker != null) Debug.LogWarning("AttackWithFollowerAnimation: " + attacker.GetName() + " attacks " + target.GetName());
+        if (attacker != null && attacker.Owner != null) Debug.LogWarning("AttackWithFollowerAnimation: " + attacker.Owner.GetName() + "'s " + attacker.GetName() + " attacks " + target.GetName());
     }
 
     private void AnimationOver()
     {
         //Debug.LogWarning(attackerViewFollower.Follower.GetName() + " attacked " + attackAction.Target.GetName() + " Animation end");
+    }
+
+    private void ShakeScreen()
+    {
+        Player playerTarget = target as Player;
+        if (playerTarget != null && playerTarget.Health - attacker.CurrentAttack < 0)
+        {
+            ScreenShakeHandler.Shake(1f, 0.4f);
+        }
+        else
+        {
+            int enemyAttack = target is Follower targetFollower ? targetFollower.CurrentAttack : 0;
+            int higherAttack = Mathf.Max(attacker.CurrentAttack, enemyAttack);
+            float shakeDuration = Mathf.Min(0.15f + higherAttack * 0.05f, 0.4f);
+            ScreenShakeHandler.Shake(higherAttack * 0.15f, 0.15f + higherAttack * 0.05f);
+        }
     }
 }

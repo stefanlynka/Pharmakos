@@ -38,7 +38,7 @@ public class PlaySpellAction : GameAction
     public override List<AnimationAction> GetAnimationActions()
     {
         float duration = Owner.IsHuman ? 0.25f : 0.5f;
-        MoveCardAnimation moveCardAnimation = new MoveCardAnimation(this, Spell, Owner, GameZone.Hand, Owner, GameZone.PlayZone, -1, duration);
+        MoveCardAnimation moveCardAnimation = new MoveCardAnimation(this, Spell, Owner, GameZone.Hand, Owner, GameZone.PlayZone, duration);
         moveCardAnimation.SetScale(1, 2);
         moveCardAnimation.ForceDescriptive(true);
 

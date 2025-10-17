@@ -14,7 +14,7 @@ public abstract class Card : ICloneable, ITarget
     public string OverrideName = "";
     public string Text = "";
 
-    public int ID = -1;
+    public int ID = -1; // Unique identifier for this card instance, assigned when it enters a GameState
 
     public Action OnChange;
     public Action OnRemove;

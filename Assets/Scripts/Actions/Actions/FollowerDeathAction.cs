@@ -23,10 +23,11 @@ public class FollowerDeathAction : GameAction
     public override void Execute(bool simulated = false, bool success = true)
     {
         Player Owner = Follower.Owner;
-        Owner.FollowerDied(Follower);
 
         GameAction newAction = new CreateOfferingAction(Owner.GameState.CurrentPlayer, OfferingType.Bone, 1, Follower.ID, Owner.GameState.CurrentPlayer.ITargetID);
         Owner.GameState.ActionHandler.AddAction(newAction);
+
+        Owner.FollowerDied(Follower);
 
         //Owner.GameState.CurrentPlayer.ChangeOffering(OfferingType.Bone, 1);
         Owner.GameState.TargetsByID.Remove(Follower.ID);

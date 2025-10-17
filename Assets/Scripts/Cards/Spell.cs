@@ -14,8 +14,6 @@ public class Spell : Card, ITarget
     {
         base.Play(target);
 
-        GameAction offeringAction = new CreateOfferingAction(Owner, OfferingType.Scroll, 1, Owner.ITargetID, GameState.CurrentPlayer.ITargetID);
-        GameState.ActionHandler.AddAction(offeringAction);
         //GameState.CurrentPlayer.ChangeOffering(OfferingType.Scroll, 1);
 
         if (target is Follower followerTarget)
@@ -28,6 +26,10 @@ public class Spell : Card, ITarget
 
         GameAction newAction = new PlaySpellAction(Owner, this);
         Owner.GameState.ActionHandler.AddAction(newAction);
+
+        GameAction offeringAction = new CreateOfferingAction(Owner, OfferingType.Scroll, 1, Owner.ITargetID, GameState.CurrentPlayer.ITargetID);
+        GameState.ActionHandler.AddAction(offeringAction);
+
     }
 
     public bool HasPlayableTargets()

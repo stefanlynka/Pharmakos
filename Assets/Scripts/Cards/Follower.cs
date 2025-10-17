@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using static Unity.VisualScripting.Member;
@@ -51,6 +50,7 @@ public class Follower : Card, ITarget
     public bool HasSprint { get { return StaticEffects.ContainsKey(StaticEffect.Sprint) && StaticEffects[StaticEffect.Sprint].Count > 0; } }
     public int EffectCounter = 0;
     public FollowerType Type = FollowerType.Mortal;
+    public bool Alive = true;
 
     public enum FollowerType
     {
@@ -327,6 +327,9 @@ public class Follower : Card, ITarget
 
     public virtual void Die()
     {
+        if (!Alive) return;
+
+        Alive = false;
         GameAction newAction = new FollowerDeathAction(this);
         GameState.ActionHandler.AddAction(newAction);
     }

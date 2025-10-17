@@ -13764,6 +13764,7 @@ GameObject:
   - component: {fileID: 1036266452}
   - component: {fileID: 1036266456}
   - component: {fileID: 1036266457}
+  - component: {fileID: 1036266458}
   m_Layer: 0
   m_Name: GameHandler
   m_TagString: Untagged
@@ -13799,7 +13800,8 @@ MonoBehaviour:
   Player2: {fileID: 2089607683}
   PlayerTurnBanner: {fileID: 1135567502}
   AITurnBanner: {fileID: 1036215218}
-  HumansTurn: 1
+  IsHumansTurn: 1
+  TurnIsEnding: 0
   BackgroundRenderer: {fileID: 2129314072}
 --- !u!114 &1036266454
 MonoBehaviour:
@@ -13879,6 +13881,18 @@ MonoBehaviour:
   - {fileID: 553640404}
   - {fileID: 629512853}
   CurrentScreen: {fileID: 0}
+--- !u!114 &1036266458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1036266451}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73ef2aee37b7134459bae4c8c6ca04c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1036494386
 PrefabInstance:
   m_ObjectHideFlags: 0

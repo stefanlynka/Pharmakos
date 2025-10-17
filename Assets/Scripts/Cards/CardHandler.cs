@@ -139,17 +139,17 @@ public static class CardHandler
                     AllMonsters.Add(follower);
                     if (follower.Costs[OfferingType.Gold] <= 1) SmallMonsters.Add(follower);
                 }
-                else if (card is Spell spell)
-                {
-                    AllSpells.Add(spell);
+            }
+            else if (card is Spell spell)
+            {
+                AllSpells.Add(spell);
 
-                    if (!SpellsByCost.ContainsKey(cost))
-                    {
-                        SpellsByCost[cost] = new List<Spell>();
-                    }
-                    SpellsByCost[cost].Add(spell);
-                    if (cost > HighestSpellCost) HighestSpellCost = cost;
+                if (!SpellsByCost.ContainsKey(cost))
+                {
+                    SpellsByCost[cost] = new List<Spell>();
                 }
+                SpellsByCost[cost].Add(spell);
+                if (cost > HighestSpellCost) HighestSpellCost = cost;
             }
         }
     }
