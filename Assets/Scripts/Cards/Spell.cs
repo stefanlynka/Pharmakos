@@ -24,7 +24,7 @@ public class Spell : Card, ITarget
         // Trigger all "OnSpellPlayed" triggers
         GameState.FireSpellPlayed(this);
 
-        GameAction newAction = new PlaySpellAction(Owner, this);
+        GameAction newAction = new PlaySpellAction(Owner, this, target);
         Owner.GameState.ActionHandler.AddAction(newAction);
 
         GameAction offeringAction = new CreateOfferingAction(Owner, OfferingType.Scroll, 1, Owner.ITargetID, GameState.CurrentPlayer.ITargetID);

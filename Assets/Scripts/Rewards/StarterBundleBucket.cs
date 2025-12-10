@@ -17,6 +17,8 @@ public class StarterBundleBucket : MonoBehaviour
     public ViewTarget ViewTarget;
     public MeshRenderer HighlightRenderer;
 
+    public ViewBuff ViewTrinket;
+
     public void Load(StarterBundle starterBundle, Action<ViewTarget> cardClicked)
     {
         StarterBundle = starterBundle;
@@ -29,6 +31,10 @@ public class StarterBundleBucket : MonoBehaviour
         {
             CardRewards[i].Load(starterBundle.Cards[i], null, false);
         }
+
+        PlayerEffectDescriptionData descriptionData = starterBundle.Trinket.GetDescriptionData();
+        ViewTrinket.SetBuffData(descriptionData);
+        ViewTrinket.SetVisible(true);
 
         SetSelected(false);
     }

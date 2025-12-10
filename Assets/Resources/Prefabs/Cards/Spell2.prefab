@@ -192,6 +192,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2016992647580976103}
   m_SourcePrefab: {fileID: 100100000, guid: 91d24f4ed48dd954ab97956416234aca, type: 3}
+--- !u!224 &1210877809226494612 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 385114746326128242, guid: 91d24f4ed48dd954ab97956416234aca, type: 3}
+  m_PrefabInstance: {fileID: 1555383588094059750}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1258542949849447392 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 352102127151652614, guid: 91d24f4ed48dd954ab97956416234aca, type: 3}
@@ -238,6 +243,7 @@ MonoBehaviour:
   CardHolder: {fileID: 1258542949849447392}
   CardCollider: {fileID: 5738838262253172784}
   FullTextBox: {fileID: 6718513356289802709}
+  NameTextTransform: {fileID: 1210877809226494612}
   TargetSprite: {fileID: 3824468272475264766}
 --- !u!65 &5738838262253172784 stripped
 BoxCollider:

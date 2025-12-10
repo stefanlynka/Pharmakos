@@ -80,4 +80,8 @@ public class AttackWithFollowerAction : GameAction
             Debug.LogWarning(Attacker.Owner.GetName() + "'s " + Attacker.GetName() + " attacked " + Target.GetName());
         }
     }
+    public override PlayHistoryItem MakePlayHistoryItem()
+    {
+        return new AttackWithFollowerPlayHistory(Attacker.Owner, Attacker, Target);
+    }
 }

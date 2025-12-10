@@ -41,7 +41,9 @@ public class DealDamageAction : GameAction
             int prevHealth = follower.CurrentHealth;
             follower.ChangeHealth(Source , -Damage);
             damageDealt = prevHealth - follower.CurrentHealth;
-            attackChange = prevAttack - follower.GetCurrentAttack();
+            attackChange = follower.GetCurrentAttack() - prevAttack;
+
+            if (damageDealt > 0) follower.GameState.FireFollowerHealthChanges(follower, -damageDealt);
 
             ResolveDamageAction resolveDamageAction = new ResolveDamageAction(follower);
             follower.GameState.ActionHandler.AddAction(resolveDamageAction, true, resolveDamageImmediately);
@@ -60,7 +62,7 @@ public class DealDamageAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new ChangeStatsAnimation(this, Target, -attackChange, -damageDealt)
+            new ChangeStatsAnimation(this, Target, attackChange, -damageDealt)
             //new DamageAnimation(this)
         };
         //if (LastStep) animationActions.Add(new IdleAnimation(this));

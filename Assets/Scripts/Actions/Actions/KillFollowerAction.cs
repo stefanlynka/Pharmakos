@@ -10,11 +10,13 @@ public class KillFollowerAction : GameAction
 {
     public ITarget Source;
     public ITarget Target;
+    public bool Sacrifice;
 
-    public KillFollowerAction(ITarget source, ITarget target)
+    public KillFollowerAction(ITarget source, ITarget target, bool sacrifice = false)
     {
         Source = source;
         Target = target;
+        Sacrifice = sacrifice;
     }
 
     public override GameAction DeepCopy(Player newOwner)
@@ -33,6 +35,12 @@ public class KillFollowerAction : GameAction
         if (follower != null )
         {
             follower.Die();
+        }
+
+        if (Sacrifice)
+        {
+            // Fire FollowerSacrificed before the follower dies
+            follower.Owner.GameState.FireFollowerSacrificed(follower);
         }
 
         base.Execute(simulated);

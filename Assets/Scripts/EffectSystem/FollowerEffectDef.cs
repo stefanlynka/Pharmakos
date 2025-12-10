@@ -30,15 +30,15 @@ public enum EffectTrigger
 public enum StaticEffect
 {
     None,
-    Sprint,
-    Shield,
+    Sprint, // Can attack immediately on entering
+    Shield, // Reduce damage taken by 1
     ImmuneWhileAttacking,
-    Cleave,
-    Taunt,
-    RangedAttacker,
-    Frenzy,
+    Cleave, // Attack hits adjacent enemies
+    Taunt, // Must be attacked first
+    RangedAttacker, // Inverted attacking and takes no damage while attacking
+    Frenzy, // 2 attacks per turn
     CantAttack,
-    LowVision,
+    LowVision, // Can only attack directly in front
 }
 
 /**
@@ -177,10 +177,10 @@ public class CustomEffectDef : FollowerEffect
 
 public class StaticEffectDef : FollowerEffect
 {
-    StaticEffect staticEffectName = StaticEffect.None;
+    public StaticEffect StaticEffectName = StaticEffect.None;
     public StaticEffectDef(EffectTarget target, StaticEffect staticEffectName) : base(target)
     {
-        this.staticEffectName = staticEffectName;
+        this.StaticEffectName = staticEffectName;
     }
 
     public override void Apply(Follower source)
@@ -190,7 +190,7 @@ public class StaticEffectDef : FollowerEffect
 
     protected override void ApplyInstance(Follower instanceTarget, int offset)
     {
-        StaticFollowerEffectInstance newEffectInstance = new StaticFollowerEffectInstance(this, instanceTarget, 0, 0, staticEffectName);
+        StaticFollowerEffectInstance newEffectInstance = new StaticFollowerEffectInstance(this, instanceTarget, 0, 0, StaticEffectName);
         EffectInstances.Add(newEffectInstance);
     }
 }

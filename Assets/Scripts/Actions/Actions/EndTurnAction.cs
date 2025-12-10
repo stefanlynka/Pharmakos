@@ -25,6 +25,11 @@ public class EndTurnAction : GameAction
     {
         owner.GameState.EndTurn();
 
+        if (!simulated)
+        {
+            Controller.Instance.PlayHistoryHandler.ProgressPlayHistory();
+        }
+
         base.Execute(simulated);
     }
 

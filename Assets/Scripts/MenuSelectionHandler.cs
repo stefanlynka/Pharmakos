@@ -24,7 +24,7 @@ public class MenuSelectionHandler : MonoBehaviour
         Physics.SyncTransforms();
 
         CurrentHover = null;
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // HOWTO Raycast
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hitData, 1000, targetLayer) && hitData.collider.gameObject.TryGetComponent(out ViewTarget viewTarget))
         {
             CurrentHover = viewTarget;

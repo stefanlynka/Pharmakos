@@ -116,11 +116,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 2413344941068345943}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 0, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 9.28, y: 1.3}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_SizeDelta: {x: 7.3, y: 2.13}
+  m_Pivot: {x: 0, y: 0.5}
 --- !u!23 &1954170176460068837
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -183,7 +183,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Cerberus
+  m_text: Price of Knowledge
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -210,7 +210,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 12
+  m_fontSize: 10.5
   m_fontSizeBase: 12.52
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -222,13 +222,13 @@ MonoBehaviour:
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
-  m_lineSpacing: 0
+  m_lineSpacing: -20
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 3
+  m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
@@ -246,7 +246,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0.092428684, y: -0.02204895, z: 1.7192168, w: -0.023640275}
+  m_margin: {x: 0.22934055, y: -0.02204895, z: 0.015930891, w: -0.023640275}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   _SortingLayer: 0
@@ -2213,16 +2213,15 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2413344941068345943
-Transform:
+--- !u!224 &2413344941068345943
+RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3453000643195863121}
-  serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.54, z: 0.05}
+  m_LocalPosition: {x: 0, y: 0, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2231,6 +2230,11 @@ Transform:
   - {fileID: 385114746326128242}
   m_Father: {fileID: 5833012995457108982}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 3.337}
+  m_SizeDelta: {x: 5, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &3486749724553044628
 GameObject:
   m_ObjectHideFlags: 0
@@ -2595,7 +2599,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0.05000305}
-  m_LocalScale: {x: 5.11, y: 0.6, z: 0.25}
+  m_LocalScale: {x: 5.11, y: 1, z: 0.25}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2413344941068345943}
@@ -3440,6 +3444,7 @@ MonoBehaviour:
   CardHolder: {fileID: 352102127151652614}
   CardCollider: {fileID: 6499160316123061462}
   FullTextBox: {fileID: 5235752793117992243}
+  NameTextTransform: {fileID: 385114746326128242}
   AttackText: {fileID: 7469097152442852670}
   HealthText: {fileID: 9120081382031426005}
   SkullRenderer: {fileID: 5583048051161705465}

@@ -14,17 +14,17 @@ public abstract class PlayerEffect
     public abstract PlayerEffectDescriptionData GetDescriptionData();
 }
 
-public abstract class RitualPlayerEffect : PlayerEffect
+public abstract class StaticPlayerEffect : PlayerEffect
 {
     public Player Owner;
-    public Player Target;
+    public Player TargetPlayer;
 
     public override PlayerEffectDescriptionData GetDescriptionData()
     {
         PlayerEffectDescriptionData descriptionData = new PlayerEffectDescriptionData();
         string iconName = GetType().Name.TrimEnd("EffectDef");
         descriptionData.Icon = Resources.Load<Sprite>($"Images/Icons/Rituals/{iconName}");
-        descriptionData.BuffIconHolder = Target;
+        descriptionData.BuffIconHolder = TargetPlayer;
         descriptionData.Description = GetDescription();
 
         return descriptionData;
@@ -32,6 +32,19 @@ public abstract class RitualPlayerEffect : PlayerEffect
     protected virtual string GetDescription()
     {
         return "No Desc Found";
+    }
+}
+public abstract class TrinketPlayerEffect : StaticPlayerEffect
+{
+    public override PlayerEffectDescriptionData GetDescriptionData()
+    {
+        PlayerEffectDescriptionData descriptionData = new PlayerEffectDescriptionData();
+        string iconName = GetType().Name.TrimEnd("TrinketEffectDef");
+        descriptionData.Icon = Resources.Load<Sprite>($"Images/Icons/Trinkets/{iconName}");
+        descriptionData.BuffIconHolder = TargetPlayer;
+        descriptionData.Description = GetDescription();
+
+        return descriptionData;
     }
 }
 

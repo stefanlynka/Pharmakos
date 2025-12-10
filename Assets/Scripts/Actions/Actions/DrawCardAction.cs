@@ -76,5 +76,13 @@ public class DrawCardAction : GameAction
 
         return animationActions;
     }
-
+    public override void LogAction()
+    {
+        string cardNames = "";
+        foreach (Card card in cardsDrawn)
+        {
+            cardNames += card.GetName() + " ";
+        }
+        Debug.LogWarning("DrawCardAction: " + player.Name + " draws " + cardNames);
+    }
 }

@@ -5,11 +5,10 @@ using UnityEngine;
 
 public class ViewPlayer : ViewTarget
 {
-    public Player Player;
-    public MeshRenderer Highlight;
-    public ViewResources ViewResources;
+    public ViewPlayerPortrait ViewPlayerPortrait;
 
-    public TextMeshPro HealthText;
+    public Player Player;
+    public ViewResources ViewResources;
 
     public ViewHandHandler HandHandler;
 
@@ -19,11 +18,6 @@ public class ViewPlayer : ViewTarget
     public ViewRitual ViewMajorRitual;
 
     public List<ViewBuff> Buffs = new List<ViewBuff>();
-
-    public GameObject DamageIcon;
-    public TextMeshPro DamageText;
-
-    private int health = 0;
 
     public void Load(Player player)
     {
@@ -43,7 +37,8 @@ public class ViewPlayer : ViewTarget
         ViewMajorRitual.Init(Player.MajorRitual);
 
         SetHealth(player.Health);
-        //health = player.Health;
+
+        ViewPlayerPortrait.Load(player);
     }
 
     public void Clear()
@@ -67,7 +62,7 @@ public class ViewPlayer : ViewTarget
 
     public void SetHighlight(bool active)
     {
-        Highlight.enabled = active;
+        ViewPlayerPortrait.Highlight.enabled = active;
     }
 
     private void PlayerChanged()
@@ -76,31 +71,28 @@ public class ViewPlayer : ViewTarget
     }
     public void ChangeHealth(int change)
     {
-        health += change;
-        HealthText.text = health.ToString();
+        ViewPlayerPortrait.ChangeHealth(change);
     }
     public void SetHealth(int newHealth)
     {
-        health = newHealth;
-        HealthText.text = health.ToString();
+        ViewPlayerPortrait.SetHealth(newHealth);
     }
     public void ClearBuffs()
     {
         foreach (ViewBuff buff in Buffs)
         {
-            buff.gameObject.SetActive(false);
+            buff.SetVisible(false);
         }
     }
     public void AddBuff(PlayerEffect playerEffect)
     {
         foreach (ViewBuff buff in Buffs)
         {
-            if (!buff.gameObject.activeSelf)
+            if (!buff.ParentObject.activeSelf)
             {
                 PlayerEffectDescriptionData descriptionData = playerEffect.GetDescriptionData();
-                buff.Icon.sprite = descriptionData.Icon;
-                buff.SummaryText.text = descriptionData.Description;
-                buff.gameObject.SetActive(true);
+                buff.SetBuffData(descriptionData);
+                buff.SetVisible(true);
                 return;
             }
         }
@@ -108,11 +100,10 @@ public class ViewPlayer : ViewTarget
 
     public void ShowDamage(int damage)
     {
-        DamageIcon.SetActive(true);
-        DamageText.text = damage.ToString();
+        ViewPlayerPortrait.ShowDamage(damage);
     }
     public void HideDamage()
     {
-        DamageIcon.SetActive(false);
+        ViewPlayerPortrait.HideDamage();
     }
 }

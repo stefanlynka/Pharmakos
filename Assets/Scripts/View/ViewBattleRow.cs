@@ -58,7 +58,8 @@ public class ViewBattleRow : MonoBehaviour
 
         if (View.Instance.SelectionHandler.TryGetHeldFollower(out ViewFollower viewFollower))
         {
-            Highlight.enabled = true;
+            // Only highlight if the held follower can actually be played
+            Highlight.enabled = viewFollower != null && viewFollower.Follower != null && viewFollower.Follower.CanPlay();
         }
         else
         {
@@ -104,8 +105,8 @@ public class ViewBattleRow : MonoBehaviour
             else if (isHuman && !BattleRow.Owner.IsMyTurn) highlighted = false;
             else if (View.Instance.SelectionHandler.AttackingFollower == viewFollower) highlighted = true; // If it's attacking
             else if (View.Instance.SelectionHandler.AttackableTargets.Contains(viewFollower.Follower)) highlighted = true; // If it's a potential attack target
-            else if (isHuman && !View.Instance.SelectionHandler.IsHoldingCard() && viewFollower.Follower.CanAttack()) highlighted = true; // nothing's held and it can attack
-            else if (View.Instance.SelectionHandler.IsHoldingCard() && View.Instance.SelectionHandler.CurrentTargets.Contains(viewFollower.Follower)) highlighted = true; // is a potential target of a spell
+            else if (isHuman && !View.Instance.SelectionHandler.IsSelectingTarget() && viewFollower.Follower.CanAttack()) highlighted = true; // nothing's held and it can attack
+            else if (View.Instance.SelectionHandler.IsSelectingTarget() && View.Instance.SelectionHandler.CurrentTargets.Contains(viewFollower.Follower)) highlighted = true; // is a potential target of a spell
             else if (View.Instance.SelectionHandler.SelectedRitual != null && View.Instance.SelectionHandler.PotentialRitualTargets.Contains(viewFollower.Follower)) highlighted = true; // Is a potential target of a ritual
 
             viewFollower.SetHighlight(highlighted);
@@ -116,7 +117,7 @@ public class ViewBattleRow : MonoBehaviour
             {
                 PopupCard.gameObject.SetActive(true);
                 PopupCard.Load(viewFollower.Follower);
-                PopupCard.ShowCurrentStats();
+                PopupCard.ShowMaxStats();
                 PopupCard.SetDescriptiveMode(true);
                 PopupCard.transform.position = viewFollower.transform.position + PopupOffset;
             }
@@ -165,7 +166,7 @@ public class ViewBattleRow : MonoBehaviour
 
     public bool IsMouseOverThis()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // HOWTO Raycast
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hitData, 1000, zoneLayer))
         {
             if (hitData.collider.gameObject == gameObject)
@@ -224,6 +225,9 @@ public class ViewBattleRow : MonoBehaviour
         viewFollower.OnClick = FollowerInPlayClicked;
         viewFollower.transform.SetParent(UnitHolderTransform);
         Followers.Insert(index, viewFollower);
+        
+        // Hide ViewOfferingCost when follower enters battle row
+        viewFollower.SetCostShown(false);
     }
 
     public void TryRemoveFollower(ViewFollower viewFollower)

@@ -51,6 +51,7 @@ public class Follower : Card, ITarget
     public int EffectCounter = 0;
     public FollowerType Type = FollowerType.Mortal;
     public bool Alive = true;
+    public bool IsClone = false;
 
     public enum FollowerType
     {

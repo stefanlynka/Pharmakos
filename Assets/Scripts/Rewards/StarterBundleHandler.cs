@@ -34,6 +34,8 @@ public class StarterBundleHandler : MonoBehaviour
         Controller.Instance.AddCardsToPlayerDeck(SelectedBucket.StarterBundle.Cards);
         // Add ritual
         Controller.Instance.SetRituals(null, SelectedBucket.StarterBundle.Ritual);
+        // Add trinket
+        Controller.Instance.AddTrinket(SelectedBucket.StarterBundle.Trinket);
 
         //Controller.Instance.HideStarterBundleScreen();
         Controller.Instance.StartGame();
@@ -61,11 +63,13 @@ public class StarterBundle
 {
     public Ritual Ritual;
     public List<Card> Cards = new List<Card>();
+    public Trinket Trinket;
 
-    public StarterBundle(Ritual ritual, List<Card> cards)
+    public StarterBundle(Ritual ritual, List<Card> cards, Trinket trinket)
     {
         Ritual = ritual;
         Cards = cards;
+        Trinket = trinket;
     }
 }
 

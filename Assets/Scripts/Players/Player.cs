@@ -18,9 +18,18 @@ public class Player : ITarget
     public List<Card> Graveyard = new List<Card>();
 
     public BattleRow BattleRow = new BattleRow();
+    public List<Follower> StartingBattleRow = new List<Follower>();
 
     public Dictionary<OfferingType, int> Offerings = new Dictionary<OfferingType, int>();
     public Dictionary<OfferingType, int> FollowerCostReductions = new Dictionary<OfferingType, int>();
+    public Dictionary<OfferingType, int> RitualCostReductions = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 0},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
 
     public Dictionary<OfferingType, int> InitialOfferings = new Dictionary<OfferingType, int>()
         {
@@ -32,6 +41,8 @@ public class Player : ITarget
         };
     public Ritual MinorRitual;
     public Ritual MajorRitual;
+
+    public List<Trinket> Trinkets = new List<Trinket>();
 
     // For identifying which Player is which
     public int PlayerID = -1;
@@ -121,26 +132,53 @@ public class Player : ITarget
             { OfferingType.Scroll, 0},
         };
 
+        RitualCostReductions = new Dictionary<OfferingType, int>
+        {
+            { OfferingType.Gold, 0},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
         RefreshDeck();
         //DrawHand();
     }
 
-    public void LoadDetails(PlayerDetails playerDetails)
+    public void LoadDetails(PlayerDetails playerDetails, int pool)
     {
         PlayerDetails = playerDetails;
+        playerDetails.BaseHealth = Controller.Instance.ProgressionHandler.GetPlayerHealth();
         StartingHealth = playerDetails.BaseHealth;
         Health = playerDetails.BaseHealth;
         CardsPerTurn = playerDetails.CardsPerTurn;
         GoldPerTurn = playerDetails.GoldPerTurn;
 
 
-        if (playerDetails.MinorRitual != null) MinorRitual = playerDetails.MinorRitual.MakeBaseCopy();
-        if (playerDetails.MajorRitual != null) MajorRitual = playerDetails.MajorRitual.MakeBaseCopy();
+        if (playerDetails.MinorRituals[pool] != null) MinorRitual = playerDetails.MinorRituals[pool].MakeBaseCopy();
+        if (playerDetails.MajorRituals[pool] != null) MajorRitual = playerDetails.MajorRituals[pool].MakeBaseCopy();
+
+        Trinkets.Clear();
+        foreach (Trinket trinket in playerDetails.Trinkets)
+        {
+            Trinkets.Add(trinket.MakeBaseCopy());
+        }
 
         DeckBlueprint.Clear();
-        foreach (Card card in playerDetails.DeckBlueprint)
+        List<Card> deck = playerDetails.DeckBlueprint[pool];
+        foreach (Card card in deck)
         {
             DeckBlueprint.Add(card.MakeBaseCopy());
+        }
+
+        StartingBattleRow.Clear();
+        if (playerDetails.StartingBattleRow.ContainsKey(pool))
+        {
+            List<Follower> startingBattleRow = playerDetails.StartingBattleRow[pool];
+            foreach (Follower follower in startingBattleRow)
+            {
+                StartingBattleRow.Add(follower.MakeBaseCopy() as Follower);
+            }
         }
     }
 
@@ -331,9 +369,23 @@ public class Player : ITarget
     {
         if (!IsMyTurn) return;
 
-        DiscardHand();
-        DrawHand();
-        Offerings[OfferingType.Gold] = GoldPerTurn;
+        if (Controller.BlitzMode)
+        {
+            // In BlitzMode: Don't discard cards, draw 6 cards, get 4 gold, reset non-gold offerings
+            DrawHand();
+            Offerings[OfferingType.Gold] = GoldPerTurn;
+            Offerings[OfferingType.Blood] = 0;
+            Offerings[OfferingType.Bone] = 0;
+            Offerings[OfferingType.Crop] = 0;
+            Offerings[OfferingType.Scroll] = 0;
+        }
+        else
+        {
+            // Normal mode: Discard hand, draw normal amount, get normal gold
+            DiscardHand();
+            DrawHand();
+            Offerings[OfferingType.Gold] = GoldPerTurn;
+        }
         View.Instance.UpdateResources(this);
 
         DoEndOfTurnPlayerActions();
@@ -439,7 +491,12 @@ public class Player : ITarget
 
     public void DrawHand()
     {
-        DrawCardAction action = new DrawCardAction(this, this, CardsPerTurn);
+        int cardsToDraw = CardsPerTurn;// Controller.BlitzMode ? 6 : CardsPerTurn;
+        if (Controller.BlitzMode)
+        {
+            cardsToDraw = Mathf.Max(0, 6 - Hand.Count);
+        }
+        DrawCardAction action = new DrawCardAction(this, this, cardsToDraw);
         GameState.ActionHandler.AddAction(action);
 
         //for (int i = 0; i < CardsPerTurn; i++)
@@ -529,14 +586,6 @@ public class Player : ITarget
         GameState.ActionHandler.AddAction(newAction);
     }
 
-    //public void PlayFollower(Follower follower, int index)
-    //{
-    //    // Pay costs and remove from hand
-    //    PlayCard(follower);
-
-    //    SummonFollower(follower, index);
-    //}
-
     public void TryPlaySpell(Spell spell, ITarget target)
     {
         PlayCard(spell);
@@ -560,11 +609,11 @@ public class Player : ITarget
             //if (createCrop) GameState.CurrentPlayer.ChangeOffering(OfferingType.Crop, 1);
         }
 
-        // Trigger Effects
-        GameState.FireFollowerEnters(follower);
-
         // Apply Follower static effects 
         follower.ApplyInnateEffects();
+
+        // Trigger Effects
+        GameState.FireFollowerEnters(follower);
 
         // Apply one time on enter effects
         follower.ApplyOnEnterEffects();
@@ -596,7 +645,8 @@ public class Player : ITarget
     {
         foreach (KeyValuePair<OfferingType, int> cost in ritual.Costs)
         {
-            if (Offerings[cost.Key] < cost.Value) return false;
+            int offeringCost = Mathf.Max(0, cost.Value - RitualCostReductions[cost.Key]);
+            if (Offerings[cost.Key] < offeringCost) return false;
         }
 
         return true;
@@ -605,8 +655,9 @@ public class Player : ITarget
     {
         foreach (KeyValuePair<OfferingType, int> cost in ritual.Costs)
         {
-            if (Offerings[cost.Key] < cost.Value) return;
-            Offerings[cost.Key] -= cost.Value;
+            int offeringCost = Mathf.Max(0, cost.Value - RitualCostReductions[cost.Key]);
+            if (Offerings[cost.Key] < offeringCost) return;
+            Offerings[cost.Key] -= offeringCost;
         }
         OnOfferingsChange?.Invoke();
     }
@@ -734,20 +785,33 @@ public class Player : ITarget
     {
         return GameState.GetOtherPlayer(PlayerID);
     }
+    public void ApplyTrinketBuffs()
+    {
+        foreach (Trinket trinket in Trinkets)
+        {
+            trinket.ApplyEffect(this);
+        }
+    }
 }
 
 public class PlayerDetails
 {
     public bool IsEnemy = true;
+    public bool IsFightableEnemy = true;
+    public bool IsBoss = false;
     public int BaseHealth = 10;
     public int CardsPerTurn = 5;
     public int GoldPerTurn = 3;
+    public string PortraitName = "";
 
-    public List<Card> DeckBlueprint = new List<Card>();
-    public Ritual MinorRitual = null;
-    public Ritual MajorRitual = null;
+    public Dictionary<int, List<Card>> DeckBlueprint = new Dictionary<int, List<Card>>(); // Keyed on Pool
+    public Dictionary<int, Ritual> MinorRituals = new Dictionary<int, Ritual>();
+    public Dictionary<int, Ritual> MajorRituals = new Dictionary<int, Ritual>();
+    public List<Trinket> Trinkets = new List<Trinket>();
+    //public Ritual MinorRitual = null;
+    //public Ritual MajorRitual = null;
     public List<Card> Rewards = new List<Card>();
-    public List<Follower> StartingBattleRow = new List<Follower>();
+    public Dictionary<int, List<Follower>> StartingBattleRow = new Dictionary<int, List<Follower>>(); // Keyed on Pool
 
     public int Pool = 1; // Only for enemies. Which 
 

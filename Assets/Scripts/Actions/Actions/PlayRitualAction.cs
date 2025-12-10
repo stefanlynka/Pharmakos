@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 using static UnityEngine.UI.GridLayoutGroup;
 
 
@@ -32,6 +34,11 @@ public class PlayRitualAction : GameAction
     public override void Execute(bool simulated = false, bool success = true)
     {
         ritual.ExecuteEffect(target);
+        
+        if (ritual.Owner != null && ritual.Owner.GameState != null)
+        {
+            ritual.Owner.GameState.FireRitualUsed(ritual);
+        }
 
         base.Execute(simulated);
     }
@@ -56,5 +63,9 @@ public class PlayRitualAction : GameAction
         };
 
         return animationActions;
+    }
+    public override PlayHistoryItem MakePlayHistoryItem()
+    {
+        return new RitualPlayHistory(ritual.Owner, ritual, target);
     }
 }

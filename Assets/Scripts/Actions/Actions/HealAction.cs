@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Unity.VisualScripting.Member;
 
 public class HealAction : GameAction
 {
@@ -8,6 +9,7 @@ public class HealAction : GameAction
     ITarget source;
     int amount = 0;
     int amountHealed = 0;
+    int attackChange = 0;
     public HealAction(ITarget target, ITarget source, int amount)
     {
         this.target = target;
@@ -31,9 +33,13 @@ public class HealAction : GameAction
 
         if (followerTarget != null)
         {
+            int prevAttack = followerTarget.GetCurrentAttack();
             int healthBefore = followerTarget.CurrentHealth;
             followerTarget.Heal(amount);
             amountHealed = followerTarget.CurrentHealth - healthBefore;
+            attackChange = followerTarget.GetCurrentAttack() - prevAttack;
+
+            if (amountHealed > 0) followerTarget.GameState.FireFollowerHealthChanges(followerTarget, amountHealed);
         }
         else if (playerTarget != null)
         {
@@ -47,7 +53,7 @@ public class HealAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new ChangeStatsAnimation(this, target, 0, amountHealed)
+            new ChangeStatsAnimation(this, target, attackChange, amountHealed)
             //new SummonFollowerAnimation(this)
         };
         return animationActions;

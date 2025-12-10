@@ -1368,19 +1368,10 @@ public class Amazon : Follower
     {
         base.SetupInnateEffects();
 
-        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
-        customEffectDef.ApplyInstanceAction = CustomEffectAction;
-        InnateEffects.Add(customEffectDef);
     }
     private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        GiveFollowerStaticEffectInstance newEffectInstance2 = new GiveFollowerStaticEffectInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnEnter);
-        newEffectInstance2.Init(EffectTarget.AdjacentAllies, StaticEffect.Sprint);
-        effectDef.EffectInstances.Add(newEffectInstance2);
 
-        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnEnter);
-        newEffectInstance.Init(2, 0, EffectTarget.AdjacentAllies);
-        effectDef.EffectInstances.Add(newEffectInstance);
 
     }
 }
@@ -3853,7 +3844,7 @@ public class PriceOfProfit : Spell
 
         if (target is not Follower followerTarget) return;
 
-        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget);
+        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget, true);
         Owner.GameState.ActionHandler.AddAction(killAction);
 
         ChangeResourceAction action = new ChangeResourceAction(Owner, OfferingType.Gold, 1);
@@ -3902,7 +3893,7 @@ public class PriceOfKnowledge : Spell
 
         if (target is not Follower followerTarget) return;
 
-        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget);
+        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget, true);
         Owner.GameState.ActionHandler.AddAction(killAction);
 
         DrawCardAction action = new DrawCardAction(Owner, Owner, 2);
@@ -3955,7 +3946,7 @@ public class PriceOfInspiration : Spell
         ChangePlayerHealthAction payLifeAction = new ChangePlayerHealthAction(Owner, Owner, -followerHealth);
         Owner.GameState.ActionHandler.AddAction(payLifeAction, true);
 
-        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget);
+        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget, true);
         Owner.GameState.ActionHandler.AddAction(killAction);
 
         DrawCardAction action = new DrawCardAction(Owner, Owner, followerHealth);
@@ -4008,7 +3999,7 @@ public class PriceOfWealth : Spell
         ChangePlayerHealthAction payLifeAction = new ChangePlayerHealthAction(Owner, Owner, -followerAttack);
         Owner.GameState.ActionHandler.AddAction(payLifeAction, true);
 
-        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget);
+        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget, true);
         Owner.GameState.ActionHandler.AddAction(killAction);
 
         ChangeResourceAction action = new ChangeResourceAction(Owner, OfferingType.Gold, followerAttack);
@@ -4057,7 +4048,7 @@ public class PriceOfReprisal : Spell
 
         if (target is not Follower followerTarget) return;
 
-        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget);
+        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget, true);
         Owner.GameState.ActionHandler.AddAction(killAction);
 
         int followerAttack = followerTarget.CurrentAttack;
@@ -4107,7 +4098,7 @@ public class PriceOfRenewal : Spell
 
         if (target is not Follower followerTarget) return;
 
-        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget);
+        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget, true);
         Owner.GameState.ActionHandler.AddAction(killAction);
 
         int lifeGain = followerTarget.GetCurrentAttack() + followerTarget.CurrentHealth;
@@ -4161,7 +4152,7 @@ public class PriceOfLegacy : Spell
         ChangePlayerHealthAction payLifeAction = new ChangePlayerHealthAction(Owner, Owner, -followerAttack);
         Owner.GameState.ActionHandler.AddAction(payLifeAction, true);
 
-        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget);
+        KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget, true);
         Owner.GameState.ActionHandler.AddAction(killAction);
 
         for (int i = 0; i < followerAttack; i++)

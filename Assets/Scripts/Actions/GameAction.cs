@@ -18,12 +18,25 @@ public abstract class GameAction
                 LogAction();
                 if (!successful) Debug.LogWarning("This Action Failed");
             }
+
+            AddToPlayHistory();
         }
     }
 
     public virtual void LogAction()
     {
 
+    }
+
+    private void AddToPlayHistory()
+    {
+        PlayHistoryItem playHistoryItem = MakePlayHistoryItem();
+        if (playHistoryItem != null) Controller.Instance.PlayHistoryHandler.AddPlayHistoryEntry(playHistoryItem);
+    }
+
+    public virtual PlayHistoryItem MakePlayHistoryItem()
+    {
+        return null;
     }
 
     //public void AddAnimationAction(AnimationAction action)

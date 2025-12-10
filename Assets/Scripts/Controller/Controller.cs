@@ -15,10 +15,12 @@ public class Controller : MonoBehaviour
     public static int starterSeed = 1;
     public bool gamePaused = false;
 
-    public static bool ActionDebugMode = false;
+    public static bool ActionDebugMode = true;
     public static bool AnimationDebugMode = false;
-    public static bool AIDebugMode = false;
-    public static bool ShowCardIDs = false;
+    public static bool AIDebugMode = true;
+    public static bool ShowCardIDs = true;
+
+    public static bool BlitzMode = true;
 
 
     public CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
@@ -36,13 +38,15 @@ public class Controller : MonoBehaviour
     public Player Player1 = null;
     public Player Player2 = null;
 
-    public List<Card> PlayerDeckDefinition = new List<Card>();
-    public List<Follower> PlayerStartingBattleRow = new List<Follower>();
-    public Ritual PlayerMinorRitual = null;
-    public Ritual PlayerMajorRitual = null;
-    public int PlayerCardsPerTurn = 5;
+    public PlayerDetails HumanPlayerDetails;
 
-    public int PlayerStartingHealth = 0;
+    //public List<Card> PlayerDeckDefinition = new List<Card>();
+    //public List<Follower> PlayerStartingBattleRow = new List<Follower>();
+    //public Ritual PlayerMinorRitual = null;
+    //public Ritual PlayerMajorRitual = null;
+    //public int PlayerCardsPerTurn = 5;
+    //public int PlayerStartingHealth = 0;
+
 
 
     public Player CurrentPlayer
@@ -67,8 +71,11 @@ public class Controller : MonoBehaviour
     public CardRemovalRewardHandler CardRemovalRewardHandler;
     public StarterBundleHandler StarterBundleHandler;
     public TutorialHandler TutorialHandler;
-    public ProgressionHandler ProgressionHandler = new ProgressionHandler();
+    public ProgressionHandler ProgressionHandler;
     public ViewCardScroller DeckViewer;
+    public TextHandler TextHandler = new TextHandler();
+    public PlayHistoryHandler PlayHistoryHandler = new PlayHistoryHandler();
+    public ViewPlayHistoryHandler ViewPlayHistoryHandler;
 
     private void Awake()
     {
@@ -137,6 +144,8 @@ public class Controller : MonoBehaviour
     {
         if (isGameSetup) return;
 
+        ProgressionHandler = new ProgressionHandler();
+
         CardHandler.LoadCards();
 
         // This should be changed. We shouldn't save "PlayerStartingHealth" we should be saving PlayerDetails which stores everything
@@ -145,12 +154,14 @@ public class Controller : MonoBehaviour
             Player1 = new HumanPlayer();
             ProgressionHandler.DeckName playerDeckName = IsTestChamber ? ProgressionHandler.DeckName.TestPlayer : ProgressionHandler.DeckName.PlayerStarterDeck;
             ProgressionHandler.LoadPlayer(Player1, playerDeckName);
-            PlayerStartingHealth = Player1.StartingHealth;
-            PlayerDeckDefinition = Player1.DeckBlueprint;
-            PlayerStartingBattleRow = ProgressionHandler.GetPlayerStartingFollowers(playerDeckName);
-            PlayerMinorRitual = Player1.MinorRitual;
-            PlayerMajorRitual = Player1.MajorRitual;
-            PlayerCardsPerTurn = Player1.CardsPerTurn;
+            HumanPlayerDetails = Player1.PlayerDetails;
+
+            //PlayerStartingHealth = Player1.StartingHealth;
+            //PlayerDeckDefinition = Player1.DeckBlueprint;
+            //PlayerStartingBattleRow = ProgressionHandler.GetPlayerStartingFollowers(playerDeckName);
+            //PlayerMinorRitual = Player1.MinorRitual;
+            //PlayerMajorRitual = Player1.MajorRitual;
+            //PlayerCardsPerTurn = Player1.CardsPerTurn;
         }
 
         Player1 = new HumanPlayer();
@@ -177,14 +188,8 @@ public class Controller : MonoBehaviour
         Player1.AttachToGameState(CanonGameState);
         Player2.AttachToGameState(CanonGameState);
 
-        List<Card> playerDeckCopy = new List<Card>(PlayerDeckDefinition);
-        //Player1.PlayerDetails.StartingBattleRow = PlayerDeckDefinition.
-        Player1.DeckBlueprint = playerDeckCopy;
-        Player1.StartingHealth = ProgressionHandler.GetPlayerHealth();
-        Player1.CardsPerTurn = PlayerCardsPerTurn;
-        Player1.PlayerDetails.StartingBattleRow = PlayerStartingBattleRow;
-        if (PlayerMinorRitual != null) Player1.MinorRitual = PlayerMinorRitual.MakeBaseCopy();
-        if (PlayerMajorRitual != null) Player1.MajorRitual = PlayerMajorRitual.MakeBaseCopy();
+        Player1.LoadDetails(HumanPlayerDetails, 0);
+
         Player1.Init(0);
 
         ProgressionHandler.LoadEnemy(Player2);
@@ -192,6 +197,9 @@ public class Controller : MonoBehaviour
         Player2.Init(1);
 
         View.Instance.Setup();
+
+        Player1.ApplyTrinketBuffs();
+        Player2.ApplyTrinketBuffs();
 
         // Load Starting BattleRow
         LoadStartingBattleRow();
@@ -277,7 +285,7 @@ public class Controller : MonoBehaviour
     {
         GameField.SetActive(false);
         CardRemovalRewardHandler.gameObject.SetActive(true);
-        CardRemovalRewardHandler.Load(PlayerDeckDefinition);
+        CardRemovalRewardHandler.Load(HumanPlayerDetails.DeckBlueprint[0]);
         //ScreenHandler.Instance.ShowScreen(ScreenName.Blank, true, false);
         ScreenHandler.Instance.ShowScreen(ScreenName.CardRemovalRewards);
     }
@@ -285,7 +293,7 @@ public class Controller : MonoBehaviour
     {
         GameField.SetActive(false);
         RitualRewardHandler.gameObject.SetActive(true);
-        RitualRewardHandler.Load(ProgressionHandler.CurrentLevel, PlayerMajorRitual, PlayerMinorRitual);
+        RitualRewardHandler.Load(ProgressionHandler.CurrentLevel, HumanPlayerDetails.MajorRituals[0], HumanPlayerDetails.MinorRituals[0]);
         ScreenHandler.Instance.ShowScreen(ScreenName.RitualRewards);
     }
     public void GoToCardGainRewardScreen()
@@ -367,24 +375,28 @@ public class Controller : MonoBehaviour
 
     public void AddCardsToPlayerDeck(List<Card> cards)
     {
-        PlayerDeckDefinition.AddRange(cards);
+        HumanPlayerDetails.DeckBlueprint[0].AddRange(cards);
     }
     public void SetRituals(Ritual topRitual, Ritual bottomRitual)
     {
-        PlayerMajorRitual = topRitual;
-        PlayerMinorRitual = bottomRitual;
+        HumanPlayerDetails.MajorRituals[0] = topRitual;
+        HumanPlayerDetails.MinorRituals[0] = bottomRitual;
+    }
+    public void AddTrinket(Trinket trinket)
+    {
+        HumanPlayerDetails.Trinkets.Add(trinket);
     }
     public void RemoveCardsFromPlayerDeck(List<Card> cards)
     {
         foreach (Card card in cards)
         {
-            PlayerDeckDefinition.Remove(card);
+            HumanPlayerDetails.DeckBlueprint[0].Remove(card);
         }
     }
 
     private void LoadStartingBattleRow()
     {
-        foreach (Follower follower in Player1.PlayerDetails.StartingBattleRow)
+        foreach (Follower follower in Player1.StartingBattleRow)
         {
             int index = Player1.BattleRow.Followers.Count;
             follower.Init(Player1);
@@ -393,7 +405,7 @@ public class Controller : MonoBehaviour
             Player1.GameState.ActionHandler.AddAction(newAction);
         }
 
-        foreach (Follower follower in Player2.PlayerDetails.StartingBattleRow)
+        foreach (Follower follower in Player2.StartingBattleRow)
         {
             int index = Player2.BattleRow.Followers.Count;
             follower.Init(Player2);
@@ -428,7 +440,7 @@ public class Controller : MonoBehaviour
     public void LoadDeckViewer()
     {
         DeckViewer.gameObject.SetActive(true);
-        List<Card> playerDeck = new List<Card>(PlayerDeckDefinition);
+        List<Card> playerDeck = new List<Card>(HumanPlayerDetails.DeckBlueprint[0]);
 
         // Sort by Gold cost, then by type (Followers before Spells)
         playerDeck.Sort((a, b) =>
@@ -455,5 +467,44 @@ public class Controller : MonoBehaviour
     {
         //return 1; // For consistent testing
         return UnityEngine.Random.Range(0, 1000);
+    }
+
+    public void TogglePlayHistory()
+    {
+        if (ViewPlayHistoryHandler.gameObject.activeSelf)
+        {
+            HidePlayHistory();
+        }
+        else
+        {
+            LoadPlayHistory();
+        }
+    }
+    public void LoadPlayHistory()
+    {
+        ViewPlayHistoryHandler.gameObject.SetActive(true);
+        //List<Card> playerDeck = new List<Card>(HumanPlayerDetails.DeckBlueprint[0]);
+
+        //// Sort by Gold cost, then by type (Followers before Spells)
+        //playerDeck.Sort((a, b) =>
+        //{
+        //    int costCompare = a.Costs[OfferingType.Gold].CompareTo(b.Costs[OfferingType.Gold]);
+        //    if (costCompare != 0)
+        //        return costCompare;
+
+        //    // Followers before Spells
+        //    bool aIsFollower = a is Follower;
+        //    bool bIsFollower = b is Follower;
+        //    if (aIsFollower && !bIsFollower) return -1;
+        //    if (!aIsFollower && bIsFollower) return 1;
+        //    return 0;
+        //});
+        List<PlayHistoryItem> items = PlayHistoryHandler.GetPlayHistoryItems(); // new List<PlayHistoryItem>();
+        ViewPlayHistoryHandler.Load(items);
+    }
+    public void HidePlayHistory()
+    {
+        ViewPlayHistoryHandler.Exit();
+        ViewPlayHistoryHandler.gameObject.SetActive(false);
     }
 }

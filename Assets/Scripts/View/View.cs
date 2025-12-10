@@ -27,6 +27,7 @@ public class View : MonoBehaviour
     public ViewPlayer Player1;
     public ViewPlayer Player2;
 
+    public ViewDiscard ViewDiscard;
 
     public SelectionHandler SelectionHandler;
     public SequenceHandler SequenceHandler;
@@ -363,22 +364,22 @@ public class View : MonoBehaviour
         return animationObject;
     }
 
-    public void DrawCard(Card card)
-    {
-        //Debug.LogError(card.Owner.GetName() + " draws: " + card.GetName());
-        ViewCard viewCard = MakeNewViewCard(card);
+    //public void DrawCard(Card card)
+    //{
+    //    //Debug.LogError(card.Owner.GetName() + " draws: " + card.GetName());
+    //    ViewCard viewCard = MakeNewViewCard(card);
 
-        if (card == null || card.Owner == null)
-        {
-            Debug.LogError("Failed to make and draw ViewCard");
-        }
+    //    if (card == null || card.Owner == null)
+    //    {
+    //        Debug.LogError("Failed to make and draw ViewCard");
+    //    }
 
-        if (viewCard != null)
-        {
-            ViewHandHandler handHandler = card.Owner.IsHuman ? Player1.HandHandler : Player2.HandHandler;
-            handHandler.MoveCardToHand(viewCard);
-        }
-    }
+    //    if (viewCard != null)
+    //    {
+    //        ViewHandHandler handHandler = card.Owner.IsHuman ? Player1.HandHandler : Player2.HandHandler;
+    //        handHandler.MoveCardToHand(viewCard);
+    //    }
+    //}
 
 
     public void DiscardCard(Card card)
@@ -462,9 +463,9 @@ public class View : MonoBehaviour
         foreach (PlayerEffect playerEffect in Player1.Player.PlayerEffects)
         {
             ViewPlayer effectTarget = Player1;
-            if (playerEffect is RitualPlayerEffect ritualPlayerEffect)
+            if (playerEffect is StaticPlayerEffect ritualPlayerEffect)
             {
-                effectTarget = ritualPlayerEffect.Target == Player1.Player ? Player1 : Player2;
+                effectTarget = ritualPlayerEffect.TargetPlayer == Player1.Player ? Player1 : Player2;
             }
             effectTarget.AddBuff(playerEffect);
         }
@@ -472,9 +473,9 @@ public class View : MonoBehaviour
         foreach (PlayerEffect playerEffect in Player2.Player.PlayerEffects)
         {
             ViewPlayer effectTarget = Player2;
-            if (playerEffect is RitualPlayerEffect ritualPlayerEffect)
+            if (playerEffect is StaticPlayerEffect ritualPlayerEffect)
             {
-                effectTarget = ritualPlayerEffect.Target == Player1.Player ? Player1 : Player2;
+                effectTarget = ritualPlayerEffect.TargetPlayer == Player1.Player ? Player1 : Player2;
             }
             effectTarget.AddBuff(playerEffect);
         }

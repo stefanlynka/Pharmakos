@@ -47,7 +47,7 @@ public class AnimationHandler
     {
         if (AnimationActionQueue.Count == 0)
         {
-            Controller.Instance.CheckForPlayerDeath();
+            if (!IsAnimating) Controller.Instance.CheckForPlayerDeath();
             return;
         }
 

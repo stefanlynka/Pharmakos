@@ -428,7 +428,7 @@ public class AIPlayer : Player
             utility += follower.InherentValue;
         }
         utility += thisPlayer.Health;
-        utility += thisPlayer.PlayerEffects.Count * 5;
+        utility += thisPlayer.PlayerEffects.Count * 15;
 
         // Negative utility
         Player otherPlayer = gameState.GetOtherPlayer(gameState.AI.PlayerID);

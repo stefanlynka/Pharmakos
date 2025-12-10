@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static Unity.VisualScripting.Member;
-using static UnityEngine.GraphicsBuffer;
 
 public class PlaySpellAction : GameAction
 {
     public Player Owner;
     public Spell Spell;
+    public ITarget Target;
 
     private float showSpellDuration = 1f;
 
-    public PlaySpellAction(Player owner, Spell spell)
+    public PlaySpellAction(Player owner, Spell spell, ITarget target)
     {
         Owner = owner;
         Spell = spell;
+        Target = target;
     }
 
     public override GameAction DeepCopy(Player newOwner)
@@ -56,5 +56,19 @@ public class PlaySpellAction : GameAction
 
         return animationActions;
     }
-
+    public override void LogAction()
+    {
+        if (Target != null)
+        {
+            Debug.LogWarning(Spell.Owner.GetName() + " played " + Spell.GetName() + " targeting " + Target.GetName());
+        }
+        else
+        {
+            Debug.LogWarning(Spell.Owner.GetName() + " played " + Spell.GetName());
+        }
+    }
+    public override PlayHistoryItem MakePlayHistoryItem()
+    {
+        return new PlaySpellPlayHistory(Spell.Owner, Spell, Target);
+    }
 }

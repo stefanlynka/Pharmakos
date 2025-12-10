@@ -62,10 +62,10 @@ public class ViewFollower : ViewCard
         //HealthText.text = Follower.CurrentHealth.ToString();
     }
 
-    public void ShowCurrentStats()
+    public void ShowMaxStats()
     {
         attack = Follower.GetCurrentAttack();
-        health = Follower.CurrentHealth;
+        health = Follower.MaxHealth;
 
         AttackText.text = attack.ToString();
         HealthText.text = health.ToString();

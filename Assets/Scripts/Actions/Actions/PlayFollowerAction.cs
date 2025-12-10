@@ -45,4 +45,8 @@ public class PlayFollowerAction : GameAction
     {
         Debug.LogWarning(Follower.Owner.GetName() + " played " + Follower.GetName());
     }
+    public override PlayHistoryItem MakePlayHistoryItem()
+    {
+        return new PlayFollowerPlayHistory(Follower.Owner, Follower);
+    }
 }

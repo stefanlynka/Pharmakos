@@ -41,9 +41,18 @@ public class ViewHandHandler : MonoBehaviour
 
     public void MoveCardToHand(ViewCard viewCard)
     {
+        
+        if (viewCard.Card.Owner.IsHuman != IsHuman)
+        {
+            if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+            Debug.LogError("Card Added to wrong hand!");
+        }
         viewCard.transform.SetParent(transform, false);
         ViewCards.Add(viewCard);
-        viewCard.OnClick = CardInHandClicked;
+        if (viewCard.Card.Owner.IsHuman)
+        {
+            viewCard.OnClick = CardInHandClicked;
+        }
         //RefreshPositions();
         viewCard.transform.localScale = Scale;
     }
@@ -54,6 +63,7 @@ public class ViewHandHandler : MonoBehaviour
         {
             if (card.Card.ID == viewCard.Card.ID)
             {
+                card.OnClick = null;
                 ViewCards.Remove(card);
                 RefreshPositions();
                 return;
@@ -72,15 +82,17 @@ public class ViewHandHandler : MonoBehaviour
 
         float spacing = Mathf.Min(MaxSpacing, (HandWidth - CardWidth * cardCount) / cardCount);
 
+        bool selectingTarget = View.Instance.SelectionHandler.IsSelectingTarget();
+
         bool skipHighlighting = false;
         if (!IsHuman) skipHighlighting = true;
-        else if (View.Instance.SelectionHandler.IsHoldingCard()) skipHighlighting = true;
+        else if (selectingTarget) skipHighlighting = true;
 
         for (int i = 0; i < ViewCards.Count; i++)
         {
             ViewCard viewCard = ViewCards[i];
             Vector3 newPos = new Vector3(CardWidth / 2 + CardWidth * i + spacing * i, CardY, CardZ - CardZOffset * i);
-            if (View.Instance.CurrentHover == viewCard)
+            if (View.Instance.CurrentHover == viewCard && !selectingTarget)
             {
                 viewCard.transform.localScale = HighlightScaleVector;
 

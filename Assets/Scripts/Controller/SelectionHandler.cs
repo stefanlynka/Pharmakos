@@ -69,6 +69,7 @@ public class SelectionHandler
     }
     private void HandleMouseInputs()
     {
+        if (!Controller.Instance.Player1.IsMyTurn) return;
         if (Input.GetMouseButtonDown(0))
         {
             if (CurrentHover == null)
@@ -127,7 +128,7 @@ public class SelectionHandler
             return;
         }
         ViewCard viewCard = target as ViewCard;
-        if (viewCard == null || !viewCard.Card.CanPlay()) return;
+        if (viewCard == null) return;
 
         ViewFollower viewFollower = target as ViewFollower;
         ViewSpell viewSpell = target as ViewSpell;
@@ -139,16 +140,20 @@ public class SelectionHandler
             HeldCard.transform.localScale = HeldScale;
             View.Instance.Player1.HandHandler.RemoveCard(HeldCard);
         }
-        else if (viewSpell != null && viewSpell.Spell.HasPlayableTargets())
+        else if (viewSpell != null)
         {
             timeSinceCardInHandPickedUp = 0;
             HeldCard = viewSpell;
             //viewSpell.SetHighlight(true);
-            viewSpell.EnterTargetMode();
+            // Only enter target mode if spell can be played and has legal targets
+            if (viewSpell.Spell.CanPlay() && viewSpell.Spell.HasPlayableTargets())
+            {
+                viewSpell.EnterTargetMode();
+                CurrentTargets = viewSpell.Spell.GetTargets();
+                View.Instance.HighlightTargets(CurrentTargets);
+            }
             HeldCard.transform.localScale = HeldScale;
             View.Instance.Player1.HandHandler.RemoveCard(HeldCard);
-            CurrentTargets = viewSpell.Spell.GetTargets();
-            View.Instance.HighlightTargets(CurrentTargets);
         }
     }
 
@@ -199,9 +204,25 @@ public class SelectionHandler
     private void DropHeldCard()
     {
         ViewFollower viewFollower = HeldCard as ViewFollower;
-        if (viewFollower != null && View.Instance.Player1.BattleRow.IsMouseOverThis())
+        ViewSpell viewSpell = HeldCard as ViewSpell;
+
+        // Check if card is being dropped over ViewDiscard
+        if (View.Instance.ViewDiscard != null && View.Instance.ViewDiscard.IsMouseOverThis() && HeldCard != null && HeldCard.Card != null)
         {
-            // Try place on battlefield
+            // If it's a spell, exit target mode
+            if (viewSpell != null) viewSpell.EnterCardMode();
+
+            // Discard the card using DiscardCardAction
+            Controller.Instance.Player1.TryDiscardCard(HeldCard.Card);
+            HeldCard.SetHighlight(false);
+            CurrentHover = null;
+            HeldCard = null;
+            CurrentTargets.Clear();
+            return;
+        }
+        else if (viewFollower != null && View.Instance.Player1.BattleRow.IsMouseOverThis())
+        {
+            // Check if card is being dropped over battlefield
             int placementIndex = View.Instance.Player1.BattleRow.GetPlacementIndex();
             Controller.Instance.Player1.TryPlayFollower(viewFollower.Follower, placementIndex);
             //viewFollower = View.Instance
@@ -210,8 +231,8 @@ public class SelectionHandler
         else
         {
             bool foundTarget = false;
-
-            ViewSpell viewSpell = HeldCard as ViewSpell;
+            // Check if card is a spell being dropped on a valid target
+            
             if (viewSpell != null)
             {
                 viewSpell.EnterCardMode();
@@ -275,9 +296,13 @@ public class SelectionHandler
 
         return false;
     }
-    public bool IsHoldingCard()
+    public bool IsSelectingTarget()
     {
         return HeldCard != null || AttackingFollower != null || SelectedRitual != null;
+    }
+    public bool IsHoldingCard()
+    {
+        return HeldCard != null;
     }
     public bool IsHoldingFollower()
     {

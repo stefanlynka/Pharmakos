@@ -16,7 +16,29 @@ public class ViewRitual : ViewTarget
 
     public MeshRenderer Highlight;
 
+    public GameObject SummaryObject;
+    public TextMeshPro SummaryText;
 
+    // This function is called when the mouse enters the Collider.
+    void OnMouseEnter()
+    {
+        if (SummaryObject != null && Ritual != null && Ritual.ReminderText != string.Empty)
+        {
+            // Show the Summary
+            SummaryObject.SetActive(true);
+            // Show ReminderText
+            SummaryText.text = Controller.Instance.TextHandler.ProcessText(Ritual.ReminderText);
+        }
+    }
+
+    // This function is called when the mouse exits the Collider.
+    void OnMouseExit()
+    {
+        if (SummaryObject != null)
+        {
+            SummaryObject.SetActive(false); // Disable the GameObject.
+        }
+    }
     public void Init(Ritual ritual, bool clickable = true)
     {
         Ritual = ritual;
@@ -42,10 +64,10 @@ public class ViewRitual : ViewTarget
         Title.text = Ritual.Name;
         Description.text = Ritual.Description;
 
-        BloodText.text = Ritual.Costs[OfferingType.Blood].ToString();
-        BonesText.text = Ritual.Costs[OfferingType.Bone].ToString();
-        CropsText.text = Ritual.Costs[OfferingType.Crop].ToString();
-        ScrollsText.text = Ritual.Costs[OfferingType.Scroll].ToString();
+        BloodText.text = Ritual.GetCost(OfferingType.Blood).ToString();
+        BonesText.text = Ritual.GetCost(OfferingType.Bone).ToString();
+        CropsText.text = Ritual.GetCost(OfferingType.Crop).ToString();
+        ScrollsText.text = Ritual.GetCost(OfferingType.Scroll).ToString();
     }
 
     public void SetHighlight(bool active)

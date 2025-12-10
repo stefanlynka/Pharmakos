@@ -29,118 +29,174 @@ public class ProgressionHandler
     public int CurrentPool { get { return Mathf.CeilToInt(CurrentLevel / 3f); } }
 
     public Dictionary<DeckName, PlayerDetails> DetailsByDeckName = new Dictionary<DeckName, PlayerDetails>();
-    public Dictionary<int, List<DeckName>> EnemyPools = new Dictionary<int, List<DeckName>>();
+    //public Dictionary<int, List<DeckName>> EnemyPools = new Dictionary<int, List<DeckName>>();
+
+    public List<DeckName> EnemyPool = new List<DeckName>();
+    public List<DeckName> BossPool = new List<DeckName>();
 
     List<Ritual> ritualRewards = new List<Ritual>();
 
     List<StarterBundle> starterBundles = new List<StarterBundle>();
+
+    List<Trinket> availableTrinkets = new List<Trinket>();
 
     public ProgressionHandler()
     {
         DetailsByDeckName[DeckName.TestEnemy] = new PlayerDetails
         {
             IsEnemy = true,
+            IsFightableEnemy = false,
             BaseHealth = 100,
-            Pool = 0,
-            MinorRitual = null,
-            MajorRitual = null, //new HadesMajor(),
-            DeckBlueprint = new List<Card>
+            Pool = 1,
+            PortraitName = "Underworld",
+            MinorRituals = new Dictionary<int, Ritual>
             {
-                new Peltast(),
-                //new WallOfTroy(),
-                //new Satyr(),
-                //new Satyr(),
-                //new Satyr(),
+                [1] = null
             },
-            StartingBattleRow = new List<Follower>
+            MajorRituals = new Dictionary<int, Ritual>
             {
-                //new Rat(),
-                new Rat(),
-                //new Rat(),
-                //new Corridor(),
-                //new Corridor(),
-                //new Rat(),
-                //new Peltast(),
+                [1] = null
+            },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [1] = new List<Card>
+                {
+                    new Hoplite(),
+                }
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [1] = new List<Follower>
+                {
+                    new Rat(),
+                    new Rat(),
+                    new Rat(),
+                }
             }
         };
         DetailsByDeckName[DeckName.TestPlayer] = new PlayerDetails
         {
             IsEnemy = false,
+            IsFightableEnemy = false,
             BaseHealth = 100,
             CardsPerTurn = 5,
             GoldPerTurn = 5,
             Pool = 0,
-            MinorRitual = new AthenaMajor(), //new AphroditeMajor(),
-            MajorRitual = new HephaestusMajor(), // new HephaestusMajor(), //new HadesMajor(),
-            DeckBlueprint = new List<Card>
+            PortraitName = "Player",
+            MinorRituals = new Dictionary<int, Ritual>
             {
-                //new DevKill(),
-                new Blessing(),
-                new Blessing(),
-                new Talaria(),
-                new Blessing(),
-                new Endymion(),
-                //new Restoration(),
-                //new Blessing(),
-                //new PriceOfLegacy(),
-                ////new Panic(),
-                //new DevKill(),
+                [0] = new HephaestusMajor(),
             },
-            StartingBattleRow = new List<Follower>
+            MajorRituals = new Dictionary<int, Ritual>
             {
-                new Ekdromos(),
-                new MareOfDiomedes(),
-                new Peltast(),
-                //new Peltast(),
-                //new Chariot(),
-                //new Podalirius(),
-                //new Ekdromos(),
-                //new Chariot(),
+                [0] = null,
+            },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [0] = new List<Card>
+                {
+                    //new DevKill(),
+                    new Smite(),
+                    new Blessing(),
+                    new Talaria(),
+                    new Blessing(),
+                    new Endymion(),
+                    new Smite(),
+                    new Blessing(),
+                    new Talaria(),
+                    new Blessing(),
+                    new Endymion(),
+                     new Smite(),
+                    new Blessing(),
+                    new Talaria(),
+                    new Blessing(),
+                    new Endymion(),
+                    new Smite(),
+                    new Blessing(),
+                    new Talaria(),
+                    new Blessing(),
+                    new Endymion(),
+                     new Smite(),
+                    new Blessing(),
+                    new Talaria(),
+                    new Blessing(),
+                    new Endymion(),
+                    new Smite(),
+                    new Blessing(),
+                    new Talaria(),
+                    new Blessing(),
+                    new Endymion(),
+                     new Smite(),
+                    new Blessing(),
+                    new Talaria(),
+                    new Blessing(),
+                    new Endymion(),
+                    new Smite(),
+                    new Blessing(),
+                    new Talaria(),
+                    new Blessing(),
+                    new Endymion(),
+                     new Smite(),
+                    new Blessing(),
+                    new Talaria(),
+                    new Blessing(),
+                    new Endymion(),
+                    new Smite(),
+                    new Blessing(),
+                    new Talaria(),
+                    new Blessing(),
+                    new Endymion(),
+                },
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [0] = new List<Follower>
+                {
+                    new Ekdromos(),
+                    new Icarus(),
+                    new Ekdromos(),
+                }
             }
         };
         
         DetailsByDeckName[DeckName.PlayerStarterDeck] = new PlayerDetails
         {
             IsEnemy = false,
+            IsFightableEnemy = false,
             BaseHealth = 10,
             Pool = 0,
-            MinorRitual = null,
-            MajorRitual = null,
-            DeckBlueprint = new List<Card>
+            GoldPerTurn = Controller.BlitzMode ? 4 : 3,
+            PortraitName = "Player",
+            MinorRituals = new Dictionary<int, Ritual>
             {
-                new Peltast(),
-                new Peltast(),
-                new Sheep(),
-                new Ekdromos(),
-                new Thureophoros(),
-                new Thureophoros(),
-                new Chariot(),
-                new Chariot(),
-                new Hippeis(),
-                new Hippeis(),
-                new Myrmidon(),
-                new PriceOfProfit(),
-                new PriceOfProfit(),
-                new Blessing(),
-                new Blessing(),
-
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
-                //new DevKill(),
+                [0] = null
+            },
+            MajorRituals = new Dictionary<int, Ritual>
+            {
+                [0] = null
+            },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [0] = new List<Card>
+                {
+                    new Peltast(),
+                    //new Peltast(),
+                    new Sheep(),
+                    new Ekdromos(),
+                    new Hoplite(),
+                    //new Thureophoros(),
+                    new Thureophoros(),
+                    new Chariot(),
+                    new Chariot(),
+                    new Hippeis(),
+                    new Hippeis(),
+                    new Myrmidon(),
+                    new PriceOfProfit(),
+                    new PriceOfProfit(),
+                    new Blessing(),
+                    new ThrowStone(),
+                    new Scry(),
+                }
             }
         };
 
@@ -148,36 +204,116 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 1,
-            GoldPerTurn = 2,
-            MinorRitual = null,
-            MajorRitual = null,
-            DeckBlueprint = new List<Card>
+            GoldPerTurn = Controller.BlitzMode ? 3 : 2,
+            PortraitName = "Cyclops",
+            MinorRituals = new Dictionary<int, Ritual>
             {
-                new Sheep(),
-                new Sheep(),
-                new Sheep(),
-                new Sheep(),
-                new Cyclops(),
-                new Cyclops(),
-                new Cyclops(),
-                new Cyclops(),
-                new Cyclops(),
-                new Cyclops(),
-                new Cyclops(),
-                new Cyclops(),
-                new Cyclops(),
-                new Cyclops(),
-                new Cyclops(),
-                new Cyclops(),
-                new Cyclops(),
-                //new PriceOfReprisal(),
-                new ThrowStone(),
-                new ThrowStone(),
-                new ThrowStone(),
+                [1] = null,
+                [2] = new ZeusMajor(),
+                [3] = new ZeusMajor(),
             },
-            StartingBattleRow = new List<Follower>
+            MajorRituals = new Dictionary<int, Ritual>
             {
-                new Cyclops(),
+                [1] = null,
+                [2] = null,
+                [3] = null,
+            },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [1] = new List<Card>
+                {
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    //new PriceOfReprisal(),
+                    new ThrowStone(),
+                    new ThrowStone(),
+                    new ThrowStone(),
+                },
+                [2] = new List<Card>
+                {
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    //new PriceOfReprisal(),
+                    new ThrowStone(),
+                    new ThrowStone(),
+                    new ThrowStone(),
+                },
+                [3] = new List<Card>
+                {
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    //new PriceOfReprisal(),
+                    new ThrowStone(),
+                    new ThrowStone(),
+                    new ThrowStone(),
+                }
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [1] = new List<Follower>
+                {
+                    new Cyclops(),
+                },
+                [2] = new List<Follower>
+                {
+                    new Sheep(),
+                    new Cyclops(),
+                    new Sheep(),
+                },
+                [3] = new List<Follower>
+                {
+                    new Sheep(),
+                    new Cyclops(),
+                    new Cyclops(),
+                    new Sheep(),
+                }
             },
             Rewards = new List<Card>
             {
@@ -193,41 +329,124 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 1,
-            GoldPerTurn = 2,
-            MinorRitual = null,
-            MajorRitual = null,
-            DeckBlueprint = new List<Card>
+            GoldPerTurn = Controller.BlitzMode ? 3 : 2,
+            PortraitName = "Bacchanalia",
+            MinorRituals = new Dictionary<int, Ritual>
             {
-                //new Pan(),
-                //new Boar(),
-                //new Boar(),
-                new Boar(),
-                new Satyr(),
-                new Satyr(),
-                new Satyr(),
-                new Satyr(),
-                new Satyr(),
-                new Maenad(),
-                new Maenad(),
-                new Maenad(),
-                new Maenad(),
-                new Maenad(),
-                new Panic(),
-                new Panic(),
-                new Panic(),
-                new Panic(),
-                new Panic(),
-                new Reverie(),
-                new Restoration(),
-                new Restoration(),
-                new Restoration(),
-                //new PriceOfRenewal(),
-                //new PriceOfRenewal(),
+                [1] = null,
+                [2] = new DionysusMinor(),
+                [3] = new DionysusMinor(),
             },
-            StartingBattleRow = new List<Follower>
+            MajorRituals = new Dictionary<int, Ritual>
             {
-                new Satyr(),
-                new Boar(),
+                [1] = null,
+                [2] = null,
+                [3] = null,
+            },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [1] = new List<Card>
+                {
+                    //new Pan(),
+                    //new Boar(),
+                    //new Boar(),
+                    new Boar(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Maenad(),
+                    new Maenad(),
+                    new Maenad(),
+                    new Maenad(),
+                    new Maenad(),
+                    new Panic(),
+                    new Panic(),
+                    new Panic(),
+                    new Panic(),
+                    new Panic(),
+                    new Reverie(),
+                    new Restoration(),
+                    new Restoration(),
+                    new Restoration(),
+                    //new PriceOfRenewal(),
+                    //new PriceOfRenewal(),
+                },
+                [2] = new List<Card>
+                {
+                    //new Pan(),
+                    //new Boar(),
+                    //new Boar(),
+                    new Boar(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Maenad(),
+                    new Maenad(),
+                    new Maenad(),
+                    new Maenad(),
+                    new Maenad(),
+                    new Panic(),
+                    new Panic(),
+                    new Panic(),
+                    new Panic(),
+                    new Panic(),
+                    new Reverie(),
+                    new Restoration(),
+                    new Restoration(),
+                    new Restoration(),
+                    //new PriceOfRenewal(),
+                    //new PriceOfRenewal(),
+                },
+                [3] = new List<Card>
+                {
+                    //new Pan(),
+                    //new Boar(),
+                    //new Boar(),
+                    new Boar(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Maenad(),
+                    new Maenad(),
+                    new Maenad(),
+                    new Maenad(),
+                    new Maenad(),
+                    new Panic(),
+                    new Panic(),
+                    new Panic(),
+                    new Panic(),
+                    new Panic(),
+                    new Reverie(),
+                    new Restoration(),
+                    new Restoration(),
+                    new Restoration(),
+                    //new PriceOfRenewal(),
+                    //new PriceOfRenewal(),
+                }
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [1] = new List<Follower>
+                {
+                    new Satyr(),
+                    new Boar(),
+                },
+                [2] = new List<Follower>
+                {
+                    new Satyr(),
+                    new Maenad(),
+                    new Satyr(),
+                },
+                [3] = new List<Follower>
+                {
+                    new Pan(),
+                }
             },
             Rewards = new List<Card>
             {
@@ -248,37 +467,110 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 1,
-            GoldPerTurn = 2,
-            MinorRitual = null,
-            MajorRitual = null,
-            DeckBlueprint = new List<Card>
+            GoldPerTurn = Controller.BlitzMode ? 3 : 2,
+            PortraitName = "Labyrinth",
+            MinorRituals = new Dictionary<int, Ritual>
             {
-                new Minotaur(),
-                new Minotaur(),
-                new Minotaur(),
-                new Corridor(),
-                new Corridor(),
-                new Corridor(),
-                new Corridor(),
-                new Corridor(),
-                new Corridor(),
-                new Rat(),
-                new Rat(),
-                new Rat(),
-                new Rat(),
-                new Rat(),
-                new Icarus(),
-                new Contraption(),
-                new Contraption(),
-                new Contraption(),
-                new Contraption(),
-                new Contraption(),
+                [1] = null,
+                [2] = new HephaestusMajor(),
+                [3] = new HephaestusMajor(),
             },
-            StartingBattleRow = new List<Follower>
+            MajorRituals = new Dictionary<int, Ritual>
             {
-                new Corridor(),
-                new Rat(),
-                //new Corridor(),
+                [1] = null,
+                [2] = null,
+                [3] = null,
+            },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [1] = new List<Card>
+                {
+                    new Minotaur(),
+                    new Minotaur(),
+                    new Minotaur(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Rat(),
+                    new Rat(),
+                    new Rat(),
+                    new Rat(),
+                    new Rat(),
+                    new Icarus(),
+                    new Contraption(),
+                    new Contraption(),
+                    new Contraption(),
+                    new Contraption(),
+                    new Contraption(),
+                },
+                [2] = new List<Card>
+                {
+                    new Minotaur(),
+                    new Minotaur(),
+                    new Minotaur(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Rat(),
+                    new Rat(),
+                    new Rat(),
+                    new Rat(),
+                    new Rat(),
+                    new Icarus(),
+                    new Contraption(),
+                    new Contraption(),
+                    new Contraption(),
+                    new Contraption(),
+                    new Contraption(),
+                },
+                [3] = new List<Card>
+                {
+                    new Minotaur(),
+                    new Minotaur(),
+                    new Minotaur(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Corridor(),
+                    new Rat(),
+                    new Rat(),
+                    new Rat(),
+                    new Rat(),
+                    new Rat(),
+                    new Icarus(),
+                    new Contraption(),
+                    new Contraption(),
+                    new Contraption(),
+                    new Contraption(),
+                    new Contraption(),
+                }
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [1] = new List<Follower>
+                {
+                    new Corridor(),
+                    new Rat(),
+                    //new Corridor(),
+                },
+                [2] = new List<Follower>
+                {
+                    new Minotaur(),
+                },
+                [3] = new List<Follower>
+                {
+                    new Corridor(),
+                    new Minotaur(),
+                    new Corridor(),
+                }
             },
             Rewards = new List<Card>
             {
@@ -297,37 +589,114 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 2,
-            MinorRitual = null,
-            MajorRitual = null,
-            // This one has to be conditional
-            DeckBlueprint = new List<Card>
+            GoldPerTurn = Controller.BlitzMode ? 4 : 3,
+            PortraitName = "Troy",
+            MinorRituals = new Dictionary<int, Ritual>
             {
-                new WallOfTroy(),
-                new WallOfTroy(),
-                new WallOfTroy(),
-                new WallOfTroy(),
-                new Toxotes(),
-                new Toxotes(),
-                new Toxotes(),
-                new Toxotes(),
-                new Toxotes(),
-                new Hoplite(),
-                new Hoplite(),
-                new Ekdromos(),
-                new Ekdromos(),
-                new Hippeis(),
-                new Hippeis(),
-                new Chariot(),
-                new Hector(),
-                new Paris(),
-                new Sarpedon(),
-                new Cassandra(),
+                [1] = null,
+                [2] = new AresMajor(),
+                [3] = new AresMajor(),
             },
-            StartingBattleRow = new List<Follower>
+            MajorRituals = new Dictionary<int, Ritual>
             {
-                new WallOfTroy(),
-                new Toxotes(),
-                new WallOfTroy(),
+                [1] = null,
+                [2] = null,
+                [3] = null,
+            },
+            // This one has to be conditional
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [1] = new List<Card>
+                {
+                    new WallOfTroy(),
+                    new WallOfTroy(),
+                    new WallOfTroy(),
+                    new WallOfTroy(),
+                    new Toxotes(),
+                    new Toxotes(),
+                    new Toxotes(),
+                    new Toxotes(),
+                    new Toxotes(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Ekdromos(),
+                    new Ekdromos(),
+                    new Hippeis(),
+                    new Hippeis(),
+                    new Chariot(),
+                    new Hector(),
+                    new Paris(),
+                    new Sarpedon(),
+                    new Cassandra(),
+                },
+                [2] = new List<Card>
+                {
+                    new WallOfTroy(),
+                    new WallOfTroy(),
+                    new WallOfTroy(),
+                    new WallOfTroy(),
+                    new Toxotes(),
+                    new Toxotes(),
+                    new Toxotes(),
+                    new Toxotes(),
+                    new Toxotes(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Ekdromos(),
+                    new Ekdromos(),
+                    new Hippeis(),
+                    new Hippeis(),
+                    new Chariot(),
+                    new Hector(),
+                    new Paris(),
+                    new Sarpedon(),
+                    new Cassandra(),
+                },
+                [3] = new List<Card>
+                {
+                    new WallOfTroy(),
+                    new WallOfTroy(),
+                    new WallOfTroy(),
+                    new WallOfTroy(),
+                    new Toxotes(),
+                    new Toxotes(),
+                    new Toxotes(),
+                    new Toxotes(),
+                    new Toxotes(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Ekdromos(),
+                    new Ekdromos(),
+                    new Hippeis(),
+                    new Hippeis(),
+                    new Chariot(),
+                    new Hector(),
+                    new Paris(),
+                    new Sarpedon(),
+                    new Cassandra(),
+                }
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [1] = new List<Follower>
+                {
+                    new WallOfTroy(),
+                    new Toxotes(),
+                    new WallOfTroy(),
+                },
+                [2] = new List<Follower>
+                {
+                    new WallOfTroy(),
+                    new Toxotes(),
+                    new Toxotes(),
+                    new WallOfTroy(),
+                },
+                [3] = new List<Follower>
+                {
+                    new WallOfTroy(),
+                    new Achilles(),
+                    new WallOfTroy(),
+                }
             },
             Rewards = new List<Card>
             {
@@ -355,36 +724,112 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 2,
-            MinorRitual = null,
-            MajorRitual = null,
-            DeckBlueprint = new List<Card>
+            GoldPerTurn = Controller.BlitzMode ? 4 : 3,
+            PortraitName = "Hunt",
+            MinorRituals = new Dictionary<int, Ritual>
             {
-                new Boar(),
-                new Boar(),
-                new Boar(),
-                new Chariot(),
-                new Chariot(),
-                new Hippeis(),
-                new Hippeis(),
-                new Hippeis(),
-                new Atalanta(),
-                new Endymion(),
-                new Hippolyta(),
-                new Melpomene(),
-                new Lightning(),
-                new Lightning(),
-                new ReleasePrey(),
-                new ReleasePrey(),
-                new ReleasePrey(),
-                new PriceOfWealth(),
-                new PriceOfWealth(),
-                new PriceOfWealth(),
+                [1] = null,
+                [2] = new AthenaMajor(), // TODO: Add ArtemisMajor. Whenever you cast a spell, summon a prey for target player
+                [3] = new AthenaMajor(),
             },
-            StartingBattleRow = new List<Follower>
+            MajorRituals = new Dictionary<int, Ritual>
             {
-                new Prey1(),
-                new Atalanta(),
-                new Prey2(),
+                [1] = null,
+                [2] = null,
+                [3] = null,
+            },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [1] = new List<Card>
+                {
+                    new Boar(),
+                    new Boar(),
+                    new Boar(),
+                    new Chariot(),
+                    new Chariot(),
+                    new Hippeis(),
+                    new Hippeis(),
+                    new Hippeis(),
+                    new Atalanta(),
+                    new Endymion(),
+                    new Hippolyta(),
+                    new Melpomene(),
+                    new Lightning(),
+                    new Lightning(),
+                    new ReleasePrey(),
+                    new ReleasePrey(),
+                    new ReleasePrey(),
+                    new PriceOfWealth(),
+                    new PriceOfWealth(),
+                    new PriceOfWealth(),
+                },
+                [2] = new List<Card>
+                {
+                    new Boar(),
+                    new Boar(),
+                    new Boar(),
+                    new Chariot(),
+                    new Chariot(),
+                    new Hippeis(),
+                    new Hippeis(),
+                    new Hippeis(),
+                    new Atalanta(),
+                    new Endymion(),
+                    new Hippolyta(),
+                    new Melpomene(),
+                    new Lightning(),
+                    new Lightning(),
+                    new ReleasePrey(),
+                    new ReleasePrey(),
+                    new ReleasePrey(),
+                    new PriceOfWealth(),
+                    new PriceOfWealth(),
+                    new PriceOfWealth(),
+                },
+                [3] = new List<Card>
+                {
+                    new Boar(),
+                    new Boar(),
+                    new Boar(),
+                    new Chariot(),
+                    new Chariot(),
+                    new Hippeis(),
+                    new Hippeis(),
+                    new Hippeis(),
+                    new Atalanta(),
+                    new Endymion(),
+                    new Hippolyta(),
+                    new Melpomene(),
+                    new Lightning(),
+                    new Lightning(),
+                    new ReleasePrey(),
+                    new ReleasePrey(),
+                    new ReleasePrey(),
+                    new PriceOfWealth(),
+                    new PriceOfWealth(),
+                    new PriceOfWealth(),
+                }
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [1] = new List<Follower>
+                {
+                    new Prey1(),
+                    new Boar(),
+                    new Prey2(),
+                },
+                [2] = new List<Follower>
+                {
+                    new Prey1(),
+                    new Atalanta(),
+                    new Prey2(),
+                },
+                [3] = new List<Follower>
+                {
+                    new Prey1(),
+                    new GoldenHind(),
+                    new Prey2(),
+                }
             },
             Rewards = new List<Card>
             {
@@ -404,37 +849,115 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 2,
-            MinorRitual = null,
-            MajorRitual = null,
-            DeckBlueprint = new List<Card>
+            GoldPerTurn = Controller.BlitzMode ? 4 : 3,
+            PortraitName = "SeasideCliffs",
+            MinorRituals = new Dictionary<int, Ritual>
             {
-                new Siren(),
-                new Siren(),
-                new Siren(),
-                new Siren(),
-                new Siren(),
-                new Nereid(),
-                new Nereid(),
-                new Nereid(),
-                new Nereid(),
-                new Nereid(),
-                new Nereid(),
-                new Nereid(),
-                new Scylla(),
-                new Charybdis(),
-                new Hydra(),
-                new Panic(),
-                new Panic(),
-                //new Panic(),
-                new PriceOfKnowledge(),
-                new PriceOfKnowledge(),
-                //new Drown(),
-                new Drown(),
+                [1] = null,
+                [2] = new PoseidonMinor(), // TODO: Add Poseidon Major (?) Summon Cetus/Nereid every time X?
+                [3] = new PoseidonMinor(),
             },
-            StartingBattleRow = new List<Follower>
+            MajorRituals = new Dictionary<int, Ritual>
             {
-                new Siren(),
-                new Siren(),
+                [1] = null,
+                [2] = null,
+                [3] = null,
+            },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [1] = new List<Card>
+                {
+                    new Siren(),
+                    new Siren(),
+                    new Siren(),
+                    new Siren(),
+                    new Siren(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Scylla(),
+                    new Charybdis(),
+                    new Hydra(),
+                    new Panic(),
+                    new Panic(),
+                    //new Panic(),
+                    new PriceOfKnowledge(),
+                    new PriceOfKnowledge(),
+                    //new Drown(),
+                    new Drown(),
+                },
+                [2] = new List<Card>
+                {
+                    new Siren(),
+                    new Siren(),
+                    new Siren(),
+                    new Siren(),
+                    new Siren(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Scylla(),
+                    new Charybdis(),
+                    new Hydra(),
+                    new Panic(),
+                    new Panic(),
+                    //new Panic(),
+                    new PriceOfKnowledge(),
+                    new PriceOfKnowledge(),
+                    //new Drown(),
+                    new Drown(),
+                },
+                [3] = new List<Card>
+                {
+                    new Siren(),
+                    new Siren(),
+                    new Siren(),
+                    new Siren(),
+                    new Siren(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Nereid(),
+                    new Scylla(),
+                    new Charybdis(),
+                    new Hydra(),
+                    new Panic(),
+                    new Panic(),
+                    //new Panic(),
+                    new PriceOfKnowledge(),
+                    new PriceOfKnowledge(),
+                    //new Drown(),
+                    new Drown(),
+                }
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [1] = new List<Follower>
+                {
+                    new Siren(),
+                    new Siren(),
+                },
+                [2] = new List<Follower>
+                {
+                    new Nereid(),
+                    new Nereid(),
+                },
+                [3] = new List<Follower>
+                {
+                    new Siren(),
+                    new Hydra(),
+                }
             },
             Rewards = new List<Card>
             {
@@ -454,36 +977,109 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 3,
-            MinorRitual = new OldOnesMinor(),
-            MajorRitual = null,
-            DeckBlueprint = new List<Card>
+            GoldPerTurn = Controller.BlitzMode ? 4 : 3,
+            PortraitName = "Caves",
+            MinorRituals = new Dictionary<int, Ritual>
             {
-                new Rat(),
-                new Rat(),
-                new Pytho(),
-                new Pytho(),
-                new Lamia(),
-                new Lamia(),
-                new Chimera(),
-                new Chimera(),
-                new Sphinx(),
-                new Sphinx(),
-                new Empusa(),
-                new Empusa(),
-                new Gorgon(),
-                new Gorgon(),
-                new Lightning(),
-                new Lightning(),
-                new Panic(),
-                new Panic(),
-                new PriceOfRenewal(),
-                new PriceOfRenewal(),
+                [1] = null,
+                [2] = new OldOnesMinor(),
+                [3] = new OldOnesMinor(),
             },
-            StartingBattleRow = new List<Follower>
+            MajorRituals = new Dictionary<int, Ritual>
             {
-                new Lamia(),
-                new Gorgon(),
-                new Lamia(),
+                [1] = null,
+                [2] = null,
+                [3] = null,
+            },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [1] = new List<Card>
+                {
+                    new Rat(),
+                    new Rat(),
+                    new Pytho(),
+                    new Pytho(),
+                    new Lamia(),
+                    new Lamia(),
+                    new Chimera(),
+                    new Chimera(),
+                    new Sphinx(),
+                    new Sphinx(),
+                    new Empusa(),
+                    new Empusa(),
+                    new Gorgon(),
+                    new Gorgon(),
+                    new Lightning(),
+                    new Lightning(),
+                    new Panic(),
+                    new Panic(),
+                    new PriceOfRenewal(),
+                    new PriceOfRenewal(),
+                },
+                [2] = new List<Card>
+                {
+                    new Rat(),
+                    new Rat(),
+                    new Pytho(),
+                    new Pytho(),
+                    new Lamia(),
+                    new Lamia(),
+                    new Chimera(),
+                    new Chimera(),
+                    new Sphinx(),
+                    new Sphinx(),
+                    new Empusa(),
+                    new Empusa(),
+                    new Gorgon(),
+                    new Gorgon(),
+                    new Lightning(),
+                    new Lightning(),
+                    new Panic(),
+                    new Panic(),
+                    new PriceOfRenewal(),
+                    new PriceOfRenewal(),
+                },
+                [3] = new List<Card>
+                {
+                    new Rat(),
+                    new Rat(),
+                    new Pytho(),
+                    new Pytho(),
+                    new Lamia(),
+                    new Lamia(),
+                    new Chimera(),
+                    new Chimera(),
+                    new Sphinx(),
+                    new Sphinx(),
+                    new Empusa(),
+                    new Empusa(),
+                    new Gorgon(),
+                    new Gorgon(),
+                    new Lightning(),
+                    new Lightning(),
+                    new Panic(),
+                    new Panic(),
+                    new PriceOfRenewal(),
+                    new PriceOfRenewal(),
+                }
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [1] = new List<Follower>
+                {
+                    new Lamia(),
+                    new Lamia(),
+                },
+                [2] = new List<Follower>
+                {
+                    new Chimera(),
+                },
+                [3] = new List<Follower>
+                {
+                    new Lamia(),
+                    new Gorgon(),
+                    new Lamia(),
+                }
             },
             Rewards = new List<Card>
             {
@@ -507,31 +1103,94 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 3,
-            MinorRitual = new HeraMajor(),
-            MajorRitual = null,
-            DeckBlueprint = new List<Card>
+            GoldPerTurn = Controller.BlitzMode ? 4 : 3,
+            PortraitName = "Trials",
+            MinorRituals = new Dictionary<int, Ritual>
             {
-                new NemeanLion(),
-                new Hydra(),
-                new GoldenHind(),
-                new CreateFilth(),
-                new CreateFilth(),
-                new CreateFilth(),
-                new StymphalianBird(),
-                new StymphalianBird(),
-                new StymphalianBird(),
-                new MareOfDiomedes(),
-                new MareOfDiomedes(),
-                new MareOfDiomedes(),
-                new Hippolyta(),
-                new Amazon(),
-                new Amazon(),
+                [1] = null,
+                [2] = new HeraMajor(),
+                [3] = new HeraMajor(),
             },
-            StartingBattleRow = new List<Follower>
+            MajorRituals = new Dictionary<int, Ritual>
             {
-                new Amazon(),
-                new Hippolyta(),
-                new Amazon(),
+                [1] = null,
+                [2] = null,
+                [3] = null,
+            },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [1] = new List<Card>
+                {
+                    new NemeanLion(),
+                    new Hydra(),
+                    new GoldenHind(),
+                    new CreateFilth(),
+                    new CreateFilth(),
+                    new CreateFilth(),
+                    new StymphalianBird(),
+                    new StymphalianBird(),
+                    new StymphalianBird(),
+                    new MareOfDiomedes(),
+                    new MareOfDiomedes(),
+                    new MareOfDiomedes(),
+                    new Hippolyta(),
+                    new Amazon(),
+                    new Amazon(),
+                },
+                [2] = new List<Card>
+                {
+                    new NemeanLion(),
+                    new Hydra(),
+                    new GoldenHind(),
+                    new CreateFilth(),
+                    new CreateFilth(),
+                    new CreateFilth(),
+                    new StymphalianBird(),
+                    new StymphalianBird(),
+                    new StymphalianBird(),
+                    new MareOfDiomedes(),
+                    new MareOfDiomedes(),
+                    new MareOfDiomedes(),
+                    new Hippolyta(),
+                    new Amazon(),
+                    new Amazon(),
+                },
+                [3] = new List<Card>
+                {
+                    new NemeanLion(),
+                    new Hydra(),
+                    new GoldenHind(),
+                    new CreateFilth(),
+                    new CreateFilth(),
+                    new CreateFilth(),
+                    new StymphalianBird(),
+                    new StymphalianBird(),
+                    new StymphalianBird(),
+                    new MareOfDiomedes(),
+                    new MareOfDiomedes(),
+                    new MareOfDiomedes(),
+                    new Hippolyta(),
+                    new Amazon(),
+                    new Amazon(),
+                }
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [1] = new List<Follower>
+                {
+                    new MareOfDiomedes(),
+                    new MareOfDiomedes(),
+                },
+                [2] = new List<Follower>
+                {
+                    new NemeanLion(),
+                },
+                [3] = new List<Follower>
+                {
+                    new Amazon(),
+                    new Hippolyta(),
+                    new Amazon(),
+                }
             },
             Rewards = new List<Card>
             {
@@ -550,37 +1209,114 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 3,
-            MinorRitual = new ApolloMajor(),
-            MajorRitual = null,
-            DeckBlueprint = new List<Card>
+            PortraitName = "Delphi",
+            MinorRituals = new Dictionary<int, Ritual>
             {
-                new Helios(),
-                new Helios(),
-                new OracleOfDelphi(),
-                new OracleOfDelphi(),
-                new Ekdromos(),
-                new Ekdromos(),
-                new Ekdromos(),
-                new Sheep(),
-                new Sheep(),
-                new Sheep(),
-                new Sheep(),
-                new Endymion(),
-                new Endymion(),
-                new PriceOfProfit(),
-                new PriceOfProfit(),
-                new Talaria(),
-                new Smite(),
-                new Smite(),
-                new Reflection(),
-                new Reflection(),
+                [1] = null,
+                [2] = new ApolloMajor(),
+                [3] = new ApolloMajor(),
             },
-            StartingBattleRow = new List<Follower>
+            MajorRituals = new Dictionary<int, Ritual>
             {
-                new Sheep(),
-                new OracleOfDelphi(),
-                new Sheep(),
-
+                [1] = null,
+                [2] = null,
+                [3] = null,
+            },
+            GoldPerTurn = Controller.BlitzMode ? 4 : 3,
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [1] = new List<Card>
+                {
+                    new Helios(),
+                    new Helios(),
+                    new OracleOfDelphi(),
+                    new OracleOfDelphi(),
+                    new Ekdromos(),
+                    new Ekdromos(),
+                    new Ekdromos(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Endymion(),
+                    new Endymion(),
+                    new PriceOfProfit(),
+                    new PriceOfProfit(),
+                    new Talaria(),
+                    new Smite(),
+                    new Smite(),
+                    new Reflection(),
+                    new Reflection(),
+                },
+                [2] = new List<Card>
+                {
+                    new Helios(),
+                    new Helios(),
+                    new OracleOfDelphi(),
+                    new OracleOfDelphi(),
+                    new Ekdromos(),
+                    new Ekdromos(),
+                    new Ekdromos(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Endymion(),
+                    new Endymion(),
+                    new PriceOfProfit(),
+                    new PriceOfProfit(),
+                    new Talaria(),
+                    new Smite(),
+                    new Smite(),
+                    new Reflection(),
+                    new Reflection(),
+                },
+                [3] = new List<Card>
+                {
+                    new Helios(),
+                    new Helios(),
+                    new OracleOfDelphi(),
+                    new OracleOfDelphi(),
+                    new Ekdromos(),
+                    new Ekdromos(),
+                    new Ekdromos(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Endymion(),
+                    new Endymion(),
+                    new PriceOfProfit(),
+                    new PriceOfProfit(),
+                    new Talaria(),
+                    new Smite(),
+                    new Smite(),
+                    new Reflection(),
+                    new Reflection(),
+                }
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [1] = new List<Follower>
+                {
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                },
+                [2] = new List<Follower>
+                {
+                    new Sheep(),
+                    new OracleOfDelphi(),
+                    new Sheep(),
+                },
+                [3] = new List<Follower>
+                {
+                    new Sheep(),
+                    new Sheep(),
+                    new OracleOfDelphi(),
+                    new Sheep(),
+                    new Sheep(),
+                }
             },
             Rewards = new List<Card>
             {
@@ -599,41 +1335,56 @@ public class ProgressionHandler
 
         DetailsByDeckName[DeckName.Underworld] = new PlayerDetails
         {
+            IsFightableEnemy = false,
+            IsBoss = true,
             BaseHealth = 10,
             Pool = 4,
-            GoldPerTurn = 4,
-            MinorRitual = new DionysusMinor(),
-            MajorRitual = new HadesMajor(),
-            DeckBlueprint = new List<Card>
+            GoldPerTurn = Controller.BlitzMode ? 5 : 4,
+            PortraitName = "Underworld",
+            MinorRituals = new Dictionary<int, Ritual>
             {
-                new Erinyes(),
-                new Erinyes(),
-                new Erinyes(),
-                new Erinyes(),
-                new Siren(),
-                new Siren(),
-                new Siren(),
-                new Keres(),
-                new Keres(),
-                new Keres(),
-                new Keres(),
-                new Charon(),
-                new Charon(),
-                new Cerberus(),
-                new Vengeance(),
-                new Vengeance(),
-                //new RiverStyx(),
-                new LastingGift(),
-                //new PriceOfProfit(),
-                new PriceOfProfit(),
-                new PriceOfLegacy(),
+                [4] = new DionysusMinor(),
             },
-            StartingBattleRow = new List<Follower>
+            MajorRituals = new Dictionary<int, Ritual>
             {
-                new Keres(),
-                new Cerberus(),
-                new Keres(),
-                //new Charon(),
+                [4] = new HadesMajor(),
+            },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [4] = new List<Card>
+                {
+                    new Erinyes(),
+                    new Erinyes(),
+                    new Erinyes(),
+                    new Erinyes(),
+                    new Siren(),
+                    new Siren(),
+                    new Siren(),
+                    new Keres(),
+                    new Keres(),
+                    new Keres(),
+                    new Keres(),
+                    new Charon(),
+                    new Charon(),
+                    new Cerberus(),
+                    new Vengeance(),
+                    new Vengeance(),
+                    //new RiverStyx(),
+                    new LastingGift(),
+                    //new PriceOfProfit(),
+                    new PriceOfProfit(),
+                    new PriceOfLegacy(),
+                },
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [4] = new List<Follower>
+                {
+                    new Keres(),
+                    new Cerberus(),
+                    new Keres(),
+                    //new Charon(),
+                }
             },
             Rewards = new List<Card>
             {
@@ -653,13 +1404,19 @@ public class ProgressionHandler
         // Add enemy decks to their respective pool
         foreach (KeyValuePair<DeckName, PlayerDetails> kvp in DetailsByDeckName)
         {
-            if (kvp.Value.IsEnemy)
+            if (kvp.Value.IsFightableEnemy)
             {
-                if (!EnemyPools.ContainsKey(kvp.Value.Pool)) EnemyPools[kvp.Value.Pool] = new List<DeckName>();
-                EnemyPools[kvp.Value.Pool].Add(kvp.Key);
+                EnemyPool.Add(kvp.Key);
+                //if (!EnemyPools.ContainsKey(kvp.Value.Pool)) EnemyPools[kvp.Value.Pool] = new List<DeckName>();
+                //EnemyPools[kvp.Value.Pool].Add(kvp.Key);
+            }
+            else if (kvp.Value.IsBoss)
+            {
+                BossPool.Add(kvp.Key);
             }
         }
 
+        SetupTrinkets();
         SetupStarterBundles();
     }
 
@@ -667,41 +1424,88 @@ public class ProgressionHandler
     {
         starterBundles.Clear();
 
+        Trinket randomTrinket = GetRandomTrinket();
         starterBundles.Add(new StarterBundle(
-            new ZeusMinor(),
+            new ZeusMinor(), // ZeusMinor
             new List<Card> { 
                 new PriceOfReprisal(),
                 new Patroclus(),
                 new Atalanta(),
-            }));
+            },
+            randomTrinket));
+
+        randomTrinket = GetRandomTrinket();
         starterBundles.Add(new StarterBundle(
             new HadesMinor(), // HadesMinor
             new List<Card> {
                 new Charon(),
                 new Corridor(),
                 new Vengeance(),
-            }));
+            },
+            randomTrinket));
+
+        randomTrinket = GetRandomTrinket();
         starterBundles.Add(new StarterBundle(
-            new AphroditeMinor(),
+            new AphroditeMinor(), // AphroditeMinor
             new List<Card> {
                 new Asclepius(),
                 new Restoration(),
-                new Lamia(),
-            }));
+                new Lamia()
+            },
+            randomTrinket));
+
+        randomTrinket = GetRandomTrinket();
         starterBundles.Add(new StarterBundle(
             new HermesMinor(),
             new List<Card> {
                 new Talaria(),
                 new PriceOfKnowledge(),
                 new Melpomene(),
-            }));
+            }, randomTrinket));
+
+        randomTrinket = GetRandomTrinket();
         starterBundles.Add(new StarterBundle(
             new HestiaMinor(),
             new List<Card> {
                 new PriceOfLegacy(),
                 new Hippolyta(),
                 new DragonsTeeth(),
-            }));
+            }, randomTrinket));
+    }
+
+    private void SetupTrinkets()
+    {
+        availableTrinkets.Clear();
+        availableTrinkets.Add(new CyclopsEyeTrinket());
+        availableTrinkets.Add(new AresWhetstoneTrinket());
+        availableTrinkets.Add(new FuneralAmphoraTrinket());
+        availableTrinkets.Add(new DemetersSickleTrinket());
+        availableTrinkets.Add(new AthenasQuillTrinket());
+        availableTrinkets.Add(new PeltastTrumpetTrinket());
+        availableTrinkets.Add(new GoldenFleeceTuftTrinket());
+        availableTrinkets.Add(new LyreOfApolloTrinket());
+        availableTrinkets.Add(new VialOfAmbrosiaTrinket());
+        availableTrinkets.Add(new PansFluteTrinket());
+        availableTrinkets.Add(new HermesSandalsTrinket());
+        availableTrinkets.Add(new TheAegisTrinket());
+        availableTrinkets.Add(new RodOfAsclepiusTrinket());
+        availableTrinkets.Add(new HydrasScaleTrinket());
+        availableTrinkets.Add(new TunicOfNessusTrinket());
+        availableTrinkets.Add(new MedeasPotionTrinket());
+        availableTrinkets.Add(new WingsOfIcarusTrinket());
+        availableTrinkets.Add(new PandorasBoxTrinket());
+    }
+
+    private Trinket GetRandomTrinket()
+    {
+        int randIndex = Controller.Instance.MetaRNG.Next(0, availableTrinkets.Count);
+        Trinket randomTrinket = availableTrinkets[randIndex];
+        if (!randomTrinket.RepeatTrinket)
+        {
+            availableTrinkets.RemoveAt(randIndex);
+        }
+        //return new PandorasBoxTrinket();
+        return randomTrinket;
     }
 
     public List<Ritual> GetPossibleRitualRewards()
@@ -776,21 +1580,21 @@ public class ProgressionHandler
         }
 
         CurrentLevel++;
-        int possibleEnemyCount = EnemyPools[CurrentPool].Count;
+        int possibleEnemyCount = EnemyPool.Count;
         while (possibleEnemyCount == 0)
         {
             CurrentLevel++;
-            if (CurrentPool >= EnemyPools.Count)
+            if (CurrentPool >= EnemyPool.Count)
             {
                 Debug.LogError("You Win!");
                 return;
             }
-            possibleEnemyCount = EnemyPools[CurrentPool].Count;
+            possibleEnemyCount = EnemyPool.Count;
         }
 
-        int randomTarget = Controller.Instance.MetaRNG.Next(0, EnemyPools[CurrentPool].Count);
-        CurrentEnemy = EnemyPools[CurrentPool][randomTarget];
-        EnemyPools[CurrentPool].Remove(CurrentEnemy);
+        int randomTarget = Controller.Instance.MetaRNG.Next(0, EnemyPool.Count);
+        CurrentEnemy = EnemyPool[randomTarget];
+        EnemyPool.Remove(CurrentEnemy);
     }
 
     public void LoadPlayer(Player player, DeckName deckName)
@@ -809,12 +1613,17 @@ public class ProgressionHandler
             else newDetails.BaseHealth = GetPlayerHealth();
         }
 
-        player.LoadDetails(newDetails);
+        int pool = newDetails.IsEnemy ? CurrentPool : 0;
+        player.LoadDetails(newDetails, pool);
     }
-    public List<Follower> GetPlayerStartingFollowers(DeckName deckName)
+    public List<Follower> GetPlayerStartingFollowers(DeckName deckName, int pool)
     {
         PlayerDetails newDetails = DetailsByDeckName[deckName];
-        return newDetails.StartingBattleRow;
+        if (newDetails.StartingBattleRow.ContainsKey(pool))
+        {
+            return newDetails.StartingBattleRow[pool];
+        }
+        return new List<Follower>();
     }
 
     public void LoadEnemy(Player player)
@@ -824,7 +1633,7 @@ public class ProgressionHandler
 
     public int GetPlayerHealth()
     {
-        return 5 + CurrentPool * 5;
+        return 10 + Mathf.FloorToInt(CurrentLevel / 2f) * 5; // CurrentPool * 5;
     }
 
     public List<StarterBundle> GetStarterBundles()

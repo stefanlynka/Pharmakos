@@ -47,7 +47,7 @@ public class MoveCardAnimation : AnimationAction
             // Make a new ViewCard
             viewCard = View.Instance.MakeNewViewCard(card);
 
-            // and put it offscreen to the right
+            // Put it roughly where it should have been
             switch (previousZone)
             {
                 case GameZone.BattleRow:

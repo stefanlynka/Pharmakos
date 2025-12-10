@@ -5,9 +5,21 @@ using UnityEngine;
 
 public class ViewBuff : MonoBehaviour
 {
+    public GameObject ParentObject;
     public GameObject SummaryObject;
     public TextMeshPro SummaryText;
     public SpriteRenderer Icon;
+
+    public void SetBuffData(PlayerEffectDescriptionData descriptionData)
+    {
+        Icon.sprite = descriptionData.Icon;
+        SummaryText.text = descriptionData.Description;
+    }
+
+    public void SetVisible(bool value)
+    {
+        ParentObject.SetActive(value);
+    }
 
     // This function is called when the mouse enters the Collider.
     void OnMouseEnter()

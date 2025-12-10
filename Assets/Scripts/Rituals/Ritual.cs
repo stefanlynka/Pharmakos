@@ -13,6 +13,7 @@ public abstract class Ritual : ITarget
     public bool NeedsTargets = true;
     public string Name = "No Name";
     public string Description = "No Desc";
+    public string ReminderText = "";
 
     //public Ritual(){ }
 
@@ -89,4 +90,10 @@ public abstract class Ritual : ITarget
         return copy;
     }
 
+    public int GetCost(OfferingType offeringType)
+    {
+        if (Owner == null) return Costs[offeringType];
+
+        return Math.Max(0, Costs[offeringType] - Owner.RitualCostReductions[offeringType]);
+    }
 }
