@@ -27,6 +27,8 @@ public class View : MonoBehaviour
     public ViewPlayer Player1;
     public ViewPlayer Player2;
 
+    public AudioHandler AudioHandler;
+
     public ViewDiscard ViewDiscard;
 
     public SelectionHandler SelectionHandler;
@@ -96,8 +98,13 @@ public class View : MonoBehaviour
         Player2.Load(Controller.Instance.Player2);
 
         LoadBackground();
+        LoadMusic();
 
         AnimationHandler = new AnimationHandler();
+    }
+    private void LoadMusic()
+    {
+        AudioHandler.PlayMusic(Controller.Instance.ProgressionHandler.CurrentEnemy);
     }
     public void Clear()
     {

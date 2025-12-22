@@ -62,8 +62,8 @@ public class AttackWithFollowerAnimation : AnimationAction
 
         attackMoveDuration = View.Instance.IsHumansTurn ? 0.18f : 0.25f;
         Sequence attackSequence = new Sequence();
-        attackSequence.Add(new Tween(MoveAttacker, 0, 1, attackMoveDuration));
-        attackSequence.Add(new SequenceAction(ShakeScreen));
+        attackSequence.Add(new Tween(MoveAttackerForward, 0, 1, attackMoveDuration, EaseType.EaseInBack));
+        attackSequence.Add(new SequenceAction(DoImpact));
         attackSequence.Add(new Tween(MoveAttacker, 1, 0, attackMoveDuration));
         //attackSequence.Add(new SequenceAction(AnimationOver));
         attackSequence.Add(new SequenceAction(CallCallback));
@@ -72,6 +72,17 @@ public class AttackWithFollowerAnimation : AnimationAction
         //Debug.LogError("Attack Animation");
     }
 
+    private bool hasPlayedSound = false;
+    private void MoveAttackerForward(float progress)
+    {
+        attackerViewFollower.transform.position = Vector2.Lerp(startPosition, endPosition, progress);
+        if (!hasPlayedSound)
+        {
+            hasPlayedSound = true;
+
+            View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Impact);
+        }
+    }
     private void MoveAttacker(float progress)
     {
         attackerViewFollower.transform.position = Vector2.Lerp(startPosition, endPosition, progress);
@@ -87,7 +98,7 @@ public class AttackWithFollowerAnimation : AnimationAction
         //Debug.LogWarning(attackerViewFollower.Follower.GetName() + " attacked " + attackAction.Target.GetName() + " Animation end");
     }
 
-    private void ShakeScreen()
+    private void DoImpact()
     {
         Player playerTarget = target as Player;
         if (playerTarget != null && playerTarget.Health - attacker.CurrentAttack < 0)

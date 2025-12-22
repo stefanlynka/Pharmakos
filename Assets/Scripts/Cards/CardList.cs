@@ -135,88 +135,12 @@ public class Prey1 : Follower
     }
 }
 // OnDeath: Lose 1 Health
-public class Prey2 : Follower
+public class Prey2 : Prey1
 {
-    public Prey2() : base()
-    {
-        Costs = new Dictionary<OfferingType, int>()
-        {
-            { OfferingType.Gold, 1},
-            { OfferingType.Blood, 0},
-            { OfferingType.Bone, 0},
-            { OfferingType.Crop, 0},
-            { OfferingType.Scroll, 0},
-        };
-
-        Type = FollowerType.Beast;
-
-        SetBaseStats(0, 1);
-        inherentValue = -2;
-
-        OverrideName = "Prey";
-        Text = "On Death: Lose 1 Health";
-        Icon = IconType.Skull;
-
-        SetupInnateEffects();
-    }
-
-    public override void SetupInnateEffects()
-    {
-        base.SetupInnateEffects();
-
-        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
-        customEffectDef.ApplyInstanceAction = CustomEffectAction;
-        InnateEffects.Add(customEffectDef);
-    }
-
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
-    {
-        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
-        changePlayerHealthInstance.Init(-1);
-        effectDef.EffectInstances.Add(changePlayerHealthInstance);
-    }
 }
 // OnDeath: Lose 1 Health
-public class Prey3 : Follower
+public class Prey3 : Prey1
 {
-    public Prey3() : base()
-    {
-        Costs = new Dictionary<OfferingType, int>()
-        {
-            { OfferingType.Gold, 1},
-            { OfferingType.Blood, 0},
-            { OfferingType.Bone, 0},
-            { OfferingType.Crop, 0},
-            { OfferingType.Scroll, 0},
-        };
-
-        Type = FollowerType.Beast;
-
-        SetBaseStats(0, 1);
-        inherentValue = -2;
-
-        OverrideName = "Prey";
-        Text = "On Death: Lose 1 Health";
-        Icon = IconType.Skull;
-
-        SetupInnateEffects();
-    }
-
-    public override void SetupInnateEffects()
-    {
-        base.SetupInnateEffects();
-
-        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
-        customEffectDef.ApplyInstanceAction = CustomEffectAction;
-        InnateEffects.Add(customEffectDef);
-    }
-
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
-    {
-        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
-        changePlayerHealthInstance.Init(-1);
-        effectDef.EffectInstances.Add(changePlayerHealthInstance);
-    }
 }
 
 // OnAttack: Damage all enemies
@@ -3212,11 +3136,11 @@ public class HarpeOfPerseus : Spell
     }
 }
 
-// Give a Follower +1 Health and Taunt
+// Give a Follower +2 Health and Taunt
 public class ShieldOfAjax : Spell
 {
     private int attackGained = 0;
-    private int healthGained = 1;
+    private int healthGained = 2;
 
     public ShieldOfAjax()
     {
@@ -3229,7 +3153,8 @@ public class ShieldOfAjax : Spell
             { OfferingType.Scroll, 0},
         };
 
-        Text = "Give a Follower +1 Health and Taunt";
+        OverrideName = "Shield of Ajax";
+        Text = "Give a Follower +2 Health and Taunt";
         HasTargets = true;
     }
 

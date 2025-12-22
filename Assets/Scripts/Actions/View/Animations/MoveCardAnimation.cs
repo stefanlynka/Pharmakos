@@ -139,6 +139,20 @@ public class MoveCardAnimation : AnimationAction
 
         if (forceDescriptive) viewCard.SetDescriptiveMode(true);
 
+
+        if (newOwner.IsHuman)
+        {
+            switch (newZone)
+            {
+                case GameZone.Hand:
+                    View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.CardDraw);
+                    break;
+                case GameZone.PlayZone:
+                    View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Scroll);
+                    break;
+            }
+        }
+
         Sequence moveSequence = new Sequence();
         moveSequence.Add(new Tween(TweenProgress, 0, 1, duration));
         moveSequence.Add(new SequenceAction(Complete));

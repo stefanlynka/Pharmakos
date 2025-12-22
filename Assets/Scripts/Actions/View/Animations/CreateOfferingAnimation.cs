@@ -77,6 +77,8 @@ public class CreateOfferingAnimation : AnimationAction
             endPos = destinationTarget.transform.position;
         }
 
+        Sequence soundEffects = new Sequence();
+        float delay = 0.1f;
 
 		int remaining = Mathf.Max(1, amount);
 		for (int i = 0; i < remaining; i++)
@@ -95,6 +97,9 @@ public class CreateOfferingAnimation : AnimationAction
 				continue;
 			}
 
+            soundEffects.Add(new SequenceAction(PlaySoundEffect));
+            soundEffects.Add(new Tween(null, 0, 1, delay, EaseType.Linear));
+
 			Vector3 baseDir = toEnd.normalized;
 			// Randomize the initial angle of the curve by rotating the initial tangent
 			float angleDeg = UnityEngine.Random.Range(-60f, 60f);
@@ -105,12 +110,12 @@ public class CreateOfferingAnimation : AnimationAction
 			Sequence seq = new Sequence();
 			seq.Add(new Tween(p =>
 			{
-				// Ease-in parameter
-				float t = p; float tEased = t * t;
+				// p is already eased (EaseInQuad)
+				float tEased = p;
 				float omt = 1f - tEased;
 				Vector3 pos = omt * omt * startPos + 2f * omt * tEased * ctrl + tEased * tEased * endPos;
 				obj.transform.position = pos;
-			}, 0f, 1f, duration));
+			}, 0f, 1f, duration, EaseType.EaseInQuad));
 			seq.Add(new SequenceAction(() =>
 			{
 				View.Instance.RemoveOffering(obj);
@@ -119,6 +124,8 @@ public class CreateOfferingAnimation : AnimationAction
 			}));
 			seq.Start();
 		}
+
+        soundEffects.Start();
     }
 
     private void TweenProgress(float progress)
@@ -138,7 +145,26 @@ public class CreateOfferingAnimation : AnimationAction
         //offeringObject.transform.position = endPos;
         //View.Instance.RemoveOffering(offeringObject);
         //Debug.LogWarning(summonFollowerAction.Follower.Owner.GetName() + " played " + summonFollowerAction.Follower.GetName() + " " + summonFollowerAction.Follower.ID + " Animation end");
+        View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Bump);
         CallCallback();
+    }
+    private void PlaySoundEffect()
+    {
+        switch (offeringType)
+        {
+            case OfferingType.Crop:
+                View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Crop);
+                break;
+            case OfferingType.Bone:
+                View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Bone);
+                break;
+            case OfferingType.Blood:
+                View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Blood);
+                break;
+            case OfferingType.Scroll:
+                //View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Scroll);
+                break;
+        }
     }
     protected override void Log()
     {
