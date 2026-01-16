@@ -66,11 +66,11 @@ public class ScreenHandler : MonoBehaviour
         }
     }
 
-    public virtual void HideScreen(ScreenName name)
+    public virtual void HideScreen(ScreenName name, bool instant = false)
     {
         if (TryGetScreen(name, out Screen screen))
         {
-            screen.Exit();
+            screen.Exit(instant);
         }
         else
         {
@@ -116,5 +116,7 @@ public enum ScreenName
     StarterBundle,
     Tutorial,
     DeckScreenButton,
+    PlayHistoryButton,
+    Options,
 }
 

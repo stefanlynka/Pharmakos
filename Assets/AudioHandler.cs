@@ -7,13 +7,20 @@ using static ProgressionHandler;
 
 public class AudioHandler : MonoBehaviour
 {
-    public AudioSource AudioSource;
+    public AudioSource MusicSource;
     public AudioSource SoundEffectSource;
 
     public Dictionary<DeckName, AudioClip> MusicByName = new Dictionary<DeckName, AudioClip>();
     public Dictionary<SoundEffectType, AudioClip> SoundEffectsByName = new Dictionary<SoundEffectType, AudioClip>();
 
-    private float baseVolume = 0.1f;
+    public Dictionary<DeckName, float> MusicMultipliers = new Dictionary<DeckName, float>();
+
+    private float baseMusicVolume = 0.1f;
+
+    private float userMusicVolume = 0.5f;
+    private float userSoundEffectVolume = 0.5f;
+
+    private float currentMusicMultiplier = 1.0f;
 
     // Start is called before the first frame update
     void Start()
@@ -45,6 +52,17 @@ public class AudioHandler : MonoBehaviour
                 SoundEffectsByName[name] = music;
             }
         }
+
+        MusicMultipliers[DeckName.Labyrinth] = 0.3f;
+        MusicMultipliers[DeckName.Bacchanalia] = 0.3f;
+        MusicMultipliers[DeckName.Cyclops] = 0.3f;
+        MusicMultipliers[DeckName.SeasideCliffs] = 0.3f;
+        MusicMultipliers[DeckName.Troy] = 0.25f;
+        MusicMultipliers[DeckName.Hunt] = 0.3f;
+        MusicMultipliers[DeckName.Trials] = 0.2f;
+        MusicMultipliers[DeckName.Caves] = 0.2f;
+        MusicMultipliers[DeckName.Delphi] = 0.4f;
+        MusicMultipliers[DeckName.Underworld] = 0.25f;
     }
 
     public void PlayMusic(DeckName name)
@@ -54,45 +72,16 @@ public class AudioHandler : MonoBehaviour
             AudioClip audioClip = MusicByName[name];
             if (audioClip != null)
             {
-                AudioSource.clip = audioClip;
-                switch (name)
+                MusicSource.clip = audioClip;
+
+                if (MusicMultipliers.ContainsKey(name))
                 {
-                    case DeckName.Labyrinth:
-                        AudioSource.volume = baseVolume * 0.3f;
-                        break;
-                    case DeckName.Bacchanalia:
-                        AudioSource.volume = baseVolume * 0.3f;
-                        break;
-                    case DeckName.Cyclops:
-                        AudioSource.volume = baseVolume * 0.3f;
-                        break;
-                    case DeckName.SeasideCliffs:
-                        AudioSource.volume = baseVolume * 0.3f;
-                        break;
-                    case DeckName.Troy:
-                        AudioSource.volume = baseVolume * 0.25f;
-                        break;
-                    case DeckName.Hunt:
-                        AudioSource.volume = baseVolume * 0.3f;
-                        break;
-                    case DeckName.Trials:
-                        AudioSource.volume = baseVolume * 0.2f;
-                        break;
-                    case DeckName.Caves:
-                        AudioSource.volume = baseVolume * 0.2f;
-                        break;
-                    case DeckName.Delphi:
-                        AudioSource.volume = baseVolume * 0.4f;
-                        break;
-                    case DeckName.Underworld:
-                        AudioSource.volume = baseVolume * 0.25f;
-                        break;
-                    default:
-                        AudioSource.volume = baseVolume;
-                        break;
+                    currentMusicMultiplier = MusicMultipliers[name];
                 }
 
-                AudioSource.Play();
+                MusicSource.volume = baseMusicVolume * userMusicVolume * currentMusicMultiplier;
+
+                MusicSource.Play();
             }
         }
     }
@@ -108,19 +97,19 @@ public class AudioHandler : MonoBehaviour
                 switch(name)
                 {
                     case SoundEffectType.CardDraw:
-                        SoundEffectSource.PlayOneShot(audioClip, 0.1f);
+                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.1f);
                         break;
                     case SoundEffectType.Impact:
-                        SoundEffectSource.PlayOneShot(audioClip, 0.5f);
+                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.5f);
                         break;
                     case SoundEffectType.Blood:
-                        SoundEffectSource.PlayOneShot(audioClip, 0.25f);
+                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.25f);
                         break;
                     case SoundEffectType.Scroll:
-                        SoundEffectSource.PlayOneShot(audioClip, 0.6f);
+                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.6f);
                         break;
                     default:
-                        SoundEffectSource.PlayOneShot(audioClip);
+                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume);
                         break;
 
                 }
@@ -128,6 +117,16 @@ public class AudioHandler : MonoBehaviour
         }
     }
 
+    public void SetMusicVolume(float volume)
+    {
+        userMusicVolume = volume;
+
+        MusicSource.volume = baseMusicVolume * userMusicVolume * currentMusicMultiplier;
+    }
+    public void SetSoundEffectVolume(float volume)
+    {
+        userSoundEffectVolume = volume;
+    }
     public enum SoundEffectType
     {
         CardDraw,

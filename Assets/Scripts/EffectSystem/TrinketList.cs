@@ -421,6 +421,7 @@ public class CyclopsEyeTrinketEffectDef : TrinketPlayerEffect
         CustomEffectDef customEffect = new CustomEffectDef(EffectTarget.Self);
         customEffect.ApplyInstanceAction = CustomEffectAction;
         follower.InnateEffects.Add(customEffect);
+        customEffect.Apply(follower);
 
         return customEffect;
     }

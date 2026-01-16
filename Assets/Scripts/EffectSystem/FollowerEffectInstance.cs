@@ -360,6 +360,10 @@ public class ChangeStatsInstance : TriggeredFollowerEffectInstance
 
         foreach (Follower targetFollower in targetFollowers)
         {
+            if (targetFollower == null)
+            {
+                continue;
+            }
             ChangeStatsAction action = new ChangeStatsAction(targetFollower, AttackChange, HealthChange);
             AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
         }

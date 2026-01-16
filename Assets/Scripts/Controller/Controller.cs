@@ -40,6 +40,8 @@ public class Controller : MonoBehaviour
 
     public PlayerDetails HumanPlayerDetails;
 
+    private ScreenName CurrentScreen = ScreenName.Blank;
+
     //public List<Card> PlayerDeckDefinition = new List<Card>();
     //public List<Follower> PlayerStartingBattleRow = new List<Follower>();
     //public Ritual PlayerMinorRitual = null;
@@ -72,7 +74,7 @@ public class Controller : MonoBehaviour
     public StarterBundleHandler StarterBundleHandler;
     public TutorialHandler TutorialHandler;
     public ProgressionHandler ProgressionHandler;
-    public ViewCardScroller DeckViewer;
+    public DeckViewer DeckViewer;
     public TextHandler TextHandler = new TextHandler();
     public PlayHistoryHandler PlayHistoryHandler = new PlayHistoryHandler();
     public ViewPlayHistoryHandler ViewPlayHistoryHandler;
@@ -225,7 +227,11 @@ public class Controller : MonoBehaviour
 
         LoadLevel();
 
+        CurrentScreen = ScreenName.Game;
+
         ScreenHandler.Instance.HideScreen(ScreenName.Blank);
+        ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
+        ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
         ScreenHandler.Instance.ShowScreen(ScreenName.Game);
     }
     public void TryEndTurn()
@@ -238,6 +244,14 @@ public class Controller : MonoBehaviour
         }
     }
 
+    public void DiscardPlayerHand()
+    {
+        if (CanonGameState.CurrentPlayer.IsHuman)
+        {
+            CanonGameState.CurrentPlayer.DiscardHand();
+        }
+    }
+
     public Player GetOtherPlayer(Player player)
     {
         return player == Player1 ? Player2 : Player1;
@@ -245,6 +259,15 @@ public class Controller : MonoBehaviour
 
     public void RestartGame()
     {
+
+        //var persistentObjects = GameObject.FindObjectsOfType<GameObject>();
+        //foreach (var obj in persistentObjects)
+        //{
+        //    // Optional: Filter by a tag if you want to keep some system objects
+        //    Destroy(obj);
+        //}
+
+        //Application.Restart();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 
         //ClearLevel();
@@ -254,8 +277,18 @@ public class Controller : MonoBehaviour
         //ScreenHandler.Instance.ShowScreen(ScreenName.Blank, true, false);
         //ScreenHandler.Instance.ShowScreen(ScreenName.Start);
     }
+    public void GoToOptions()
+    {
+        ScreenHandler.Instance.ShowScreen(ScreenName.Options, true);
+    }
+    public void GoToPause()
+    {
+        ScreenHandler.Instance.ShowScreen(ScreenName.Pause, true);
+    }
     public void GoToStartScreen()
     {
+        CurrentScreen = ScreenName.Blank;
+
         ScreenHandler.Instance.ShowScreen(ScreenName.Blank, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.Start);
     }
@@ -265,9 +298,12 @@ public class Controller : MonoBehaviour
 
         FirstTimeSetup();
 
+        CurrentScreen = ScreenName.Game;
+
         ScreenHandler.Instance.HideScreen(ScreenName.StarterBundle);
         ScreenHandler.Instance.HideScreen(ScreenName.Blank);
         ScreenHandler.Instance.ShowScreen(ScreenName.Game);
+        ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
 
         LoadLevel();
     }
@@ -275,22 +311,33 @@ public class Controller : MonoBehaviour
     {
         IsTestChamber = true;
 
+        CurrentScreen = ScreenName.Game;
+
         StartGame();
     }
     private void GoToGameOverScreen()
     {
+        CurrentScreen = ScreenName.GameOver;
+
         ScreenHandler.Instance.ShowScreen(ScreenName.GameOver);
     }
     private void GoToCardRemovalRewardScreen()
     {
+        CurrentScreen = ScreenName.CardRemovalRewards;
+
         GameField.SetActive(false);
         CardRemovalRewardHandler.gameObject.SetActive(true);
         CardRemovalRewardHandler.Load(HumanPlayerDetails.DeckBlueprint[0]);
         //ScreenHandler.Instance.ShowScreen(ScreenName.Blank, true, false);
-        ScreenHandler.Instance.ShowScreen(ScreenName.CardRemovalRewards);
+
+        ScreenHandler.Instance.HideScreen(ScreenName.Game, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
+        ScreenHandler.Instance.ShowScreen(ScreenName.CardRemovalRewards, false, false);
     }
     public void GoToRitualRewardScreen()
     {
+        CurrentScreen = ScreenName.RitualRewards;
+
         GameField.SetActive(false);
         RitualRewardHandler.gameObject.SetActive(true);
         RitualRewardHandler.Load(ProgressionHandler.CurrentLevel, HumanPlayerDetails.MajorRituals[0], HumanPlayerDetails.MinorRituals[0]);
@@ -298,14 +345,21 @@ public class Controller : MonoBehaviour
     }
     public void GoToCardGainRewardScreen()
     {
+        CurrentScreen = ScreenName.CardGainRewards;
+
         GameField.SetActive(false);
         CardGainRewardHandler.gameObject.SetActive(true);
         CardGainRewardHandler.Load(ProgressionHandler.CurrentLevel);
+
+        ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.CardGainRewards);
     }
 
     public void GoToStarterBundleScreen()
     {
+        CurrentScreen = ScreenName.StarterBundle;
+
         FirstTimeSetup();
 
         GameField.SetActive(false);
@@ -314,12 +368,13 @@ public class Controller : MonoBehaviour
         ScreenHandler.Instance.HideScreen(ScreenName.Blank);
         ScreenHandler.Instance.ShowScreen(ScreenName.StarterBundle);
         ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
+        //ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
     }
 
     public void PauseGame()
     {
         gamePaused = true;
-        GameField.SetActive(false);
+        //GameField.SetActive(false);
         ScreenHandler.Instance.ShowScreen(ScreenName.Pause);
     }
     public void UnPauseGame()
@@ -439,6 +494,9 @@ public class Controller : MonoBehaviour
     }
     public void LoadDeckViewer()
     {
+        ScreenHandler.Instance.HideScreen(CurrentScreen, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
+
         DeckViewer.gameObject.SetActive(true);
         List<Card> playerDeck = new List<Card>(HumanPlayerDetails.DeckBlueprint[0]);
 
@@ -460,6 +518,9 @@ public class Controller : MonoBehaviour
     }
     public void HideDeckViewer()
     {
+        ScreenHandler.Instance.ShowScreen(CurrentScreen, true);
+        ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, true, false);
+
         DeckViewer.Exit();
         DeckViewer.gameObject.SetActive(false);
     }
@@ -482,23 +543,11 @@ public class Controller : MonoBehaviour
     }
     public void LoadPlayHistory()
     {
+        ScreenHandler.Instance.HideScreen(CurrentScreen, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
+
         ViewPlayHistoryHandler.gameObject.SetActive(true);
-        //List<Card> playerDeck = new List<Card>(HumanPlayerDetails.DeckBlueprint[0]);
-
-        //// Sort by Gold cost, then by type (Followers before Spells)
-        //playerDeck.Sort((a, b) =>
-        //{
-        //    int costCompare = a.Costs[OfferingType.Gold].CompareTo(b.Costs[OfferingType.Gold]);
-        //    if (costCompare != 0)
-        //        return costCompare;
-
-        //    // Followers before Spells
-        //    bool aIsFollower = a is Follower;
-        //    bool bIsFollower = b is Follower;
-        //    if (aIsFollower && !bIsFollower) return -1;
-        //    if (!aIsFollower && bIsFollower) return 1;
-        //    return 0;
-        //});
+        
         List<PlayHistoryItem> items = PlayHistoryHandler.GetPlayHistoryItems(); // new List<PlayHistoryItem>();
         ViewPlayHistoryHandler.Load(items);
     }
@@ -506,5 +555,8 @@ public class Controller : MonoBehaviour
     {
         ViewPlayHistoryHandler.Exit();
         ViewPlayHistoryHandler.gameObject.SetActive(false);
+
+        ScreenHandler.Instance.ShowScreen(CurrentScreen, true);
+        ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
     }
 }

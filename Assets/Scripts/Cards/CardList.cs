@@ -376,7 +376,7 @@ public class Filth : Follower
 
     private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnAttacked);
+        ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnDamaged);
         newEffectInstance.Init(-1, 0, EffectTarget.Self, true);
         effectDef.EffectInstances.Add(newEffectInstance);
     }

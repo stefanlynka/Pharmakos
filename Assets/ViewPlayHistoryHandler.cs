@@ -44,7 +44,7 @@ public class ViewPlayHistoryHandler : MonoBehaviour
             ViewPlayHistoryItem viewPlayHistoryItem = newObject.GetComponent<ViewPlayHistoryItem>();
             if (viewPlayHistoryItem != null) ViewPlayHistoryItems[playHistoryItem] = viewPlayHistoryItem;
 
-            newObject.transform.parent = ContentHolder.transform;
+            newObject.transform.SetParent(ContentHolder.transform);
             viewPlayHistoryItem.Load(playHistoryItem);
         }
     }

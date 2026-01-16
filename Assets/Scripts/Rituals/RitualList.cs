@@ -343,6 +343,7 @@ public class AresMinorEffectDef : StaticPlayerEffect
     {
         StaticEffectDef sprintEffectDef = new StaticEffectDef(EffectTarget.Self, StaticEffect.Sprint);
         follower.InnateEffects.Add(sprintEffectDef);
+        sprintEffectDef.Apply(follower);
     }
     protected override string GetDescription()
     {
@@ -1082,13 +1083,13 @@ public class HephaestusMajorEffectDef : StaticPlayerEffect
     }
 }
 
-// Steal a card from your opponent's hand. It costs 0 Gold.
+// Steal a card from your opponent's deck. It costs 1 less.
 public class HermesMinor : Ritual
 {
     public HermesMinor()
     {
         Name = "Hermes\nMinor";
-        Description = "Steal a card from your opponent's hand. It costs 0 Gold.";
+        Description = "Steal a card from your opponent's deck. It costs 1 less.";
         
         if (Controller.BlitzMode)
         {
@@ -1129,7 +1130,54 @@ public class HermesMinor : Ritual
         Owner.GameState.ActionHandler.AddAction(newAction);
     }
 }
+// Draw a card
+public class MuseMinor : Ritual
+{
+    public MuseMinor()
+    {
+        Name = "Muse\nMinor";
+        Description = "Draw a card.";
 
+        if (Controller.BlitzMode)
+        {
+            // BlitzMode costs - reduced non-gold costs since they reset each turn
+            Costs = new Dictionary<OfferingType, int>()
+            {
+                {OfferingType.Blood, 0 },
+                {OfferingType.Bone, 0 },
+                {OfferingType.Crop, 0 },
+                {OfferingType.Scroll, 2 },
+            };
+        }
+        else
+        {
+            // Normal mode costs
+            Costs = new Dictionary<OfferingType, int>()
+            {
+                {OfferingType.Blood, 0 },
+                {OfferingType.Bone, 0 },
+                {OfferingType.Crop, 0 },
+                {OfferingType.Scroll, 2 },
+            };
+        }
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        var targets = new List<ITarget>();
+        targets.Add(Owner);
+        return targets;
+    }
+
+    public override void ExecuteEffect(ITarget target)
+    {
+        Player playerTarget = target as Player;
+        if (playerTarget == null) return;
+
+        GameAction newAction = new DrawCardAction(Owner, Owner, 1);
+        Owner.GameState.ActionHandler.AddAction(newAction);
+    }
+}
 // Give all Followers you summoned this turn +1/+1
 public class HestiaMinor : Ritual
 {

@@ -61,16 +61,16 @@ public class ProgressionHandler
             {
                 [1] = new List<Card>
                 {
-                    new Hoplite(),
+                    new Rat(),
                 }
             },
             StartingBattleRow = new Dictionary<int, List<Follower>>
             {
                 [1] = new List<Follower>
                 {
-                    new Rat(),
-                    new Rat(),
-                    new Rat(),
+                    //new Peltast(),
+                    new Peltast(),
+                    new Peltast(),
                 }
             }
         };
@@ -85,7 +85,7 @@ public class ProgressionHandler
             PortraitName = "Player",
             MinorRituals = new Dictionary<int, Ritual>
             {
-                [0] = new HephaestusMajor(),
+                [0] = new HermesMinor(),
             },
             MajorRituals = new Dictionary<int, Ritual>
             {
@@ -96,65 +96,20 @@ public class ProgressionHandler
                 [0] = new List<Card>
                 {
                     //new DevKill(),
-                    new Smite(),
-                    new Blessing(),
-                    new Talaria(),
-                    new Blessing(),
-                    new Endymion(),
-                    new Smite(),
-                    new Blessing(),
-                    new Talaria(),
-                    new Blessing(),
-                    new Endymion(),
-                     new Smite(),
-                    new Blessing(),
-                    new Talaria(),
-                    new Blessing(),
-                    new Endymion(),
-                    new Smite(),
-                    new Blessing(),
-                    new Talaria(),
-                    new Blessing(),
-                    new Endymion(),
-                     new Smite(),
-                    new Blessing(),
-                    new Talaria(),
-                    new Blessing(),
-                    new Endymion(),
-                    new Smite(),
-                    new Blessing(),
-                    new Talaria(),
-                    new Blessing(),
-                    new Endymion(),
-                     new Smite(),
-                    new Blessing(),
-                    new Talaria(),
-                    new Blessing(),
-                    new Endymion(),
-                    new Smite(),
-                    new Blessing(),
-                    new Talaria(),
-                    new Blessing(),
-                    new Endymion(),
-                     new Smite(),
-                    new Blessing(),
-                    new Talaria(),
-                    new Blessing(),
-                    new Endymion(),
-                    new Smite(),
-                    new Blessing(),
-                    new Talaria(),
-                    new Blessing(),
-                    new Endymion(),
+                    //new Smite(),
+                    //new Blessing(),
+                    //new Talaria(),
+                    new Peltast(),
+                    new PriceOfProfit(),
+                    //new Endymion(),
                 },
             },
             StartingBattleRow = new Dictionary<int, List<Follower>>
             {
                 [0] = new List<Follower>
                 {
-                    new Ekdromos(),
-                    new Icarus(),
-                    new Ekdromos(),
+                    new Rat(),
+                    new Chariot(),
                 }
             }
         };

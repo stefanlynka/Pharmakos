@@ -73,7 +73,7 @@ public class OfferingHandler : MonoBehaviour
                     Debug.LogError("Offering type not recognized: " + type.ToString());
                     return new Vector3(0, 19, 30);
             }
-            return new Vector3(0, 19, 30);
+            //return new Vector3(0, 19, 30);
         }
     }
 }

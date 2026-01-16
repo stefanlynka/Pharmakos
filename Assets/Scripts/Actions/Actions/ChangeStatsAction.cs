@@ -31,14 +31,16 @@ public class ChangeStatsAction : GameAction
     {
         Follower follower = Target as Follower;
         GameState gameState = follower.GameState;
+
         if (follower != null)
         {
             int currentAttack = follower.GetCurrentAttack();
             if (currentAttack + AttackChange < 0) AttackChange = -currentAttack;
             follower.ChangeStats(AttackChange, HealthChange);
+
+            gameState.FireFollowerHealthChanges(follower, HealthChange);
         }
 
-        gameState.FireFollowerHealthChanges(follower, HealthChange);
 
         base.Execute(simulated);
     }

@@ -89,7 +89,6 @@ public class SelectionHandler
                 // If you click and hold, drop card on mouse up
                 if (timeSinceCardInHandPickedUp > 0.1f)
                 {
-                    // TODO: Try place follower on battlefield
                     DropHeldCard();
                 }
             }
@@ -220,7 +219,7 @@ public class SelectionHandler
             CurrentTargets.Clear();
             return;
         }
-        else if (viewFollower != null && View.Instance.Player1.BattleRow.IsMouseOverThis())
+        else if (viewFollower != null && View.Instance.Player1.BattleRow.IsMouseOverThis() && View.Instance.Player1.BattleRow.Followers.Count < Player.MaxFollowerCount)
         {
             // Check if card is being dropped over battlefield
             int placementIndex = View.Instance.Player1.BattleRow.GetPlacementIndex();

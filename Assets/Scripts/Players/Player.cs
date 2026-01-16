@@ -604,7 +604,7 @@ public class Player : ITarget
         // Trigger Offerings
         if (createCrop)
         {
-            GameAction newAction = new CreateOfferingAction(this, OfferingType.Crop, 1, follower.ID, GameState.CurrentPlayer.ITargetID);
+            GameAction newAction = new CreateOfferingAction(GameState.CurrentPlayer, OfferingType.Crop, 1, follower.ID, GameState.CurrentPlayer.ITargetID);
             GameState.ActionHandler.AddAction(newAction);
             //if (createCrop) GameState.CurrentPlayer.ChangeOffering(OfferingType.Crop, 1);
         }

@@ -4,15 +4,21 @@ using UnityEngine;
 
 public class DeckViewer : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public ViewCardScroller MyScroller;
+    public RectTransform MyButton;
+    private float buttonHiddenZ = 0;
+    private float buttonShownZ = 0;
 
-    // Update is called once per frame
-    void Update()
+    public void Load(List<Card> cards)
     {
-        
+        MyButton.localPosition = new Vector3(MyButton.localPosition.x, MyButton.localPosition.y, buttonShownZ);
+
+        MyScroller.Load(cards);
+    }
+    public void Exit()
+    {
+        MyButton.localPosition = new Vector3(MyButton.localPosition.x, MyButton.localPosition.y, buttonHiddenZ);
+
+        MyScroller.Exit();
     }
 }
