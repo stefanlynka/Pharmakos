@@ -33,7 +33,7 @@ public class StarterBundleBucket : MonoBehaviour
         }
 
         PlayerEffectDescriptionData descriptionData = starterBundle.Trinket.GetDescriptionData();
-        ViewTrinket.SetBuffData(descriptionData);
+        ViewTrinket.SetBuffData(starterBundle.Trinket.MyEffect, descriptionData);
         ViewTrinket.SetVisible(true);
 
         SetSelected(false);

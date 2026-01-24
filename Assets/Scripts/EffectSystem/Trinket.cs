@@ -12,6 +12,7 @@ public abstract class Trinket
     public StaticPlayerEffect MyEffect;
 
     public bool RepeatTrinket = true;
+    public OfferingType RelevantOffering = OfferingType.None;
 
     public abstract void ApplyEffect(Player owner);
 
@@ -37,8 +38,6 @@ public abstract class Trinket
 
 public abstract class Trinket<T> : Trinket where T : StaticPlayerEffect
 {
-    
-
     public override void ApplyEffect(Player owner)
     {
         Owner = owner;

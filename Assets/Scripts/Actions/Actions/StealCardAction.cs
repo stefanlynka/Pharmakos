@@ -52,7 +52,7 @@ public class StealCardAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new MoveCardAnimation(this, stolenCard, Target, GameZone.Hand, Thief, GameZone.Hand)
+            new MoveCardAnimation(this, stolenCard, Target, GameZone.Deck, Thief, GameZone.Hand)
         };
         return animationActions;
     }

@@ -24,7 +24,7 @@ public class ViewPlayer : ViewTarget
         Player = player;
         Target = player;
 
-        PlayerChanged();
+        PlayerChanged(0);
 
         player.OnHealthChange -= PlayerChanged;
         player.OnHealthChange += PlayerChanged;
@@ -65,7 +65,7 @@ public class ViewPlayer : ViewTarget
         ViewPlayerPortrait.Highlight.enabled = active;
     }
 
-    private void PlayerChanged()
+    private void PlayerChanged(int healthChange)
     {
         //HealthText.text = Player.Health.ToString();
     }
@@ -84,14 +84,22 @@ public class ViewPlayer : ViewTarget
             buff.SetVisible(false);
         }
     }
-    public void AddBuff(PlayerEffect playerEffect)
+    public void AddBuff(StaticPlayerEffect playerEffect)
     {
         foreach (ViewBuff buff in Buffs)
         {
-            if (!buff.ParentObject.activeSelf)
+            if (buff.ParentObject.activeSelf)
+            {
+                if (buff.IsBuffCompatible(playerEffect))
+                {
+                    buff.IncreaseAmount();
+                    return;
+                }
+            }
+            else
             {
                 PlayerEffectDescriptionData descriptionData = playerEffect.GetDescriptionData();
-                buff.SetBuffData(descriptionData);
+                buff.SetBuffData(playerEffect, descriptionData);
                 buff.SetVisible(true);
                 return;
             }

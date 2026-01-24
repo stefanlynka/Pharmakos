@@ -52,6 +52,10 @@ public abstract class Card : ICloneable, ITarget
 
         return OverrideName + (Controller.ShowCardIDs ? " " + ID : "");
     }
+    public virtual string GetText()
+    {
+        return Text;
+    }
 
     public virtual bool CanPlay()
     {

@@ -88,6 +88,7 @@ public class Offering
 
 public enum OfferingType
 {
+    None,
     Gold,
     Blood,
     Bone,

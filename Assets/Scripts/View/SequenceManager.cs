@@ -5,12 +5,15 @@ using UnityEngine;
 
 public class SequenceHandler
 {
-    public static SequenceHandler instance;
+    public static SequenceHandler Instance;
     public List<Sequence> Sequences = new List<Sequence>();
 
     public SequenceHandler() 
     {
-        if (instance == null) instance = this;
+        if (Instance == null)
+        {
+            Instance = this;
+        }
     }
 
     public void StartSequence(Sequence sequence)

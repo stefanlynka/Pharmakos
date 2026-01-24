@@ -13,7 +13,7 @@ public class Controller : MonoBehaviour
     public static Controller Instance;
 
     public static int starterSeed = 1;
-    public bool gamePaused = false;
+    public bool GamePaused = false;
 
     public static bool ActionDebugMode = true;
     public static bool AnimationDebugMode = false;
@@ -41,6 +41,8 @@ public class Controller : MonoBehaviour
     public PlayerDetails HumanPlayerDetails;
 
     private ScreenName CurrentScreen = ScreenName.Blank;
+
+    public List<Follower> SacrificedFollowers = new List<Follower>();
 
     //public List<Card> PlayerDeckDefinition = new List<Card>();
     //public List<Follower> PlayerStartingBattleRow = new List<Follower>();
@@ -78,6 +80,7 @@ public class Controller : MonoBehaviour
     public TextHandler TextHandler = new TextHandler();
     public PlayHistoryHandler PlayHistoryHandler = new PlayHistoryHandler();
     public ViewPlayHistoryHandler ViewPlayHistoryHandler;
+    public TrinketRewardHandler TrinketRewardHandler;
 
     private void Awake()
     {
@@ -113,7 +116,7 @@ public class Controller : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (gamePaused)
+            if (GamePaused)
             {
                 UnPauseGame();
             }
@@ -223,6 +226,8 @@ public class Controller : MonoBehaviour
     }
     public void StartNextLevel()
     {
+        PlayHistoryHandler.Clear();
+
         ProgressionHandler.SetupNextEnemy();
 
         LoadLevel();
@@ -260,22 +265,8 @@ public class Controller : MonoBehaviour
     public void RestartGame()
     {
 
-        //var persistentObjects = GameObject.FindObjectsOfType<GameObject>();
-        //foreach (var obj in persistentObjects)
-        //{
-        //    // Optional: Filter by a tag if you want to keep some system objects
-        //    Destroy(obj);
-        //}
-
-        //Application.Restart();
+        View.ClearPools();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-
-        //ClearLevel();
-        //isGameSetup = false;
-        //FirstTimeSetup();
-        //gamePaused = false;
-        //ScreenHandler.Instance.ShowScreen(ScreenName.Blank, true, false);
-        //ScreenHandler.Instance.ShowScreen(ScreenName.Start);
     }
     public void GoToOptions()
     {
@@ -283,6 +274,7 @@ public class Controller : MonoBehaviour
     }
     public void GoToPause()
     {
+        ScreenHandler.Instance.HideScreen(ScreenName.Options, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.Pause, true);
     }
     public void GoToStartScreen()
@@ -351,7 +343,7 @@ public class Controller : MonoBehaviour
         CardGainRewardHandler.gameObject.SetActive(true);
         CardGainRewardHandler.Load(ProgressionHandler.CurrentLevel);
 
-        ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
+        //ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.CardGainRewards);
     }
@@ -373,16 +365,16 @@ public class Controller : MonoBehaviour
 
     public void PauseGame()
     {
-        gamePaused = true;
+        GamePaused = true;
         //GameField.SetActive(false);
-        ScreenHandler.Instance.ShowScreen(ScreenName.Pause);
+        ScreenHandler.Instance.ShowScreen(ScreenName.Pause, true);
     }
     public void UnPauseGame()
     {
-        gamePaused = false;
+        GamePaused = false;
         GameField.SetActive(true);
-        ScreenHandler.Instance.HideScreen(ScreenName.Pause);
-        ScreenHandler.Instance.ShowScreen(ScreenName.Game);
+        ScreenHandler.Instance.HideScreen(ScreenName.Pause, true);
+        ScreenHandler.Instance.ShowScreen(ScreenName.Game, true);
     }
     public void QuitGame()
     {
@@ -411,7 +403,11 @@ public class Controller : MonoBehaviour
         {
             ClearLevel();
 
-            if (ProgressionHandler.CurrentLevel >= 10)
+            if (ProgressionHandler.CurrentLevel == 5)
+            {
+                GoToTrinketScreen();
+            }
+            else if (ProgressionHandler.CurrentLevel >= 10)
             {
                 ScreenHandler.Instance.ShowScreen(ScreenName.Success);
             }
@@ -439,12 +435,14 @@ public class Controller : MonoBehaviour
     }
     public void AddTrinket(Trinket trinket)
     {
-        HumanPlayerDetails.Trinkets.Add(trinket);
+        HumanPlayerDetails.Trinkets[0].Add(trinket);
     }
     public void RemoveCardsFromPlayerDeck(List<Card> cards)
     {
         foreach (Card card in cards)
         {
+            if (card is Follower follower) SacrificedFollowers.Add(follower);
+
             HumanPlayerDetails.DeckBlueprint[0].Remove(card);
         }
     }
@@ -558,5 +556,18 @@ public class Controller : MonoBehaviour
 
         ScreenHandler.Instance.ShowScreen(CurrentScreen, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+    }
+
+    public void GoToTrinketScreen()
+    {
+        CurrentScreen = ScreenName.TrinketRewardScreen;
+
+        GameField.SetActive(false);
+        TrinketRewardHandler.gameObject.SetActive(true);
+        TrinketRewardHandler.Load();
+
+        //ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
+        ScreenHandler.Instance.ShowScreen(ScreenName.TrinketRewardScreen);
     }
 }

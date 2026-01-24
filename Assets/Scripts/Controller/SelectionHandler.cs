@@ -45,6 +45,8 @@ public class SelectionHandler
 
     public void UpdateSelections()
     {
+        if (Controller.Instance.GamePaused) return;
+
         UpdateTargetUnderMouse();
         HandleMouseInputs();
         UpdateHeldCard();

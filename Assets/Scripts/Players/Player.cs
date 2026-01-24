@@ -60,6 +60,11 @@ public class Player : ITarget
 
     public bool DoneWithPlayingCards = false; // For AI only 
 
+    // Twist of Fate system
+    public int TurnNumber = 0; // Tracks turn count for TwistOfFate
+    public int TwistOfFateInterval = 10;
+    public List<Trinket> TwistOfFateBuffs = new List<Trinket>(); // Available TwistOfFate buffs for this player
+
     // Delayed Effects
     public List<DelayedGameAction> StartOfTurnActions = new List<DelayedGameAction>();
     public List<DelayedGameAction> EndOfTurnActions = new List<DelayedGameAction>();
@@ -72,7 +77,7 @@ public class Player : ITarget
     /// Not Deep Copied
     ///
     public GameState GameState {  get; private set; }
-    public Action OnHealthChange;
+    public Action<int> OnHealthChange;
     public Action OnOfferingsChange;
 
     public bool IsMyTurn
@@ -110,6 +115,8 @@ public class Player : ITarget
         GameState.TryAssignID(this);
 
         PlayerID = playerID;
+
+        TurnNumber = 0; // Reset turn counter at start of fight
 
         Health = StartingHealth;
 
@@ -159,9 +166,25 @@ public class Player : ITarget
         if (playerDetails.MajorRituals[pool] != null) MajorRitual = playerDetails.MajorRituals[pool].MakeBaseCopy();
 
         Trinkets.Clear();
-        foreach (Trinket trinket in playerDetails.Trinkets)
+        if (playerDetails.Trinkets.ContainsKey(pool))
         {
-            Trinkets.Add(trinket.MakeBaseCopy());
+            foreach (Trinket trinket in playerDetails.Trinkets[pool])
+            {
+                Trinkets.Add(trinket.MakeBaseCopy());
+            }
+        }
+
+        TwistOfFateBuffs.Clear();
+        if (playerDetails.TwistOfFateBuffs.ContainsKey(pool))
+        {
+            foreach (Trinket trinket in playerDetails.TwistOfFateBuffs[pool])
+            {
+                TwistOfFateBuffs.Add(trinket.MakeBaseCopy());
+            }
+        }
+        if (playerDetails.TwistOfFateIntervals.ContainsKey(pool))
+        {
+            TwistOfFateInterval = playerDetails.TwistOfFateIntervals[pool];
         }
 
         DeckBlueprint.Clear();
@@ -673,7 +696,7 @@ public class Player : ITarget
 
             sourceFollower.ApplyOnDrawBloodEffects(this, -value);
         }
-        OnHealthChange?.Invoke();
+        OnHealthChange?.Invoke(value);
 
         if (value != 0)
         {
@@ -804,10 +827,14 @@ public class PlayerDetails
     public int GoldPerTurn = 3;
     public string PortraitName = "";
 
+    // DeckBlueprint, Rituals, and more are Keyed on the enemy pool number so fights can scale in difficulty as the game progresses.
     public Dictionary<int, List<Card>> DeckBlueprint = new Dictionary<int, List<Card>>(); // Keyed on Pool
-    public Dictionary<int, Ritual> MinorRituals = new Dictionary<int, Ritual>();
+    public Dictionary<int, Ritual> MinorRituals = new Dictionary<int, Ritual>(); 
     public Dictionary<int, Ritual> MajorRituals = new Dictionary<int, Ritual>();
-    public List<Trinket> Trinkets = new List<Trinket>();
+    public Dictionary<int, List<Trinket>> Trinkets = new Dictionary<int, List<Trinket>>();
+    public Dictionary<int, List<Trinket>> TwistOfFateBuffs = new Dictionary<int, List<Trinket>>();
+    public Dictionary<int, int> TwistOfFateIntervals = new Dictionary<int, int>();
+    //public List<Trinket> Trinkets = new List<Trinket>();
     //public Ritual MinorRitual = null;
     //public Ritual MajorRitual = null;
     public List<Card> Rewards = new List<Card>();

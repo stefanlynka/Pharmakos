@@ -32,3 +32,21 @@ public static class StringExtensions
         return source;
     }
 }
+
+public static class Utility
+{
+    public static int GetPreyDamage(Follower follower)
+    {
+        int damage = 1;
+        Player otherPlayer = follower.Owner.GetOtherPlayer();
+        foreach (PlayerEffect playerEffect in otherPlayer.PlayerEffects)
+        {
+            if (playerEffect is GrowingBountiesTrinketEffectDef growing)
+            {
+                damage++;
+            }
+        }
+
+        return damage;
+    }
+}

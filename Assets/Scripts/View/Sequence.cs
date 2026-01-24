@@ -40,7 +40,7 @@ public class Sequence
 
     public void Start()
     {
-        SequenceHandler.instance.StartSequence(this);
+        SequenceHandler.Instance.StartSequence(this);
     }
     public void Clear()
     {

@@ -33,6 +33,15 @@ public abstract class StaticPlayerEffect : PlayerEffect
     {
         return "No Desc Found";
     }
+
+    public StaticPlayerEffect MakeBaseCopy()
+    {
+        // Get the type of the calling class
+        Type callingType = this.GetType();
+
+        // Create a new instance of the calling class
+        return (StaticPlayerEffect)Activator.CreateInstance(callingType);
+    }
 }
 public abstract class TrinketPlayerEffect : StaticPlayerEffect
 {

@@ -2,11 +2,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using static ProgressionHandler;
 
 
 public class AudioHandler : MonoBehaviour
 {
+    public Slider MusicSlider;
+    public Slider SoundEffectSlider;
+
     public AudioSource MusicSource;
     public AudioSource SoundEffectSource;
 
@@ -63,6 +67,11 @@ public class AudioHandler : MonoBehaviour
         MusicMultipliers[DeckName.Caves] = 0.2f;
         MusicMultipliers[DeckName.Delphi] = 0.4f;
         MusicMultipliers[DeckName.Underworld] = 0.25f;
+
+        userMusicVolume = PlayerPrefs.GetFloat("UserMusicVolume", 0.5f);
+        MusicSlider.value = userMusicVolume;
+        userSoundEffectVolume = PlayerPrefs.GetFloat("UserSoundEffectVolume", 0.5f);
+        SoundEffectSlider.value = userSoundEffectVolume;
     }
 
     public void PlayMusic(DeckName name)
@@ -120,12 +129,14 @@ public class AudioHandler : MonoBehaviour
     public void SetMusicVolume(float volume)
     {
         userMusicVolume = volume;
+        PlayerPrefs.SetFloat("UserMusicVolume", userMusicVolume);
 
         MusicSource.volume = baseMusicVolume * userMusicVolume * currentMusicMultiplier;
     }
     public void SetSoundEffectVolume(float volume)
     {
         userSoundEffectVolume = volume;
+        PlayerPrefs.SetFloat("UserSoundEffectVolume", userSoundEffectVolume);
     }
     public enum SoundEffectType
     {

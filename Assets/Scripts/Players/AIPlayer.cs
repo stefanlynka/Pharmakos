@@ -12,7 +12,7 @@ public class AIPlayer : Player
     private DecisionSet playerDecisions = new DecisionSet();
 
     GameStatePool pool;
-    private const int maxBranchSize = 5;
+    private const int maxBranchSize = 4;
 
     public enum AITurnPhase
     {
@@ -23,6 +23,24 @@ public class AIPlayer : Player
     }
 
     public AIPlayer() { }
+
+    public override void StartTurn()
+    {
+        // Increment turn counter
+        TurnNumber++;
+
+        // Give TwistOfFate card every X turns (every 3 turns)
+        if (TurnNumber % TwistOfFateInterval == 0 && TwistOfFateBuffs.Count > 0)
+        {
+            // Create a TwistOfFate card and add it to hand
+            TwistOfFate twistOfFateCard = new TwistOfFate();
+            twistOfFateCard.Init(this);
+            AddCardCopyToHandAction addCardAction = new AddCardCopyToHandAction(twistOfFateCard);
+            GameState.ActionHandler.AddAction(addCardAction);
+        }
+
+        base.StartTurn();
+    }
 
     private Task planningTask = null;
     private volatile bool planningCompleted = false;
@@ -115,9 +133,6 @@ public class AIPlayer : Player
                 TurnPhase = AITurnPhase.Setup;
                 var endTurnAction = new TryEndTurnAction(GameState.CurrentPlayer);
                 GameState.ActionHandler.AddAction(endTurnAction);
-                //var endTurnAction = new EndTurnAction(this);
-                //GameState.ActionHandler.AddAction(endTurnAction);
-                //GameState.EndTurn();
 
                 break;
         }
@@ -154,7 +169,7 @@ public class AIPlayer : Player
         Debug.LogWarning("Forced simple actions due to planning timeout or cancellation.");
     }
 
-    static int deepestDepth = 15;
+    static int deepestDepth = 12;
     public static DecisionSet GetBestOptions(GameState gameState, GameStatePool pool, CancellationToken cancellationToken, int currentDepth)
     {
         if (cancellationToken.IsCancellationRequested) return new DecisionSet(new List<PlayerDecision>(), float.NegativeInfinity);
@@ -290,21 +305,6 @@ public class AIPlayer : Player
                 SkipFollowerAttackDecision skipAttackDecision = new SkipFollowerAttackDecision(followerThatCanAttack.ID);
                 options.Add(skipAttackDecision);
             }
-
-            // Attack with Followers in any order
-            //List<Follower> followersThatCanAttack = gameState.AI.BattleRow.GetFollowersThatCanAttack();
-            //foreach (Follower follower in followersThatCanAttack)
-            //{
-            //    List<ITarget> attackTargets = follower.GetAttackTargets();
-            //    foreach (ITarget attackTarget in attackTargets)
-            //    {
-            //        int targetID = attackTarget.GetID();
-            //        AttackWithFollowerDecision attackDecision = new AttackWithFollowerDecision(follower.ID, attackTarget.GetID());
-            //        options.Add(attackDecision);
-            //    }
-            //    SkipFollowerAttackDecision skipAttackDecision = new SkipFollowerAttackDecision(follower.ID);
-            //    options.Add(skipAttackDecision);
-            //}
         }
 
 
@@ -355,38 +355,6 @@ public class AIPlayer : Player
         }
 
         return bestOptionSoFar;
-
-        //// Recursively test all options
-        //foreach (PlayerDecision option in options)
-        //{
-        //    //GameState simulatedGameState = new GameState(gameState, true);
-        //    GameState simulatedGameState = pool.Get(gameState, true);
-
-        //    AIPlayer thisPlayer = simulatedGameState.GetPlayer(gameState.AI.PlayerID) as AIPlayer;
-
-        //    if (thisPlayer == null)
-        //    {
-        //        Debug.LogError("ThisPlayer Should be AI");
-        //        // HOWTO Debugger break
-        //        //if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
-        //    }
-
-        //    // Apply this option to the simulatedGameState
-        //    bool result = thisPlayer.DoDecision(option);
-        //    if (!result)
-        //    {
-        //        Debug.LogError("Decision Failed");
-        //    }
-
-        //    // Recursively explore future options, returning the best one
-        //    DecisionSet bestOption = GetBestOptions(simulatedGameState, pool, cancellationToken);
-        //    if (bestOption.Utility > bestOptionSoFar.Utility)
-        //    {
-        //        List<PlayerDecision> updatedList = bestOption.Decisions;
-        //        updatedList.Insert(0, option);
-        //        bestOptionSoFar = new DecisionSet(updatedList, bestOption.Utility);
-        //    }
-        //}
     }
 
     public struct DecisionSet

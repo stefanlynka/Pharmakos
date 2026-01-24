@@ -41,7 +41,7 @@ public class SummonFollowerAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new MoveCardAnimation(this, Follower, Follower.Owner, GameZone.Hand, Follower.Owner, GameZone.BattleRow, 0.25f, Index),
+            new MoveCardAnimation(this, Follower, Follower.Owner, GameZone.Hand, Follower.Owner, GameZone.BattleRow, 0.2f, Index),
             //new SummonFollowerAnimation(this)
         };
         return animationActions;

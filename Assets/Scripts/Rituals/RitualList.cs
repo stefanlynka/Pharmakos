@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using Unity.VisualScripting;
 using UnityEngine;
 using static Unity.VisualScripting.Member;
 using static UnityEngine.GraphicsBuffer;
@@ -247,7 +248,7 @@ public class ApolloMajorEffectDef : StaticPlayerEffect
     protected override string GetDescription()
     {
         string myTarget = TargetPlayer.IsHuman ? "you play" : "your opponent plays";
-        string owner = Owner.IsHuman ? "your" : "your opponent's";
+        string owner = Owner.IsHuman ? "your" : "their";
         return "When " + myTarget + " a Spell, " + owner + " next Follower costs 1 less";
     }
 }
@@ -306,6 +307,11 @@ public class AresMinorEffectDef : StaticPlayerEffect
         Owner = owner;
         TargetPlayer = target;
     }
+    public AresMinorEffectDef(Player owner)
+    {
+        Owner = owner;
+        TargetPlayer = owner;
+    }
 
     public override void Apply()
     {
@@ -348,7 +354,6 @@ public class AresMinorEffectDef : StaticPlayerEffect
     protected override string GetDescription()
     {
         string myTarget = TargetPlayer.IsHuman ? "Your" : "Your opponent's";
-        string myOwner = Owner.IsHuman ? "your" : "your opponent's";
         return myTarget + " Followers have sprint";
     }
 }
@@ -468,18 +473,17 @@ public class AresMajorEffectDef : StaticPlayerEffect
     protected override string GetDescription()
     {
         string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
-        string myOwner = Owner.IsHuman ? "your" : "your opponent's";
         return "When one of " + myTarget + " Followers kills an enemy, it gains +1/+1 and can attack again";
     }
 }
 
-// When one of target Player's Followers draws blood, get a free spell with cost equal to the damage dealt
+// When one of your Followers draws blood, get a free spell with cost equal to the damage dealt
 public class AthenaMajor : Ritual
 {
     public AthenaMajor()
     {
         Name = "Athena\nMajor";
-        Description = "When one of target Player's Followers draws blood, get a free spell with cost equal to the damage dealt";
+        Description = "When one of your Followers draws blood, get a free spell with cost equal to the damage dealt";
 
         if (Controller.BlitzMode)
         {
@@ -577,12 +581,12 @@ public class AthenaMajorEffectDef : StaticPlayerEffect
     protected override string GetDescription()
     {
         string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
-        string myOwner = Owner.IsHuman ? "you get" : "your opponent gets";
-        return "When one of " + myTarget + " Followers draws blood, " + myOwner + " a free spell with cost equal to the damage dealt";
+        string myOwner = Owner.IsHuman ? "you" : "they";
+        return "When one of " + myTarget + " Followers draws blood, " + myOwner + " get a free spell with cost equal to the damage dealt";
     }
 }
 
-// When a Follower enters Target Player's BattleRow, your Followers gain +0/+1
+// When a Follower enters Target Player's BattleRow, gain 1 life and draw a card
 public class DemeterMajor : Ritual
 {
     private int attackGain = 0;
@@ -590,7 +594,7 @@ public class DemeterMajor : Ritual
     public DemeterMajor()
     {
         Name = "Demeter\nMajor";
-        Description = "When a Follower enters Target Player's BattleRow, your Followers gain +0/+1";
+        Description = "When a Follower enters Target Player's BattleRow, gain 1 life and draw a card";
 
         if (Controller.BlitzMode)
         {
@@ -598,8 +602,8 @@ public class DemeterMajor : Ritual
             Costs = new Dictionary<OfferingType, int>()
             {
                 {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 4 },
-                {OfferingType.Crop, 4 },
+                {OfferingType.Bone, 4 }, // 4
+                {OfferingType.Crop, 4 }, // 4
                 {OfferingType.Scroll, 0 },
             };
         }
@@ -666,31 +670,28 @@ public class DemeterMajorEffectDef : StaticPlayerEffect
     {
         if (follower.Owner != TargetPlayer) return;
 
-        foreach (Follower alliedFollower in Owner.BattleRow.Followers)
-        {
-            if (alliedFollower == follower) continue;
+        DrawCardAction drawCardAction = new DrawCardAction(Owner, Owner, 1);
+        Owner.GameState.ActionHandler.AddAction(drawCardAction, true);
 
-            ChangeStatsAction action = new ChangeStatsAction(alliedFollower, attackGain, healthGain);
-            Owner.GameState.ActionHandler.AddAction(action, true);
-        }
+        ChangePlayerHealthAction gainHealthAction = new ChangePlayerHealthAction(Owner, Owner, 1);
+        Owner.GameState.ActionHandler.AddAction(gainHealthAction, true);
+
     }
     protected override string GetDescription()
     {
         string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
-        string myOwner = Owner.IsHuman ? "your" : "your opponent's";
-        return "When a Follower enters " + myTarget + " BattleRow, " + myOwner + " Followers gain +0/+1";
+        string myOwner = Owner.IsHuman ? "you gain 1 life and draw 1 card" : "your opponent gains 1 life and draws 1 card";
+        return "When a Follower enters " + myTarget + " BattleRow, " + myOwner;
     }
 }
 
-// When one of Target Player's Followers dies, your Followers gain +1/+0
+// When one of Target Player's Followers dies, one of your Followers gains its attack
 public class DemeterMinor : Ritual
 {
-    private int attackGain = 1;
-    private int healthGain = 0;
     public DemeterMinor()
     {
         Name = "Demeter\nMinor";
-        Description = "When one of Target Player's Followers dies, your Followers gain +1/+0";
+        Description = "When one of Target Player's Followers dies, one of your Followers gains its attack";
 
         if (Controller.BlitzMode)
         {
@@ -698,8 +699,8 @@ public class DemeterMinor : Ritual
             Costs = new Dictionary<OfferingType, int>()
             {
                 {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 4 },
-                {OfferingType.Crop, 4 },
+                {OfferingType.Bone, 0 }, // 4
+                {OfferingType.Crop, 0 }, // 4
                 {OfferingType.Scroll, 0 },
             };
         }
@@ -726,22 +727,17 @@ public class DemeterMinor : Ritual
     public override void ExecuteEffect(ITarget target)
     {
         if (target is not Player targetPlayer) return;
-        DemeterMinorEffectDef demeterMajorEffectDef = new DemeterMinorEffectDef(Owner, targetPlayer, attackGain, healthGain);
-        Owner.AddPlayerEffect(demeterMajorEffectDef);
+        DemeterMinorEffectDef demeterMinorEffectDef = new DemeterMinorEffectDef(Owner, targetPlayer);
+        Owner.AddPlayerEffect(demeterMinorEffectDef);
     }
 }
 
 public class DemeterMinorEffectDef : StaticPlayerEffect
 {
-    private int attackGain = 0;
-    private int healthGain = 0;
-
-    public DemeterMinorEffectDef(Player owner, Player target, int attackGain, int healthGain)
+    public DemeterMinorEffectDef(Player owner, Player target)
     {
         Owner = owner;
         TargetPlayer = target;
-        this.attackGain = attackGain;
-        this.healthGain = healthGain;
     }
 
     public override void Apply()
@@ -766,19 +762,27 @@ public class DemeterMinorEffectDef : StaticPlayerEffect
     {
         if (follower.Owner != TargetPlayer) return;
 
-        foreach (Follower alliedFollower in Owner.BattleRow.Followers)
-        {
-            if (alliedFollower == follower) continue;
+        // Get the attack value of the dead follower
+        int attackGain = follower.GetCurrentAttack();
+        if (attackGain <= 0) return;
 
-            ChangeStatsAction action = new ChangeStatsAction(alliedFollower, attackGain, healthGain);
-            Owner.GameState.ActionHandler.AddAction(action, true);
-        }
+        // Get all of owner's followers
+        List<Follower> alliedFollowers = new List<Follower>(Owner.BattleRow.Followers);
+        if (alliedFollowers.Count == 0) return;
+
+        // Select one random follower
+        int idx = Owner.GameState.RNG.Next(0, alliedFollowers.Count);
+        Follower targetFollower = alliedFollowers[idx];
+
+        // Give that follower the attack value
+        ChangeStatsAction action = new ChangeStatsAction(targetFollower, attackGain, 0);
+        Owner.GameState.ActionHandler.AddAction(action, true);
     }
     protected override string GetDescription()
     {
         string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
-        string myOwner = Owner.IsHuman ? "your" : "your opponent's";
-        return "When one of " + myTarget + " Followers dies, " + myOwner + " Followers gain +1/+0";
+        string myOwner = Owner.IsHuman ? "one of your" : "one of your opponent's";
+        return "When one of " + myTarget + " Followers dies, " + myOwner + " Followers gains its attack";
     }
 }
 // Sacrifice a Follower: Gain 1 Gold, Draw 2 Cards, Gain 3 Life
@@ -966,9 +970,9 @@ public class HadesMajorEffectDef : StaticPlayerEffect
 
     protected override string GetDescription()
     {
-        string myTarget = TargetPlayer.IsHuman ? "your" : "this player's";
+        string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
         string myTargetSingular = TargetPlayer.IsHuman ? "you" : "they";
-        return "At the end of each of " + myTarget + " turns, " + myTargetSingular + " summon a copy of the last Follower that died (Attackers die second)";
+        return "At the end of each of " + myTarget + " turns, " + myTargetSingular + " summon a copy of the last Follower that died";
     }
 }
 
@@ -1077,8 +1081,8 @@ public class HephaestusMajorEffectDef : StaticPlayerEffect
     protected override string GetDescription()
     {
         string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
-        string myOwner = Owner.IsHuman ? "you get" : "your opponent gets";
-        string singularTarget = TargetPlayer.IsHuman ? "you" : "your opponent";
+        string myOwner = Owner.IsHuman ? "you get" : "they get";
+        string singularTarget = TargetPlayer.IsHuman ? "you" : "they";
         return "When one of " + myTarget + " Followers dies, " + myOwner + " a copy of every spell " + singularTarget + " cast on on it. The copies costs 1 less.";
     }
 }
@@ -1234,23 +1238,24 @@ public class HestiaMinor : Ritual
     }
 }
 
-// When a Follower attacks target Player, it takes 1 damage
+
+// When your life total changes, deal 2 damage to a random enemy
 public class HeraMajor : Ritual
 {
     public HeraMajor()
     {
         Name = "Hera\nMajor";
-        Description = "When a Follower attacks you, it takes 1 damage";
-        
+        Description = "When your life total changes, deal 2 damage to a random enemy";
+
         if (Controller.BlitzMode)
         {
             // BlitzMode costs - reduced non-gold costs since they reset each turn
             Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 4 },
+                {OfferingType.Blood, 4 }, // 4
                 {OfferingType.Bone, 0 },
-                {OfferingType.Crop, 2 },
-                {OfferingType.Scroll, 1 },
+                {OfferingType.Crop, 3 }, // 3
+                {OfferingType.Scroll, 1 }, // 1
             };
         }
         else
@@ -1292,20 +1297,13 @@ public class HeraMajorEffectDef : StaticPlayerEffect
 
     public override void Apply()
     {
-        Owner.GameState.FollowerEnters += FollowerEnters;
-
-        foreach (Follower follower in TargetPlayer.GetOtherPlayer().BattleRow.Followers)
-        {
-            CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
-            customEffectDef.ApplyInstanceAction = CustomEffectAction;
-            follower.InnateEffects.Add(customEffectDef);
-            customEffectDef.Apply(follower);
-        }
+        TargetPlayer.OnHealthChange -= OnTargetPlayerHealthChanged;
+        TargetPlayer.OnHealthChange += OnTargetPlayerHealthChanged;
     }
 
     public override void Unapply()
     {
-        Owner.GameState.FollowerEnters -= FollowerEnters;
+        TargetPlayer.OnHealthChange -= OnTargetPlayerHealthChanged;
     }
 
     public override PlayerEffect DeepCopy(Player newOwner)
@@ -1316,31 +1314,28 @@ public class HeraMajorEffectDef : StaticPlayerEffect
         return copy;
     }
 
-    protected void FollowerEnters(Follower follower)
+    private void OnTargetPlayerHealthChanged(int healthChange)
     {
-        if (follower.Owner == TargetPlayer) return;
+        if (healthChange == 0) return;
 
-        ApplyEffectToFollower(follower);
-    }
+        Player enemy = TargetPlayer.GetOtherPlayer();
 
-    private void ApplyEffectToFollower(Follower follower)
-    {
-        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
-        customEffectDef.ApplyInstanceAction = CustomEffectAction;
-        follower.InnateEffects.Add(customEffectDef);
-    }
+        List<ITarget> possibleTargets = new List<ITarget>();
+        possibleTargets.Add(enemy);
+        possibleTargets.AddRange(enemy.BattleRow.Followers);
 
-    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
-    {
-        TakeDamageWhenAttackingPlayerInstance takeDamageInstance = new TakeDamageWhenAttackingPlayerInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnAttack);
-        takeDamageInstance.Init(TargetPlayer);
-        effectDef.EffectInstances.Add(takeDamageInstance);
+        if (possibleTargets.Count == 0) return;
+
+        int idx = TargetPlayer.GameState.RNG.Next(0, possibleTargets.Count);
+        ITarget randomEnemy = possibleTargets[idx];
+
+        DealDamageAction damageAction = new DealDamageAction(Owner, randomEnemy, 2);
+        TargetPlayer.GameState.ActionHandler.AddAction(damageAction);
     }
     protected override string GetDescription()
     {
-        string notTheTarget= !TargetPlayer.IsHuman ? "your" : "your opponent's";
-        string theTarget = !TargetPlayer.IsHuman ? "your opponent" : "you";
-        return "When one of " + notTheTarget + " Followers attacks " +  theTarget + ", it takes 1 damage";
+        string owner = Owner.IsHuman ? "your" : "your opponent's";
+        return "When " + owner + " life total changes, deal 2 damage to a random enemy";
     }
 }
 
@@ -1508,14 +1503,14 @@ public class ZeusMinor : Ritual
     }
 }
 
-// Deal 5 damage to a target
+// Deal 4 damage to a target
 public class ZeusMajor : Ritual
 {
-    private int damage = 6;
+    private int damage = 4;
     public ZeusMajor()
     {
         Name = "Zeus\nMajor";
-        Description = "Deal 6 Damage";
+        Description = "Deal 4 Damage";
 
         if (Controller.BlitzMode)
         {

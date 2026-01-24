@@ -129,9 +129,15 @@ public class Prey1 : Follower
 
     private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        ChangePlayerHealthInstance changePlayerHealthInstance = new ChangePlayerHealthInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
-        changePlayerHealthInstance.Init(-1);
+        PreyDiedInstance changePlayerHealthInstance = new PreyDiedInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
         effectDef.EffectInstances.Add(changePlayerHealthInstance);
+    }
+
+    public override string GetText()
+    {
+        int damage = Utility.GetPreyDamage(this);
+
+        return "On Death: Lose " + damage + " Health";
     }
 }
 // OnDeath: Lose 1 Health
@@ -199,7 +205,7 @@ public class NemeanLion : Follower
             { OfferingType.Scroll, 0},
         };
 
-        Type = FollowerType.Beast;
+        Type = FollowerType.Monster;
 
         SetBaseStats(3, 4);
 
@@ -301,7 +307,7 @@ public class Rat : Follower
             { OfferingType.Scroll, 0},
         };
 
-        Type = FollowerType.Beast;
+        Type = FollowerType.Monster;
 
         SetBaseStats(1, 1);
 
@@ -338,7 +344,7 @@ public class Rat : Follower
 /// OBJECTS
 /// 
 
-// OnAttacked: Reduce attacker's Attack by 1
+// OnDamaged: Reduce attacker's Attack by 1
 public class Filth : Follower
 {
     public Filth() : base()
@@ -356,7 +362,7 @@ public class Filth : Follower
 
         SetBaseStats(0, 1);
 
-        Text = "Taunt\nOn Attacked: Reduce attacker's Attack by 1";
+        Text = "Taunt\nOn Damaged: Reduce attacker's Attack by 1";
         Icon = IconType.Target;
 
         SetupInnateEffects();
@@ -1379,12 +1385,21 @@ public class Menelaus : Follower
     }
     private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
-        SummonPeltastInstance newEffectInstance = new SummonPeltastInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDamaged);
-        effectDef.EffectInstances.Add(newEffectInstance);
+        //SummonPeltastInstance newEffectInstance = new SummonPeltastInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDamaged);
+        //effectDef.EffectInstances.Add(newEffectInstance);
 
-        SummonPeltastInstance newEffectInstance2 = new SummonPeltastInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnDamaged);
-        newEffectInstance2.SummonPositionOffset = 1;
-        effectDef.EffectInstances.Add(newEffectInstance2);
+        //SummonPeltastInstance newEffectInstance2 = new SummonPeltastInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnDamaged);
+        //newEffectInstance2.SummonPositionOffset = 1;
+        //effectDef.EffectInstances.Add(newEffectInstance2);
+
+
+        SummonFollowerInstance summonPeltastInstance = new SummonFollowerInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDamaged);
+        summonPeltastInstance.Init(typeof(Peltast));
+        effectDef.EffectInstances.Add(summonPeltastInstance);
+
+        SummonFollowerInstance summonPeltastInstance2 = new SummonFollowerInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnDamaged);
+        summonPeltastInstance2.Init(typeof(Peltast), 2);
+        effectDef.EffectInstances.Add(summonPeltastInstance2);
     }
 }
 
@@ -4128,5 +4143,52 @@ public class DevKill : Spell
 
         DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
         Owner.GameState.ActionHandler.AddAction(damageAction);
+    }
+}
+
+// Deal 100 damage
+public class TwistOfFate : Spell
+{
+    public TwistOfFate()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 0},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        OverrideName = "Twist of Fate";
+        Text = "The Gods begin to favour your foe...";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllPlayers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        // Grant the AI player a random TwistOfFateBuff trinket
+        if (Owner is AIPlayer aiPlayer && aiPlayer.TwistOfFateBuffs.Count > 0)
+        {
+            // Pick a random TwistOfFateBuff
+            int randomIndex = Owner.GameState.RNG.Next(0, aiPlayer.TwistOfFateBuffs.Count);
+            Trinket randomBuff = aiPlayer.TwistOfFateBuffs[randomIndex];
+            
+            // Create a copy and apply it
+            Trinket buffCopy = randomBuff.MakeBaseCopy();
+            buffCopy.Owner = aiPlayer;
+            buffCopy.ApplyEffect(aiPlayer);
+        }
     }
 }

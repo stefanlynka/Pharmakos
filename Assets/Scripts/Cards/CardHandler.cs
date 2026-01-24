@@ -114,7 +114,9 @@ public static class CardHandler
     };
     public static List<Follower> AllFollowers = new List<Follower>();
     public static List<Follower> AllMonsters = new List<Follower>();
-    public static List<Follower> SmallMonsters = new List<Follower>();
+    //public static List<Follower> SmallMonsters = new List<Follower>();
+    public static SortedDictionary<int, List<Follower>> MonstersByCost = new SortedDictionary<int, List<Follower>>(); // Key=2 includes ONLY monsters that cost 2
+    public static SortedDictionary<int, List<Follower>> MonstersByCostInclusive = new SortedDictionary<int, List<Follower>>(); // Key=2 includes monsters that cost 0, 1, and 2
     public static List<Spell> AllSpells = new List<Spell>();
     public static Dictionary<int, List<Spell>> SpellsByCost = new Dictionary<int, List<Spell>>();
     public static int HighestSpellCost = 0;
@@ -137,7 +139,11 @@ public static class CardHandler
                 if (follower.Type == Follower.FollowerType.Monster)
                 {
                     AllMonsters.Add(follower);
-                    if (follower.Costs[OfferingType.Gold] <= 1) SmallMonsters.Add(follower);
+                    //if (follower.Costs[OfferingType.Gold] <= 1) SmallMonsters.Add(follower);
+
+                    int followerCost = follower.Costs[OfferingType.Gold];
+                    if (!MonstersByCost.ContainsKey(cost)) MonstersByCost.Add(cost, new List<Follower>());
+                    MonstersByCost[followerCost].Add(follower);
                 }
             }
             else if (card is Spell spell)
@@ -152,7 +158,20 @@ public static class CardHandler
                 if (cost > HighestSpellCost) HighestSpellCost = cost;
             }
         }
+
+        MonstersByCostInclusive.Clear();
+        List<Follower> previousMonsters = new List<Follower>();
+        foreach (KeyValuePair<int, List<Follower>> monsterGroup in MonstersByCost)
+        {
+            int cost = monsterGroup.Key;
+            MonstersByCostInclusive[cost] = new List<Follower>();
+            MonstersByCostInclusive[cost].AddRange(previousMonsters);
+            MonstersByCostInclusive[cost].AddRange(monsterGroup.Value);
+
+            previousMonsters.AddRange(monsterGroup.Value);
+        }
     }
+
 
     public static Sprite GetSprite(Card card)
     {
@@ -202,5 +221,21 @@ public static class CardHandler
         }
 
         return rewards;
+    }
+
+    public static List<Follower> GetMonsters(int maxCost = 6)
+    {
+        List<Follower> monsters = new List<Follower>();
+
+        for (int i = maxCost; i >= 0; i--)
+        {
+            if (MonstersByCostInclusive.ContainsKey(maxCost))
+            {
+                monsters.AddRange(MonstersByCostInclusive[i]);
+                return monsters;
+            }
+        }
+
+        return monsters;
     }
 }

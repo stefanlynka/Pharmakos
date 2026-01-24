@@ -505,6 +505,22 @@ public class ChangePlayerHealthInstance : TriggeredFollowerEffectInstance
     }
 }
 
+public class PreyDiedInstance : TriggeredFollowerEffectInstance
+{
+    public PreyDiedInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
+
+    public void Init()
+    {
+    }
+
+    public override void Trigger(ITarget target = null, int triggerAmount = 0)
+    {
+        int damage = Utility.GetPreyDamage(AffectedFollower);
+        ChangePlayerHealthAction action = new ChangePlayerHealthAction(AffectedFollower.Owner, AffectedFollower, -damage);
+        AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
+    }
+}
+
 public class HealFollowersInstance : TriggeredFollowerEffectInstance
 {
     public int ConstantAmount = 1;
@@ -582,10 +598,20 @@ public class SummonRandomMonsterInstance : TriggeredFollowerEffectInstance
     }
     public override void Trigger(ITarget target = null, int amount = 0)
     {
-        if (CardHandler.SmallMonsters.Count == 0) return;
+        int maxCost = 1;
+        foreach (PlayerEffect playerEffect in AffectedFollower.Owner.PlayerEffects)
+        {
+            if (playerEffect is EverDeeperTrinketEffectDef corridorBuff)
+            {
+                maxCost++;
+            }
+        }
 
-        int randomMonsterIndex = AffectedFollower.Owner.GameState.RNG.Next(0, CardHandler.SmallMonsters.Count);
-        Follower monster = (Follower)CardHandler.SmallMonsters[randomMonsterIndex].Clone(); 
+        List<Follower> potentialMonsters = CardHandler.GetMonsters(maxCost);
+        if (potentialMonsters.Count == 0) return;
+
+        int randomMonsterIndex = AffectedFollower.Owner.GameState.RNG.Next(0, potentialMonsters.Count);
+        Follower monster = (Follower)potentialMonsters[randomMonsterIndex].Clone(); 
         monster.Init(AffectedFollower.Owner);
 
         int index = AffectedFollower.Owner.BattleRow.GetIndexOfFollower(AffectedFollower) + SummonPositionOffset;

@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
+/// <summary>
+/// DEPRECATED - Use MoveCardAnimation
+/// </summary>
 public class SummonFollowerAnimation : AnimationAction
 {
     private SummonFollowerAction summonFollowerAction;

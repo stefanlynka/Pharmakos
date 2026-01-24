@@ -118,5 +118,6 @@ public enum ScreenName
     DeckScreenButton,
     PlayHistoryButton,
     Options,
+    TrinketRewardScreen,
 }
 

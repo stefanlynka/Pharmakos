@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static TheLostReturnTrinket;
 using static Unity.VisualScripting.Member;
 
 
@@ -11,6 +13,7 @@ public class AresWhetstoneTrinket : Trinket<AresWhetstoneTrinketEffectDef>
     {
         Name = "Ares Whetstone";
         Description = "Your Rituals cost 1 less Blood";
+        RelevantOffering = OfferingType.Blood;
     }
 }
 public class AresWhetstoneTrinketEffectDef : TrinketPlayerEffect
@@ -52,6 +55,7 @@ public class FuneralAmphoraTrinket : Trinket<FuneralAmphoraTrinketEffectDef>
     {
         Name = "Funeral Amphora";
         Description = "Your Rituals cost 1 less Bone";
+        RelevantOffering = OfferingType.Bone;
     }
 }
 public class FuneralAmphoraTrinketEffectDef : TrinketPlayerEffect
@@ -93,6 +97,7 @@ public class DemetersSickleTrinket : Trinket<DemetersSickleTrinketEffectDef>
     {
         Name = "Demeter's Sickle";
         Description = "Your Rituals cost 1 less Crop";
+        RelevantOffering = OfferingType.Crop;
     }
 }
 public class DemetersSickleTrinketEffectDef : TrinketPlayerEffect
@@ -134,6 +139,7 @@ public class AthenasQuillTrinket : Trinket<AthenasQuillTrinketEffectDef>
     {
         Name = "Athena's Quill";
         Description = "Your Rituals cost 1 less Scroll";
+        RelevantOffering = OfferingType.Scroll;
     }
 }
 public class AthenasQuillTrinketEffectDef : TrinketPlayerEffect
@@ -444,6 +450,28 @@ public class CyclopsEyeTrinketEffectDef : TrinketPlayerEffect
         return "When one of your Followers attacks directly in front of them, they gain +1 attack";
     }
 }
+// Custom effect instance for CyclopsEye trinket
+public class CyclopsEyeAttackInstance : TriggeredFollowerEffectInstance
+{
+    public CyclopsEyeAttackInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0)
+        : base(def, affectedFollower, offsetFromOwner, effectNum, EffectTrigger.OnAttack) { }
+
+    public override void Trigger(ITarget target = null, int amount = 0)
+    {
+        if (target is Follower targetFollower)
+        {
+            // Check if target is directly in front (using LowVision range)
+            float attackerPos = AffectedFollower.GetPositionInBattleRow();
+            List<ITarget> targetsInFront = targetFollower.Owner.BattleRow.GetTargetsInLowVisionRange(attackerPos);
+            if (targetsInFront.Contains(targetFollower))
+            {
+                ChangeStatsAction statsAction = new ChangeStatsAction(AffectedFollower, 1, 0);
+                AffectedFollower.Owner.GameState.ActionHandler.AddAction(statsAction, true, true);
+            }
+        }
+    }
+}
+
 
 // Pan's Flute: Followers have frenzy and +1/+0 the turn they're summoned
 public class PansFluteTrinket : Trinket<PansFluteTrinketEffectDef>
@@ -569,6 +597,45 @@ public class HermesSandalsTrinketEffectDef : TrinketPlayerEffect
     protected override string GetDescription()
     {
         return "The first follower you play each turn has sprint";
+    }
+}
+// Helper action to reset HermesSandals flag
+public class ResetHermesSandalsFlagAction : GameAction
+{
+    private HermesSandalsTrinketEffectDef effectDef;
+
+    public ResetHermesSandalsFlagAction(HermesSandalsTrinketEffectDef effectDef)
+    {
+        this.effectDef = effectDef;
+    }
+
+    public override GameAction DeepCopy(Player newOwner)
+    {
+        ResetHermesSandalsFlagAction copy = (ResetHermesSandalsFlagAction)MemberwiseClone();
+        // Find the corresponding effect def in the new owner
+        foreach (PlayerEffect effect in newOwner.PlayerEffects)
+        {
+            if (effect is HermesSandalsTrinketEffectDef hermesEffect)
+            {
+                copy.effectDef = hermesEffect;
+                break;
+            }
+        }
+        return copy;
+    }
+
+    public override void Execute(bool simulated = false, bool success = true)
+    {
+        if (effectDef != null)
+        {
+            effectDef.ResetFlag();
+        }
+        base.Execute(simulated);
+    }
+
+    public override List<AnimationAction> GetAnimationActions()
+    {
+        return new List<AnimationAction>();
     }
 }
 
@@ -706,6 +773,45 @@ public class RodOfAsclepiusTrinketEffectDef : TrinketPlayerEffect
         return "The first time one of your followers dies on your turn, revive it with 1 health";
     }
 }
+// Helper action to reset RodOfAsclepius flag
+public class ResetRodOfAsclepiusFlagAction : GameAction
+{
+    private RodOfAsclepiusTrinketEffectDef effectDef;
+
+    public ResetRodOfAsclepiusFlagAction(RodOfAsclepiusTrinketEffectDef effectDef)
+    {
+        this.effectDef = effectDef;
+    }
+
+    public override GameAction DeepCopy(Player newOwner)
+    {
+        ResetRodOfAsclepiusFlagAction copy = (ResetRodOfAsclepiusFlagAction)MemberwiseClone();
+        foreach (PlayerEffect effect in newOwner.PlayerEffects)
+        {
+            if (effect is RodOfAsclepiusTrinketEffectDef rodEffect)
+            {
+                copy.effectDef = rodEffect;
+                break;
+            }
+        }
+        return copy;
+    }
+
+    public override void Execute(bool simulated = false, bool success = true)
+    {
+        if (effectDef != null)
+        {
+            effectDef.ResetFlag();
+        }
+        base.Execute(simulated);
+    }
+
+    public override List<AnimationAction> GetAnimationActions()
+    {
+        return new List<AnimationAction>();
+    }
+}
+
 
 // Hydra's Scale: When you summon a follower that costs 5 or more, summon a copy of it.
 public class HydrasScaleTrinket : Trinket<HydrasScaleTrinketEffectDef>
@@ -1011,106 +1117,380 @@ public class PandorasBoxTrinketEffectDef : TrinketPlayerEffect
 }
 
 
-
-// Helper Functions
-
-// Helper action to reset HermesSandals flag
-public class ResetHermesSandalsFlagAction : GameAction
+// A trinket that grants the effect of the AresMinor Ritual
+public class AresMinorTrinket : Trinket<AresMinorEffectDef>
 {
-    private HermesSandalsTrinketEffectDef effectDef;
-
-    public ResetHermesSandalsFlagAction(HermesSandalsTrinketEffectDef effectDef)
+    public AresMinorTrinket()
     {
-        this.effectDef = effectDef;
-    }
-
-    public override GameAction DeepCopy(Player newOwner)
-    {
-        ResetHermesSandalsFlagAction copy = (ResetHermesSandalsFlagAction)MemberwiseClone();
-        // Find the corresponding effect def in the new owner
-        foreach (PlayerEffect effect in newOwner.PlayerEffects)
-        {
-            if (effect is HermesSandalsTrinketEffectDef hermesEffect)
-            {
-                copy.effectDef = hermesEffect;
-                break;
-            }
-        }
-        return copy;
-    }
-
-    public override void Execute(bool simulated = false, bool success = true)
-    {
-        if (effectDef != null)
-        {
-            effectDef.ResetFlag();
-        }
-        base.Execute(simulated);
-    }
-
-    public override List<AnimationAction> GetAnimationActions()
-    {
-        return new List<AnimationAction>();
+        Name = "Ares Minor";
+        Description = "Your Followers have Sprint";
     }
 }
 
-// Custom effect instance for CyclopsEye trinket
-public class CyclopsEyeAttackInstance : TriggeredFollowerEffectInstance
-{
-    public CyclopsEyeAttackInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0) 
-        : base(def, affectedFollower, offsetFromOwner, effectNum, EffectTrigger.OnAttack) { }
 
-    public override void Trigger(ITarget target = null, int amount = 0)
+// A trinket that grants the effect of the AresMinor Ritual
+public class AresMajorTrinket : Trinket<AresMajorEffectDef>
+{
+    public AresMajorTrinket()
     {
-        if (target is Follower targetFollower)
-        {
-            // Check if target is directly in front (using LowVision range)
-            float attackerPos = AffectedFollower.GetPositionInBattleRow();
-            List<ITarget> targetsInFront = targetFollower.Owner.BattleRow.GetTargetsInLowVisionRange(attackerPos);
-            if (targetsInFront.Contains(targetFollower))
-            {
-                ChangeStatsAction statsAction = new ChangeStatsAction(AffectedFollower, 1, 0);
-                AffectedFollower.Owner.GameState.ActionHandler.AddAction(statsAction, true, true);
-            }
-        }
+        Name = "Ares Major";
+        Description = "When one of your Followers kills an enemy, it gains +1/+1 and can attack again";
     }
 }
 
-// Helper action to reset RodOfAsclepius flag
-public class ResetRodOfAsclepiusFlagAction : GameAction
+// Twisting Corridors: At the end of your turn, summon a Corridor
+public class TwistingCorridorsTrinket : Trinket<TwistingCorridorsEffectDef>
 {
-    private RodOfAsclepiusTrinketEffectDef effectDef;
-
-    public ResetRodOfAsclepiusFlagAction(RodOfAsclepiusTrinketEffectDef effectDef)
+    public TwistingCorridorsTrinket()
     {
-        this.effectDef = effectDef;
+        Name = "Twisting Corridors";
+        Description = "At the end of your turn, summon a Corridor";
+    }
+}
+public class TwistingCorridorsEffectDef : TrinketPlayerEffect
+{
+    SummonFollowerCopyAction summonAction;
+    DelayedGameAction delayedAction;
+
+    public TwistingCorridorsEffectDef(Player owner)
+    {
+        Owner = owner;
+        TargetPlayer = owner;
     }
 
-    public override GameAction DeepCopy(Player newOwner)
+    public override void Apply()
     {
-        ResetRodOfAsclepiusFlagAction copy = (ResetRodOfAsclepiusFlagAction)MemberwiseClone();
-        foreach (PlayerEffect effect in newOwner.PlayerEffects)
-        {
-            if (effect is RodOfAsclepiusTrinketEffectDef rodEffect)
-            {
-                copy.effectDef = rodEffect;
-                break;
-            }
-        }
+        summonAction = new SummonFollowerCopyAction(TargetPlayer, new Corridor());
+        delayedAction = new DelayedGameAction(summonAction, false);
+        TargetPlayer.EndOfTurnActions.Add(delayedAction);
+    }
+
+    public override void Unapply()
+    {
+        TargetPlayer.EndOfTurnActions.Remove(delayedAction);
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        TwistingCorridorsEffectDef copy = (TwistingCorridorsEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
         return copy;
     }
 
-    public override void Execute(bool simulated = false, bool success = true)
+    protected override string GetDescription()
     {
-        if (effectDef != null)
-        {
-            effectDef.ResetFlag();
-        }
-        base.Execute(simulated);
+        return "At the end of your turn, summon a Corridor";
+    }
+}
+
+// Twisting Corridors: Your Corridors can summon larger monsters
+public class EverDeeperTrinket : Trinket<EverDeeperTrinketEffectDef>
+{
+    public EverDeeperTrinket()
+    {
+        Name = "Twisting Corridors Buff";
+        Description = "Your Corridors can summon larger monsters";
+    }
+}
+public class EverDeeperTrinketEffectDef : TrinketPlayerEffect
+{
+
+    public EverDeeperTrinketEffectDef(Player owner)
+    {
+        Owner = owner;
+        TargetPlayer = owner;
     }
 
-    public override List<AnimationAction> GetAnimationActions()
+    public override void Apply()
     {
-        return new List<AnimationAction>();
+        //summonAction = new SummonFollowerCopyAction(TargetPlayer, new Corridor());
+        //delayedAction = new DelayedGameAction(summonAction, false);
+        //TargetPlayer.EndOfTurnActions.Add(delayedAction);
+    }
+
+    public override void Unapply()
+    {
+        //TargetPlayer.EndOfTurnActions.Remove(delayedAction);
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        TwistingCorridorsEffectDef copy = (TwistingCorridorsEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
+        return copy;
+    }
+
+    protected override string GetDescription()
+    {
+        return "Your Corridors can summon larger monsters";
+    }
+}
+
+
+
+
+// TheGreatHunt: At the start of your turn, summon a Prey for both players
+public class TheGreatHuntTrinket : Trinket<TheGreatHuntTrinketEffectDef>
+{
+    public TheGreatHuntTrinket()
+    {
+        Name = "The Great Hunt";
+        Description = "At the start of your turn, summon a Prey for both players";
+    }
+}
+public class TheGreatHuntTrinketEffectDef : TrinketPlayerEffect
+{
+    SummonFollowerCopyAction summonAction;
+    SummonFollowerCopyAction summonAction2;
+    DelayedGameAction delayedAction;
+    DelayedGameAction delayedAction2;
+
+    public TheGreatHuntTrinketEffectDef(Player owner)
+    {
+        Owner = owner;
+        TargetPlayer = owner;
+    }
+
+    public override void Apply()
+    {
+        Player otherPlayer = TargetPlayer.GetOtherPlayer();
+        summonAction = new SummonFollowerCopyAction(TargetPlayer, new Prey2());
+        delayedAction = new DelayedGameAction(summonAction, false);
+        TargetPlayer.StartOfTurnActions.Add(delayedAction);
+
+        summonAction2 = new SummonFollowerCopyAction(otherPlayer, new Prey2());
+        delayedAction2 = new DelayedGameAction(summonAction2, false);
+        TargetPlayer.StartOfTurnActions.Add(delayedAction2);
+    }
+
+    public override void Unapply()
+    {
+        Player otherPlayer = TargetPlayer.GetOtherPlayer();
+
+        TargetPlayer.StartOfTurnActions.Remove(delayedAction);
+        otherPlayer.StartOfTurnActions.Remove(delayedAction2);
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        TheGreatHuntTrinketEffectDef copy = (TheGreatHuntTrinketEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
+        return copy;
+    }
+
+    protected override string GetDescription()
+    {
+        return "At the start of your turn, summon a Prey for both players";
+    }
+}
+
+// Growing Bounties: Your opponent's Prey deal them more damage
+public class GrowingBountiesTrinket : Trinket<GrowingBountiesTrinketEffectDef>
+{
+    public GrowingBountiesTrinket()
+    {
+        Name = "Growing Bounties";
+        Description = "Your opponent's Prey deal them more damage";
+    }
+}
+public class GrowingBountiesTrinketEffectDef : TrinketPlayerEffect
+{
+    public GrowingBountiesTrinketEffectDef(Player owner)
+    {
+        Owner = owner;
+        TargetPlayer = owner;
+    }
+
+    public override void Apply()
+    {
+        
+    }
+
+    public override void Unapply()
+    {
+        
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        GrowingBountiesTrinketEffectDef copy = (GrowingBountiesTrinketEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
+        return copy;
+    }
+
+    protected override string GetDescription()
+    {
+        return "Your opponent's Prey deal them more damage";
+    }
+}
+
+// TheEndlessWall: At the end of your turn, summon a Wall of Troy
+public class TheEndlessWallTrinket : Trinket<TheEndlessWallTrinketEffectDef>
+{
+    public TheEndlessWallTrinket()
+    {
+        Name = "Twisting Corridors";
+        Description = "At the end of your turn, summon a Corridor";
+    }
+}
+public class TheEndlessWallTrinketEffectDef : TrinketPlayerEffect
+{
+    SummonFollowerCopyAction summonAction;
+    DelayedGameAction delayedAction;
+
+    public TheEndlessWallTrinketEffectDef(Player owner)
+    {
+        Owner = owner;
+        TargetPlayer = owner;
+    }
+
+    public override void Apply()
+    {
+        summonAction = new SummonFollowerCopyAction(TargetPlayer, new WallOfTroy());
+        delayedAction = new DelayedGameAction(summonAction, false);
+        TargetPlayer.EndOfTurnActions.Add(delayedAction);
+    }
+
+    public override void Unapply()
+    {
+        TargetPlayer.EndOfTurnActions.Remove(delayedAction);
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        TheEndlessWallTrinketEffectDef copy = (TheEndlessWallTrinketEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
+        return copy;
+    }
+
+    protected override string GetDescription()
+    {
+        return "At the end of your turn, summon a Wall of Troy";
+    }
+}
+
+// Call of the Sea: When a Siren kills a follower, add a free Drown to hand
+public class CallOfTheSeaTrinket : Trinket<CallOfTheSeaTrinketEffectDef>
+{
+    public CallOfTheSeaTrinket()
+    {
+        Name = "Call of the Sea";
+        Description = "When a Siren kills a follower, add a free Drown to hand";
+    }
+}
+public class CallOfTheSeaTrinketEffectDef : TrinketPlayerEffect
+{
+    public CallOfTheSeaTrinketEffectDef(Player owner)
+    {
+        Owner = owner;
+        TargetPlayer = owner;
+    }
+
+    public override void Apply()
+    {
+        Owner.GameState.FollowerEnters += FollowerEnters;
+
+        foreach (Follower follower in Owner.BattleRow.Followers)
+        {
+            CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+            customEffectDef.ApplyInstanceAction = CustomEffectAction;
+            follower.InnateEffects.Add(customEffectDef);
+            customEffectDef.Apply(follower);
+        }
+    }
+
+    public override void Unapply()
+    {
+        Owner.GameState.FollowerEnters -= FollowerEnters;
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        CallOfTheSeaTrinketEffectDef copy = (CallOfTheSeaTrinketEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
+        return copy;
+    }
+
+    protected void FollowerEnters(Follower follower)
+    {
+        if (follower.Owner != TargetPlayer) return;
+
+        ApplyEffectToFollower(follower);
+    }
+
+    private void ApplyEffectToFollower(Follower follower)
+    {
+        if (follower is not Siren) return;
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        follower.InnateEffects.Add(customEffectDef);
+        customEffectDef.Apply(follower);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
+    {
+        AddCardCopyToHandInstance newEffectInstance = new AddCardCopyToHandInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnKill);
+        Drown newCard = new Drown();
+        newCard.Costs[OfferingType.Gold] = 0;
+        newEffectInstance.Init(newCard);
+        effectDef.EffectInstances.Add(newEffectInstance);
+    }
+
+    protected override string GetDescription()
+    {
+        return "When a Siren kills a follower, add a free Drown to hand";
+    }
+}
+
+// ReturnOfTheFallen: At the start of your turn, summon a Follower that's been Offered to the Gods
+public class TheLostReturnTrinket : Trinket<TheLostReturnTrinketEffectDef>
+{
+    public TheLostReturnTrinket()
+    {
+        Name = "The Lost Return";
+        Description = "At the start of your turn, summon a Follower that's been Offered to the Gods";
+    }
+}
+public class TheLostReturnTrinketEffectDef : TrinketPlayerEffect
+{
+    SummonSacrificedFollowerAction summonAction;
+    DelayedGameAction delayedAction;
+
+    public TheLostReturnTrinketEffectDef(Player owner)
+    {
+        Owner = owner;
+        TargetPlayer = owner;
+    }
+
+    public override void Apply()
+    {
+        summonAction = new SummonSacrificedFollowerAction(TargetPlayer);
+        delayedAction = new DelayedGameAction(summonAction, false);
+        TargetPlayer.StartOfTurnActions.Add(delayedAction);
+    }
+
+    public override void Unapply()
+    {
+        TargetPlayer.EndOfTurnActions.Remove(delayedAction);
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        TheLostReturnTrinketEffectDef copy = (TheLostReturnTrinketEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
+        return copy;
+    }
+
+    protected override string GetDescription()
+    {
+        return "At the start of your turn, summon a Follower that's been Offered to the Gods";
     }
 }

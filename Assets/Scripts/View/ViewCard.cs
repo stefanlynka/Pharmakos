@@ -39,7 +39,7 @@ public class ViewCard : ViewTarget
 
         ArtRenderer.sprite = CardHandler.GetSprite(cardData);
         NameText.text = cardData.GetName();
-        AbilityText.text = cardData.Text;
+        AbilityText.text = cardData.GetText();
 
         OnClick = onClick;
 

@@ -86,7 +86,7 @@ public class View : MonoBehaviour
 
         SelectionHandler = new SelectionHandler();
 
-        SequenceHandler = new SequenceHandler();
+        if (SequenceHandler.Instance == null) SequenceHandler = new SequenceHandler();
         //TweenManager = new TweenManager();
     }
 
@@ -106,6 +106,8 @@ public class View : MonoBehaviour
     {
         AudioHandler.PlayMusic(Controller.Instance.ProgressionHandler.CurrentEnemy);
     }
+
+
     public void Clear()
     {
         Player1.Clear();
@@ -128,7 +130,7 @@ public class View : MonoBehaviour
         Player1.UpdatePlayer();
         Player2.UpdatePlayer();
 
-        SequenceHandler.Update();
+        SequenceHandler.Instance.Update();
         //TweenManager.Update();
         AnimationHandler.UpdateAnimations();
     }
@@ -470,21 +472,33 @@ public class View : MonoBehaviour
         foreach (PlayerEffect playerEffect in Player1.Player.PlayerEffects)
         {
             ViewPlayer effectTarget = Player1;
-            if (playerEffect is StaticPlayerEffect ritualPlayerEffect)
-            {
-                effectTarget = ritualPlayerEffect.TargetPlayer == Player1.Player ? Player1 : Player2;
-            }
-            effectTarget.AddBuff(playerEffect);
+            StaticPlayerEffect staticPlayerEffect = playerEffect as StaticPlayerEffect;
+            if (staticPlayerEffect == null) continue;
+            //if (playerEffect is StaticPlayerEffect ritualPlayerEffect)
+            //{
+            //    effectTarget = ritualPlayerEffect.TargetPlayer == Player1.Player ? Player1 : Player2;
+            //}
+            effectTarget.AddBuff(staticPlayerEffect);
         }
 
         foreach (PlayerEffect playerEffect in Player2.Player.PlayerEffects)
         {
             ViewPlayer effectTarget = Player2;
-            if (playerEffect is StaticPlayerEffect ritualPlayerEffect)
-            {
-                effectTarget = ritualPlayerEffect.TargetPlayer == Player1.Player ? Player1 : Player2;
-            }
-            effectTarget.AddBuff(playerEffect);
+            StaticPlayerEffect staticPlayerEffect = playerEffect as StaticPlayerEffect;
+            if (staticPlayerEffect == null) continue;
+            //if (playerEffect is StaticPlayerEffect ritualPlayerEffect)
+            //{
+            //    effectTarget = ritualPlayerEffect.TargetPlayer == Player1.Player ? Player1 : Player2;
+            //}
+            effectTarget.AddBuff(staticPlayerEffect);
         }
+    }
+
+    // Clear static variables before restarting game
+    public void ClearPools()
+    {
+        followerPool.Clear();
+        spellPool.Clear();
+        offeringPool.Clear();
     }
 }

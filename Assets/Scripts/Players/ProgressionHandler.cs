@@ -57,11 +57,23 @@ public class ProgressionHandler
             {
                 [1] = null
             },
+            Trinkets = new Dictionary<int, List<Trinket>>
+            {
+                [1] = new List<Trinket>() { new TheLostReturnTrinket() },
+            },
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
+            {
+                [1] = new List<Trinket>() { new GrowingBountiesTrinket() },
+            },
+            TwistOfFateIntervals = new Dictionary<int, int>()
+            {
+                [1] = 1,
+            },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
                 [1] = new List<Card>
                 {
-                    new Rat(),
+                    new Helios(),
                 }
             },
             StartingBattleRow = new Dictionary<int, List<Follower>>
@@ -69,8 +81,9 @@ public class ProgressionHandler
                 [1] = new List<Follower>
                 {
                     //new Peltast(),
-                    new Peltast(),
-                    new Peltast(),
+                    new Hoplite(),
+                    new Prey1(),
+                    new Siren(),
                 }
             }
         };
@@ -85,20 +98,24 @@ public class ProgressionHandler
             PortraitName = "Player",
             MinorRituals = new Dictionary<int, Ritual>
             {
-                [0] = new HermesMinor(),
+                [0] = new DemeterMinor(),
             },
             MajorRituals = new Dictionary<int, Ritual>
             {
                 [0] = null,
+            },
+            Trinkets = new Dictionary<int, List<Trinket>>
+            {
+                [0] = new List<Trinket>()
             },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
                 [0] = new List<Card>
                 {
                     //new DevKill(),
-                    //new Smite(),
+                    new ThrowStone(),
                     //new Blessing(),
-                    //new Talaria(),
+                    new Talaria(),
                     new Peltast(),
                     new PriceOfProfit(),
                     //new Endymion(),
@@ -108,8 +125,9 @@ public class ProgressionHandler
             {
                 [0] = new List<Follower>
                 {
-                    new Rat(),
+                    new Ekdromos(),
                     new Chariot(),
+                    new Ekdromos(),
                 }
             }
         };
@@ -130,16 +148,18 @@ public class ProgressionHandler
             {
                 [0] = null
             },
+            Trinkets = new Dictionary<int, List<Trinket>>
+            {
+                [0] = new List<Trinket>()
+            },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
                 [0] = new List<Card>
                 {
                     new Peltast(),
-                    //new Peltast(),
                     new Sheep(),
                     new Ekdromos(),
                     new Hoplite(),
-                    //new Thureophoros(),
                     new Thureophoros(),
                     new Chariot(),
                     new Chariot(),
@@ -159,7 +179,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 1,
-            GoldPerTurn = Controller.BlitzMode ? 3 : 2,
+            //GoldPerTurn = Controller.BlitzMode ? 3 : 2,
             PortraitName = "Cyclops",
             MinorRituals = new Dictionary<int, Ritual>
             {
@@ -172,6 +192,24 @@ public class ProgressionHandler
                 [1] = null,
                 [2] = null,
                 [3] = null,
+            },
+            Trinkets = new Dictionary<int, List<Trinket>>
+            {
+                [1] = new List<Trinket>() {  },
+                [2] = new List<Trinket>() { new CyclopsEyeTrinket() },
+                [3] = new List<Trinket>() { new CyclopsEyeTrinket() }
+            },
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
+            {
+                [1] = new List<Trinket>() { new CyclopsEyeTrinket() },
+                [2] = new List<Trinket>() { new CyclopsEyeTrinket() },
+                [3] = new List<Trinket>() { new CyclopsEyeTrinket() },
+            },
+            TwistOfFateIntervals = new Dictionary<int, int>()
+            {
+                [1] = 10,
+                [2] = 3,
+                [3] = 2
             },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
@@ -219,8 +257,8 @@ public class ProgressionHandler
                     new Cyclops(),
                     new Cyclops(),
                     new Cyclops(),
-                    //new PriceOfReprisal(),
-                    new ThrowStone(),
+                    new PriceOfReprisal(),
+                    //new ThrowStone(),
                     new ThrowStone(),
                     new ThrowStone(),
                 },
@@ -229,7 +267,8 @@ public class ProgressionHandler
                     new Sheep(),
                     new Sheep(),
                     new Sheep(),
-                    new Sheep(),
+                    new Endymion(),
+                    new Endymion(),
                     new Cyclops(),
                     new Cyclops(),
                     new Cyclops(),
@@ -243,9 +282,8 @@ public class ProgressionHandler
                     new Cyclops(),
                     new Cyclops(),
                     new Cyclops(),
-                    new Cyclops(),
-                    //new PriceOfReprisal(),
-                    new ThrowStone(),
+                    new PriceOfReprisal(),
+                    new PriceOfReprisal(),
                     new ThrowStone(),
                     new ThrowStone(),
                 }
@@ -284,7 +322,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 1,
-            GoldPerTurn = Controller.BlitzMode ? 3 : 2,
+            //GoldPerTurn = Controller.BlitzMode ? 3 : 2,
             PortraitName = "Bacchanalia",
             MinorRituals = new Dictionary<int, Ritual>
             {
@@ -298,13 +336,28 @@ public class ProgressionHandler
                 [2] = null,
                 [3] = null,
             },
+            Trinkets = new Dictionary<int, List<Trinket>>
+            {
+                [1] = new List<Trinket>() {  },
+                [2] = new List<Trinket>() { new AresMinorTrinket() },
+                [3] = new List<Trinket>() { new AresMinorTrinket() }
+            },
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
+            {
+                [1] = new List<Trinket>() { new PansFluteTrinket() },
+                [2] = new List<Trinket>() { new PansFluteTrinket() },
+                [3] = new List<Trinket>() { new PansFluteTrinket() },
+            },
+            TwistOfFateIntervals = new Dictionary<int, int>()
+            {
+                [1] = 10,
+                [2] = 3,
+                [3] = 2
+            },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
                 [1] = new List<Card>
                 {
-                    //new Pan(),
-                    //new Boar(),
-                    //new Boar(),
                     new Boar(),
                     new Satyr(),
                     new Satyr(),
@@ -325,8 +378,6 @@ public class ProgressionHandler
                     new Restoration(),
                     new Restoration(),
                     new Restoration(),
-                    //new PriceOfRenewal(),
-                    //new PriceOfRenewal(),
                 },
                 [2] = new List<Card>
                 {
@@ -422,7 +473,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 1,
-            GoldPerTurn = Controller.BlitzMode ? 3 : 2,
+            //GoldPerTurn = Controller.BlitzMode ? 3 : 2,
             PortraitName = "Labyrinth",
             MinorRituals = new Dictionary<int, Ritual>
             {
@@ -436,25 +487,41 @@ public class ProgressionHandler
                 [2] = null,
                 [3] = null,
             },
+            Trinkets = new Dictionary<int, List<Trinket>>
+            {
+                [1] = new List<Trinket>() { },
+                [2] = new List<Trinket>() { new TwistingCorridorsTrinket() },
+                [3] = new List<Trinket>() { new TwistingCorridorsTrinket() }
+            },
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
+            {
+                [1] = new List<Trinket>() { new EverDeeperTrinket() },
+                [2] = new List<Trinket>() { new EverDeeperTrinket() },
+                [3] = new List<Trinket>() { new EverDeeperTrinket() },
+            },
+            TwistOfFateIntervals = new Dictionary<int, int>()
+            {
+                [1] = 10,
+                [2] = 3,
+                [3] = 2
+            },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
                 [1] = new List<Card>
                 {
-                    new Minotaur(),
-                    new Minotaur(),
-                    new Minotaur(),
                     new Corridor(),
                     new Corridor(),
                     new Corridor(),
                     new Corridor(),
-                    new Corridor(),
-                    new Corridor(),
+                    new Rat(),
+                    new Rat(),
                     new Rat(),
                     new Rat(),
                     new Rat(),
                     new Rat(),
                     new Rat(),
                     new Icarus(),
+                    new Minotaur(),
                     new Contraption(),
                     new Contraption(),
                     new Contraption(),
@@ -544,7 +611,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 2,
-            GoldPerTurn = Controller.BlitzMode ? 4 : 3,
+            //GoldPerTurn = Controller.BlitzMode ? 4 : 3,
             PortraitName = "Troy",
             MinorRituals = new Dictionary<int, Ritual>
             {
@@ -558,13 +625,29 @@ public class ProgressionHandler
                 [2] = null,
                 [3] = null,
             },
+            Trinkets = new Dictionary<int, List<Trinket>>
+            {
+                [1] = new List<Trinket>() { },
+                [2] = new List<Trinket>() { new TheEndlessWallTrinket() },
+                [3] = new List<Trinket>() { new TheEndlessWallTrinket() }
+            },
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
+            {
+                [1] = new List<Trinket>() { new AresMajorTrinket() },
+                [2] = new List<Trinket>() { new AresMajorTrinket() },
+                [3] = new List<Trinket>() { new AresMajorTrinket() },
+            },
+            TwistOfFateIntervals = new Dictionary<int, int>()
+            {
+                [1] = 10,
+                [2] = 3,
+                [3] = 2
+            },
             // This one has to be conditional
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
                 [1] = new List<Card>
                 {
-                    new WallOfTroy(),
-                    new WallOfTroy(),
                     new WallOfTroy(),
                     new WallOfTroy(),
                     new Toxotes(),
@@ -579,10 +662,7 @@ public class ProgressionHandler
                     new Hippeis(),
                     new Hippeis(),
                     new Chariot(),
-                    new Hector(),
-                    new Paris(),
-                    new Sarpedon(),
-                    new Cassandra(),
+                    new Myrmidon(),
                 },
                 [2] = new List<Card>
                 {
@@ -679,7 +759,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 2,
-            GoldPerTurn = Controller.BlitzMode ? 4 : 3,
+            //GoldPerTurn = Controller.BlitzMode ? 4 : 3,
             PortraitName = "Hunt",
             MinorRituals = new Dictionary<int, Ritual>
             {
@@ -693,6 +773,24 @@ public class ProgressionHandler
                 [2] = null,
                 [3] = null,
             },
+            Trinkets = new Dictionary<int, List<Trinket>>
+            {
+                [1] = new List<Trinket>() { },
+                [2] = new List<Trinket>() { new TheGreatHuntTrinket() },
+                [3] = new List<Trinket>() { new TheGreatHuntTrinket() }
+            },
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
+            {
+                [1] = new List<Trinket>() { new GrowingBountiesTrinket() },
+                [2] = new List<Trinket>() { new GrowingBountiesTrinket() },
+                [3] = new List<Trinket>() { new GrowingBountiesTrinket() },
+            },
+            TwistOfFateIntervals = new Dictionary<int, int>()
+            {
+                [1] = 10,
+                [2] = 3,
+                [3] = 2
+            },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
                 [1] = new List<Card>
@@ -700,22 +798,14 @@ public class ProgressionHandler
                     new Boar(),
                     new Boar(),
                     new Boar(),
+                    new Boar(),
                     new Chariot(),
-                    new Chariot(),
                     new Hippeis(),
                     new Hippeis(),
                     new Hippeis(),
-                    new Atalanta(),
-                    new Endymion(),
-                    new Hippolyta(),
-                    new Melpomene(),
-                    new Lightning(),
-                    new Lightning(),
                     new ReleasePrey(),
                     new ReleasePrey(),
                     new ReleasePrey(),
-                    new PriceOfWealth(),
-                    new PriceOfWealth(),
                     new PriceOfWealth(),
                 },
                 [2] = new List<Card>
@@ -804,7 +894,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 2,
-            GoldPerTurn = Controller.BlitzMode ? 4 : 3,
+            //GoldPerTurn = Controller.BlitzMode ? 4 : 3,
             PortraitName = "SeasideCliffs",
             MinorRituals = new Dictionary<int, Ritual>
             {
@@ -818,6 +908,24 @@ public class ProgressionHandler
                 [2] = null,
                 [3] = null,
             },
+            Trinkets = new Dictionary<int, List<Trinket>>
+            {
+                [1] = new List<Trinket>() { },
+                [2] = new List<Trinket>() { new CallOfTheSeaTrinket() },
+                [3] = new List<Trinket>() { new CallOfTheSeaTrinket() }
+            },
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
+            {
+                [1] = new List<Trinket>() { new CallOfTheSeaTrinket() },
+                [2] = new List<Trinket>() { new CallOfTheSeaTrinket() },
+                [3] = new List<Trinket>() { new CallOfTheSeaTrinket() },
+            },
+            TwistOfFateIntervals = new Dictionary<int, int>()
+            {
+                [1] = 10,
+                [2] = 3,
+                [3] = 2
+            },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
                 [1] = new List<Card>
@@ -825,8 +933,6 @@ public class ProgressionHandler
                     new Siren(),
                     new Siren(),
                     new Siren(),
-                    new Siren(),
-                    new Siren(),
                     new Nereid(),
                     new Nereid(),
                     new Nereid(),
@@ -834,15 +940,8 @@ public class ProgressionHandler
                     new Nereid(),
                     new Nereid(),
                     new Nereid(),
-                    new Scylla(),
-                    new Charybdis(),
-                    new Hydra(),
                     new Panic(),
-                    new Panic(),
-                    //new Panic(),
                     new PriceOfKnowledge(),
-                    new PriceOfKnowledge(),
-                    //new Drown(),
                     new Drown(),
                 },
                 [2] = new List<Card>
@@ -932,7 +1031,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 3,
-            GoldPerTurn = Controller.BlitzMode ? 4 : 3,
+            //GoldPerTurn = Controller.BlitzMode ? 4 : 3,
             PortraitName = "Caves",
             MinorRituals = new Dictionary<int, Ritual>
             {
@@ -946,6 +1045,24 @@ public class ProgressionHandler
                 [2] = null,
                 [3] = null,
             },
+            Trinkets = new Dictionary<int, List<Trinket>>
+            {
+                [1] = new List<Trinket>() {  },
+                [2] = new List<Trinket>() {  },
+                [3] = new List<Trinket>() {  }
+            },
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
+            {
+                [1] = new List<Trinket>() { new AresWhetstoneTrinket(), new DemetersSickleTrinket(), new FuneralAmphoraTrinket(), new AthenasQuillTrinket() },
+                [2] = new List<Trinket>() { new AresWhetstoneTrinket(), new DemetersSickleTrinket(), new FuneralAmphoraTrinket(), new AthenasQuillTrinket() },
+                [3] = new List<Trinket>() { new AresWhetstoneTrinket(), new DemetersSickleTrinket(), new FuneralAmphoraTrinket(), new AthenasQuillTrinket() },
+            },
+            TwistOfFateIntervals = new Dictionary<int, int>()
+            {
+                [1] = 10,
+                [2] = 2,
+                [3] = 1
+            },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
                 [1] = new List<Card>
@@ -956,19 +1073,13 @@ public class ProgressionHandler
                     new Pytho(),
                     new Lamia(),
                     new Lamia(),
-                    new Chimera(),
-                    new Chimera(),
                     new Sphinx(),
                     new Sphinx(),
-                    new Empusa(),
-                    new Empusa(),
-                    new Gorgon(),
-                    new Gorgon(),
-                    new Lightning(),
-                    new Lightning(),
+                    //new Empusa(),
+                    //new Empusa(),
+                    //new Gorgon(),
                     new Panic(),
                     new Panic(),
-                    new PriceOfRenewal(),
                     new PriceOfRenewal(),
                 },
                 [2] = new List<Card>
@@ -1058,7 +1169,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 3,
-            GoldPerTurn = Controller.BlitzMode ? 4 : 3,
+            //GoldPerTurn = Controller.BlitzMode ? 4 : 3,
             PortraitName = "Trials",
             MinorRituals = new Dictionary<int, Ritual>
             {
@@ -1072,23 +1183,38 @@ public class ProgressionHandler
                 [2] = null,
                 [3] = null,
             },
+            Trinkets = new Dictionary<int, List<Trinket>>
+            {
+                [1] = new List<Trinket>() { },
+                [2] = new List<Trinket>() { new PandorasBoxTrinket() },
+                [3] = new List<Trinket>() { new PandorasBoxTrinket() }
+            },
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
+            {
+                [1] = new List<Trinket>() { new PandorasBoxTrinket() },
+                [2] = new List<Trinket>() { new PandorasBoxTrinket() },
+                [3] = new List<Trinket>() { new PandorasBoxTrinket() }
+            },
+            TwistOfFateIntervals = new Dictionary<int, int>()
+            {
+                [1] = 10,
+                [2] = 2,
+                [3] = 1
+            },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
                 [1] = new List<Card>
                 {
-                    new NemeanLion(),
-                    new Hydra(),
-                    new GoldenHind(),
-                    new CreateFilth(),
                     new CreateFilth(),
                     new CreateFilth(),
                     new StymphalianBird(),
                     new StymphalianBird(),
                     new StymphalianBird(),
-                    new MareOfDiomedes(),
                     new MareOfDiomedes(),
                     new MareOfDiomedes(),
                     new Hippolyta(),
+                    new Amazon(),
+                    new Amazon(),
                     new Amazon(),
                     new Amazon(),
                 },
@@ -1133,8 +1259,8 @@ public class ProgressionHandler
             {
                 [1] = new List<Follower>
                 {
-                    new MareOfDiomedes(),
-                    new MareOfDiomedes(),
+                    new Amazon(),
+                    new Amazon(),
                 },
                 [2] = new List<Follower>
                 {
@@ -1164,6 +1290,7 @@ public class ProgressionHandler
         {
             BaseHealth = 10,
             Pool = 3,
+            //GoldPerTurn = Controller.BlitzMode ? 4 : 3,
             PortraitName = "Delphi",
             MinorRituals = new Dictionary<int, Ritual>
             {
@@ -1177,13 +1304,28 @@ public class ProgressionHandler
                 [2] = null,
                 [3] = null,
             },
-            GoldPerTurn = Controller.BlitzMode ? 4 : 3,
+            Trinkets = new Dictionary<int, List<Trinket>>
+            {
+                [1] = new List<Trinket>() { },
+                [2] = new List<Trinket>() { new LyreOfApolloTrinket() },
+                [3] = new List<Trinket>() { new LyreOfApolloTrinket() }
+            },
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
+            {
+                [1] = new List<Trinket>() { new VialOfAmbrosiaTrinket(), new PeltastTrumpetTrinket(), new GoldenFleeceTuftTrinket() },
+                [2] = new List<Trinket>() { new VialOfAmbrosiaTrinket(), new PeltastTrumpetTrinket(), new GoldenFleeceTuftTrinket() },
+                [3] = new List<Trinket>() { new VialOfAmbrosiaTrinket(), new PeltastTrumpetTrinket(), new GoldenFleeceTuftTrinket() },
+            },
+            TwistOfFateIntervals = new Dictionary<int, int>()
+            {
+                [1] = 10,
+                [2] = 3,
+                [3] = 2
+            },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
                 [1] = new List<Card>
                 {
-                    new Helios(),
-                    new Helios(),
                     new OracleOfDelphi(),
                     new OracleOfDelphi(),
                     new Ekdromos(),
@@ -1193,10 +1335,9 @@ public class ProgressionHandler
                     new Sheep(),
                     new Sheep(),
                     new Sheep(),
-                    new Endymion(),
-                    new Endymion(),
                     new PriceOfProfit(),
                     new PriceOfProfit(),
+                    new Talaria(),
                     new Talaria(),
                     new Smite(),
                     new Smite(),
@@ -1294,7 +1435,7 @@ public class ProgressionHandler
             IsBoss = true,
             BaseHealth = 10,
             Pool = 4,
-            GoldPerTurn = Controller.BlitzMode ? 5 : 4,
+            //GoldPerTurn = Controller.BlitzMode ? 5 : 4,
             PortraitName = "Underworld",
             MinorRituals = new Dictionary<int, Ritual>
             {
@@ -1303,6 +1444,18 @@ public class ProgressionHandler
             MajorRituals = new Dictionary<int, Ritual>
             {
                 [4] = new HadesMajor(),
+            },
+            Trinkets = new Dictionary<int, List<Trinket>>
+            {
+                [4] = new List<Trinket>() { new TheLostReturnTrinket() },
+            },
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
+            {
+                [4] = new List<Trinket>() { new TunicOfNessusTrinket(), new MedeasPotionTrinket()},
+            },
+            TwistOfFateIntervals = new Dictionary<int, int>()
+            {
+                [4] = 1,
             },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
@@ -1326,9 +1479,10 @@ public class ProgressionHandler
                     new Vengeance(),
                     //new RiverStyx(),
                     new LastingGift(),
-                    //new PriceOfProfit(),
                     new PriceOfProfit(),
-                    new PriceOfLegacy(),
+                    new PriceOfProfit(),
+                    new PriceOfProfit(),
+                    //new PriceOfLegacy(),
                 },
             },
             StartingBattleRow = new Dictionary<int, List<Follower>>
@@ -1375,11 +1529,14 @@ public class ProgressionHandler
         SetupStarterBundles();
     }
 
+    private List<Trinket> alreadyDisplayedTrinkets = new List<Trinket>();
     private void SetupStarterBundles()
     {
         starterBundles.Clear();
+        alreadyDisplayedTrinkets.Clear();
 
-        Trinket randomTrinket = GetRandomTrinket();
+        Trinket randomTrinket = GetRandomTrinket(new List<Ritual> { new ZeusMinor() });
+        alreadyDisplayedTrinkets.Add(randomTrinket);
         starterBundles.Add(new StarterBundle(
             new ZeusMinor(), // ZeusMinor
             new List<Card> { 
@@ -1389,7 +1546,8 @@ public class ProgressionHandler
             },
             randomTrinket));
 
-        randomTrinket = GetRandomTrinket();
+        randomTrinket = GetRandomTrinket(new List<Ritual> { new HadesMinor() });
+        alreadyDisplayedTrinkets.Add(randomTrinket);
         starterBundles.Add(new StarterBundle(
             new HadesMinor(), // HadesMinor
             new List<Card> {
@@ -1399,7 +1557,8 @@ public class ProgressionHandler
             },
             randomTrinket));
 
-        randomTrinket = GetRandomTrinket();
+        randomTrinket = GetRandomTrinket(new List<Ritual> { new AphroditeMinor() });
+        alreadyDisplayedTrinkets.Add(randomTrinket);
         starterBundles.Add(new StarterBundle(
             new AphroditeMinor(), // AphroditeMinor
             new List<Card> {
@@ -1409,7 +1568,8 @@ public class ProgressionHandler
             },
             randomTrinket));
 
-        randomTrinket = GetRandomTrinket();
+        randomTrinket = GetRandomTrinket(new List<Ritual> { new HermesMinor() });
+        alreadyDisplayedTrinkets.Add(randomTrinket);
         starterBundles.Add(new StarterBundle(
             new HermesMinor(),
             new List<Card> {
@@ -1418,7 +1578,8 @@ public class ProgressionHandler
                 new Melpomene(),
             }, randomTrinket));
 
-        randomTrinket = GetRandomTrinket();
+        randomTrinket = GetRandomTrinket(new List<Ritual> { new HestiaMinor() });
+        alreadyDisplayedTrinkets.Add(randomTrinket);
         starterBundles.Add(new StarterBundle(
             new HestiaMinor(),
             new List<Card> {
@@ -1451,10 +1612,36 @@ public class ProgressionHandler
         availableTrinkets.Add(new PandorasBoxTrinket());
     }
 
-    private Trinket GetRandomTrinket()
+    // Get a random trinket that's viable with the given ritual
+    private Trinket GetRandomTrinket(List<Ritual> rituals, bool ignoreSelectedTrinkets = true)
     {
-        int randIndex = Controller.Instance.MetaRNG.Next(0, availableTrinkets.Count);
-        Trinket randomTrinket = availableTrinkets[randIndex];
+        HashSet<OfferingType> relevantOfferings = new HashSet<OfferingType>();
+        foreach (Ritual ritual in rituals)
+        {
+            if (ritual == null) continue;
+
+            foreach (KeyValuePair<OfferingType, int> kvp in ritual.Costs)
+            {
+                if (kvp.Value > 0) relevantOfferings.Add(kvp.Key);
+            }
+        }
+        List<Trinket> viableTrinkets = new List<Trinket>();
+        foreach (Trinket trinket in availableTrinkets)
+        {
+            // Ignore trinkets already displayed on the current reward screen
+            if (alreadyDisplayedTrinkets.Contains(trinket)) continue;
+
+            // Ignore trinkets that buff an offering not relevant to this ritual
+            if (trinket.RelevantOffering != OfferingType.None && !relevantOfferings.Contains(trinket.RelevantOffering))
+            {
+                continue;
+            }
+
+            viableTrinkets.Add(trinket);
+        }
+
+        int randIndex = Controller.Instance.MetaRNG.Next(0, viableTrinkets.Count);
+        Trinket randomTrinket = viableTrinkets[randIndex];
         if (!randomTrinket.RepeatTrinket)
         {
             availableTrinkets.RemoveAt(randIndex);
@@ -1549,6 +1736,8 @@ public class ProgressionHandler
 
         int randomTarget = Controller.Instance.MetaRNG.Next(0, EnemyPool.Count);
         CurrentEnemy = EnemyPool[randomTarget];
+        // For Testing
+        //CurrentEnemy = DeckName.SeasideCliffs;
         EnemyPool.Remove(CurrentEnemy);
     }
 
@@ -1564,7 +1753,11 @@ public class ProgressionHandler
 
         if (deckName != DeckName.TestEnemy)
         {
-            if (newDetails.IsEnemy) newDetails.BaseHealth = CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5; 
+            if (newDetails.IsEnemy)
+            {
+                newDetails.BaseHealth = CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5;
+                newDetails.GoldPerTurn = CurrentLevel >= 10 ? 5 : 2 + Mathf.Min(CurrentPool, 2);
+            }
             else newDetails.BaseHealth = GetPlayerHealth();
         }
 
@@ -1588,6 +1781,8 @@ public class ProgressionHandler
 
     public int GetPlayerHealth()
     {
+        if (CurrentLevel >= 10) return 50;
+
         return 10 + Mathf.FloorToInt(CurrentLevel / 2f) * 5; // CurrentPool * 5;
     }
 
@@ -1606,6 +1801,24 @@ public class ProgressionHandler
         }
 
         return bundles;
+    }
+
+    public List<Trinket> GetRandomTrinkets()
+    {
+        List<Trinket> trinkets = new List<Trinket>();
+        alreadyDisplayedTrinkets.Clear();
+
+        List<Ritual> rituals = new List<Ritual>
+        {
+            Controller.Instance.HumanPlayerDetails.MajorRituals[0],
+            Controller.Instance.HumanPlayerDetails.MinorRituals[0]
+        };
+
+        trinkets.Add(GetRandomTrinket(rituals));
+        trinkets.Add(GetRandomTrinket(rituals));
+        trinkets.Add(GetRandomTrinket(rituals));
+
+        return trinkets;
     }
 }
 

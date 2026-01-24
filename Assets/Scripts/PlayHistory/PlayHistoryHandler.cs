@@ -29,6 +29,11 @@ public class PlayHistoryHandler
         LastTurnsItems.AddRange(ThisTurnsItems);
         ThisTurnsItems.Clear();
     }
+    public void Clear()
+    {
+        LastTurnsItems.Clear();
+        ThisTurnsItems.Clear();
+    }
 }
 
 public abstract class PlayHistoryItem
