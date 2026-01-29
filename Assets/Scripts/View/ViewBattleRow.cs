@@ -124,7 +124,7 @@ public class ViewBattleRow : MonoBehaviour
         }
         
 
-        if (!View.Instance.SelectionHandler.IsHoldingFollower() || !IsMouseOverThis() || !isHuman || Followers.Count >= Player.MaxFollowerCount)
+        if (!View.Instance.SelectionHandler.IsHoldingPlayableFollower() || !IsMouseOverThis() || !isHuman || Followers.Count >= Player.MaxFollowerCount)
         {
             return;
         }

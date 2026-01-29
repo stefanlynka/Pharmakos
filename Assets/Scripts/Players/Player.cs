@@ -300,19 +300,23 @@ public class Player : ITarget
     {
         foreach (DelayedGameAction delayedGameAction in StartOfTurnActions)
         {
-            copy.StartOfTurnActions.Add(delayedGameAction.DeepCopy(copy));
+            DelayedGameAction newCopy = delayedGameAction.DeepCopy(copy);
+            if (newCopy != null) copy.StartOfTurnActions.Add(delayedGameAction.DeepCopy(copy));
         }
         foreach (DelayedGameAction delayedGameAction in StartOfEveryTurnActions)
         {
-            copy.StartOfEveryTurnActions.Add(delayedGameAction.DeepCopy(copy));
+            DelayedGameAction newCopy = delayedGameAction.DeepCopy(copy);
+            if (newCopy != null) copy.StartOfEveryTurnActions.Add(newCopy);
         }
         foreach (DelayedGameAction delayedGameAction in EndOfTurnActions)
         {
-            copy.EndOfTurnActions.Add(delayedGameAction.DeepCopy(copy));
+            DelayedGameAction newCopy = delayedGameAction.DeepCopy(copy);
+            if (newCopy != null) copy.EndOfTurnActions.Add(newCopy);
         }
         foreach (DelayedGameAction delayedGameAction in EndOfEveryTurnActions)
         {
-            copy.EndOfEveryTurnActions.Add(delayedGameAction.DeepCopy(copy));
+            DelayedGameAction newCopy = delayedGameAction.DeepCopy(copy);
+            if (newCopy != null) copy.EndOfEveryTurnActions.Add(newCopy);
         }
     }
 

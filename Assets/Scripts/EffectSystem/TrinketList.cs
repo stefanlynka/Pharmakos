@@ -208,7 +208,7 @@ public class PeltastTrumpetTrinketEffectDef : TrinketPlayerEffect
             Peltast peltast = new Peltast();
             peltast.Init(TargetPlayer);
             SummonFollowerAction summonAction = new SummonFollowerAction(peltast);
-            TargetPlayer.GameState.ActionHandler.AddAction(summonAction, true, true);
+            TargetPlayer.GameState.ActionHandler.AddAction(summonAction, true);
         }
     }
 
@@ -307,7 +307,7 @@ public class LyreOfApolloTrinketEffectDef : TrinketPlayerEffect
         if (ritual.Owner == TargetPlayer)
         {
             DrawCardAction drawAction = new DrawCardAction(TargetPlayer, TargetPlayer, 2);
-            TargetPlayer.GameState.ActionHandler.AddAction(drawAction, true, true);
+            TargetPlayer.GameState.ActionHandler.AddAction(drawAction, true);
         }
     }
 
@@ -357,7 +357,7 @@ public class VialOfAmbrosiaTrinketEffectDef : TrinketPlayerEffect
         if (ritual.Owner == TargetPlayer)
         {
             ChangePlayerHealthAction healthAction = new ChangePlayerHealthAction(TargetPlayer, null, 3);
-            TargetPlayer.GameState.ActionHandler.AddAction(healthAction, true, true);
+            TargetPlayer.GameState.ActionHandler.AddAction(healthAction, true);
         }
     }
 
@@ -639,13 +639,13 @@ public class ResetHermesSandalsFlagAction : GameAction
     }
 }
 
-// Aegis: Your followers with taunt have shield 1 (reduce incoming damage by 1)
+// Aegis: Your followers with taunt have shield 2 (reduce incoming damage by 2)
 public class TheAegisTrinket : Trinket<TheAegisTrinketEffectDef>
 {
     public TheAegisTrinket()
     {
         Name = "Aegis";
-        Description = "Your followers with taunt have shield 1 (reduce incoming damage by 1)";
+        Description = "Your followers with taunt have shield 2 (reduce incoming damage by 2)";
     }
 }
 public class TheAegisTrinketEffectDef : TrinketPlayerEffect
@@ -689,6 +689,10 @@ public class TheAegisTrinketEffectDef : TrinketPlayerEffect
             StaticEffectDef shieldEffect = new StaticEffectDef(EffectTarget.Self, StaticEffect.Shield);
             follower.InnateEffects.Add(shieldEffect);
             shieldEffect.Apply(follower);
+            StaticEffectDef shieldEffect2 = new StaticEffectDef(EffectTarget.Self, StaticEffect.Shield);
+            follower.InnateEffects.Add(shieldEffect2);
+            shieldEffect2.Apply(follower);
+
         }
     }
 
@@ -702,7 +706,7 @@ public class TheAegisTrinketEffectDef : TrinketPlayerEffect
 
     protected override string GetDescription()
     {
-        return "Your followers with taunt have shield 1 (reduce incoming damage by 1)";
+        return "Your followers with taunt have shield 2 (reduce incoming damage by 2)";
     }
 }
 
@@ -1139,7 +1143,7 @@ public class AresMajorTrinket : Trinket<AresMajorEffectDef>
 }
 
 // Twisting Corridors: At the end of your turn, summon a Corridor
-public class TwistingCorridorsTrinket : Trinket<TwistingCorridorsEffectDef>
+public class TwistingCorridorsTrinket : Trinket<TwistingCorridorsTrinketEffectDef>
 {
     public TwistingCorridorsTrinket()
     {
@@ -1147,12 +1151,12 @@ public class TwistingCorridorsTrinket : Trinket<TwistingCorridorsEffectDef>
         Description = "At the end of your turn, summon a Corridor";
     }
 }
-public class TwistingCorridorsEffectDef : TrinketPlayerEffect
+public class TwistingCorridorsTrinketEffectDef : TrinketPlayerEffect
 {
     SummonFollowerCopyAction summonAction;
     DelayedGameAction delayedAction;
 
-    public TwistingCorridorsEffectDef(Player owner)
+    public TwistingCorridorsTrinketEffectDef(Player owner)
     {
         Owner = owner;
         TargetPlayer = owner;
@@ -1172,7 +1176,7 @@ public class TwistingCorridorsEffectDef : TrinketPlayerEffect
 
     public override PlayerEffect DeepCopy(Player newOwner)
     {
-        TwistingCorridorsEffectDef copy = (TwistingCorridorsEffectDef)MemberwiseClone();
+        TwistingCorridorsTrinketEffectDef copy = (TwistingCorridorsTrinketEffectDef)MemberwiseClone();
         copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
         copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
         return copy;
@@ -1216,7 +1220,7 @@ public class EverDeeperTrinketEffectDef : TrinketPlayerEffect
 
     public override PlayerEffect DeepCopy(Player newOwner)
     {
-        TwistingCorridorsEffectDef copy = (TwistingCorridorsEffectDef)MemberwiseClone();
+        TwistingCorridorsTrinketEffectDef copy = (TwistingCorridorsTrinketEffectDef)MemberwiseClone();
         copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
         copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
         return copy;

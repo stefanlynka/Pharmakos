@@ -4,10 +4,9 @@ using UnityEngine;
 
 public class CardGainRewardHandler : MonoBehaviour
 {
-    public CardRewardHolder CardRewardHolder1;
-    public CardRewardHolder CardRewardHolder2;
-    public CardRewardHolder CardRewardHolder3;
+    public List<CardRewardHolder> CardRewardHolders = new List<CardRewardHolder>();
 
+    public int rewardCount = 2;
 
     public void Load(int levelCompleted)
     {
@@ -18,7 +17,7 @@ public class CardGainRewardHandler : MonoBehaviour
             new List<Card>(),
             new List<Card>()
         };
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < rewardCount; i++)
         {
             possibleRewards = Controller.Instance.ProgressionHandler.GetPossibleCardRewards();
             if (possibleRewards.Count == 0) continue;
@@ -29,26 +28,21 @@ public class CardGainRewardHandler : MonoBehaviour
                 cardBuckets[i].Add(possibleRewards[randomIndex]);
                 possibleRewards.RemoveAt(randomIndex);
             }
+
+            CardRewardHolders[i].Load(cardBuckets[i]);
         }
 
-        CardRewardHolder1.Load(cardBuckets[0]);
-        CardRewardHolder2.Load(cardBuckets[1]);
-        CardRewardHolder3.Load(cardBuckets[2]);
-
-        //bucket1.Add(possibleRewards)
     }
 
     public void SelectCardsAndContinue()
     {
         List<Card> cards = new List<Card>();
-        cards.AddRange(CardRewardHolder1.GetHighlightedCardRewards());
-        cards.AddRange(CardRewardHolder2.GetHighlightedCardRewards());
-        cards.AddRange(CardRewardHolder3.GetHighlightedCardRewards());
 
-        CardRewardHolder1.Cleanup();
-        CardRewardHolder2.Cleanup();
-        CardRewardHolder3.Cleanup();
-
+        for (int i = 0; i < rewardCount; i++)
+        {
+            cards.AddRange(CardRewardHolders[i].GetHighlightedCardRewards());
+            CardRewardHolders[i].Cleanup();
+        }
 
         Controller.Instance.AddCardsToPlayerDeck(cards);
 

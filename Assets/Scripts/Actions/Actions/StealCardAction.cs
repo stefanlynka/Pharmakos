@@ -12,8 +12,6 @@ public class StealCardAction : GameAction
 
     private Card stolenCard;
 
-    private int targetIndex = 0;
-
     public StealCardAction(Player thief, Player target)
     {
         Thief = thief;

@@ -34,6 +34,10 @@ public class ViewPlayerPortrait : MonoBehaviour
         health = newHealth;
         HealthText.text = health.ToString();
     }
+    public int GetHealth()
+    {
+        return health;
+    }
     public void SetHealthVisible(bool value)
     {
         HealthObject.SetActive(value);

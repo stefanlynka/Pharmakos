@@ -77,6 +77,10 @@ public class ViewPlayer : ViewTarget
     {
         ViewPlayerPortrait.SetHealth(newHealth);
     }
+    public int GetHealth()
+    {
+        return ViewPlayerPortrait.GetHealth();
+    }
     public void ClearBuffs()
     {
         foreach (ViewBuff buff in Buffs)

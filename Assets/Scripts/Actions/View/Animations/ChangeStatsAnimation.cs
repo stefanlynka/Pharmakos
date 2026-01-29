@@ -14,6 +14,8 @@ public class ChangeStatsAnimation : AnimationAction
     private ViewFollower viewFollower;
     private float damageDuration = 0.6f;
 
+    private bool playerDied = false;
+
     public ChangeStatsAnimation(GameAction gameAction, ITarget target, int attackChange, int healthChange) : base(gameAction)
     {
         this.target = target;
@@ -60,6 +62,11 @@ public class ChangeStatsAnimation : AnimationAction
 
                 viewPlayer.ShowDamage(-healthChange);
                 isDamage = true;
+
+                if (viewPlayer.GetHealth() <= 0)
+                {
+                    playerDied = true;
+                }
             }
         }
 
@@ -88,6 +95,8 @@ public class ChangeStatsAnimation : AnimationAction
         viewPlayer?.HideDamage();
         viewFollower?.HideDamage();
         CallCallback();
+
+        if (playerDied) Controller.Instance.CheckForPlayerDeath();
     }
 
     protected override void Log()

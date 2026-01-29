@@ -149,7 +149,7 @@ public class Prey3 : Prey1
 {
 }
 
-// OnAttack: Damage all enemies
+// OnAttack: Damage all enemies equal to Golden Hind's Attack
 public class GoldenHind : Follower
 {
     public GoldenHind() : base()
@@ -165,11 +165,11 @@ public class GoldenHind : Follower
 
         Type = FollowerType.Beast;
 
-        SetBaseStats(2, 4);
+        SetBaseStats(1, 4);
 
         Text = "On Attack: Damage all enemies equal to Golden Hind's Attack";
         Icon = IconType.Sword;
-        inherentValue = 5;
+        inherentValue = 8;
 
         SetupInnateEffects();
     }
@@ -282,6 +282,7 @@ public class StymphalianBird : Follower
 
         SetBaseStats(5, 1);
 
+        OverrideName = "Stymphalian Bird";
         Text = "";
 
         SetupInnateEffects();
@@ -1346,7 +1347,7 @@ public class Agamemnon : Follower
         effectDef.EffectInstances.Add(newEffectInstance);
 
         SummonPeltastInstance newEffectInstance2 = new SummonPeltastInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnAttack);
-        newEffectInstance2.SummonPositionOffset = 1;
+        newEffectInstance2.SummonPositionOffset = 2;
         effectDef.EffectInstances.Add(newEffectInstance2);
     }
 }
@@ -1794,7 +1795,7 @@ public class Sarpedon : Follower
     }
 }
 
-// When an adjacent Follower enters: Draw 1 card next turn
+// When an adjacent Follower enters: Draw 1 extra card next turn
 public class Cassandra : Follower
 {
     public Cassandra() : base()
@@ -1810,10 +1811,10 @@ public class Cassandra : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(1, 4);
+        SetBaseStats(2, 4);
         inherentValue = 2;
 
-        Text = "When an adjacent Follower enters: Draw 1 card next turn";
+        Text = "When an adjacent Follower enters: Draw 1 extra card next turn";
         Icon = IconType.Horn;
         AffectsAdjacent = true;
 
@@ -2095,7 +2096,7 @@ public class Scylla : Follower
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 3},
+            { OfferingType.Gold, 5},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},
@@ -2105,7 +2106,7 @@ public class Scylla : Follower
         Type = FollowerType.Monster;
 
         SetBaseStats(0, 6);
-        inherentValue = 5;
+        inherentValue = 15;
 
         Text = "At the end of your turn, Deal 1 damage to an adjacent enemy 6 times";
         Icon = IconType.Sundial;
@@ -2149,7 +2150,7 @@ public class Charybdis : Follower
         SetBaseStats(2, 5);
         inherentValue = 3;
 
-        Text = "At the end of your turn, Destroy all adjacent followers with less attack";
+        Text = "At the end of your turn, Destroy ALL adjacent followers with less attack";
         Icon = IconType.Sundial;
         AffectsAdjacent = true;
 
@@ -2337,7 +2338,7 @@ public class Chimera : Follower
         SetBaseStats(2, 3);
         inherentValue = 4;
 
-        Text = "Sprint\nOn Attack or Attacked: Deal damage equal to its Attack\n";
+        Text = "On Attack or Attacked: Deal damage equal to its Attack to the target\n";
         Icon = IconType.Sword;
 
         SetupInnateEffects();
@@ -2347,7 +2348,7 @@ public class Chimera : Follower
     {
         base.SetupInnateEffects();
 
-        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Sprint));
+        //InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Sprint));
 
         InnateEffects.Add(new DealAttackDamageOnAttackEffectDef(EffectTarget.Self));
         InnateEffects.Add(new DealAttackDamageOnAttackedEffectDef(EffectTarget.Self));

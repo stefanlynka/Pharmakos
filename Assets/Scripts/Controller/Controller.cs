@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using static UnityEngine.GraphicsBuffer;
+using static UnityEngine.UI.GridLayoutGroup;
 
 
 public class Controller : MonoBehaviour
@@ -43,14 +44,6 @@ public class Controller : MonoBehaviour
     private ScreenName CurrentScreen = ScreenName.Blank;
 
     public List<Follower> SacrificedFollowers = new List<Follower>();
-
-    //public List<Card> PlayerDeckDefinition = new List<Card>();
-    //public List<Follower> PlayerStartingBattleRow = new List<Follower>();
-    //public Ritual PlayerMinorRitual = null;
-    //public Ritual PlayerMajorRitual = null;
-    //public int PlayerCardsPerTurn = 5;
-    //public int PlayerStartingHealth = 0;
-
 
 
     public Player CurrentPlayer
@@ -107,24 +100,29 @@ public class Controller : MonoBehaviour
 
     private void Update()
     {
-        if (Player1 == null || Player2 == null || !GameRunning) return;
+        //if (Player1 == null || Player2 == null || !GameRunning) return;
 
-        //Debug.LogError("Human Turn: " + CanonGameState.CurrentPlayer.IsHuman);
-        Player1.RunUpdate();
-        Player2.RunUpdate();
-        View.Instance.DoUpdate();
-
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Player1 != null && Player2 != null && GameRunning)
         {
-            if (GamePaused)
+            Player1.RunUpdate();
+            Player2.RunUpdate();
+            View.Instance.PlayerUpdate();
+
+            if (Input.GetKeyDown(KeyCode.Escape))
             {
-                UnPauseGame();
-            }
-            else
-            {
-                PauseGame();
+                if (GamePaused)
+                {
+                    UnPauseGame();
+                }
+                else
+                {
+                    PauseGame();
+                }
             }
         }
+
+
+        View.Instance.AnimationUpdate();
     }
 
     void OnDisable() // Called when exiting Play Mode
@@ -160,24 +158,14 @@ public class Controller : MonoBehaviour
             ProgressionHandler.DeckName playerDeckName = IsTestChamber ? ProgressionHandler.DeckName.TestPlayer : ProgressionHandler.DeckName.PlayerStarterDeck;
             ProgressionHandler.LoadPlayer(Player1, playerDeckName);
             HumanPlayerDetails = Player1.PlayerDetails;
-
-            //PlayerStartingHealth = Player1.StartingHealth;
-            //PlayerDeckDefinition = Player1.DeckBlueprint;
-            //PlayerStartingBattleRow = ProgressionHandler.GetPlayerStartingFollowers(playerDeckName);
-            //PlayerMinorRitual = Player1.MinorRitual;
-            //PlayerMajorRitual = Player1.MajorRitual;
-            //PlayerCardsPerTurn = Player1.CardsPerTurn;
         }
 
         Player1 = new HumanPlayer();
         Player2 = new AIPlayer();
         CanonGameState = new GameState(Player1, Player2);
         ProgressionHandler = new ProgressionHandler();
-        //ProgressionHandler.Reset();
         ProgressionHandler.SetupNextEnemy(IsTestChamber);
 
-        //GoToStartScreen();
-        //LoadLevel();
         isGameSetup = true;
     }
     private void LoadLevel()
@@ -206,6 +194,9 @@ public class Controller : MonoBehaviour
         Player1.ApplyTrinketBuffs();
         Player2.ApplyTrinketBuffs();
 
+        var startFightAction = new StartFightAction(ProgressionHandler.CurrentLevel);
+        CanonGameState.ActionHandler.AddAction(startFightAction);
+
         // Load Starting BattleRow
         LoadStartingBattleRow();
 
@@ -230,14 +221,24 @@ public class Controller : MonoBehaviour
 
         ProgressionHandler.SetupNextEnemy();
 
+        
+
+        View.Instance.DarknessHandler.SetDarkness();
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, ShowNextLevel);
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
+    private void ShowNextLevel()
+    {
         LoadLevel();
 
         CurrentScreen = ScreenName.Game;
 
-        ScreenHandler.Instance.HideScreen(ScreenName.Blank);
+        ScreenHandler.Instance.HideScreen(ScreenName.CardGainRewards, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.CardRemovalRewards, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.RitualRewards, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
         ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
-        ScreenHandler.Instance.ShowScreen(ScreenName.Game);
+        ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, false);
     }
     public void TryEndTurn()
     {
@@ -293,9 +294,13 @@ public class Controller : MonoBehaviour
         CurrentScreen = ScreenName.Game;
 
         ScreenHandler.Instance.HideScreen(ScreenName.StarterBundle);
-        ScreenHandler.Instance.HideScreen(ScreenName.Blank);
-        ScreenHandler.Instance.ShowScreen(ScreenName.Game);
+        //ScreenHandler.Instance.ShowScreen(ScreenName.Blank);
+        ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, false);
         ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
+
+        View.Instance.DarknessHandler.SetDarkness();
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, null);
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
 
         LoadLevel();
     }
@@ -390,37 +395,51 @@ public class Controller : MonoBehaviour
         ScreenHandler.Instance.HideScreen(ScreenName.StarterBundle);
     }
 
-    public void CheckForPlayerDeath()
+    public bool CheckForPlayerDeath()
     {
+        if (CurrentScreen != ScreenName.Game) return false;
+
         if (Player1.Health <= 0)
         {
             ClearLevel();
 
             GoToGameOverScreen();
             Player1.Health = 1;
+            return true;
         }
         else if (Player2.Health <= 0)
         {
             ClearLevel();
 
-            if (ProgressionHandler.CurrentLevel == 5)
-            {
-                GoToTrinketScreen();
-            }
-            else if (ProgressionHandler.CurrentLevel >= 10)
-            {
-                ScreenHandler.Instance.ShowScreen(ScreenName.Success);
-            }
-            else if (ProgressionHandler.CurrentLevel % 2 != 0)
-            {
-                GoToCardGainRewardScreen();
-            }
-            else
-            {
-                GoToCardRemovalRewardScreen();
-            }
+            ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, ProgressToNextLevel);
+            View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+
+            
 
             Player2.Health = 1;
+            return true;
+        }
+
+        return false;
+    }
+
+    private void ProgressToNextLevel()
+    {
+        if (ProgressionHandler.CurrentLevel == 5)
+        {
+            GoToTrinketScreen();
+        }
+        else if (ProgressionHandler.CurrentLevel >= 10)
+        {
+            ScreenHandler.Instance.ShowScreen(ScreenName.Success);
+        }
+        else if (ProgressionHandler.CurrentLevel % 2 != 0)
+        {
+            GoToCardGainRewardScreen();
+        }
+        else
+        {
+            GoToCardRemovalRewardScreen();
         }
     }
 
@@ -456,6 +475,9 @@ public class Controller : MonoBehaviour
             //follower.Owner.SummonFollower(follower, index, false);
             GameAction newAction = new SummonFollowerAction(follower, index, false);
             Player1.GameState.ActionHandler.AddAction(newAction);
+
+            GiveFollowerStaticEffectAction sprintAction = new GiveFollowerStaticEffectAction(follower, StaticEffect.Sprint);
+            Player1.GameState.ActionHandler.AddAction(sprintAction, true);
         }
 
         foreach (Follower follower in Player2.StartingBattleRow)
@@ -465,8 +487,10 @@ public class Controller : MonoBehaviour
             //follower.Owner.SummonFollower(follower, index, false);
             GameAction newAction = new SummonFollowerAction(follower, index, false);
             Player2.GameState.ActionHandler.AddAction(newAction);
+
+            GiveFollowerStaticEffectAction sprintAction = new GiveFollowerStaticEffectAction(follower, StaticEffect.Sprint);
+            Player2.GameState.ActionHandler.AddAction(sprintAction, true);
         }
-        
     }
 
     public void LoadTutorial()
@@ -517,7 +541,7 @@ public class Controller : MonoBehaviour
     public void HideDeckViewer()
     {
         ScreenHandler.Instance.ShowScreen(CurrentScreen, true);
-        ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, true, false);
+        if (CurrentScreen == ScreenName.Game) ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, true, false);
 
         DeckViewer.Exit();
         DeckViewer.gameObject.SetActive(false);

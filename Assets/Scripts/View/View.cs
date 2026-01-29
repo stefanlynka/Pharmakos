@@ -10,7 +10,7 @@ public class View : MonoBehaviour
 {
     public static View Instance;
 
-    public AnimationHandler AnimationHandler;
+    public AnimationHandler AnimationHandler = new AnimationHandler();
 
     public static GameObject FollowerCardPrefab;
     public static GameObject SpellCardPrefab;
@@ -37,6 +37,8 @@ public class View : MonoBehaviour
 
     public RectTransform PlayerTurnBanner;
     public RectTransform AITurnBanner;
+    public FightBanner FightNumberBanner;
+    public DarknessHandler DarknessHandler;
 
     public bool IsHumansTurn = true;
     public bool TurnIsEnding = false;
@@ -100,7 +102,9 @@ public class View : MonoBehaviour
         LoadBackground();
         LoadMusic();
 
-        AnimationHandler = new AnimationHandler();
+        DarknessHandler.SetDarkness();
+
+        //AnimationHandler = new AnimationHandler();
     }
     private void LoadMusic()
     {
@@ -124,14 +128,17 @@ public class View : MonoBehaviour
         CardMap.Clear();
     }
 
-    public void DoUpdate()
+    public void PlayerUpdate()
     {
         SelectionHandler.UpdateSelections();
         Player1.UpdatePlayer();
         Player2.UpdatePlayer();
 
-        SequenceHandler.Instance.Update();
         //TweenManager.Update();
+    }
+    public void AnimationUpdate()
+    {
+        SequenceHandler.Instance.Update();
         AnimationHandler.UpdateAnimations();
     }
 

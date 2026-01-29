@@ -61,7 +61,8 @@ public class PlaySpellDecision : PlayerDecision
         ITarget target = null;
         if (!Controller.Instance.CanonGameState.TargetsByID.ContainsKey(CardID) || !Controller.Instance.CanonGameState.TargetsByID.ContainsKey(TargetID))
         {
-            if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+            // Sometimes happens when card being played hasn't been created yet.
+            //if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
         }
         else
         {

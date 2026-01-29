@@ -23,6 +23,14 @@ public class EndTurnAction : GameAction
 
     public override void Execute(bool simulated = false, bool successful = true)
     {
+        // Check if either player has died
+        if (Controller.Instance.CheckForPlayerDeath())
+        {
+            base.Execute(simulated);
+            return;
+        }
+
+
         owner.GameState.EndTurn();
 
         if (!simulated)
@@ -40,5 +48,10 @@ public class EndTurnAction : GameAction
             new ShowBannerAnimation(this, !owner.IsHuman)
         };
         return animationActions;
+    }
+
+    public override void LogAction()
+    {
+        Debug.LogWarning("EndTurnAction: " + owner.Name + " ends their turn");
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.Experimental.GraphView.GraphView;
 using static UnityEngine.GraphicsBuffer;
 
 public class SelectionHandler
@@ -216,12 +217,13 @@ public class SelectionHandler
             // Discard the card using DiscardCardAction
             Controller.Instance.Player1.TryDiscardCard(HeldCard.Card);
             HeldCard.SetHighlight(false);
+            View.Instance.HighlightTargets(new List<ITarget>());
             CurrentHover = null;
             HeldCard = null;
             CurrentTargets.Clear();
             return;
         }
-        else if (viewFollower != null && View.Instance.Player1.BattleRow.IsMouseOverThis() && View.Instance.Player1.BattleRow.Followers.Count < Player.MaxFollowerCount)
+        else if (viewFollower != null && View.Instance.Player1.BattleRow.IsMouseOverThis() && viewFollower.Follower.CanPlay() && View.Instance.Player1.BattleRow.Followers.Count < Player.MaxFollowerCount)
         {
             // Check if card is being dropped over battlefield
             int placementIndex = View.Instance.Player1.BattleRow.GetPlacementIndex();
@@ -308,6 +310,17 @@ public class SelectionHandler
     public bool IsHoldingFollower()
     {
         return HeldCard != null && HeldCard is ViewFollower;
+    }
+    public bool IsHoldingPlayableFollower()
+    {
+        //if (HeldCard == null) return false;
+
+        if (HeldCard is ViewFollower viewFollower)
+        {
+            return viewFollower.Follower.CanPlay();
+        }
+
+        return false;
     }
 
     public bool IsHoveringOverThisCard(ViewCard card)

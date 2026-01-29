@@ -21,6 +21,10 @@ public class ChangeStatsAction : GameAction
 
     public override GameAction DeepCopy(Player newOwner)
     {
+        if (Target == null)
+        {
+            return null;
+        }
         ChangeStatsAction copy = (ChangeStatsAction)MemberwiseClone();
         copy.Target = newOwner.GameState.GetTargetByID<ITarget>(Target.GetID());
 

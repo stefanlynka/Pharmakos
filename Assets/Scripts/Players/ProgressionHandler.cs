@@ -59,11 +59,11 @@ public class ProgressionHandler
             },
             Trinkets = new Dictionary<int, List<Trinket>>
             {
-                [1] = new List<Trinket>() { new TheLostReturnTrinket() },
+                [1] = new List<Trinket>() { new TwistingCorridorsTrinket() },
             },
             TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
             {
-                [1] = new List<Trinket>() { new GrowingBountiesTrinket() },
+                [1] = new List<Trinket>() { new EverDeeperTrinket() },
             },
             TwistOfFateIntervals = new Dictionary<int, int>()
             {
@@ -73,6 +73,7 @@ public class ProgressionHandler
             {
                 [1] = new List<Card>
                 {
+                    //new Hoplite(),
                     new Helios(),
                 }
             },
@@ -80,10 +81,10 @@ public class ProgressionHandler
             {
                 [1] = new List<Follower>
                 {
-                    //new Peltast(),
                     new Hoplite(),
-                    new Prey1(),
-                    new Siren(),
+                    new Hippeis(),
+                    new Myrmidon(),
+                    //new Siren(),
                 }
             }
         };
@@ -98,7 +99,7 @@ public class ProgressionHandler
             PortraitName = "Player",
             MinorRituals = new Dictionary<int, Ritual>
             {
-                [0] = new DemeterMinor(),
+                [0] = new AthenaMajor(),
             },
             MajorRituals = new Dictionary<int, Ritual>
             {
@@ -106,18 +107,19 @@ public class ProgressionHandler
             },
             Trinkets = new Dictionary<int, List<Trinket>>
             {
-                [0] = new List<Trinket>()
+                [0] = new List<Trinket>() { new PeltastTrumpetTrinket() }
             },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
                 [0] = new List<Card>
                 {
                     //new DevKill(),
-                    new ThrowStone(),
-                    //new Blessing(),
+                    //new ThrowStone(),
+                    new Blessing(),
                     new Talaria(),
                     new Peltast(),
                     new PriceOfProfit(),
+                    new Pan(),
                     //new Endymion(),
                 },
             },
@@ -125,9 +127,11 @@ public class ProgressionHandler
             {
                 [0] = new List<Follower>
                 {
-                    new Ekdromos(),
-                    new Chariot(),
-                    new Ekdromos(),
+                    //new Scylla(),
+                    new Peltast(),
+                    new Agamemnon(),
+                    //new Chariot(),
+                    //new Ekdromos(),
                 }
             }
         };
@@ -160,14 +164,16 @@ public class ProgressionHandler
                     new Sheep(),
                     new Ekdromos(),
                     new Hoplite(),
+                    new Hoplite(),
                     new Thureophoros(),
-                    new Chariot(),
+                    //new Chariot(),
                     new Chariot(),
                     new Hippeis(),
                     new Hippeis(),
                     new Myrmidon(),
+                    //new PriceOfProfit(),
                     new PriceOfProfit(),
-                    new PriceOfProfit(),
+                    new Blessing(),
                     new Blessing(),
                     new ThrowStone(),
                     new Scry(),
@@ -715,7 +721,6 @@ public class ProgressionHandler
             {
                 [1] = new List<Follower>
                 {
-                    new WallOfTroy(),
                     new Toxotes(),
                     new WallOfTroy(),
                 },
@@ -817,7 +822,7 @@ public class ProgressionHandler
                     new Chariot(),
                     new Hippeis(),
                     new Hippeis(),
-                    new Hippeis(),
+                    new Atalanta(),
                     new Atalanta(),
                     new Endymion(),
                     new Hippolyta(),
@@ -838,9 +843,9 @@ public class ProgressionHandler
                     new Boar(),
                     new Chariot(),
                     new Chariot(),
-                    new Hippeis(),
-                    new Hippeis(),
-                    new Hippeis(),
+                    new Atalanta(),
+                    new Atalanta(),
+                    new Atalanta(),
                     new Atalanta(),
                     new Endymion(),
                     new Hippolyta(),
@@ -850,7 +855,6 @@ public class ProgressionHandler
                     new ReleasePrey(),
                     new ReleasePrey(),
                     new ReleasePrey(),
-                    new PriceOfWealth(),
                     new PriceOfWealth(),
                     new PriceOfWealth(),
                 }
@@ -1738,6 +1742,7 @@ public class ProgressionHandler
         CurrentEnemy = EnemyPool[randomTarget];
         // For Testing
         //CurrentEnemy = DeckName.SeasideCliffs;
+        //if (CurrentLevel == 3) CurrentEnemy = DeckName.Underworld;
         EnemyPool.Remove(CurrentEnemy);
     }
 

@@ -43,7 +43,10 @@ public class DelayedGameAction
     {
         DelayedGameAction copy = (DelayedGameAction)MemberwiseClone();
 
-        copy.GameAction = GameAction.DeepCopy(newOwner);
+        GameAction copiedGameAction = GameAction.DeepCopy(newOwner);
+        if (copiedGameAction == null) return null;
+
+        copy.GameAction = copiedGameAction;
 
         return copy;
     }

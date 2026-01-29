@@ -145,6 +145,7 @@ public class MoveCardAnimation : AnimationAction
             switch (newZone)
             {
                 case GameZone.Hand:
+                case GameZone.Discard:
                     View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.CardDraw);
                     break;
                 case GameZone.PlayZone:

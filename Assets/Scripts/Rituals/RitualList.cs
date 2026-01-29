@@ -52,7 +52,7 @@ public class AphroditeMajor : Ritual
         if (follower == null) return;
         Player newOwner = follower.Owner.GetOtherPlayer();
         GameAction newAction = new TakeControlOfFollowerAction(newOwner, follower);
-        Owner.GameState.ActionHandler.AddAction(newAction);
+        Owner.GameState.ActionHandler.AddAction(newAction, true);
     }
 }
 
@@ -110,7 +110,7 @@ public class AphroditeMinor : Ritual
         Follower follower = target as Follower;
         if (follower == null) return;
         GameAction newAction = new FollowerElopesAction(follower);
-        Owner.GameState.ActionHandler.AddAction(newAction);
+        Owner.GameState.ActionHandler.AddAction(newAction, true);
     }
 }
 
@@ -458,6 +458,7 @@ public class AresMajorEffectDef : StaticPlayerEffect
         CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         follower.InnateEffects.Add(customEffectDef);
+        customEffectDef.Apply(follower);
     }
 
     private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
@@ -490,10 +491,10 @@ public class AthenaMajor : Ritual
             // BlitzMode costs - reduced non-gold costs since they reset each turn
             Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 3 },
+                {OfferingType.Blood, 3 }, // 3
                 {OfferingType.Bone, 0 },
                 {OfferingType.Crop, 0 },
-                {OfferingType.Scroll, 3 },
+                {OfferingType.Scroll, 3 }, // 3
             };
         }
         else
@@ -570,6 +571,7 @@ public class AthenaMajorEffectDef : StaticPlayerEffect
         CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         follower.InnateEffects.Add(customEffectDef);
+        customEffectDef.Apply(follower);
     }
 
     private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
@@ -699,8 +701,8 @@ public class DemeterMinor : Ritual
             Costs = new Dictionary<OfferingType, int>()
             {
                 {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 0 }, // 4
-                {OfferingType.Crop, 0 }, // 4
+                {OfferingType.Bone, 4 }, // 4
+                {OfferingType.Crop, 4 }, // 4
                 {OfferingType.Scroll, 0 },
             };
         }
@@ -827,7 +829,7 @@ public class DionysusMinor : Ritual
     public override void ExecuteEffect(ITarget target)
     {
         KillFollowerAction killAction = new KillFollowerAction(Owner, target, true);
-        Owner.GameState.ActionHandler.AddAction(killAction);
+        Owner.GameState.ActionHandler.AddAction(killAction, true);
 
         ChangeResourceAction gainGoldAction = new ChangeResourceAction(Owner, OfferingType.Gold, 1);
         Owner.GameState.ActionHandler.AddAction(gainGoldAction, true);
@@ -856,7 +858,7 @@ public class HadesMinor : Ritual
             Costs = new Dictionary<OfferingType, int>()
             {
                 {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 2 },
+                {OfferingType.Bone, 3 },
                 {OfferingType.Crop, 0 },
                 {OfferingType.Scroll, 0 },
             };
@@ -885,7 +887,7 @@ public class HadesMinor : Ritual
     {
         if (target is not Player playerTarget) return;
         SummonLastDeadFollowerAction summonAction = new SummonLastDeadFollowerAction(playerTarget);
-        Owner.GameState.ActionHandler.AddAction(summonAction);
+        Owner.GameState.ActionHandler.AddAction(summonAction, true);
     }
 }
 
@@ -991,9 +993,9 @@ public class HephaestusMajor : Ritual
             Costs = new Dictionary<OfferingType, int>()
             {
                 {OfferingType.Blood, 0 },
-                {OfferingType.Bone, 3 },
+                {OfferingType.Bone, 3 }, // 3
                 {OfferingType.Crop, 0 },
-                {OfferingType.Scroll, 3 },
+                {OfferingType.Scroll, 3 }, // 3
             };
         }
         else
@@ -1070,6 +1072,7 @@ public class HephaestusMajorEffectDef : StaticPlayerEffect
         CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         follower.InnateEffects.Add(customEffectDef);
+        customEffectDef.Apply(follower);
     }
 
     private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
@@ -1131,7 +1134,7 @@ public class HermesMinor : Ritual
         Player playerTarget = target as Player;
         if (playerTarget == null) return;
         GameAction newAction = new StealCardAction(Owner, playerTarget);
-        Owner.GameState.ActionHandler.AddAction(newAction);
+        Owner.GameState.ActionHandler.AddAction(newAction, true);
     }
 }
 // Draw a card
@@ -1179,17 +1182,17 @@ public class MuseMinor : Ritual
         if (playerTarget == null) return;
 
         GameAction newAction = new DrawCardAction(Owner, Owner, 1);
-        Owner.GameState.ActionHandler.AddAction(newAction);
+        Owner.GameState.ActionHandler.AddAction(newAction, true);
     }
 }
-// Give all Followers you summoned this turn +1/+1
+// Give a Follower +1/+1
 public class HestiaMinor : Ritual
 {
     public HestiaMinor()
     {
         Name = "Hestia\nMinor";
-        if (Controller.BlitzMode) Description = "Give all Followers you summoned this turn +1/+1";
-        else Description = "Give all Followers you summoned this turn +1/+1";
+        if (Controller.BlitzMode) Description = "Give a Follower +1/+1";
+        else Description = "Give a Follower +1/+1";
         
         if (Controller.BlitzMode)
         {
@@ -1198,7 +1201,7 @@ public class HestiaMinor : Ritual
             {
                 {OfferingType.Blood, 0 },
                 {OfferingType.Bone, 0 },
-                {OfferingType.Crop, 5 },
+                {OfferingType.Crop, 3 },
                 {OfferingType.Scroll, 0 },
             };
         }
@@ -1209,7 +1212,7 @@ public class HestiaMinor : Ritual
             {
                 {OfferingType.Blood, 0 },
                 {OfferingType.Bone, 0 },
-                {OfferingType.Crop, 5 },
+                {OfferingType.Crop, 3 },
                 {OfferingType.Scroll, 0 },
             };
         }
@@ -1218,23 +1221,28 @@ public class HestiaMinor : Ritual
     public override List<ITarget> GetTargets()
     {
         var targets = new List<ITarget>();
-        targets.Add(Owner);
+        targets.AddRange(ITarget.GetAllFollowers(Owner));
         return targets;
     }
 
     public override void ExecuteEffect(ITarget target)
     {
-        Player playerTarget = target as Player;
-        if (playerTarget == null) return;
-        foreach (Follower follower in playerTarget.BattleRow.Followers)
-        {
-            if (follower.PlayedThisTurn)
-            {
-                int healthGained = Controller.BlitzMode ? 1 : 1;
-                ChangeStatsAction newAction = new ChangeStatsAction(follower, 1, healthGained);
-                Owner.GameState.ActionHandler.AddAction(newAction);
-            }
-        }
+        Follower targetFollower = target as Follower;
+        if (targetFollower == null) return;
+
+        ChangeStatsAction newAction = new ChangeStatsAction(targetFollower, 1, 1);
+        Owner.GameState.ActionHandler.AddAction(newAction, true);
+        //Player playerTarget = target as Player;
+        //if (playerTarget == null) return;
+        //foreach (Follower follower in playerTarget.BattleRow.Followers)
+        //{
+        //    if (follower.PlayedThisTurn)
+        //    {
+        //        int healthGained = Controller.BlitzMode ? 1 : 1;
+        //        ChangeStatsAction newAction = new ChangeStatsAction(follower, 1, healthGained);
+        //        Owner.GameState.ActionHandler.AddAction(newAction, true);
+        //    }
+        //}
     }
 }
 
@@ -1386,18 +1394,18 @@ public class OldOnesMinor : Ritual
         Follower typhon = new Typhon();
         typhon.Init(targetPlayer);
         GameAction summonTyphon = new SummonFollowerAction(typhon);
-        Owner.GameState.ActionHandler.AddAction(summonTyphon);
+        Owner.GameState.ActionHandler.AddAction(summonTyphon, true);
 
         Follower echidna = new Echidna();
         echidna.Init(targetPlayer);
         GameAction summonEchidna = new SummonFollowerAction(echidna);
-        Owner.GameState.ActionHandler.AddAction(summonEchidna);
+        Owner.GameState.ActionHandler.AddAction(summonEchidna, true);
 
         GiveFollowerStaticEffectAction newAction = new GiveFollowerStaticEffectAction(typhon, StaticEffect.Sprint);
-        Owner.GameState.ActionHandler.AddAction(newAction);
+        Owner.GameState.ActionHandler.AddAction(newAction, true);
 
         GiveFollowerStaticEffectAction newAction2 = new GiveFollowerStaticEffectAction(echidna, StaticEffect.Sprint);
-        Owner.GameState.ActionHandler.AddAction(newAction2);
+        Owner.GameState.ActionHandler.AddAction(newAction2, true);
     }
 }
 
@@ -1443,7 +1451,7 @@ public class PoseidonMinor : Ritual
     public override void ExecuteEffect(ITarget target)
     {
         KillLowestAttackFollowersAction killAction = new KillLowestAttackFollowersAction(Owner);
-        Owner.GameState.ActionHandler.AddAction(killAction);
+        Owner.GameState.ActionHandler.AddAction(killAction, true);
     }
 }
 
@@ -1454,7 +1462,7 @@ public class ZeusMinor : Ritual
     {
         Name = "Zeus\nMinor";
 
-        if (Controller.BlitzMode) Description = "Summon a copy of a Follower";
+        if (Controller.BlitzMode) Description = "Summon a 1/1 copy of a Follower";
         else Description = "Summon a 1/1 copy of a Follower";
 
         if (Controller.BlitzMode)
@@ -1495,11 +1503,11 @@ public class ZeusMinor : Ritual
 
         Follower copy = (Follower)follower.MakeBaseCopy();
         copy.Init(Owner);
-        if (!Controller.BlitzMode) copy.SetBaseStats(1, 1);
+        copy.SetBaseStats(1, 1);
         int index = Owner.BattleRow.Followers.Count;
 
         GameAction newAction = new SummonFollowerAction(copy, index);
-        Owner.GameState.ActionHandler.AddAction(newAction);
+        Owner.GameState.ActionHandler.AddAction(newAction, true);
     }
 }
 

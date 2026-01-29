@@ -36,6 +36,7 @@ public class FollowerElopesAction : GameAction
         base.Execute(simulated);
     }
 
+
     public override List<AnimationAction> GetAnimationActions()
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
