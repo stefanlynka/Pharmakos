@@ -268,6 +268,16 @@ public class Follower : Card, ITarget
         return CurrentAttack;
     }
 
+    public virtual int GetUtility()
+    {
+        int utility = 0;
+        utility += GetCurrentAttack();
+        utility += CurrentHealth;
+        utility += InherentValue;
+
+        return utility;
+    }
+
     public void ChangeStats(int attackChange, int healthChange)
     {
         CurrentAttack += attackChange;
@@ -526,7 +536,7 @@ public class Follower : Card, ITarget
             effect.Trigger(null);
         }
 
-        SpellsCastOnThisByOwner.Add(spell.MakeBaseCopy() as Spell);
+        if (spell.Owner == Owner) SpellsCastOnThisByOwner.Add(spell.MakeBaseCopy() as Spell);
     }
 
     public override Dictionary<OfferingType, int> GetCosts()

@@ -9621,7 +9621,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &490096881
 Transform:
   m_ObjectHideFlags: 0
@@ -9890,7 +9890,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &498291961
 Transform:
   m_ObjectHideFlags: 0
@@ -18851,7 +18851,7 @@ Transform:
   m_GameObject: {fileID: 1087985102}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -7.4, z: -0.05}
+  m_LocalPosition: {x: 0, y: -7.1, z: -0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -23028,6 +23028,14 @@ PrefabInstance:
       value: CardRewardBucket (1)
       objectReference: {fileID: 0}
     - target: {fileID: 1106642547495081833, guid: d2af3ebcc3a83cf43979e50c483ca6a0, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106642547495081833, guid: d2af3ebcc3a83cf43979e50c483ca6a0, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106642547495081833, guid: d2af3ebcc3a83cf43979e50c483ca6a0, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -24711,7 +24719,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.5518868, g: 1, b: 0.6492774, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -27489,6 +27497,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1087985103}
     m_Modifications:
+    - target: {fileID: 6535750315085246647, guid: 79a4cecb770ae164ea823edf0bd67ef4, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 6535750315085246647, guid: 79a4cecb770ae164ea823edf0bd67ef4, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.25
+      objectReference: {fileID: 0}
     - target: {fileID: 6535750315085246647, guid: 79a4cecb770ae164ea823edf0bd67ef4, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -35880,7 +35896,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.6084906, b: 0.6084906, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -37251,12 +37267,20 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7150598145223921473, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7150598145223921473, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7150598145223921473, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7150598145223921473, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 18.86
+      value: 20.13
       objectReference: {fileID: 0}
     - target: {fileID: 7150598145223921473, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_LocalPosition.z
@@ -39358,6 +39382,14 @@ PrefabInstance:
       value: CardRewardBucket
       objectReference: {fileID: 0}
     - target: {fileID: 1106642547495081833, guid: d2af3ebcc3a83cf43979e50c483ca6a0, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106642547495081833, guid: d2af3ebcc3a83cf43979e50c483ca6a0, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106642547495081833, guid: d2af3ebcc3a83cf43979e50c483ca6a0, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -39823,12 +39855,20 @@ PrefabInstance:
     m_TransformParent: {fileID: 1087985103}
     m_Modifications:
     - target: {fileID: 6535750315085246647, guid: 79a4cecb770ae164ea823edf0bd67ef4, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 6535750315085246647, guid: 79a4cecb770ae164ea823edf0bd67ef4, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 6535750315085246647, guid: 79a4cecb770ae164ea823edf0bd67ef4, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6535750315085246647, guid: 79a4cecb770ae164ea823edf0bd67ef4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 13.49
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 6535750315085246647, guid: 79a4cecb770ae164ea823edf0bd67ef4, type: 3}
       propertyPath: m_LocalPosition.z

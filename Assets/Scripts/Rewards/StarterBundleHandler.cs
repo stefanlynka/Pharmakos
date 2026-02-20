@@ -39,7 +39,9 @@ public class StarterBundleHandler : MonoBehaviour
 
         //Controller.Instance.HideStarterBundleScreen();
         Controller.Instance.StartGame();
-
+    }
+    public void Hide()
+    {
         SelectionHandler.enabled = false;
         gameObject.SetActive(false);
     }

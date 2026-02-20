@@ -24,6 +24,7 @@ public enum EffectTrigger
     OnKill,
     OnTargeted,
     OnAnyFollowerDeath,
+    OnAnyFollowerEnter,
     OnAnySpellCast,
 }
 

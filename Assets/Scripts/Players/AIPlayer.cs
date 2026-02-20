@@ -391,9 +391,7 @@ public class AIPlayer : Player
         Player thisPlayer = gameState.GetPlayer(gameState.AI.PlayerID);
         foreach (Follower follower in thisPlayer.BattleRow.Followers)
         {
-            utility += follower.GetCurrentAttack();
-            utility += follower.CurrentHealth;
-            utility += follower.InherentValue;
+            utility += follower.GetUtility();
         }
         utility += thisPlayer.Health;
         utility += thisPlayer.PlayerEffects.Count * 15;
@@ -402,8 +400,7 @@ public class AIPlayer : Player
         Player otherPlayer = gameState.GetOtherPlayer(gameState.AI.PlayerID);
         foreach (Follower follower in otherPlayer.BattleRow.Followers)
         {
-            utility -= follower.GetCurrentAttack()*2;
-            utility -= follower.CurrentHealth*2;
+            utility -= follower.GetUtility();
         }
         utility -= otherPlayer.Health;
 

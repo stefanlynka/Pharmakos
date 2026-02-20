@@ -153,7 +153,7 @@ public class CreateOfferingAnimation : AnimationAction
         switch (offeringType)
         {
             case OfferingType.Crop:
-                View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Crop);
+                //View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Crop);
                 break;
             case OfferingType.Bone:
                 View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Bone);

@@ -112,6 +112,9 @@ public class TriggeredFollowerEffectInstance: FollowerEffectInstance
             case EffectTrigger.OnTargeted:
                 AffectedFollower.OnTargetedEffects.Add(this);
                 break;
+            case EffectTrigger.OnAnyFollowerEnter:
+                AffectedFollower.Owner.GameState.FollowerEnters += OnEnter;
+                break;
             case EffectTrigger.OnAnyFollowerDeath:
                 AffectedFollower.Owner.GameState.FollowerDies += OnDeath;
                 break;
@@ -167,6 +170,10 @@ public class TriggeredFollowerEffectInstance: FollowerEffectInstance
 
     public virtual void Trigger(ITarget target = null, int amount = 0){}
 
+    private void OnEnter(Follower follower)
+    {
+        Trigger(follower);
+    }
     private void OnDeath(Follower follower)
     {
         Trigger(follower);
@@ -405,7 +412,43 @@ public class SetStatsInstance : TriggeredFollowerEffectInstance
         }
     }
 }
+public class UpdateStatsInstance : TriggeredFollowerEffectInstance
+{
+    public EffectTarget TargetType;
+    public bool UseTargetInsteadOfType;
+    public bool UseAmountForHealth;
 
+    public UpdateStatsInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
+
+    public void Init(EffectTarget targetType = EffectTarget.Self, bool useTargetInsteadOfType = false, bool useAmountForHealth = false)
+    {
+        TargetType = targetType;
+        UseTargetInsteadOfType = useTargetInsteadOfType;
+        UseAmountForHealth = useAmountForHealth;
+    }
+    public override void Trigger(ITarget target = null, int amount = 0)
+    {
+        List<Follower> targetFollowers;
+        if (UseTargetInsteadOfType)
+        {
+            targetFollowers = new List<Follower> { target as Follower };
+        }
+        else
+        {
+            targetFollowers = FollowerEffect.GetTargets(AffectedFollower, TargetType, EffectDef);
+        }
+
+        foreach (Follower targetFollower in targetFollowers)
+        {
+            if (targetFollower == null)
+            {
+                continue;
+            }
+            UpdateStatsAction action = new UpdateStatsAction(targetFollower);
+            AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
+        }
+    }
+}
 public class TurnToStoneInstance : TriggeredFollowerEffectInstance
 {
     public EffectTarget TargetType;

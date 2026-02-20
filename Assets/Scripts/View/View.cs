@@ -102,7 +102,10 @@ public class View : MonoBehaviour
         LoadBackground();
         LoadMusic();
 
-        DarknessHandler.SetDarkness();
+        if (!Controller.Instance.IsTestChamber)
+        {
+            DarknessHandler.SetDarkness();
+        }
 
         //AnimationHandler = new AnimationHandler();
     }

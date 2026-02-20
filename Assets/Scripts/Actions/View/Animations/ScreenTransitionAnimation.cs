@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class ScreenTransitionAnimation : AnimationAction
 {
-    private float pauseDuration = 1.1f;
+    private float pauseDuration = 0.8f;
     private Action halfwayAction;
     private Action onFinishAction;
     public ScreenTransitionAnimation(GameAction gameAction, Action halfwayAction = null, Action onFinishAction = null) : base(gameAction)
@@ -19,6 +19,7 @@ public class ScreenTransitionAnimation : AnimationAction
     {
         base.Play(onFinish);
 
+        //Debug.LogWarning("Starting transition");
         ScreenHandler.Instance.ShowScreen(ScreenName.Blank, false, false);
 
         Sequence waitSequence = new Sequence();
@@ -46,10 +47,12 @@ public class ScreenTransitionAnimation : AnimationAction
     }
     private void Halfway()
     {
+        //Debug.LogWarning("Halways through transition");
         halfwayAction?.Invoke();
     }
     private void AnimationOver()
     {
+        //Debug.LogWarning("Finished transition");
         onFinishAction?.Invoke();
     }
 }

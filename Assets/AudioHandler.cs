@@ -117,6 +117,9 @@ public class AudioHandler : MonoBehaviour
                     case SoundEffectType.Scroll:
                         SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.6f);
                         break;
+                    case SoundEffectType.Defeat:
+                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.3f);
+                        break;
                     default:
                         SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume);
                         break;

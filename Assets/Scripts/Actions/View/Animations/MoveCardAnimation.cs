@@ -185,6 +185,7 @@ public class MoveCardAnimation : AnimationAction
                 if (viewCard is ViewFollower viewFollower)
                 {
                     View.Instance.MoveFollowerToBattleRow(viewFollower.Follower, newIndex);
+                    View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Crop);
                 }
                 break;
             case GameZone.Hand:

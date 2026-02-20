@@ -194,8 +194,11 @@ public class Controller : MonoBehaviour
         Player1.ApplyTrinketBuffs();
         Player2.ApplyTrinketBuffs();
 
-        var startFightAction = new StartFightAction(ProgressionHandler.CurrentLevel);
-        CanonGameState.ActionHandler.AddAction(startFightAction);
+        if (!IsTestChamber)
+        {
+            var startFightAction = new StartFightAction(ProgressionHandler.CurrentLevel);
+            CanonGameState.ActionHandler.AddAction(startFightAction);
+        }
 
         // Load Starting BattleRow
         LoadStartingBattleRow();
@@ -293,16 +296,30 @@ public class Controller : MonoBehaviour
 
         CurrentScreen = ScreenName.Game;
 
+        ScreenHandler.Instance.HideScreen(ScreenName.Start);
         ScreenHandler.Instance.HideScreen(ScreenName.StarterBundle);
         //ScreenHandler.Instance.ShowScreen(ScreenName.Blank);
         ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, false);
         ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
 
-        View.Instance.DarknessHandler.SetDarkness();
-        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, null);
-        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+        if (IsTestChamber)
+        {
+            ScreenHandler.Instance.HideScreen(ScreenName.Blank);
+            View.Instance.DarknessHandler.SetDarkness(0);
+        }
+        else
+        {
+            //View.Instance.DarknessHandler.SetDarkness();
+            ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, HideStarterBundles);
+            View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+        }
 
         LoadLevel();
+    }
+    private void HideStarterBundles()
+    {
+        StarterBundleHandler.Hide();
+        View.Instance.DarknessHandler.SetDarkness();
     }
     public void StartTestChamber()
     {

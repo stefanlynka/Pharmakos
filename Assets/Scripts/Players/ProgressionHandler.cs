@@ -81,9 +81,10 @@ public class ProgressionHandler
             {
                 [1] = new List<Follower>
                 {
-                    new Hoplite(),
-                    new Hippeis(),
-                    new Myrmidon(),
+                    //new Hoplite(),
+                    //new Peltast(),
+                    new Pytho(),
+                    new Icarus(),
                     //new Siren(),
                 }
             }
@@ -128,10 +129,10 @@ public class ProgressionHandler
                 [0] = new List<Follower>
                 {
                     //new Scylla(),
-                    new Peltast(),
-                    new Agamemnon(),
+                    new Pytho(),
+                    //new Agamemnon(),
                     //new Chariot(),
-                    //new Ekdromos(),
+                    new Ekdromos(),
                 }
             }
         };
@@ -1209,15 +1210,24 @@ public class ProgressionHandler
             {
                 [1] = new List<Card>
                 {
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    //new CreateFilth(),
                     new CreateFilth(),
-                    new CreateFilth(),
                     new StymphalianBird(),
                     new StymphalianBird(),
-                    new StymphalianBird(),
+                    //new StymphalianBird(),
                     new MareOfDiomedes(),
-                    new MareOfDiomedes(),
-                    new Hippolyta(),
-                    new Amazon(),
+                    //new MareOfDiomedes(),
+                    //new Hippolyta(),
+                    //new Amazon(),
                     new Amazon(),
                     new Amazon(),
                     new Amazon(),
@@ -1786,9 +1796,11 @@ public class ProgressionHandler
 
     public int GetPlayerHealth()
     {
+        //return 1;
+
         if (CurrentLevel >= 10) return 50;
 
-        return 10 + Mathf.FloorToInt(CurrentLevel / 2f) * 5; // CurrentPool * 5;
+        return 15 + Mathf.FloorToInt(CurrentLevel / 3f) * 5; // CurrentPool * 5;
     }
 
     public List<StarterBundle> GetStarterBundles()

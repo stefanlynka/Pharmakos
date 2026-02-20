@@ -1981,6 +1981,10 @@ public class Pytho : Follower
     public override void SetupInnateEffects()
     {
         base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
     }
 
     public override int GetCurrentAttack()
@@ -1994,6 +1998,17 @@ public class Pytho : Follower
             }
         }
         return CurrentAttack;
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
+    {
+        UpdateStatsInstance newEffectInstance = new UpdateStatsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnAnyFollowerEnter);
+        newEffectInstance.Init(EffectTarget.EffectSource);
+        effectDef.EffectInstances.Add(newEffectInstance);
+
+        UpdateStatsInstance newEffectInstance2 = new UpdateStatsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnAnyFollowerDeath);
+        newEffectInstance2.Init(EffectTarget.EffectSource);
+        effectDef.EffectInstances.Add(newEffectInstance2);
     }
 }
 

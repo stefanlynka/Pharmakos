@@ -12,7 +12,7 @@ public class StartFightAnimation : AnimationAction
     private Vector3 startPosition = new Vector3(0, 205, 0);
     private Vector3 endPosition = new Vector3(0, -100, 0);
     private float darknessLevel = 1f;
-    private float darknessShowUpDuration = 0.3f;
+    //private float darknessShowUpDuration = 0.3f;
     private float moveDuration = 0.45f;
     private float pauseDuration = 1.2f;
 
