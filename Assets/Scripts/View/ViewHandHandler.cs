@@ -47,6 +47,10 @@ public class ViewHandHandler : MonoBehaviour
             if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
             Debug.LogError("Card Added to wrong hand!");
         }
+        if (viewCard == null)
+        {
+            return;
+        }
         viewCard.transform.SetParent(transform, false);
         ViewCards.Add(viewCard);
         if (viewCard.Card.Owner.IsHuman)

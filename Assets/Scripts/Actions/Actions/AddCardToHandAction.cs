@@ -33,7 +33,7 @@ public class AddCardCopyToHandAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new MoveCardAnimation(this, Card, Card.Owner, GameZone.BattleRow, Card.Owner, GameZone.Hand)
+            new MoveCardAnimation(this, Card, Card.Owner, GameZone.BattleRow, Card.Owner, GameZone.Hand, 0.25f)
         };
         return animationActions;
     }

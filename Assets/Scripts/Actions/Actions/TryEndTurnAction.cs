@@ -24,19 +24,19 @@ public class TryEndTurnAction : GameAction
     public override void Execute(bool simulated = false, bool successful = true)
     {
         owner.GameState.DoEndOfTurnActions();
-
-        var endTurnAction = new EndTurnAction(owner.GameState.CurrentPlayer);
-        owner.GameState.ActionHandler.AddAction(endTurnAction);
+        View.Instance.DoingEndOfTurnActions = true;
+        //var endTurnAction = new EndTurnAction(owner.GameState.CurrentPlayer);
+        //owner.GameState.ActionHandler.AddAction(endTurnAction);
 
         base.Execute(simulated);
     }
 
     public override List<AnimationAction> GetAnimationActions()
     {
-        View.Instance.TurnIsEnding = true;
+        //View.Instance.TurnIsEnding = true;
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            //new ShowBannerAnimation(this, !owner.IsHuman)
+            new StartEndTurnAnimation(this)
         };
         return animationActions;
     }

@@ -59,7 +59,7 @@ public class ProgressionHandler
             },
             Trinkets = new Dictionary<int, List<Trinket>>
             {
-                [1] = new List<Trinket>() { new TwistingCorridorsTrinket() },
+                [1] = new List<Trinket>() { }, // new TwistingCorridorsTrinket()
             },
             TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
             {
@@ -67,7 +67,7 @@ public class ProgressionHandler
             },
             TwistOfFateIntervals = new Dictionary<int, int>()
             {
-                [1] = 1,
+                [1] = 10,
             },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
@@ -81,10 +81,10 @@ public class ProgressionHandler
             {
                 [1] = new List<Follower>
                 {
-                    //new Hoplite(),
+                    //new Corridor(),
                     //new Peltast(),
-                    new Pytho(),
-                    new Icarus(),
+                    //new Pytho(),
+                    //new Icarus(),
                     //new Siren(),
                 }
             }
@@ -116,11 +116,12 @@ public class ProgressionHandler
                 {
                     //new DevKill(),
                     //new ThrowStone(),
+                    new Ekdromos(),
                     new Blessing(),
-                    new Talaria(),
-                    new Peltast(),
-                    new PriceOfProfit(),
-                    new Pan(),
+                    new Blessing(),
+                    //new Peltast(),
+                    //new PriceOfProfit(),
+                    //new Pan(),
                     //new Endymion(),
                 },
             },
@@ -128,11 +129,12 @@ public class ProgressionHandler
             {
                 [0] = new List<Follower>
                 {
-                    //new Scylla(),
-                    new Pytho(),
+                    new Ekdromos(),
+                    new Ekdromos(),
+                    //new Pytho(),
                     //new Agamemnon(),
                     //new Chariot(),
-                    new Ekdromos(),
+                    //new Charybdis(),
                 }
             }
         };
@@ -1294,9 +1296,9 @@ public class ProgressionHandler
                 new GoldenHind(),
                 new CreateFilth(),
                 //new StymphalianBird(),
+                new Chariot(),
                 new MareOfDiomedes(),
                 new Hippolyta(),
-                new Amazon(),
                 new StygianPact(),
             }
         };
@@ -1737,16 +1739,28 @@ public class ProgressionHandler
 
         CurrentLevel++;
         int possibleEnemyCount = EnemyPool.Count;
-        while (possibleEnemyCount == 0)
+
+        if (possibleEnemyCount == 0)
         {
-            CurrentLevel++;
-            if (CurrentPool >= EnemyPool.Count)
+            if (BossPool.Count == 0)
             {
                 Debug.LogError("You Win!");
                 return;
             }
-            possibleEnemyCount = EnemyPool.Count;
+
+            CurrentEnemy = BossPool[Controller.Instance.MetaRNG.Next(0, EnemyPool.Count)];
+            return;
         }
+        //while (possibleEnemyCount == 0)
+        //{
+        //    CurrentLevel++;
+        //    if (CurrentPool >= EnemyPool.Count)
+        //    {
+        //        Debug.LogError("You Win!");
+        //        return;
+        //    }
+        //    possibleEnemyCount = EnemyPool.Count;
+        //}
 
         int randomTarget = Controller.Instance.MetaRNG.Next(0, EnemyPool.Count);
         CurrentEnemy = EnemyPool[randomTarget];
@@ -1796,7 +1810,7 @@ public class ProgressionHandler
 
     public int GetPlayerHealth()
     {
-        //return 1;
+        return 1;
 
         if (CurrentLevel >= 10) return 50;
 

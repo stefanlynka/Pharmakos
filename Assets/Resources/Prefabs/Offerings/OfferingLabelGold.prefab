@@ -78,7 +78,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6396398521787745821, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
       propertyPath: m_fontSize
-      value: 14.05
+      value: 15.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 6396398521787745821, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
+      propertyPath: m_margin.x
+      value: 0.1947316
+      objectReference: {fileID: 0}
+    - target: {fileID: 6396398521787745821, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
+      propertyPath: m_margin.z
+      value: 0.18929923
+      objectReference: {fileID: 0}
+    - target: {fileID: 6396398521787745821, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 7c3f7ab5b33668c429cce6f96e423dd3, type: 2}
+    - target: {fileID: 6396398521787745821, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 7617572035110567666, guid: 7c3f7ab5b33668c429cce6f96e423dd3, type: 2}
+    - target: {fileID: 6396398521787745821, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
+      propertyPath: m_characterSpacing
+      value: -10.63
+      objectReference: {fileID: 0}
+    - target: {fileID: 6396398521787745821, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6551485487039790586, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
       propertyPath: m_LocalScale.x
@@ -92,6 +116,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7358783637990881905, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 7617572035110567666, guid: 7c3f7ab5b33668c429cce6f96e423dd3, type: 2}
     - target: {fileID: 7863021906614120601, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
       propertyPath: m_Name
       value: OfferingLabelGold

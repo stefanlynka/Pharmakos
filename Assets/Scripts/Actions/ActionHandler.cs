@@ -40,7 +40,6 @@ public class ActionHandler
         }
         Evaluating = false;
     }
-
 }
 
 

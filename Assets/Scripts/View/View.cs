@@ -41,8 +41,10 @@ public class View : MonoBehaviour
     public DarknessHandler DarknessHandler;
 
     public bool IsHumansTurn = true;
+    public bool DoingEndOfTurnActions = false;
     public bool TurnIsEnding = false;
-    public bool IsInteractible { get { return IsHumansTurn && !TurnIsEnding; } }
+    public bool WaitingForTurnBanner = false;
+    public bool IsInteractible { get { return IsHumansTurn && !TurnIsEnding && !DoingEndOfTurnActions; } }
     public ViewTarget CurrentHover { get { return SelectionHandler.CurrentHover; } }
 
     public SpriteRenderer BackgroundRenderer;

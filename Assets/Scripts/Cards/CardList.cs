@@ -363,7 +363,7 @@ public class Filth : Follower
 
         SetBaseStats(0, 1);
 
-        Text = "Taunt\nOn Damaged: Reduce attacker's Attack by 1";
+        Text = "Taunt\nCan't Attack\nOn Damaged: Reduce attacker's Attack by 1";
         Icon = IconType.Target;
 
         SetupInnateEffects();
@@ -407,7 +407,7 @@ public class WallOfTroy : Follower
 
         SetBaseStats(0, 3);
 
-        Text = "Taunt";
+        Text = "Taunt\nCan't Attack";
         Icon = IconType.Target;
 
         SetupInnateEffects();

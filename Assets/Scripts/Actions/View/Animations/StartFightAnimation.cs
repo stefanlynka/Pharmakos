@@ -13,7 +13,7 @@ public class StartFightAnimation : AnimationAction
     private Vector3 endPosition = new Vector3(0, -100, 0);
     private float darknessLevel = 1f;
     //private float darknessShowUpDuration = 0.3f;
-    private float moveDuration = 0.45f;
+    private float moveDuration = 0.35f; // 0.45f
     private float pauseDuration = 1.2f;
 
     public StartFightAnimation(GameAction gameAction, int fightNumber) : base(gameAction)
@@ -72,6 +72,7 @@ public class StartFightAnimation : AnimationAction
     private void AnimationOver()
     {
         View.Instance.TurnIsEnding = false;
+        View.Instance.DoingEndOfTurnActions = false;
         //Debug.LogWarning(attackerViewFollower.Follower.GetName() + " attacked " + attackAction.Target.GetName() + " Animation end");
     }
 }

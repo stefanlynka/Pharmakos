@@ -475,6 +475,8 @@ public class TurnToStoneInstance : TriggeredFollowerEffectInstance
 
         foreach (Follower targetFollower in targetFollowers)
         {
+            if (AffectedFollower == null) return;
+
             if (targetFollower.GetCurrentAttack() < AffectedFollower.GetCurrentAttack())
             {
                 SetStatsAction action = new SetStatsAction(targetFollower, 0, -1);
@@ -682,10 +684,11 @@ public class AddRandomFreeSpellToHandInstance : TriggeredFollowerEffectInstance
 
         Spell randomSpell = CardHandler.SpellsByCost[amount][EffectOwner.GameState.RNG.Next(0, CardHandler.SpellsByCost[amount].Count - 1)];
         if (randomSpell == null) return;
+        Spell randomSpellCopy = (Spell)randomSpell.MakeBaseCopy();
 
-        randomSpell.Costs[OfferingType.Gold] = 0;
-        randomSpell.Init(AffectedFollower.Owner);
-        AddCardCopyToHandAction action = new AddCardCopyToHandAction(randomSpell);
+        randomSpellCopy.Costs[OfferingType.Gold] = 0;
+        randomSpellCopy.Init(AffectedFollower.Owner);
+        AddCardCopyToHandAction action = new AddCardCopyToHandAction(randomSpellCopy);
         EffectOwner.GameState.ActionHandler.AddAction(action, true, true);
     }
 }

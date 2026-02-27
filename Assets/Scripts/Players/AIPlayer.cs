@@ -19,7 +19,8 @@ public class AIPlayer : Player
         Setup,
         Preparing,
         Executing,
-        Ending
+        Ending,
+        Waiting,
     }
 
     public AIPlayer() { }
@@ -38,6 +39,8 @@ public class AIPlayer : Player
             AddCardCopyToHandAction addCardAction = new AddCardCopyToHandAction(twistOfFateCard);
             GameState.ActionHandler.AddAction(addCardAction);
         }
+
+        TurnPhase = AITurnPhase.Setup;
 
         base.StartTurn();
     }
@@ -130,10 +133,12 @@ public class AIPlayer : Player
                 break;
             case AITurnPhase.Ending:
                 Debug.LogWarning("Ending AI Turn");
-                TurnPhase = AITurnPhase.Setup;
+                TurnPhase = AITurnPhase.Waiting;
                 var endTurnAction = new TryEndTurnAction(GameState.CurrentPlayer);
                 GameState.ActionHandler.AddAction(endTurnAction);
 
+                break;
+            case AITurnPhase.Waiting:
                 break;
         }
     }

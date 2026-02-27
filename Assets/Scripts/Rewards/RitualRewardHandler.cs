@@ -42,9 +42,24 @@ public class RitualRewardHandler : MonoBehaviour
     {
         Controller.Instance.SetRituals(CurrentTopRitual.Ritual, CurrentBottomRitual.Ritual);
 
-        DeselectAll();
+        //DeselectAll();
 
         Controller.Instance.StartNextLevel();
+
+        //gameObject.SetActive(false);
+
+        Sequence moveSequence = new Sequence();
+        moveSequence.Add(new Tween(Wait, 0, 1, 0.8f));
+        moveSequence.Add(new SequenceAction(Cleanup));
+        moveSequence.Start();
+    }
+    private void Wait(float progress)
+    {
+
+    }
+    private void Cleanup()
+    {
+        DeselectAll();
 
         gameObject.SetActive(false);
     }

@@ -54,6 +54,8 @@ public class ShowBannerAnimation : AnimationAction
     private void AnimationOver()
     {
         View.Instance.TurnIsEnding = false;
+        View.Instance.WaitingForTurnBanner = false;
+        View.Instance.DoingEndOfTurnActions = false;
         //Debug.LogWarning(attackerViewFollower.Follower.GetName() + " attacked " + attackAction.Target.GetName() + " Animation end");
     }
 }

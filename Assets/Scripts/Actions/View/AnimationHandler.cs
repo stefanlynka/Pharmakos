@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.UI.GridLayoutGroup;
 
 public class AnimationHandler
 {
@@ -47,6 +48,12 @@ public class AnimationHandler
     {
         if (AnimationActionQueue.Count == 0)
         {
+            if (View.Instance.TurnIsEnding && !View.Instance.WaitingForTurnBanner)
+            {
+                var endTurnAction = new EndTurnAction(Controller.Instance.CanonGameState.CurrentPlayer);
+                Controller.Instance.CanonGameState.ActionHandler.AddAction(endTurnAction);
+                View.Instance.WaitingForTurnBanner = true;
+            }
             if (!IsAnimating) Controller.Instance.CheckForPlayerDeath();
             return;
         }

@@ -802,7 +802,7 @@ public class DionysusMinor : Ritual
             {
                 {OfferingType.Blood, 4 },
                 {OfferingType.Bone, 0 },
-                {OfferingType.Crop, 2 },
+                {OfferingType.Crop, 3 },
                 {OfferingType.Scroll, 0 },
             };
         }

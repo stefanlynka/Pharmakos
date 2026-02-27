@@ -531,7 +531,8 @@ public class Follower : Card, ITarget
 
     public void ApplyOnTargetedEffects(Spell spell)
     {
-        foreach (TriggeredFollowerEffectInstance effect in OnTargetedEffects)
+        SortedSet<TriggeredFollowerEffectInstance> onTargetdEffects = new SortedSet<TriggeredFollowerEffectInstance>(OnTargetedEffects);
+        foreach (TriggeredFollowerEffectInstance effect in onTargetdEffects)
         {
             effect.Trigger(null);
         }

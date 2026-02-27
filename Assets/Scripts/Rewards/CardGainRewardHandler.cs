@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using UnityEngine;
 
 public class CardGainRewardHandler : MonoBehaviour
@@ -41,14 +42,32 @@ public class CardGainRewardHandler : MonoBehaviour
         for (int i = 0; i < rewardCount; i++)
         {
             cards.AddRange(CardRewardHolders[i].GetHighlightedCardRewards());
-            CardRewardHolders[i].Cleanup();
+            //CardRewardHolders[i].Cleanup();
         }
 
         Controller.Instance.AddCardsToPlayerDeck(cards);
 
-        View.Instance.Clear();
+        //View.Instance.Clear();
 
         Controller.Instance.StartNextLevel();
+        //gameObject.SetActive(false);
+
+        Sequence moveSequence = new Sequence();
+        moveSequence.Add(new Tween(Wait, 0, 1, 0.8f));
+        moveSequence.Add(new SequenceAction(Cleanup));
+        moveSequence.Start();
+    }
+    private void Wait(float progress)
+    {
+
+    }
+    private void Cleanup()
+    {
+        for (int i = 0; i < rewardCount; i++)
+        {
+            CardRewardHolders[i].Cleanup();
+        }
+        View.Instance.Clear();
         gameObject.SetActive(false);
     }
 }
