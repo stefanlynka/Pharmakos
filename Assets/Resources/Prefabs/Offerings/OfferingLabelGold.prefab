@@ -60,6 +60,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 2d97e2c854f4dfa41add249a64c7dc42, type: 3}
+    - target: {fileID: 5409982399357799893, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -5
+      objectReference: {fileID: 0}
     - target: {fileID: 5586101456714456086, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
       propertyPath: m_LocalScale.x
       value: 2
@@ -123,6 +127,10 @@ PrefabInstance:
     - target: {fileID: 7863021906614120601, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
       propertyPath: m_Name
       value: OfferingLabelGold
+      objectReference: {fileID: 0}
+    - target: {fileID: 8796402525518860166, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
+      propertyPath: m_Intensity
+      value: 30
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

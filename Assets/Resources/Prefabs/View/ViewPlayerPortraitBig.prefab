@@ -8,6 +8,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 749940051702641779, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
     - target: {fileID: 2464121028304336616, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
       propertyPath: m_Name
       value: ViewPlayerPortraitBig

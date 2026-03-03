@@ -19,7 +19,7 @@ public class Controller : MonoBehaviour
     public static bool ActionDebugMode = true;
     public static bool AnimationDebugMode = false;
     public static bool AIDebugMode = true;
-    public static bool ShowCardIDs = true;
+    public static bool ShowCardIDs = false;
 
     public static bool BlitzMode = true;
 

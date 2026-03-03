@@ -639,13 +639,13 @@ public class ResetHermesSandalsFlagAction : GameAction
     }
 }
 
-// Aegis: Your followers with taunt have shield 2 (reduce incoming damage by 2)
+// Aegis: Your followers with taunt have shield 2 (reduce damage taken by 2)
 public class TheAegisTrinket : Trinket<TheAegisTrinketEffectDef>
 {
     public TheAegisTrinket()
     {
         Name = "Aegis";
-        Description = "Your followers with taunt have shield 2 (reduce incoming damage by 2)";
+        Description = "Your followers with taunt have shield 2 (reduce damage taken by 2)";
     }
 }
 public class TheAegisTrinketEffectDef : TrinketPlayerEffect
@@ -706,7 +706,7 @@ public class TheAegisTrinketEffectDef : TrinketPlayerEffect
 
     protected override string GetDescription()
     {
-        return "Your followers with taunt have shield 2 (reduce incoming damage by 2)";
+        return "Your followers with taunt have shield 2 (reduce damage taken by 2)";
     }
 }
 

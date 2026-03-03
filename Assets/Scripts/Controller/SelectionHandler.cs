@@ -13,7 +13,7 @@ public class SelectionHandler
     public ViewTarget CurrentHover = null;
     public ViewCard HeldCard = null;
     private float timeSinceCardInHandPickedUp = 0;
-    public float heldCardZ = 20;
+    public float heldCardZ = 30;
     public Vector3 HeldScale = Vector3.one;
     public List<ITarget> CurrentTargets = new List<ITarget>();
 

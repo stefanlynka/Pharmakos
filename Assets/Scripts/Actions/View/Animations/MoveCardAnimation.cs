@@ -130,7 +130,7 @@ public class MoveCardAnimation : AnimationAction
                 }
                 break;
             case GameZone.PlayZone:
-                endPos = new Vector3(-37, 3, 10);
+                endPos = new Vector3(-37, 3, 20); // z:10
                 break;
             default:
                 endPos = new Vector3(50, 0, 10);
@@ -159,6 +159,7 @@ public class MoveCardAnimation : AnimationAction
         moveSequence.Add(new SequenceAction(Complete));
         moveSequence.Start();
     }
+
 
     public void SetScale(float startScale, float endScale)
     {

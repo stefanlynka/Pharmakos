@@ -2656,9 +2656,9 @@ public class Echidna : Follower
 ///
 
 // Summon 3 1/1s for target player
-public class DragonsTeeth : Spell
+public class DragonTeeth : Spell
 {
-    public DragonsTeeth()
+    public DragonTeeth()
     {
         Costs = new Dictionary<OfferingType, int>()
         {
@@ -2669,6 +2669,7 @@ public class DragonsTeeth : Spell
             { OfferingType.Scroll, 0},
         };
 
+        OverrideName = "Dragon Teeth";
         Text = "Summon 3 1/1s for target player";
         HasTargets = true;
     }

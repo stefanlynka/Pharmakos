@@ -1601,7 +1601,7 @@ public class ProgressionHandler
             new List<Card> {
                 new PriceOfLegacy(),
                 new Hippolyta(),
-                new DragonsTeeth(),
+                new DragonTeeth(),
             }, randomTrinket));
     }
 

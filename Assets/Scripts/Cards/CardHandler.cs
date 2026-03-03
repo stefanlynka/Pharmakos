@@ -83,7 +83,7 @@ public static class CardHandler
         new Echidna(),
 
         // SPELLS
-        new DragonsTeeth(),
+        new DragonTeeth(),
         new ReleasePrey(),
         new CreateFilth(),
         new Smite(),
@@ -198,7 +198,7 @@ public static class CardHandler
         }
         if (level >= 2)
         {
-            rewards.Add(new DragonsTeeth());
+            rewards.Add(new DragonTeeth());
             rewards.Add(new Sphinx());
             rewards.Add(new Cyclops());
         }

@@ -14,6 +14,7 @@ public class ViewRitual : ViewTarget
     public TextMeshPro Title;
     public TextMeshPro Description;
 
+    public GameObject HighlightHolder;
     public MeshRenderer Highlight;
 
     public GameObject SummaryObject;
@@ -72,7 +73,8 @@ public class ViewRitual : ViewTarget
 
     public void SetHighlight(bool active)
     {
-        Highlight.enabled = active;
+        HighlightHolder.SetActive(active);
+        //Highlight.enabled = active;
     }
 
     public void RitualClicked(ViewTarget viewTarget)

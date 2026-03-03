@@ -20,6 +20,7 @@ public class CardReward : MonoBehaviour
             ViewCard = View.Instance.MakeNewViewCard(card, false);
             ViewCard.transform.parent = transform;
             ViewCard.transform.localPosition = new Vector3(0, 0, -0.1f);
+            ViewCard.transform.localScale = Vector3.one;
             
             ViewCard.gameObject.SetActive(true);
         }
