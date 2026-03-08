@@ -16,9 +16,9 @@ public class Controller : MonoBehaviour
     public static int starterSeed = 1;
     public bool GamePaused = false;
 
-    public static bool ActionDebugMode = true;
+    public static bool ActionDebugMode = false;
     public static bool AnimationDebugMode = false;
-    public static bool AIDebugMode = true;
+    public static bool AIDebugMode = false;
     public static bool ShowCardIDs = false;
 
     public static bool BlitzMode = true;
@@ -74,6 +74,7 @@ public class Controller : MonoBehaviour
     public PlayHistoryHandler PlayHistoryHandler = new PlayHistoryHandler();
     public ViewPlayHistoryHandler ViewPlayHistoryHandler;
     public TrinketRewardHandler TrinketRewardHandler;
+    public LightingHandler LightingHandler;
 
     private void Awake()
     {

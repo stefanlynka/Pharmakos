@@ -407,6 +407,7 @@ public class WallOfTroy : Follower
 
         SetBaseStats(0, 3);
 
+        OverrideName = "Wall of Troy";
         Text = "Taunt\nCan't Attack";
         Icon = IconType.Target;
 

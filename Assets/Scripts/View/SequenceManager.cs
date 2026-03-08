@@ -36,4 +36,15 @@ public class SequenceHandler
             }
         }
     }
+    public void TryStopSequence(Sequence sequenceToStop)
+    {
+        foreach (Sequence sequence in Sequences)
+        {
+            if (sequence == sequenceToStop)
+            {
+                Sequences.Remove(sequence);
+                return;
+            }
+        }
+    }
 }

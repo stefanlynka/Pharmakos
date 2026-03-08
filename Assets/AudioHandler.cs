@@ -13,9 +13,12 @@ public class AudioHandler : MonoBehaviour
 
     public AudioSource MusicSource;
     public AudioSource SoundEffectSource;
+    public AudioSource OtherSource;
+
 
     public Dictionary<DeckName, AudioClip> MusicByName = new Dictionary<DeckName, AudioClip>();
     public Dictionary<SoundEffectType, AudioClip> SoundEffectsByName = new Dictionary<SoundEffectType, AudioClip>();
+    public Dictionary<OtherSoundType, AudioClip> OtherAudioByName = new Dictionary<OtherSoundType, AudioClip>();
 
     public Dictionary<DeckName, float> MusicMultipliers = new Dictionary<DeckName, float>();
 
@@ -72,6 +75,8 @@ public class AudioHandler : MonoBehaviour
         MusicSlider.value = userMusicVolume;
         userSoundEffectVolume = PlayerPrefs.GetFloat("UserSoundEffectVolume", 0.5f);
         SoundEffectSlider.value = userSoundEffectVolume;
+
+        OtherAudioByName[OtherSoundType.Rumble] = Resources.Load<AudioClip>("Audio/Other/Rumble");
     }
 
     public void PlayMusic(DeckName name)
@@ -141,6 +146,26 @@ public class AudioHandler : MonoBehaviour
         userSoundEffectVolume = volume;
         PlayerPrefs.SetFloat("UserSoundEffectVolume", userSoundEffectVolume);
     }
+
+    public void PlayOther(OtherSoundType name)
+    {
+        if (OtherAudioByName.ContainsKey(name))
+        {
+            AudioClip audioClip = OtherAudioByName[name];
+            if (audioClip != null)
+            {
+                OtherSource.clip = audioClip;
+
+                //OtherSource.volume = baseMusicVolume * userMusicVolume * currentMusicMultiplier;
+
+                OtherSource.Play();
+            }
+        }
+    }
+    public void StopOther()
+    {
+        OtherSource.Stop();
+    }
     public enum SoundEffectType
     {
         CardDraw,
@@ -152,5 +177,9 @@ public class AudioHandler : MonoBehaviour
         Bump,
         Defeat,
         Whoosh,
+    }
+    public enum OtherSoundType
+    {
+        Rumble
     }
 }

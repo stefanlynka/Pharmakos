@@ -44,6 +44,7 @@ public class Sequence
     }
     public void Clear()
     {
+        currentSequence = 0;
         sequenceItems.Clear();
         //SequenceManager.instance.RemoveSequence(this);
         //OnFinish = null;

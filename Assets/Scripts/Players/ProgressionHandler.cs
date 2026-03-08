@@ -1810,7 +1810,7 @@ public class ProgressionHandler
 
     public int GetPlayerHealth()
     {
-        return 1;
+        //return 1;
 
         if (CurrentLevel >= 10) return 50;
 

@@ -2,8 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.Experimental.GraphView.GraphView;
-using static UnityEngine.GraphicsBuffer;
 
 public class SelectionHandler
 {
@@ -192,6 +190,9 @@ public class SelectionHandler
         PotentialRitualTargets = SelectedRitual.Ritual.GetTargets();
         timeSinceRitualSelected = 0;
         View.Instance.HighlightTargets(PotentialRitualTargets);
+
+        Controller.Instance.LightingHandler.DimLights();
+        View.Instance.AudioHandler.PlayOther(AudioHandler.OtherSoundType.Rumble);
     }
 
     private void ClickedAway()
@@ -281,6 +282,11 @@ public class SelectionHandler
         {
             SelectedRitual.Ritual.Play(CurrentHover.Target);
         }
+        else
+        {
+            Controller.Instance.LightingHandler.RestoreLights();
+        }
+        View.Instance.AudioHandler.StopOther();
 
         SelectedRitual = null;
         PotentialRitualTargets.Clear();

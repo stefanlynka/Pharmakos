@@ -21,7 +21,8 @@ public class RemoveFollowerStaticEffectAction : GameAction
     public override GameAction DeepCopy(Player newOwner)
     {
         RemoveFollowerStaticEffectAction copy = (RemoveFollowerStaticEffectAction)MemberwiseClone();
-        copy.Target = newOwner.GameState.GetTargetByID<ITarget>(Target.GetID());
+
+        if (Target != null) copy.Target = newOwner.GameState.GetTargetByID<ITarget>(Target.GetID());
 
         return copy;
     }
