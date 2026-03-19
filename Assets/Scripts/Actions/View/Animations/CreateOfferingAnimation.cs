@@ -128,17 +128,17 @@ public class CreateOfferingAnimation : AnimationAction
         soundEffects.Start();
     }
 
-    private void TweenProgress(float progress)
-    {
-        // Ease-in (accelerate): quadratic ease-in
-        float t = progress;
-        float tEased = t * t;
+    // private void TweenProgress(float progress)
+    // {
+    //     // Ease-in (accelerate): quadratic ease-in
+    //     float t = progress;
+    //     float tEased = t * t;
 
-        // Quadratic Bézier interpolation with eased parameter
-        float oneMinusT = 1f - tEased;
-        Vector3 pos = oneMinusT * oneMinusT * startPos + 2f * oneMinusT * tEased * controlPoint + tEased * tEased * endPos;
-        offeringObject.transform.position = pos;
-    }
+    //     // Quadratic Bézier interpolation with eased parameter
+    //     float oneMinusT = 1f - tEased;
+    //     Vector3 pos = oneMinusT * oneMinusT * startPos + 2f * oneMinusT * tEased * controlPoint + tEased * tEased * endPos;
+    //     offeringObject.transform.position = pos;
+    // }
 
     private void Complete()
     {

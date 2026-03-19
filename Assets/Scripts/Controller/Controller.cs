@@ -24,7 +24,7 @@ public class Controller : MonoBehaviour
     public static bool BlitzMode = true;
 
 
-    public CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
+    public CancellationTokenSource CancellationTokenSource = new();
 
     public View View;
 
