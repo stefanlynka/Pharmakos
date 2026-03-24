@@ -75,6 +75,9 @@ public class Controller : MonoBehaviour
     public ViewPlayHistoryHandler ViewPlayHistoryHandler;
     public TrinketRewardHandler TrinketRewardHandler;
     public LightingHandler LightingHandler;
+    public OverworldMapController OverworldMapController;
+
+    private OverworldMapNode _lastOverworldNodeEntered;
 
     private void Awake()
     {
@@ -165,7 +168,8 @@ public class Controller : MonoBehaviour
         Player2 = new AIPlayer();
         CanonGameState = new GameState(Player1, Player2);
         ProgressionHandler = new ProgressionHandler();
-        ProgressionHandler.SetupNextEnemy(IsTestChamber);
+        if (IsTestChamber)
+            ProgressionHandler.SetupNextEnemy(true);
 
         isGameSetup = true;
     }
@@ -223,13 +227,44 @@ public class Controller : MonoBehaviour
     {
         PlayHistoryHandler.Clear();
 
+        if (!IsTestChamber && OverworldMapController != null)
+        {
+            ReturnToOverworld();
+            return;
+        }
+
         ProgressionHandler.SetupNextEnemy();
-
-        
-
         View.Instance.DarknessHandler.SetDarkness();
         ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, ShowNextLevel);
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
+
+    private void ReturnToOverworld()
+    {
+        View.Instance.DarknessHandler.SetDarkness();
+        var completedNode = _lastOverworldNodeEntered;
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
+        {
+            OverworldMapController.ReturnToMap(completedNode);
+            CurrentScreen = ScreenName.Overworld;
+            ScreenHandler.Instance.ShowScreen(ScreenName.Overworld);
+        });
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
+
+    public void BeginEncounterFromOverworldNode(OverworldMapNode node)
+    {
+        if (node == null || IsTestChamber) return;
+
+        _lastOverworldNodeEntered = node;
+        ProgressionHandler.SetupNextEnemy(false);
+
+        CurrentScreen = ScreenName.Game;
+        ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, true);
+        ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
+        ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
+
+        LoadLevel();
     }
     private void ShowNextLevel()
     {
@@ -291,15 +326,12 @@ public class Controller : MonoBehaviour
     }
     public void StartGame()
     {
-        //ProgressionHandler.CurrentLevel = 0;
-
         FirstTimeSetup();
 
         CurrentScreen = ScreenName.Game;
 
         ScreenHandler.Instance.HideScreen(ScreenName.Start);
         ScreenHandler.Instance.HideScreen(ScreenName.StarterBundle);
-        //ScreenHandler.Instance.ShowScreen(ScreenName.Blank);
         ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, false);
         ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
 
@@ -307,15 +339,24 @@ public class Controller : MonoBehaviour
         {
             ScreenHandler.Instance.HideScreen(ScreenName.Blank);
             View.Instance.DarknessHandler.SetDarkness(0);
+            LoadLevel();
+        }
+        else if (OverworldMapController != null)
+        {
+            ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
+            {
+                HideStarterBundles();
+                CurrentScreen = ScreenName.Overworld;
+                ScreenHandler.Instance.ShowScreen(ScreenName.Overworld);
+            });
+            View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
         }
         else
         {
-            //View.Instance.DarknessHandler.SetDarkness();
             ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, HideStarterBundles);
             View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+            LoadLevel();
         }
-
-        LoadLevel();
     }
     private void HideStarterBundles()
     {

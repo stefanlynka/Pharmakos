@@ -119,5 +119,6 @@ public enum ScreenName
     PlayHistoryButton,
     Options,
     TrinketRewardScreen,
+    Overworld,
 }
 
