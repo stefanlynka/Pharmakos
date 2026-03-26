@@ -97,6 +97,16 @@ public class OverworldHexGrid : MonoBehaviour
         return AxialDistance(q1, r1, q2, r2) == 1;
     }
 
+    /// <summary>
+    /// Adjacent hex that lies "ahead" along map progression: +R in axial space (matches local +Z from <see cref="AxialToLocal"/>).
+    /// From (q,r) these are exactly (q-1,r+1) and (q,r+1).
+    /// </summary>
+    public static bool IsAheadAdjacent(int qCurrent, int rCurrent, int qTarget, int rTarget)
+    {
+        if (!AreAdjacent(qCurrent, rCurrent, qTarget, rTarget)) return false;
+        return rTarget == rCurrent + 1 && (qTarget == qCurrent || qTarget == qCurrent - 1);
+    }
+
     public OverworldMapNode[] GetAllNodes()
     {
         return GetComponentsInChildren<OverworldMapNode>();

@@ -4032,6 +4032,17 @@ MonoBehaviour:
   Grid: {fileID: 677843132}
   PlayerMarker: {fileID: 2142256983}
   OverworldCamera: {fileID: 393184006}
+  CameraPanMaxSpeed: 20
+  CameraPanAcceleration: 60
+  CameraPanDeceleration: 55
+  CameraScrollZoomSpeed: 30
+  CameraScrollSmoothTime: 0.12
+  CameraMinX: -20
+  CameraMaxX: 20
+  CameraMinY: 10
+  CameraMaxY: 25
+  CameraMinZ: -20
+  CameraMaxZ: 30
 --- !u!4 &168325844
 Transform:
   m_ObjectHideFlags: 0
@@ -8910,13 +8921,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 393184002}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.32474288, y: -0, z: -0, w: 0.94580233}
-  m_LocalPosition: {x: 0, y: 17.48, z: -9.33}
+  m_LocalRotation: {x: 0.46174863, y: 0, z: 0, w: 0.8870109}
+  m_LocalPosition: {x: 0, y: 15, z: -4.67}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 168325844}
-  m_LocalEulerAnglesHint: {x: 37.9, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 55, y: 0, z: 0}
 --- !u!114 &393184004
 MonoBehaviour:
   m_ObjectHideFlags: 0

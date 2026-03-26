@@ -155,7 +155,7 @@ public class Player : ITarget
     public void LoadDetails(PlayerDetails playerDetails, int pool)
     {
         PlayerDetails = playerDetails;
-        playerDetails.BaseHealth = Controller.Instance.ProgressionHandler.GetPlayerHealth();
+        playerDetails.BaseHealth = Controller.Instance.ProgressionHandler.GetPlayerHealth(IsHuman);
         StartingHealth = playerDetails.BaseHealth;
         Health = playerDetails.BaseHealth;
         CardsPerTurn = playerDetails.CardsPerTurn;

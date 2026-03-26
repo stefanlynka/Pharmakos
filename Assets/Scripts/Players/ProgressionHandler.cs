@@ -6,6 +6,7 @@ using static ProgressionHandler;
 
 public class ProgressionHandler
 {
+    private const int ENEMY_HEALTH_OVERRIDE = 1; // -1 to disables
     public enum DeckName
     {
         None,
@@ -1784,7 +1785,7 @@ public class ProgressionHandler
         {
             if (newDetails.IsEnemy)
             {
-                newDetails.BaseHealth = CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5;
+                newDetails.BaseHealth = ENEMY_HEALTH_OVERRIDE > 0 ? ENEMY_HEALTH_OVERRIDE : CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5;
                 newDetails.GoldPerTurn = CurrentLevel >= 10 ? 5 : 2 + Mathf.Min(CurrentPool, 2);
             }
             else newDetails.BaseHealth = GetPlayerHealth();
@@ -1808,9 +1809,10 @@ public class ProgressionHandler
         LoadPlayer(player, CurrentEnemy);
     }
 
-    public int GetPlayerHealth()
+    public int GetPlayerHealth(bool isHuman = true)
     {
         //return 1;
+        if (!isHuman && ENEMY_HEALTH_OVERRIDE > 0) return ENEMY_HEALTH_OVERRIDE;
 
         if (CurrentLevel >= 10) return 50;
 
