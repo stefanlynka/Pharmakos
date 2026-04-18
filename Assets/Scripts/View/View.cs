@@ -63,7 +63,7 @@ public class View : MonoBehaviour
         { DeckName.Underworld, "Images/Backgrounds/Underworld" }
     };
 
-
+    private readonly int targetFrameRate = 60;
 
 
 
@@ -79,7 +79,7 @@ public class View : MonoBehaviour
         }
 
         //QualitySettings.vSyncCount = 0;
-        //Application.targetFrameRate = target;
+        Application.targetFrameRate = targetFrameRate;
 
 
         FollowerCardPrefab = Resources.Load<GameObject>("Prefabs/Cards/Follower2");

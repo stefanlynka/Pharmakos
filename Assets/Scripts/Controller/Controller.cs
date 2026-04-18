@@ -328,6 +328,9 @@ public class Controller : MonoBehaviour
     {
         FirstTimeSetup();
 
+        if (!IsTestChamber && OverworldMapController != null)
+            OverworldMapController.SetupOverworldForNewRun();
+
         CurrentScreen = ScreenName.Game;
 
         ScreenHandler.Instance.HideScreen(ScreenName.Start);
