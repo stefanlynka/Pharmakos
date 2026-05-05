@@ -376,7 +376,6 @@ public class OverworldMapController : MonoBehaviour
         }
 
         Controller.Instance.BeginEncounterFromOverworldNode(node);
-        HideMap();
     }
 
     public void SetCompleted(OverworldMapNode node)

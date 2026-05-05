@@ -1728,6 +1728,53 @@ public class ProgressionHandler
 
         //EnemyPools[CurrentPool].Remove(CurrentEnemy);
     }
+
+    /// <summary>Overworld temple (ritual) node: advance level without selecting an enemy; rewards are removal then rituals.</summary>
+    public void RegisterTempleEncounter()
+    {
+        CurrentLevel++;
+    }
+
+    void RefillEnemyPoolIfDepleted()
+    {
+        if (EnemyPool.Count > 0) return;
+        foreach (var kvp in DetailsByDeckName)
+        {
+            if (kvp.Value != null && kvp.Value.IsFightableEnemy)
+                EnemyPool.Add(kvp.Key);
+        }
+    }
+
+    public void SetupNextCombatEnemy()
+    {
+        CurrentLevel++;
+        RefillEnemyPoolIfDepleted();
+        if (EnemyPool.Count == 0)
+        {
+            Debug.LogError("No fightable enemies available for combat.");
+            return;
+        }
+
+        int randomTarget = Controller.Instance.MetaRNG.Next(0, EnemyPool.Count);
+        CurrentEnemy = EnemyPool[randomTarget];
+        EnemyPool.RemoveAt(randomTarget);
+    }
+
+    public void SetupNextBossEnemy()
+    {
+        CurrentLevel++;
+        if (BossPool.Count == 0)
+        {
+            CurrentLevel--;
+            Debug.LogError("Boss pool is empty; using a regular combat encounter instead.");
+            SetupNextCombatEnemy();
+            return;
+        }
+
+        int idx = Controller.Instance.MetaRNG.Next(0, BossPool.Count);
+        CurrentEnemy = BossPool[idx];
+    }
+
     public void SetupNextEnemy(bool isTestChamber = false)
     {
         if (isTestChamber)
@@ -1738,37 +1785,7 @@ public class ProgressionHandler
             return;
         }
 
-        CurrentLevel++;
-        int possibleEnemyCount = EnemyPool.Count;
-
-        if (possibleEnemyCount == 0)
-        {
-            if (BossPool.Count == 0)
-            {
-                Debug.LogError("You Win!");
-                return;
-            }
-
-            CurrentEnemy = BossPool[Controller.Instance.MetaRNG.Next(0, EnemyPool.Count)];
-            return;
-        }
-        //while (possibleEnemyCount == 0)
-        //{
-        //    CurrentLevel++;
-        //    if (CurrentPool >= EnemyPool.Count)
-        //    {
-        //        Debug.LogError("You Win!");
-        //        return;
-        //    }
-        //    possibleEnemyCount = EnemyPool.Count;
-        //}
-
-        int randomTarget = Controller.Instance.MetaRNG.Next(0, EnemyPool.Count);
-        CurrentEnemy = EnemyPool[randomTarget];
-        // For Testing
-        //CurrentEnemy = DeckName.SeasideCliffs;
-        //if (CurrentLevel == 3) CurrentEnemy = DeckName.Underworld;
-        EnemyPool.Remove(CurrentEnemy);
+        SetupNextCombatEnemy();
     }
 
     public void LoadPlayer(Player player, DeckName deckName)

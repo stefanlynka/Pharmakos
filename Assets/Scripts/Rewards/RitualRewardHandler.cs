@@ -44,7 +44,7 @@ public class RitualRewardHandler : MonoBehaviour
 
         //DeselectAll();
 
-        Controller.Instance.StartNextLevel();
+        Controller.Instance.OnOverworldRitualNodeRewardsComplete();
 
         //gameObject.SetActive(false);
 

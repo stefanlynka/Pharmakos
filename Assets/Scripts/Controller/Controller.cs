@@ -76,6 +76,7 @@ public class Controller : MonoBehaviour
     public TrinketRewardHandler TrinketRewardHandler;
     public LightingHandler LightingHandler;
     public OverworldMapController OverworldMapController;
+    public EventHandler EventHandler;
 
     private OverworldMapNode _lastOverworldNodeEntered;
 
@@ -257,7 +258,44 @@ public class Controller : MonoBehaviour
         if (node == null || IsTestChamber) return;
 
         _lastOverworldNodeEntered = node;
-        ProgressionHandler.SetupNextEnemy(false);
+
+        // Temple = ritual: deck trimming then rituals (no combat). Boss and combat use LoadLevel.
+        if (node.EncounterType == EncounterType.Temple)
+        {
+            ProgressionHandler.RegisterTempleEncounter();
+            GoToCardRemovalRewardScreen();
+            return;
+        }
+
+        if (node.EncounterType == EncounterType.Event)
+        {
+            if (EventHandler == null)
+            {
+                EventHandler = FindObjectOfType<EventHandler>();
+            }
+
+            if (EventHandler != null)
+            {
+                ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
+                {
+                    OverworldMapController.HideMap();
+                    CurrentScreen = ScreenName.Event;
+                    ScreenHandler.Instance.ShowScreen(ScreenName.Event, true, true);
+                    ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
+                    EventHandler.BeginRandomEvent(StartNextLevel);
+                }, () => {});
+                transitionAnimation.FadeInDuration = EventHandler.FadeInDuration;
+                View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+            }
+            else
+                Debug.LogError("Controller: EventHandler is not assigned and none was found in the scene. Assign the EventHandler component on the Controller.");
+            return;
+        }
+
+        if (node.EncounterType == EncounterType.Boss)
+            ProgressionHandler.SetupNextBossEnemy();
+        else
+            ProgressionHandler.SetupNextCombatEnemy();
 
         CurrentScreen = ScreenName.Game;
         ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, true);
@@ -321,22 +359,24 @@ public class Controller : MonoBehaviour
     {
         CurrentScreen = ScreenName.Blank;
 
-        ScreenHandler.Instance.ShowScreen(ScreenName.Blank, true);
-        ScreenHandler.Instance.ShowScreen(ScreenName.Start);
+        ScreenHandler.Instance.HideScreen(ScreenName.Blank, true);
+        ScreenHandler.Instance.ShowScreen(ScreenName.Start, true);
     }
     public void StartGame()
     {
         FirstTimeSetup();
 
         if (!IsTestChamber && OverworldMapController != null)
+        {
             OverworldMapController.SetupOverworldForNewRun();
+        }
 
         CurrentScreen = ScreenName.Game;
 
         ScreenHandler.Instance.HideScreen(ScreenName.Start);
-        ScreenHandler.Instance.HideScreen(ScreenName.StarterBundle);
-        ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, false);
-        ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
+        // ScreenHandler.Instance.HideScreen(ScreenName.StarterBundle);
+        // ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, false);
+        // ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
 
         if (IsTestChamber)
         {
@@ -350,7 +390,7 @@ public class Controller : MonoBehaviour
             {
                 HideStarterBundles();
                 CurrentScreen = ScreenName.Overworld;
-                ScreenHandler.Instance.ShowScreen(ScreenName.Overworld);
+                ScreenHandler.Instance.ShowScreen(ScreenName.Overworld, true, false);
             });
             View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
         }
@@ -389,6 +429,7 @@ public class Controller : MonoBehaviour
         CardRemovalRewardHandler.Load(HumanPlayerDetails.DeckBlueprint[0]);
         //ScreenHandler.Instance.ShowScreen(ScreenName.Blank, true, false);
 
+        ScreenHandler.Instance.HideScreen(ScreenName.Overworld, true);
         ScreenHandler.Instance.HideScreen(ScreenName.Game, true);
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.CardRemovalRewards, false, false);
@@ -421,12 +462,18 @@ public class Controller : MonoBehaviour
 
         FirstTimeSetup();
 
-        GameField.SetActive(false);
-        StarterBundleHandler.gameObject.SetActive(true);
-        StarterBundleHandler.Load();
-        ScreenHandler.Instance.HideScreen(ScreenName.Blank);
-        ScreenHandler.Instance.ShowScreen(ScreenName.StarterBundle);
-        ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
+        {
+            ScreenHandler.Instance.HideScreen(ScreenName.Start, true);
+            ScreenHandler.Instance.ShowScreen(ScreenName.StarterBundle, true, false);
+            ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+
+            GameField.SetActive(false);
+            StarterBundleHandler.gameObject.SetActive(true);
+            StarterBundleHandler.Load();
+        }, () => {});
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+
         //ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
     }
 
@@ -487,22 +534,39 @@ public class Controller : MonoBehaviour
 
     private void ProgressToNextLevel()
     {
+        // After winning a fight (combat or boss).
+        ApplyPostEncounterProgression(offerCardPackReward: true);
+    }
+
+    /// <summary>
+    /// Called when the non-combat temple flow finishes (removal + ritual UI). No extra card pack unless trinket tier says so.
+    /// </summary>
+    public void OnOverworldRitualNodeRewardsComplete()
+    {
+        ApplyPostEncounterProgression(offerCardPackReward: false);
+    }
+
+    void ApplyPostEncounterProgression(bool offerCardPackReward)
+    {
         if (ProgressionHandler.CurrentLevel == 5)
         {
             GoToTrinketScreen();
+            return;
         }
-        else if (ProgressionHandler.CurrentLevel >= 10)
+
+        if (ProgressionHandler.CurrentLevel >= 10)
         {
             ScreenHandler.Instance.ShowScreen(ScreenName.Success);
+            return;
         }
-        else if (ProgressionHandler.CurrentLevel % 2 != 0)
+
+        if (offerCardPackReward)
         {
+            // Combat and boss nodes: card gain only. Temple uses removal + rituals without a fight.
             GoToCardGainRewardScreen();
         }
         else
-        {
-            GoToCardRemovalRewardScreen();
-        }
+            StartNextLevel();
     }
 
     public void AddCardsToPlayerDeck(List<Card> cards)

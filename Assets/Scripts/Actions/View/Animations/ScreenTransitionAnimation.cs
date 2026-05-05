@@ -6,7 +6,10 @@ using UnityEngine;
 
 public class ScreenTransitionAnimation : AnimationAction
 {
-    private float pauseDuration = 0.8f;
+    // private float fadeDuration = 0.8f;
+    private const float halfwayPauseDuration = 0.25f;
+    public float FadeOutDuration = -1f;
+    public float FadeInDuration = -1f;
     private Action halfwayAction;
     private Action onFinishAction;
     public ScreenTransitionAnimation(GameAction gameAction, Action halfwayAction = null, Action onFinishAction = null) : base(gameAction)
@@ -19,14 +22,18 @@ public class ScreenTransitionAnimation : AnimationAction
     {
         base.Play(onFinish);
 
+        if (FadeOutDuration < 0) FadeOutDuration = Screen.ScreenChangeDuration;
+        if (FadeInDuration < 0) FadeInDuration = Screen.ScreenChangeDuration;
+
         //Debug.LogWarning("Starting transition");
         ScreenHandler.Instance.ShowScreen(ScreenName.Blank, false, false);
 
         Sequence waitSequence = new Sequence();
-        waitSequence.Add(new Tween(Wait, 0, 1, pauseDuration));
-        waitSequence.Add(new SequenceAction(HideBlankScreen));
+        waitSequence.Add(new Tween(Wait, 0, 1, FadeOutDuration));
         waitSequence.Add(new SequenceAction(Halfway));
-        waitSequence.Add(new Tween(Wait, 0, 1, pauseDuration));
+        waitSequence.Add(new Tween(Wait, 0, 1, halfwayPauseDuration));
+        waitSequence.Add(new SequenceAction(HideBlankScreen));
+        waitSequence.Add(new Tween(Wait, 0, 1, FadeInDuration));
         waitSequence.Add(new SequenceAction(AnimationOver));
         waitSequence.Add(new SequenceAction(CallCallback));
         waitSequence.Start();

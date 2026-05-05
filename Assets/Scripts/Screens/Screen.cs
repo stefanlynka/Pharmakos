@@ -15,12 +15,14 @@ public class Screen : MonoBehaviour
     public Action OnExit;
 
     private bool active = false;
-    private float screenChangeSpeed = 1.0f;
+    public static float ScreenChangeDuration => screenChangeDuration;
+    private const float screenChangeDuration = 1.0f;
+
 
     private void Update()
     {
-        if (active && UIHolder.alpha < 1) UIHolder.alpha += (Time.deltaTime * screenChangeSpeed);
-        else if (!active && UIHolder.alpha > 0) UIHolder.alpha -= (Time.deltaTime * screenChangeSpeed);
+        if (active && UIHolder.alpha < 1) UIHolder.alpha += Time.deltaTime / ScreenChangeDuration;
+        else if (!active && UIHolder.alpha > 0) UIHolder.alpha -= Time.deltaTime / ScreenChangeDuration;
     }
 
     public virtual void Enter(bool instant = false)

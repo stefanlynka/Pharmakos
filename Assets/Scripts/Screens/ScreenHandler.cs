@@ -120,5 +120,6 @@ public enum ScreenName
     Options,
     TrinketRewardScreen,
     Overworld,
+    Event,
 }
 
