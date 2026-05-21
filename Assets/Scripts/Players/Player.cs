@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
-using static UnityEngine.UI.GridLayoutGroup;
 
 public class Player : ITarget
 {
     public static int MaxHandSize = 10;
     public static int MaxFollowerCount = 8;
+    public const int MaxHeartStrings = 5;
+    public const int StartingHeartStrings = 3;
     /// Deep Copied
     ///
     public PlayerDetails PlayerDetails = new PlayerDetails();
@@ -52,6 +52,7 @@ public class Player : ITarget
 
     public int Health = 20;
     public int StartingHealth = 5;
+    public int CurrentHeartStrings = 3;
     public string Name { get { return IsHuman ? "Human" : "AI"; } }
     public bool IsHuman = false;
 
@@ -79,6 +80,7 @@ public class Player : ITarget
     public GameState GameState {  get; private set; }
     public Action<int> OnHealthChange;
     public Action OnOfferingsChange;
+    public Action OnHeartStringsChange;
 
     public bool IsMyTurn
     {
@@ -119,6 +121,11 @@ public class Player : ITarget
         TurnNumber = 0; // Reset turn counter at start of fight
 
         Health = StartingHealth;
+
+        if (IsHuman && Controller.Instance != null)
+            CurrentHeartStrings = Mathf.Clamp(Controller.Instance.RunHeartStrings, 0, MaxHeartStrings);
+        else
+            CurrentHeartStrings = 0;
 
         LoadDeck(DeckBlueprint);
 
@@ -246,6 +253,7 @@ public class Player : ITarget
         copy.AttachToGameState(newGameState);
 
         copy.Health = Health;
+        copy.CurrentHeartStrings = CurrentHeartStrings;
         copy.IsHuman = IsHuman;
         copy.CardsPerTurn = CardsPerTurn;
         copy.GoldPerTurn = GoldPerTurn;
@@ -689,8 +697,35 @@ public class Player : ITarget
         OnOfferingsChange?.Invoke();
     }
 
+    public bool WouldLoseHeartStringInsteadOfLethalDamage(int healthChange)
+    {
+        return IsHuman && healthChange < 0 && Health + healthChange <= 0 && CurrentHeartStrings > 0;
+    }
+
+    public bool TryConsumeHeartStringInsteadOfLethalDamage(ITarget source, int healthChange)
+    {
+        if (!WouldLoseHeartStringInsteadOfLethalDamage(healthChange)) return false;
+
+        ChangeHeartStringsAction action = new ChangeHeartStringsAction(this, -1, source, interruptAiTurnOnLoss: true);
+        GameState.ActionHandler.AddAction(action, true, true);
+        return true;
+    }
+
+
+    public void ChangeHeartStrings(int amount, ITarget source = null, bool interruptAiTurnOnLoss = false)
+    {
+        ChangeHeartStringsAction action = new ChangeHeartStringsAction(this, amount, source, interruptAiTurnOnLoss);
+        GameState.ActionHandler.AddAction(action, true, true);
+    }
+
+
     public void ChangeHealth(ITarget source, int value)
     {
+        if (TryConsumeHeartStringInsteadOfLethalDamage(source, value))
+        {
+            return;
+        }
+
         Health += value;
 
         Follower sourceFollower = source as Follower;

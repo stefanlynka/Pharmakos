@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Pharmakos.Events;
 using Pharmakos.Events.UI;
 using TMPro;
 using UnityEngine;
@@ -8,17 +9,49 @@ using UnityEngine.UI;
 
 public class EventScreenHandler : MonoBehaviour
 {
-    public Image EventImage;
-    public TextMeshProUGUI EventText;
     public List<Button> OptionButtons = new List<Button>();
     public float CharacterRevealDelay = 0.1f;
 
+    public List<EventSummaryView> EventSummaryPositions = new List<EventSummaryView>();
+
+    public GameObject Popup1;
+    public GameObject Popup2;
+
+    TextMeshProUGUI _eventText;
+
     Coroutine _typewriterRoutine;
 
-    public void LoadEventSprite(Sprite sprite)
+    /// <summary>
+    /// Shows the summary UI for <paramref name="position"/> and routes body text / typewriter to that view's <c>SummaryText</c>.
+    /// All other entries in <see cref="EventSummaryPositions"/> have their containers hidden.
+    /// </summary>
+    public void ApplySummaryPosition(EventSummaryPosition position)
     {
-        if (EventImage != null)
-            EventImage.sprite = sprite;
+        _eventText = null;
+        if (EventSummaryPositions == null)
+            return;
+
+        for (int i = 0; i < EventSummaryPositions.Count; i++)
+        {
+            var view = EventSummaryPositions[i];
+            if (view == null) continue;
+            if (view.Container != null)
+                view.Container.SetActive(false);
+        }
+
+        for (int i = 0; i < EventSummaryPositions.Count; i++)
+        {
+            var view = EventSummaryPositions[i];
+            if (view == null || view.Position != position) continue;
+
+            if (view.Container != null)
+                view.Container.SetActive(true);
+            _eventText = view.SummaryText;
+            break;
+        }
+
+        if (_eventText == null)
+            Debug.LogWarning($"EventScreenHandler: no EventSummaryView for summary position {position}. Assign one in EventSummaryPositions.");
     }
 
     public void ShowTypingText(string fullText)
@@ -28,7 +61,7 @@ public class EventScreenHandler : MonoBehaviour
         _typewriterRoutine = StartCoroutine(TypeTextRoutine(fullText));
     }
 
-    /// <summary>Runs the typewriter on <see cref="EventText"/> and waits until it finishes (or immediately if <paramref name="fullText"/> is empty).</summary>
+    /// <summary>Runs the typewriter on the active summary's <c>SummaryText</c> and waits until it finishes (or immediately if <paramref name="fullText"/> is empty).</summary>
     public IEnumerator PlayEventBodyTyping(string fullText)
     {
         if (_typewriterRoutine != null)
@@ -41,6 +74,8 @@ public class EventScreenHandler : MonoBehaviour
 
     public void HideAllOptions()
     {
+        HideOutcomePreview();
+
         for (int i = 0; i < OptionButtons.Count; i++)
         {
             var button = OptionButtons[i];
@@ -57,7 +92,7 @@ public class EventScreenHandler : MonoBehaviour
         }
     }
 
-    public void LoadOptions(List<string> options, System.Action<int> onOptionClicked)
+    public void LoadOptions(List<EventOptionData> options, System.Action<int> onOptionClicked)
     {
         HideAllOptions();
         if (options == null) return;
@@ -69,22 +104,51 @@ public class EventScreenHandler : MonoBehaviour
             var button = OptionButtons[i];
             if (button == null) continue;
 
+            var option = options[i];
+            string optionText = option?.OptionText ?? string.Empty;
+            var outcome = option?.Outcome;
+
             var optionRow = button.GetComponent<EventOptionButtonComponent>();
             if (optionRow != null)
             {
-                optionRow.Load(options[i], () => onOptionClicked?.Invoke(captured));
+                optionRow.Load(optionText, outcome, this, () => onOptionClicked?.Invoke(captured));
                 continue;
             }
 
             var label = button.GetComponentInChildren<TextMeshProUGUI>(true);
             if (label != null)
-                label.text = options[i];
+                label.text = optionText;
 
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(() => onOptionClicked?.Invoke(captured));
             button.interactable = true;
             button.gameObject.SetActive(true);
         }
+    }
+
+    public void ShowOutcomePreview(EventOutcomeData outcome)
+    {
+        HideOutcomePreview();
+
+        if (!EventOutcomePreview.SupportsPreview(outcome))
+            return;
+
+        EventOutcomePreview.PopupVisibility visibility = EventOutcomePreview.Populate(outcome);
+
+        if (Popup1 != null)
+            Popup1.SetActive(visibility.Popup1);
+        if (Popup2 != null)
+            Popup2.SetActive(visibility.Popup2);
+    }
+
+    public void HideOutcomePreview()
+    {
+        PopupHandler.ClearAll();
+
+        if (Popup1 != null)
+            Popup1.SetActive(false);
+        if (Popup2 != null)
+            Popup2.SetActive(false);
     }
 
     public void SetOptionsInteractable(bool isInteractable)
@@ -104,13 +168,13 @@ public class EventScreenHandler : MonoBehaviour
 
     IEnumerator TypeTextRoutine(string fullText)
     {
-        if (EventText == null)
+        if (_eventText == null)
         {
-            Debug.LogWarning("EventScreenHandler: EventText is not assigned.");
+            Debug.LogWarning("EventScreenHandler: no active summary text. Call ApplySummaryPosition first and ensure a matching EventSummaryView has SummaryText assigned.");
             yield break;
         }
 
-        EventText.text = string.Empty;
+        _eventText.text = string.Empty;
         if (string.IsNullOrEmpty(fullText))
         {
             Debug.LogWarning("EventScreenHandler: event body text is empty. Set Event Text on the Event Definition asset.");
@@ -122,14 +186,14 @@ public class EventScreenHandler : MonoBehaviour
         for (int i = 0; i < fullText.Length; i++)
         {
             sb.Append(fullText[i]);
-            EventText.text = sb.ToString();
+            _eventText.text = sb.ToString();
             yield return new WaitForSecondsRealtime(delay);
         }
     }
 
     public void ClearEventText()
     {
-        if (EventText != null)
-            EventText.text = string.Empty;
+        if (_eventText != null)
+            _eventText.text = string.Empty;
     }
 }

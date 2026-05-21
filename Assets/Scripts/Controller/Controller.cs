@@ -45,6 +45,9 @@ public class Controller : MonoBehaviour
 
     public List<Follower> SacrificedFollowers = new List<Follower>();
 
+    /// <summary>Human player's heartstring count for the current run; persists between combats and events.</summary>
+    public int RunHeartStrings = Player.StartingHeartStrings;
+
 
     public Player CurrentPlayer
     {
@@ -180,6 +183,9 @@ public class Controller : MonoBehaviour
         RitualRewardHandler.gameObject.SetActive(false);
         CardRemovalRewardHandler.gameObject.SetActive(false);
         GameField.SetActive(true);
+
+        if (Player1 != null && Player1.IsHuman)
+            RunHeartStrings = Mathf.Clamp(Player1.CurrentHeartStrings, 0, Player.MaxHeartStrings);
 
         Player1 = new HumanPlayer();
         Player2 = new AIPlayer();
@@ -364,6 +370,7 @@ public class Controller : MonoBehaviour
     }
     public void StartGame()
     {
+        RunHeartStrings = Player.StartingHeartStrings;
         FirstTimeSetup();
 
         if (!IsTestChamber && OverworldMapController != null)
@@ -381,6 +388,7 @@ public class Controller : MonoBehaviour
         if (IsTestChamber)
         {
             ScreenHandler.Instance.HideScreen(ScreenName.Blank);
+            ScreenHandler.Instance.ShowScreen(ScreenName.Game, false, false);
             View.Instance.DarknessHandler.SetDarkness(0);
             LoadLevel();
         }
@@ -581,6 +589,12 @@ public class Controller : MonoBehaviour
     public void AddTrinket(Trinket trinket)
     {
         HumanPlayerDetails.Trinkets[0].Add(trinket);
+    }
+    public void AddHeartstrings(int amount)
+    {
+        if (amount <= 0) return;
+
+        RunHeartStrings = Mathf.Clamp(RunHeartStrings + amount, 0, Player.MaxHeartStrings);
     }
     public void RemoveCardsFromPlayerDeck(List<Card> cards)
     {

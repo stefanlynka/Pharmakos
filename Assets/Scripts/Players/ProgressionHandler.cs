@@ -6,7 +6,7 @@ using static ProgressionHandler;
 
 public class ProgressionHandler
 {
-    private const int ENEMY_HEALTH_OVERRIDE = 1; // -1 to disables
+    private const int ENEMY_HEALTH_OVERRIDE = -1; // -1 to disables
     public enum DeckName
     {
         None,
@@ -47,7 +47,7 @@ public class ProgressionHandler
         {
             IsEnemy = true,
             IsFightableEnemy = false,
-            BaseHealth = 100,
+            BaseHealth = 1,
             Pool = 1,
             PortraitName = "Underworld",
             MinorRituals = new Dictionary<int, Ritual>
@@ -75,6 +75,12 @@ public class ProgressionHandler
                 [1] = new List<Card>
                 {
                     //new Hoplite(),
+                    new ThrowStone(),
+                    new ThrowStone(),
+                    // new Helios(),
+                    // new Helios(),
+                    // new Helios(),
+                    // new Helios(),
                     new Helios(),
                 }
             },
@@ -94,7 +100,7 @@ public class ProgressionHandler
         {
             IsEnemy = false,
             IsFightableEnemy = false,
-            BaseHealth = 100,
+            BaseHealth = 1,
             CardsPerTurn = 5,
             GoldPerTurn = 5,
             Pool = 0,
@@ -105,11 +111,11 @@ public class ProgressionHandler
             },
             MajorRituals = new Dictionary<int, Ritual>
             {
-                [0] = null,
+                [0] = new MuseMinor(),
             },
             Trinkets = new Dictionary<int, List<Trinket>>
             {
-                [0] = new List<Trinket>() { new PeltastTrumpetTrinket() }
+                [0] = new List<Trinket>() { new OdysseyTrinket() }
             },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
@@ -117,10 +123,11 @@ public class ProgressionHandler
                 {
                     //new DevKill(),
                     //new ThrowStone(),
-                    new Ekdromos(),
+                    new Pegasus(),
                     new Blessing(),
-                    new Blessing(),
-                    //new Peltast(),
+                    new Smite(),
+                    new ThrowStone(),
+                    new Peltast(),
                     //new PriceOfProfit(),
                     //new Pan(),
                     //new Endymion(),
@@ -130,8 +137,8 @@ public class ProgressionHandler
             {
                 [0] = new List<Follower>
                 {
-                    new Ekdromos(),
-                    new Ekdromos(),
+                    // new Ekdromos(),
+                    // new Ekdromos(),
                     //new Pytho(),
                     //new Agamemnon(),
                     //new Chariot(),
@@ -1627,6 +1634,7 @@ public class ProgressionHandler
         availableTrinkets.Add(new MedeasPotionTrinket());
         availableTrinkets.Add(new WingsOfIcarusTrinket());
         availableTrinkets.Add(new PandorasBoxTrinket());
+        availableTrinkets.Add(new OdysseyTrinket());
     }
 
     // Get a random trinket that's viable with the given ritual
@@ -1798,7 +1806,7 @@ public class ProgressionHandler
 
         PlayerDetails newDetails = DetailsByDeckName[deckName];
 
-        if (deckName != DeckName.TestEnemy)
+        if (!UsesConfiguredBaseHealth(deckName))
         {
             if (newDetails.IsEnemy)
             {
@@ -1826,12 +1834,23 @@ public class ProgressionHandler
         LoadPlayer(player, CurrentEnemy);
     }
 
+    private static bool UsesConfiguredBaseHealth(DeckName deckName) =>
+        deckName == DeckName.TestPlayer || deckName == DeckName.TestEnemy;
+
     public int GetPlayerHealth(bool isHuman = true)
     {
         //return 1;
+        if (Controller.Instance != null && Controller.Instance.IsTestChamber)
+        {
+            DeckName deck = isHuman ? DeckName.TestPlayer : DeckName.TestEnemy;
+            return DetailsByDeckName[deck].BaseHealth;
+        }
+
         if (!isHuman && ENEMY_HEALTH_OVERRIDE > 0) return ENEMY_HEALTH_OVERRIDE;
 
         if (CurrentLevel >= 10) return 50;
+
+
 
         return 15 + Mathf.FloorToInt(CurrentLevel / 3f) * 5; // CurrentPool * 5;
     }

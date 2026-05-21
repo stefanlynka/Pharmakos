@@ -17,12 +17,20 @@ MonoBehaviour:
     it did every day, but until then he would watch the town's flickering torches
     and smile.
   BackgroundImage: {fileID: 21300000, guid: 59e55c3ba8c79884b9870150aeba9ade, type: 3}
+  ImageStartingPosition: {x: 50, y: -50}
+  ImageStartingScale: {x: 18, y: 18, z: 1}
+  SummaryPosition: 1
   Options:
-  - OptionText: Fight off the eagle to give him a day of rest
+  - OptionText: Fight off the eagle to give him a day of rest\n(Combat)
+    Outcome:
+      OutcomeType: 4
+      RewardInfo: []
+  - OptionText: Listen to his tale of the first flame\n(Gain Card)
     Outcome:
       OutcomeType: 1
-      CardCount: 0
-  - OptionText: Listen to his tale of the first flame
+      RewardInfo:
+      - FirstFlame
+  - OptionText: Leave\n(Nothing)
     Outcome:
-      OutcomeType: 1
-      CardCount: 0
+      OutcomeType: 0
+      RewardInfo: []

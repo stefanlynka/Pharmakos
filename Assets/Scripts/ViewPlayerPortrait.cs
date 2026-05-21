@@ -12,6 +12,8 @@ public class ViewPlayerPortrait : MonoBehaviour
     public TextMeshPro DamageText;
     public SpriteRenderer PortraitRenderer;
     private int health = 0;
+    public GameObject HeartStringHolder;
+    public List<GameObject> HeartStrings = new List<GameObject>();
 
     private Player player;
 
@@ -22,6 +24,31 @@ public class ViewPlayerPortrait : MonoBehaviour
         SetHealthVisible(true);
 
         PortraitRenderer.sprite = Resources.Load<Sprite>("Images/Portraits/" + player.PlayerDetails.PortraitName);
+
+        if (player.CurrentHeartStrings > 0)
+        {
+            SetHeartStrings(player.CurrentHeartStrings, Player.MaxHeartStrings);
+        }
+        else if (HeartStringHolder != null)
+        {
+            HeartStringHolder.SetActive(false);
+        }
+    }
+
+    public void SetHeartStrings(int current, int max)
+    {
+        if (HeartStringHolder != null)
+        {
+            HeartStringHolder.SetActive(current > 0);
+        }
+
+        for (int i = 0; i < HeartStrings.Count; i++)
+        {
+            if (HeartStrings[i] != null)
+            {
+                HeartStrings[i].SetActive(i < current);
+            }
+        }
     }
 
     public void ChangeHealth(int change)

@@ -16,7 +16,7 @@ public class Screen : MonoBehaviour
 
     private bool active = false;
     public static float ScreenChangeDuration => screenChangeDuration;
-    private const float screenChangeDuration = 1.0f;
+    private const float screenChangeDuration = 0.6f;
 
 
     private void Update()

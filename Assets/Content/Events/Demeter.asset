@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4e8a1f9d0b24e5a8c3f2d1b0e9a7c6d, type: 3}
+  m_Name: Demeter
+  m_EditorClassIdentifier: 
+  EventText: "A woman sits amid a field of flowers, her attention on a pair of figures
+    sitting not far off. \r\n\u201CPlucked, buried, sown, risen,\r\nCycling sun and
+    moonless skies.\r\nUnbroken sight, one love imprisoned,\r\nThe jailer gains unclouded
+    eyes\u201D\r\nShe turns towards you, eyes shaded.\r\nShe reminds you most of\u2026\r"
+  BackgroundImage: {fileID: 21300000, guid: 02079c8cfe345c741b4b56fbfcfa6ca3, type: 3}
+  ImageStartingPosition: {x: 85, y: 5.5}
+  ImageStartingScale: {x: 18, y: 18, z: 1}
+  SummaryPosition: 2
+  Options:
+  - OptionText: Summer\n(Gain Card)
+    Outcome:
+      OutcomeType: 1
+      RewardInfo:
+      - LastingGift
+  - OptionText: Fall\n(Gain Card)
+    Outcome:
+      OutcomeType: 1
+      RewardInfo:
+      - LastingGift
+  - OptionText: Winter\n(Gain Card)
+    Outcome:
+      OutcomeType: 1
+      RewardInfo:
+      - LastingGift
+  - OptionText: Spring\n(Gain Card)
+    Outcome:
+      OutcomeType: 1
+      RewardInfo:
+      - LastingGift

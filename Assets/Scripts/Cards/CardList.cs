@@ -761,6 +761,39 @@ public class Chariot : Follower
         InnateEffects.Add(new StaticEffectDef(EffectTarget.AdjacentAllies, StaticEffect.Sprint));
     }
 }
+
+
+// Your Followers have Sprint
+public class Pegasus : Follower
+{
+    public Pegasus() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Beast;
+
+        SetBaseStats(1, 2);
+
+        Text = "Your Followers have Sprint";
+        Icon = IconType.Bolt;
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.AllAllies, StaticEffect.Sprint));
+    }
+}
 // Adjacent Followers take 1 less damage
 public class Phalangite : Follower
 {
@@ -1485,6 +1518,49 @@ public class Diomedes : Follower
         ChangeStatsInstance newEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDrawBlood);
         newEffectInstance.Init(1, 1);
         effectDef.EffectInstances.Add(newEffectInstance);
+    }
+}
+
+// Sprint + On Attack: Draw a card
+public class Odysseus : Follower
+{
+    public Odysseus() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 4},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Mortal;
+
+        SetBaseStats(1, 2);
+
+        Text = "Sprint\nOn Attack: Draw a card. It costs 0.";
+        Icon = IconType.Bolt;
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Sprint));
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
+    {
+        DrawCardsInstance drawCardInstance = new DrawCardsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnAttack);
+        drawCardInstance.Init(1, true);
+        effectDef.EffectInstances.Add(drawCardInstance);
     }
 }
 
@@ -2884,6 +2960,49 @@ public class ThrowStone : Spell
 
         DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
         Owner.GameState.ActionHandler.AddAction(damageAction);
+    }
+}
+
+// Deal 3 damage and Restore 3 Life
+public class FirstFlame : Spell
+{
+    private int damageDealt = 3;
+    private int healthGained = 3;
+
+    public FirstFlame()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Text = "Deal 3 damage and Restore 3 Life";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllFollowers(Owner));
+        targets.AddRange(ITarget.GetAllPlayers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        DealDamageAction damageAction = new DealDamageAction(Owner, target, damageDealt);
+        Owner.GameState.ActionHandler.AddAction(damageAction);
+
+        ChangePlayerHealthAction gainLifeAction = new ChangePlayerHealthAction(Owner, Owner, healthGained);
+        Owner.GameState.ActionHandler.AddAction(gainLifeAction, true);
     }
 }
 

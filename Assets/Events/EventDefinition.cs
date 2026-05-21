@@ -14,23 +14,9 @@ namespace Pharmakos.Events
     public class EventOutcomeData
     {
         public EventOutcomeType OutcomeType = EventOutcomeType.None;
-        public int CardCount = 1;
+        public List<string> RewardInfo = new();
     }
 
-    public enum EventOutcomeType
-    {
-        None,
-        AddRandomTrinket,
-        RemoveRandomCardFromDeck,
-        DuplicateRandomCardInDeck,
-    }
-
-    public enum EventName
-    {
-        Prometheus,
-        Pandora,
-        Athena,
-    }
 
     [CreateAssetMenu(fileName = "New Event", menuName = "Pharmakos/Event Definition", order = 0)]
     public class EventDefinition : ScriptableObject
@@ -39,7 +25,42 @@ namespace Pharmakos.Events
         public string EventText;
 
         public Sprite BackgroundImage;
+        public Vector2 ImageStartingPosition;
+        public Vector3 ImageStartingScale;
+        public EventSummaryPosition SummaryPosition;
 
         public List<EventOptionData> Options = new List<EventOptionData>();
+    }
+
+    public enum EventName
+    {
+        Prometheus,
+        Narcissus,
+        Medusa,
+        Tiresias,
+        Pygmalion,
+        Penelope,
+        Lynceus,
+        Leander,
+        Psyche,
+        Pandora,
+        Bellerophon,
+        Demeter,
+    }
+    public enum EventOutcomeType
+    {
+        None,
+        GainCard,
+        GainTrinket,
+        GainRituals,
+        FightEagle,
+        IncreaseMaxHealth,
+        CopyCardInDeck,
+        RemoveCardFromDeck,
+        GainHeartstring,
+        BecomeLastEnemy,
+        GoldenFleeceFight,
+        RebukeTheGods,
+        
     }
 }

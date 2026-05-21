@@ -13,14 +13,16 @@ public class DrawCardAction : GameAction
     public ITarget Target;
     Player player;
     private int cardCount;
+    private bool setDrawnGoldCostToZero;
     private List<Card> cardsDrawn = new List<Card>();
     private int preDrawIndex = 0;
 
-    public DrawCardAction(ITarget source, ITarget target, int cardCount)
+    public DrawCardAction(ITarget source, ITarget target, int cardCount, bool setDrawnGoldCostToZero = false)
     {
         Source = source;
         Target = target;
         this.cardCount = cardCount;
+        this.setDrawnGoldCostToZero = setDrawnGoldCostToZero;
     }
 
     public override GameAction DeepCopy(Player newOwner)
@@ -43,7 +45,14 @@ public class DrawCardAction : GameAction
             for (int i = 0; i < cardCount; i++)
             {
                 Card cardDrawn = player.DrawCard();
-                if (cardDrawn != null) cardsDrawn.Add(cardDrawn);
+                if (cardDrawn != null)
+                {
+                    if (setDrawnGoldCostToZero)
+                    {
+                        cardDrawn.Costs[OfferingType.Gold] = 0;
+                    }
+                    cardsDrawn.Add(cardDrawn);
+                }
             }
         }
 

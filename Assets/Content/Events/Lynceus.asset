@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4e8a1f9d0b24e5a8c3f2d1b0e9a7c6d, type: 3}
+  m_Name: Lynceus
+  m_EditorClassIdentifier: 
+  EventText: "You follow the piercing gaze of the hunter as he stares into the woods
+    beyond. He notices your approach with a flinch, before explaining his ability
+    to see through things. He is currently one of many heroes participating in a
+    great hunt, but he has also looked much further and seen a greater prize in the
+    future. \r"
+  BackgroundImage: {fileID: 21300000, guid: 8f315827459ae41419c45148484cbd9e, type: 3}
+  ImageStartingPosition: {x: 10, y: -57}
+  ImageStartingScale: {x: 18, y: 18, z: 1}
+  SummaryPosition: 2
+  Options:
+  - OptionText: Join him in this great hunt\n(Gain Trinket)
+    Outcome:
+      OutcomeType: 2
+      RewardInfo:
+      - HermesSandals
+  - OptionText: Follow his gaze to what lies beyond\n(Unlock future event)
+    Outcome:
+      OutcomeType: 10
+      RewardInfo: []

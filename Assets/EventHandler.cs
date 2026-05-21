@@ -10,18 +10,24 @@ public class EventHandler : MonoBehaviour
     public EventScreenHandler EventScreenHandler;
     public List<EventDefinition> Events = new List<EventDefinition>();
 
-    [Header("Camera sequence")]
+    [Header("Camera (intro)")]
     public float FadeInDuration = 2.0f;
-    public float HoldBeforeZoomOutDuration = 3.0f;
-    public float ZoomOutDuration = 6.0f;
     public float ZoomedInOrthographicSize = 1.6f;
-    public float ZoomedOutOrthographicSize = 5.0f;
 
     [Tooltip("Optional transform that marks the close-up focus point.")]
     public Transform ZoomFocusPoint;
 
+    [Header("Event image intro")]
+    [Tooltip("Realtime wait after the intro fade finishes, before the event image begins moving and scaling toward the end pose (runs in parallel with body text typing).")]
+    public float HoldBeforeZoomOutDuration = 3.0f;
+    [Tooltip("How long the event image takes to reach the end local position and scale.")]
+    public float ZoomOutDuration = 6.0f;
+    public Vector3 EventImageEndLocalPosition = Vector3.zero;
+    public Vector3 EventImageEndLocalScale = new Vector3(6f, 6f, 1f);
+
     EventDefinition _currentDefinition;
     Coroutine _sequenceRoutine;
+    Coroutine _eventImageIntroRoutine;
     System.Action _onEventComplete;
 
     public void BeginRandomEvent(System.Action onEventComplete)
@@ -34,6 +40,7 @@ public class EventHandler : MonoBehaviour
         }
 
         int idx = Controller.Instance.MetaRNG.Next(0, Events.Count);
+        idx = 0; // TODO: Remove this
         var def = Events[idx];
         if (def == null)
         {
@@ -52,6 +59,12 @@ public class EventHandler : MonoBehaviour
         if (EventCamera != null)
             EventCamera.gameObject.SetActive(true);
 
+        if (_eventImageIntroRoutine != null)
+        {
+            StopCoroutine(_eventImageIntroRoutine);
+            _eventImageIntroRoutine = null;
+        }
+
         if (_sequenceRoutine != null)
             StopCoroutine(_sequenceRoutine);
         _sequenceRoutine = StartCoroutine(RunEventSequence());
@@ -66,23 +79,20 @@ public class EventHandler : MonoBehaviour
         }
 
         if (EventBackground != null)
+        {
             EventBackground.sprite = _currentDefinition.BackgroundImage;
+            EventBackground.transform.localPosition = _currentDefinition.ImageStartingPosition;
+            EventBackground.transform.localScale = _currentDefinition.ImageStartingScale;
+        }
         if (EventScreenHandler != null)
         {
-            EventScreenHandler.LoadEventSprite(_currentDefinition.BackgroundImage);
+            EventScreenHandler.ApplySummaryPosition(_currentDefinition.SummaryPosition);
             EventScreenHandler.HideAllOptions();
             EventScreenHandler.SetOptionsInteractable(false);
             EventScreenHandler.ClearEventText();
 
-            var options = _currentDefinition.Options;
-            var optionTexts = new List<string>();
-            if (options != null)
-            {
-                for (int i = 0; i < options.Count; i++)
-                    optionTexts.Add(options[i].OptionText);
-            }
-
-            EventScreenHandler.LoadOptions(optionTexts, OnOptionSelected);
+            EventScreenHandler.LoadOptions(_currentDefinition.Options, OnOptionSelected);
+            EventScreenHandler.HideOutcomePreview();
             EventScreenHandler.SetOptionsInteractable(true);
         }
 
@@ -103,24 +113,38 @@ public class EventHandler : MonoBehaviour
             yield return null;
         }
 
+        _eventImageIntroRoutine = StartCoroutine(RunEventImageIntroCoroutine());
+
         if (EventScreenHandler != null)
             yield return StartCoroutine(EventScreenHandler.PlayEventBodyTyping(_currentDefinition.EventText));
 
+        yield return _eventImageIntroRoutine;
+        _eventImageIntroRoutine = null;
+    }
+
+    IEnumerator RunEventImageIntroCoroutine()
+    {
         yield return new WaitForSecondsRealtime(Mathf.Max(0f, HoldBeforeZoomOutDuration));
 
-        if (EventCamera != null)
+        if (EventBackground == null)
+            yield break;
+
+        Transform tform = EventBackground.transform;
+        Vector3 startPos = tform.localPosition;
+        Vector3 startScale = tform.localScale;
+        Vector3 endPos = EventImageEndLocalPosition;
+        Vector3 endScale = EventImageEndLocalScale;
+        float duration = Mathf.Max(0.01f, ZoomOutDuration);
+        for (float t = 0f; t < duration; t += Time.deltaTime)
         {
-            float startSize = ZoomedInOrthographicSize;
-            float endSize = Mathf.Max(startSize, ZoomedOutOrthographicSize);
-            float zoom = Mathf.Max(0.01f, ZoomOutDuration);
-            for (float t = 0f; t < zoom; t += Time.deltaTime)
-            {
-                float progress = t / zoom;
-                EventCamera.orthographicSize = Mathf.Lerp(startSize, endSize, progress);
-                yield return null;
-            }
-            EventCamera.orthographicSize = endSize;
+            float progress = t / duration;
+            tform.localPosition = Vector3.Lerp(startPos, endPos, progress);
+            tform.localScale = Vector3.Lerp(startScale, endScale, progress);
+            yield return null;
         }
+
+        tform.localPosition = endPos;
+        tform.localScale = endScale;
     }
 
     void OnOptionSelected(int optionIndex)
@@ -144,16 +168,24 @@ public class EventHandler : MonoBehaviour
         {
             case EventOutcomeType.None:
                 break;
-            case EventOutcomeType.AddRandomTrinket:
-                var trinkets = Controller.Instance.ProgressionHandler.GetRandomTrinkets();
-                if (trinkets != null && trinkets.Count > 0)
-                    Controller.Instance.AddTrinket(trinkets[0]);
+            case EventOutcomeType.FightEagle:
                 break;
-            case EventOutcomeType.RemoveRandomCardFromDeck:
-                RemoveRandomCardsFromDeck(Mathf.Max(1, outcome.CardCount));
+            case EventOutcomeType.IncreaseMaxHealth:
                 break;
-            case EventOutcomeType.DuplicateRandomCardInDeck:
-                DuplicateRandomCardsInDeck(Mathf.Max(1, outcome.CardCount));
+            case EventOutcomeType.CopyCardInDeck:
+                break;
+            case EventOutcomeType.GainCard:
+            case EventOutcomeType.GainTrinket:
+            case EventOutcomeType.GainHeartstring:
+                EventOutcomePreview.Apply(outcome);
+                break;
+            case EventOutcomeType.RemoveCardFromDeck:
+                break;
+            case EventOutcomeType.BecomeLastEnemy:
+                break;
+            case EventOutcomeType.GoldenFleeceFight:
+                break;
+            case EventOutcomeType.GainRituals:
                 break;
             default:
                 break;

@@ -127,6 +127,12 @@ public class AIPlayer : Player
                     {
                         Debug.LogWarning("Decision Failed");
                     }
+                    if (View.Instance.DoingEndOfTurnActions)
+                    {
+                        Debug.LogWarning("AI turn interrupted early.");
+                        TurnPhase = AITurnPhase.Waiting;
+                        break;
+                    }
                 }
 
                 TurnPhase = AITurnPhase.Ending;

@@ -19,6 +19,7 @@ public static class CardHandler
         new NemeanLion(),
         new MareOfDiomedes(),
         new StymphalianBird(),
+        new Pegasus(),
 
         // MORTALS
         new Peltast(),
@@ -49,6 +50,7 @@ public static class CardHandler
         new Menelaus(),
         new Pyrrhus(),
         new Diomedes(),
+        new Odysseus(),
         new Icarus(),
         new Atalanta(),
         new Asclepius(),

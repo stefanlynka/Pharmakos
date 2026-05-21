@@ -8,6 +8,7 @@ public enum EffectTarget
     Self,
     Global,
     AdjacentAllies,
+    AllAllies,
     EffectSource,
 }
 
@@ -105,6 +106,19 @@ public abstract class FollowerEffect
                 }
 
                 break;
+            case EffectTarget.AllAllies:
+                source.GameState.FollowerEnters += Reapply;
+                source.GameState.FollowerDies += Reapply;
+
+                foreach (Follower ally in source.Owner.BattleRow.Followers)
+                {
+                    if (ally != null)
+                    {
+                        ApplyInstance(ally, 0);
+                    }
+                }
+
+                break;
         }
     }
 
@@ -124,6 +138,7 @@ public abstract class FollowerEffect
         switch (TargetType)
         {
             case EffectTarget.AdjacentAllies:
+            case EffectTarget.AllAllies:
                 EffectSource.GameState.FollowerEnters -= Reapply;
                 EffectSource.GameState.FollowerDies -= Reapply;
                 break;
@@ -150,6 +165,9 @@ public abstract class FollowerEffect
                 break;
             case EffectTarget.AdjacentAllies:
                 targets.AddRange(source.Owner.BattleRow.GetAdjacentFollowers(source));
+                break;
+            case EffectTarget.AllAllies:
+                targets.AddRange(source.Owner.BattleRow.Followers);
                 break;
             case EffectTarget.Global:
                 targets.AddRange(source.Owner.BattleRow.Followers);

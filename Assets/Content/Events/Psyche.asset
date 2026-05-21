@@ -12,14 +12,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4e8a1f9d0b24e5a8c3f2d1b0e9a7c6d, type: 3}
   m_Name: Psyche
   m_EditorClassIdentifier: 
-  EventText: Psyche's Event
+  EventText: "You encounter a beautiful woman near the peak of a mountain, where
+    she sits drinking a glass of wine. Despite the veil covering her eyes, she says
+    that she is quite glad to have encountered you. With warm and gentle words she
+    explains that she has heard of your tragedy and urges you to persist in your
+    journey. \n\u201CLike you, I lost my love to an impatient glance. Like you, my
+    journey led me to the underworld. Like me, you may still recover who you lost.\u201D"
   BackgroundImage: {fileID: 21300000, guid: be6e0c602399a7d479563e0c45d6b293, type: 3}
+  ImageStartingPosition: {x: -67, y: -56}
+  ImageStartingScale: {x: 20, y: 20, z: 1}
+  SummaryPosition: 2
   Options:
-  - OptionText: this is option 1
+  - OptionText: Find courage in her words\n(Gain Heartstring)
     Outcome:
-      OutcomeType: 1
-      CardCount: 0
-  - OptionText: this is option 2
+      OutcomeType: 8
+      RewardInfo: []
+  - OptionText: Hear more of her trials\n(Gain Rituals)
     Outcome:
-      OutcomeType: 1
-      CardCount: 0
+      OutcomeType: 3
+      RewardInfo:
+      - HermesMinor
+      - HermesMajor

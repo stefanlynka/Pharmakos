@@ -7,7 +7,7 @@ public class OverworldMapController : MonoBehaviour
     public OverworldHexGrid Grid;
     public Transform PlayerMarker;
     public Camera OverworldCamera;
-    public DynamicSmokeSystem.DynamicSmokeSystemController DynamicSmokeSystem;
+    // public DynamicSmokeSystem.DynamicSmokeSystemController DynamicSmokeSystem;
     public GameObject LightingParent;
     public OverworldLightController OverworldLightController;
     public Vector3 SmokePosition;
@@ -107,12 +107,12 @@ public class OverworldMapController : MonoBehaviour
         RefreshHexInteractionLayers();
         ResetHexVisualScales();
 
-        // Setup smoke
-        if (DynamicSmokeSystem.isActiveAndEnabled)
-        {
-            DynamicSmokeSystem.Disperse();
-            DynamicSmokeSystem.Emit(SmokePosition);
-        }
+        // // Setup smoke
+        // if (DynamicSmokeSystem.isActiveAndEnabled)
+        // {
+        //     DynamicSmokeSystem.Disperse();
+        //     DynamicSmokeSystem.Emit(SmokePosition);
+        // }
 
     }
 

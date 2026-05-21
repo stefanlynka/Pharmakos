@@ -77,6 +77,10 @@ public class ViewPlayer : ViewTarget
     {
         ViewPlayerPortrait.SetHealth(newHealth);
     }
+    public void SetHeartStrings(int current, int max)
+    {
+        ViewPlayerPortrait.SetHeartStrings(current, max);
+    }
     public int GetHealth()
     {
         return ViewPlayerPortrait.GetHealth();

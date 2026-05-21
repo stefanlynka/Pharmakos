@@ -40,6 +40,11 @@ public class ActionHandler
         }
         Evaluating = false;
     }
+
+    public void ClearStack()
+    {
+        ActionStack.Clear();
+    }
 }
 
 

@@ -21,6 +21,7 @@ public class ViewBuff : MonoBehaviour
 
     private bool isHighlighted = false;
     private int amount = 0;
+    private bool summaryForced = false;
     public void SetBuffData(StaticPlayerEffect playerEffect, PlayerEffectDescriptionData descriptionData)
     {
         PlayerEffect = playerEffect;
@@ -41,22 +42,34 @@ public class ViewBuff : MonoBehaviour
         ParentObject.SetActive(value);
     }
 
+    public void SetSummaryShown(bool value)
+    {
+        if (SummaryObject != null)
+            SummaryObject.SetActive(value);
+    }
+
+    public void SetSummaryForced(bool value)
+    {
+        summaryForced = value;
+        SetSummaryShown(value);
+    }
+
     // This function is called when the mouse enters the Collider.
     void OnMouseEnter()
     {
+        if (summaryForced) return;
+
         if (SummaryObject != null)
-        {
-            SummaryObject.SetActive(true); // Enable the GameObject.
-        }
+            SummaryObject.SetActive(true);
     }
 
     // This function is called when the mouse exits the Collider.
     void OnMouseExit()
     {
+        if (summaryForced) return;
+
         if (SummaryObject != null)
-        {
-            SummaryObject.SetActive(false); // Disable the GameObject.
-        }
+            SummaryObject.SetActive(false);
     }
 
     private void OnMouseDown()

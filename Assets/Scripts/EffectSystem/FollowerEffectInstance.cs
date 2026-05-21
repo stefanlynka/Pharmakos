@@ -489,17 +489,19 @@ public class TurnToStoneInstance : TriggeredFollowerEffectInstance
 public class DrawCardsInstance : TriggeredFollowerEffectInstance
 {
     public int CardsToDraw;
+    public bool SetDrawnGoldCostToZero;
     public DrawCardsInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
 
     // Pass in a card with all the properties you want
-    public void Init(int cardsToDraw)
+    public void Init(int cardsToDraw, bool setDrawnGoldCostToZero = false)
     {
         CardsToDraw = cardsToDraw;
+        SetDrawnGoldCostToZero = setDrawnGoldCostToZero;
     }
 
     public override void Trigger(ITarget target = null, int amount = 0)
     {
-        DrawCardAction action = new DrawCardAction(AffectedFollower.Owner, AffectedFollower.Owner, CardsToDraw);
+        DrawCardAction action = new DrawCardAction(AffectedFollower.Owner, AffectedFollower.Owner, CardsToDraw, SetDrawnGoldCostToZero);
         AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
     }
 }

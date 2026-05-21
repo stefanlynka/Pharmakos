@@ -1498,3 +1498,136 @@ public class TheLostReturnTrinketEffectDef : TrinketPlayerEffect
         return "At the start of your turn, summon a Follower that's been Offered to the Gods";
     }
 }
+
+// Odyssey: First time each turn you play a follower, play a spell, and use a ritual, summon Odysseus
+public class OdysseyTrinket : Trinket<OdysseyTrinketEffectDef>
+{
+    public OdysseyTrinket()
+    {
+        Name = "Odyssey";
+        Description = "When you play a follower, play a spell, and use a ritual in the same turn for the first time, summon Odysseus";
+    }
+}
+
+public class OdysseyTrinketEffectDef : TrinketPlayerEffect
+{
+    private bool playedFollowerThisTurn;
+    private bool playedSpellThisTurn;
+    private bool usedRitualThisTurn;
+    private bool odysseyCompletedThisTurn;
+    private DelayedGameAction resetAction;
+
+    public OdysseyTrinketEffectDef(Player owner)
+    {
+        Owner = owner;
+        TargetPlayer = owner;
+    }
+
+    public override void Apply()
+    {
+        Owner.GameState.FollowerEnters += OnFollowerEnters;
+        Owner.GameState.SpellPlayed += OnSpellPlayed;
+        Owner.GameState.RitualUsed += OnRitualUsed;
+        resetAction = new DelayedGameAction(new ResetOdysseyTrinketFlagAction(this), false);
+        TargetPlayer.StartOfTurnActions.Add(resetAction);
+    }
+
+    public override void Unapply()
+    {
+        Owner.GameState.FollowerEnters -= OnFollowerEnters;
+        Owner.GameState.SpellPlayed -= OnSpellPlayed;
+        Owner.GameState.RitualUsed -= OnRitualUsed;
+        TargetPlayer.StartOfTurnActions.Remove(resetAction);
+    }
+
+    public void ResetTurnState()
+    {
+        playedFollowerThisTurn = false;
+        playedSpellThisTurn = false;
+        usedRitualThisTurn = false;
+        odysseyCompletedThisTurn = false;
+    }
+
+    private void OnFollowerEnters(Follower follower)
+    {
+        if (follower.Owner != TargetPlayer) return;
+        playedFollowerThisTurn = true;
+        TryCompleteOdyssey();
+    }
+
+    private void OnSpellPlayed(Spell spell)
+    {
+        if (spell.Owner != TargetPlayer) return;
+        playedSpellThisTurn = true;
+        TryCompleteOdyssey();
+    }
+
+    private void OnRitualUsed(Ritual ritual)
+    {
+        if (ritual.Owner != TargetPlayer) return;
+        usedRitualThisTurn = true;
+        TryCompleteOdyssey();
+    }
+
+    private void TryCompleteOdyssey()
+    {
+        if (odysseyCompletedThisTurn) return;
+        if (!playedFollowerThisTurn || !playedSpellThisTurn || !usedRitualThisTurn) return;
+        if (TargetPlayer.BattleRow.Followers.Count >= Player.MaxFollowerCount) return;
+
+        odysseyCompletedThisTurn = true;
+
+        Odysseus odysseus = new Odysseus();
+        odysseus.Init(TargetPlayer);
+        SummonFollowerAction summonAction = new SummonFollowerAction(odysseus);
+        TargetPlayer.GameState.ActionHandler.AddAction(summonAction, true, true);
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        OdysseyTrinketEffectDef copy = (OdysseyTrinketEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
+        return copy;
+    }
+
+    protected override string GetDescription()
+    {
+        return "When you play a follower, play a spell, and use a ritual in the same turn for the first time, summon Odysseus";
+    }
+}
+
+public class ResetOdysseyTrinketFlagAction : GameAction
+{
+    private OdysseyTrinketEffectDef effectDef;
+
+    public ResetOdysseyTrinketFlagAction(OdysseyTrinketEffectDef effectDef)
+    {
+        this.effectDef = effectDef;
+    }
+
+    public override GameAction DeepCopy(Player newOwner)
+    {
+        ResetOdysseyTrinketFlagAction copy = (ResetOdysseyTrinketFlagAction)MemberwiseClone();
+        foreach (PlayerEffect effect in newOwner.PlayerEffects)
+        {
+            if (effect is OdysseyTrinketEffectDef odysseyEffect)
+            {
+                copy.effectDef = odysseyEffect;
+                break;
+            }
+        }
+        return copy;
+    }
+
+    public override void Execute(bool simulated = false, bool success = true)
+    {
+        effectDef?.ResetTurnState();
+        base.Execute(simulated);
+    }
+
+    public override List<AnimationAction> GetAnimationActions()
+    {
+        return new List<AnimationAction>();
+    }
+}

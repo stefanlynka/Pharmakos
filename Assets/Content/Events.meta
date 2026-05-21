@@ -1,5 +1,7 @@
 fileFormatVersion: 2
 guid: 12a34b56c7890def1234567890abcde0
+labels:
+- Fave
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}
