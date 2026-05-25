@@ -15,6 +15,9 @@ public class ViewBuff : MonoBehaviour
     public GameObject MultiplierObject;
     public TextMeshPro MultiplierText;
 
+    [Tooltip("Which side of this buff the hover summary popup appears on.")]
+    public PopupPosition SummaryPosition = PopupPosition.Above;
+
     private Action<ViewBuff> OnClick;
 
     public StaticPlayerEffect PlayerEffect;
@@ -22,11 +25,16 @@ public class ViewBuff : MonoBehaviour
     private bool isHighlighted = false;
     private int amount = 0;
     private bool summaryForced = false;
+    private string summaryDescription = string.Empty;
+
     public void SetBuffData(StaticPlayerEffect playerEffect, PlayerEffectDescriptionData descriptionData)
     {
         PlayerEffect = playerEffect;
         Icon.sprite = descriptionData.Icon;
-        SummaryText.text = descriptionData.Description;
+        summaryDescription = descriptionData.Description;
+
+        if (SummaryText != null)
+            SummaryText.text = summaryDescription;
 
         SetAmount(1);
 
@@ -44,32 +52,53 @@ public class ViewBuff : MonoBehaviour
 
     public void SetSummaryShown(bool value)
     {
-        if (SummaryObject != null)
-            SummaryObject.SetActive(value);
+        if (summaryForced)
+            return;
+
+        if (value)
+            ShowHoverSummary();
+        else
+            HideHoverSummary();
     }
 
     public void SetSummaryForced(bool value)
     {
         summaryForced = value;
-        SetSummaryShown(value);
+
+        if (summaryForced)
+            HideHoverSummary();
+
+        if (SummaryObject != null)
+            SummaryObject.SetActive(value);
     }
 
-    // This function is called when the mouse enters the Collider.
     void OnMouseEnter()
     {
-        if (summaryForced) return;
+        if (summaryForced)
+            return;
 
-        if (SummaryObject != null)
-            SummaryObject.SetActive(true);
+        ShowHoverSummary();
     }
 
-    // This function is called when the mouse exits the Collider.
     void OnMouseExit()
     {
-        if (summaryForced) return;
+        if (summaryForced)
+            return;
 
-        if (SummaryObject != null)
-            SummaryObject.SetActive(false);
+        HideHoverSummary();
+    }
+
+    void ShowHoverSummary()
+    {
+        if (string.IsNullOrEmpty(summaryDescription))
+            return;
+
+        PopupScreenHandler.Instance?.ShowTextPopup(summaryDescription, transform, SummaryPosition);
+    }
+
+    void HideHoverSummary()
+    {
+        PopupScreenHandler.Instance?.HideTextPopup(transform);
     }
 
     private void OnMouseDown()
@@ -108,5 +137,10 @@ public class ViewBuff : MonoBehaviour
     public void IncreaseAmount()
     {
         SetAmount(amount+1);
+    }
+
+    void OnDisable()
+    {
+        HideHoverSummary();
     }
 }

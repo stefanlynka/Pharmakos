@@ -32,6 +32,7 @@ public class View : MonoBehaviour
     public ViewDiscard ViewDiscard;
 
     public SelectionHandler SelectionHandler;
+    public MenuSelectionHandler MenuSelectionHandler;
     public SequenceHandler SequenceHandler;
     //public TweenManager TweenManager;
 
@@ -90,6 +91,10 @@ public class View : MonoBehaviour
 
         SelectionHandler = new SelectionHandler();
 
+        MenuSelectionHandler = GetComponent<MenuSelectionHandler>();
+        if (MenuSelectionHandler == null)
+            MenuSelectionHandler = gameObject.AddComponent<MenuSelectionHandler>();
+
         if (SequenceHandler.Instance == null) SequenceHandler = new SequenceHandler();
         //TweenManager = new TweenManager();
     }
@@ -135,7 +140,9 @@ public class View : MonoBehaviour
 
     public void PlayerUpdate()
     {
-        SelectionHandler.UpdateSelections();
+        if (MenuSelectionHandler == null || !MenuSelectionHandler.IsActive)
+            SelectionHandler.UpdateSelections();
+
         Player1.UpdatePlayer();
         Player2.UpdatePlayer();
 

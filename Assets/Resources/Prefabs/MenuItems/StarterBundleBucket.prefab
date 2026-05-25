@@ -860,6 +860,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1785593407364612628, guid: a80295f0f242bfc4c87aa9ebe945fda2, type: 3}
+      propertyPath: SummaryPosition
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 2544606263349386809, guid: a80295f0f242bfc4c87aa9ebe945fda2, type: 3}
       propertyPath: m_LocalScale.x
       value: 2
@@ -924,6 +928,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4337629448765473348, guid: a80295f0f242bfc4c87aa9ebe945fda2, type: 3}
+      propertyPath: m_Radius
+      value: 3.49
+      objectReference: {fileID: 0}
     - target: {fileID: 6395376085305733267, guid: a80295f0f242bfc4c87aa9ebe945fda2, type: 3}
       propertyPath: m_LocalPosition.x
       value: 9.51
@@ -965,6 +973,7 @@ MonoBehaviour:
   HighlightObject: {fileID: 0}
   MultiplierObject: {fileID: 0}
   MultiplierText: {fileID: 0}
+  SummaryPosition: 0
 --- !u!114 &1550842630518290944 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1785593407364612628, guid: a80295f0f242bfc4c87aa9ebe945fda2, type: 3}

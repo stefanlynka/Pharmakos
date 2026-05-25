@@ -80,6 +80,8 @@ public class Controller : MonoBehaviour
     public LightingHandler LightingHandler;
     public OverworldMapController OverworldMapController;
     public EventHandler EventHandler;
+    public TempleHandler TempleHandler;
+    public ShopHandler ShopHandler;
 
     private OverworldMapNode _lastOverworldNodeEntered;
 
@@ -252,11 +254,30 @@ public class Controller : MonoBehaviour
         var completedNode = _lastOverworldNodeEntered;
         ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
         {
+            TearDownOverworldEncounter();
             OverworldMapController.ReturnToMap(completedNode);
             CurrentScreen = ScreenName.Overworld;
             ScreenHandler.Instance.ShowScreen(ScreenName.Overworld);
         });
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
+
+    /// <summary>
+    /// Called at the midpoint of the fade when leaving shop, events, etc. back to the overworld.
+    /// </summary>
+    void TearDownOverworldEncounter()
+    {
+        if (ShopHandler == null)
+            ShopHandler = FindObjectOfType<ShopHandler>();
+
+        if (ShopHandler != null && ShopHandler.gameObject.activeInHierarchy)
+            ShopHandler.EndShop();
+
+        if (EventHandler == null)
+            EventHandler = FindObjectOfType<EventHandler>();
+
+        if (EventHandler != null && EventHandler.EventCamera != null)
+            EventHandler.EventCamera.gameObject.SetActive(false);
     }
 
     public void BeginEncounterFromOverworldNode(OverworldMapNode node)
@@ -265,11 +286,18 @@ public class Controller : MonoBehaviour
 
         _lastOverworldNodeEntered = node;
 
-        // Temple = ritual: deck trimming then rituals (no combat). Boss and combat use LoadLevel.
+        // Temple = sacrifice three cards from deck, then ritual rewards (no combat).
         if (node.EncounterType == EncounterType.Temple)
         {
             ProgressionHandler.RegisterTempleEncounter();
-            GoToCardRemovalRewardScreen();
+            BeginTempleEncounter();
+            return;
+        }
+
+        if (node.EncounterType == EncounterType.Market)
+        {
+            ProgressionHandler.RegisterMarketEncounter();
+            BeginShopEncounter();
             return;
         }
 
@@ -310,6 +338,55 @@ public class Controller : MonoBehaviour
 
         LoadLevel();
     }
+
+    private void BeginTempleEncounter()
+    {
+        if (TempleHandler == null)
+            TempleHandler = FindObjectOfType<TempleHandler>();
+
+        if (TempleHandler == null)
+        {
+            Debug.LogError("Controller: TempleHandler is not assigned and none was found in the scene.");
+            GoToCardRemovalRewardScreen();
+            return;
+        }
+
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
+        {
+            OverworldMapController.HideMap();
+            GameField.SetActive(false);
+            CurrentScreen = ScreenName.Temple;
+            ScreenHandler.Instance.ShowScreen(ScreenName.Temple, true, true);
+            ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
+            TempleHandler.BeginTempleSacrifice();
+        }, () => { });
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
+
+    private void BeginShopEncounter()
+    {
+        if (ShopHandler == null)
+            ShopHandler = FindObjectOfType<ShopHandler>();
+
+        if (ShopHandler == null)
+        {
+            Debug.LogError("Controller: ShopHandler is not assigned and none was found in the scene.");
+            StartNextLevel();
+            return;
+        }
+
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
+        {
+            OverworldMapController.HideMap();
+            GameField.SetActive(false);
+            CurrentScreen = ScreenName.Shop;
+            ScreenHandler.Instance.ShowScreen(ScreenName.Shop, true, true);
+            ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
+            ShopHandler.BeginShop();
+        }, () => { });
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
+
     private void ShowNextLevel()
     {
         LoadLevel();
@@ -319,6 +396,8 @@ public class Controller : MonoBehaviour
         ScreenHandler.Instance.HideScreen(ScreenName.CardGainRewards, true);
         ScreenHandler.Instance.HideScreen(ScreenName.CardRemovalRewards, true);
         ScreenHandler.Instance.HideScreen(ScreenName.RitualRewards, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.Temple, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.Shop, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
         ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
         ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, false);
@@ -595,6 +674,15 @@ public class Controller : MonoBehaviour
         if (amount <= 0) return;
 
         RunHeartStrings = Mathf.Clamp(RunHeartStrings + amount, 0, Player.MaxHeartStrings);
+    }
+
+    public bool TrySpendHeartstrings(int amount)
+    {
+        if (amount <= 0) return true;
+        if (RunHeartStrings < amount) return false;
+
+        RunHeartStrings -= amount;
+        return true;
     }
     public void RemoveCardsFromPlayerDeck(List<Card> cards)
     {

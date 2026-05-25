@@ -29,6 +29,7 @@ public class ScreenHandler : MonoBehaviour
 
         SetupAll();
         HideAll(true);
+        EnablePersistentScreens(true);
 
         //ShowScreen(ScreenName.Blank, true);
 
@@ -50,6 +51,13 @@ public class ScreenHandler : MonoBehaviour
         {
             if (!screen.ManualHide) screen.Exit(instant);
         }
+    }
+
+    /// <summary>Enters overlay screens that stay visible across screen changes.</summary>
+    protected virtual void EnablePersistentScreens(bool instant = false)
+    {
+        if (TryGetScreen(ScreenName.Popup, out Screen popup))
+            popup.Enter(instant);
     }
 
     public virtual void ShowScreen(ScreenName name, bool instant = false, bool hideOthers = true)
@@ -99,6 +107,33 @@ public class ScreenHandler : MonoBehaviour
 
         return screen != null;
     }
+
+    /// <summary>
+    /// Resolves the world camera for projecting 3D anchors into screen space.
+    /// Prefers <paramref name="explicitCamera"/>, then the current screen's camera,
+    /// then <see cref="MenuSelectionHandler"/> when active, then <see cref="Camera.main"/>.
+    /// </summary>
+    public Camera ResolveWorldCamera(Camera explicitCamera = null)
+    {
+        if (explicitCamera != null && explicitCamera.isActiveAndEnabled)
+            return explicitCamera;
+
+        if (TryGetCurrentScreen(out Screen screen)
+            && screen != null
+            && screen.Name != ScreenName.Popup
+            && screen.Camera != null
+            && screen.Camera.isActiveAndEnabled)
+            return screen.Camera;
+
+        if (MenuSelectionHandler.Instance != null && MenuSelectionHandler.Instance.IsActive)
+        {
+            Camera menuCamera = MenuSelectionHandler.Instance.GetSelectionCamera();
+            if (menuCamera != null && menuCamera.isActiveAndEnabled)
+                return menuCamera;
+        }
+
+        return Camera.main;
+    }
 }
 
 
@@ -121,5 +156,8 @@ public enum ScreenName
     TrinketRewardScreen,
     Overworld,
     Event,
+    Temple,
+    Shop,
+    Popup,
 }
 

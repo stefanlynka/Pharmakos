@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -1741,6 +1742,50 @@ public class ProgressionHandler
     public void RegisterTempleEncounter()
     {
         CurrentLevel++;
+    }
+
+    /// <summary>Overworld shop node: advance level without combat.</summary>
+    public void RegisterMarketEncounter()
+    {
+        CurrentLevel++;
+    }
+
+    public List<Card> GetShopCardPool()
+    {
+        var pool = new List<Card>();
+        var seenTypes = new HashSet<Type>();
+
+        foreach (KeyValuePair<DeckName, PlayerDetails> kvp in DetailsByDeckName)
+        {
+            PlayerDetails details = kvp.Value;
+            if (details == null || !details.IsFightableEnemy || details.Rewards == null) continue;
+
+            foreach (Card card in details.Rewards)
+            {
+                if (card == null) continue;
+                Type cardType = card.GetType();
+                if (!seenTypes.Add(cardType)) continue;
+                pool.Add(card.MakeBaseCopy());
+            }
+        }
+
+        return pool;
+    }
+
+    public List<Trinket> GetRandomShopTrinkets(int count)
+    {
+        var result = new List<Trinket>();
+        var pool = new List<Trinket>(availableTrinkets);
+        int pickCount = Mathf.Min(count, pool.Count);
+
+        for (int i = 0; i < pickCount; i++)
+        {
+            int idx = Controller.Instance.MetaRNG.Next(0, pool.Count);
+            result.Add(pool[idx].MakeBaseCopy());
+            pool.RemoveAt(idx);
+        }
+
+        return result;
     }
 
     void RefillEnemyPoolIfDepleted()

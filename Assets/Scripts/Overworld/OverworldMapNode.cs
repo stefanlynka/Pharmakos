@@ -230,7 +230,13 @@ public class OverworldMapNode : MonoBehaviour
         var pool = new List<OverworldMapNode>(floorNodes);
         ShuffleInPlace(pool);
 
-        int shopCount = 0;
+        if (r == 0 && pool.Count > 0)
+        {
+            pool[0].ApplyEncounter(EncounterType.Market);
+            pool.RemoveAt(0);
+        }
+
+        int shopCount = 1;
         if (r == 4) shopCount = 1;
         else if (r == 7) shopCount = 3;
         shopCount = Mathf.Min(shopCount, pool.Count);
@@ -247,6 +253,7 @@ public class OverworldMapNode : MonoBehaviour
                 ? Mathf.CeilToInt(nTotal / 3f)
                 : Mathf.FloorToInt(nTotal / 3f);
         }
+        // templeTarget = 1;
         templeTarget = Mathf.Clamp(templeTarget, 0, pool.Count);
         ShuffleInPlace(pool);
         for (int i = 0; i < templeTarget; i++)

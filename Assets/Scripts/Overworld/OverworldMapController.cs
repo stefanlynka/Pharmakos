@@ -55,6 +55,8 @@ public class OverworldMapController : MonoBehaviour
     [Tooltip("Uniform scale applied to an accessible hex while the mouse hovers it.")]
     public float AccessibleHexHoverScale = 1.1f;
 
+    public PlayerLyre PlayerLyre;
+
     [Header("Overworld lights")]
     [Tooltip("World-space offset along the row axis from the leftmost/rightmost hex center for side lights (grid local ±X).")]
     public float SideLightRowInset = 2.5f;
@@ -106,6 +108,7 @@ public class OverworldMapController : MonoBehaviour
 
         RefreshHexInteractionLayers();
         ResetHexVisualScales();
+        RefreshPlayerLyre();
 
         // // Setup smoke
         // if (DynamicSmokeSystem.isActiveAndEnabled)
@@ -143,6 +146,7 @@ public class OverworldMapController : MonoBehaviour
         ResetHexVisualScales();
         PositionSideLightsForCurrentRow();
         SetLights(true);
+        RefreshPlayerLyre();
     }
 
     public void HideMap()
@@ -268,6 +272,14 @@ public class OverworldMapController : MonoBehaviour
 
         PlayerMarker.position = _currentNode.transform.position + Vector3.up * PlayerIconHeight;
         PlayerMarker.gameObject.SetActive(true);
+    }
+
+    void RefreshPlayerLyre()
+    {
+        if (PlayerLyre == null || Controller.Instance == null)
+            return;
+
+        PlayerLyre.SetHeartstrings(Controller.Instance.RunHeartStrings, 0);
     }
 
     private void Update()
