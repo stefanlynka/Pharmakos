@@ -58,6 +58,7 @@ Shader "Pharmakos/CardArtClip"
 
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
+            float4 _MainTex_TexelSize;
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _MainTex_ST;
@@ -69,15 +70,18 @@ Shader "Pharmakos/CardArtClip"
                 float4 _CornerCutouts1;
             CBUFFER_END
 
-            float RoundedBoxSDF(float2 p, float2 halfSize, half radius)
+            float RoundedBoxSDF(float2 p, float2 halfSize, half radius, float2 metricScale)
             {
-                float2 q = abs(p) - halfSize + radius;
+                float2 pScaled = p * metricScale;
+                float2 halfSizeScaled = halfSize * metricScale;
+                float2 q = abs(pScaled) - halfSizeScaled + radius;
                 return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - radius;
             }
 
-            half ClampCornerRadius(half radius, float2 halfSize)
+            half ClampCornerRadius(half radius, float2 halfSize, float2 metricScale)
             {
-                return min(radius, min(halfSize.x, halfSize.y));
+                float2 halfSizeScaled = halfSize * metricScale;
+                return min(radius, min(halfSizeScaled.x, halfSizeScaled.y));
             }
 
             // Polynomial smooth max (Inigo Quilez). Blends where abs(a-b) < k; ~max elsewhere.
@@ -88,19 +92,21 @@ Shader "Pharmakos/CardArtClip"
                 return lerp(b, a, h) + k * h * (1.0 - h);
             }
 
-            float CutoutRoundedSdf(float2 uv, float2 cutoutCenter, float2 cutoutSize, half radiusForClamp)
+            float CutoutRoundedSdf(float2 uv, float2 cutoutCenter, float2 cutoutSize, half radiusForClamp, float2 metricScale)
             {
                 float2 halfCut = cutoutSize * 0.5;
-                half rr = ClampCornerRadius(radiusForClamp, halfCut);
-                return RoundedBoxSDF(uv - cutoutCenter, halfCut, rr);
+                half rr = ClampCornerRadius(radiusForClamp, halfCut, metricScale);
+                return RoundedBoxSDF(uv - cutoutCenter, halfCut, rr, metricScale);
             }
 
             half ArtClipMask(float2 uv, float4 rect, half radius, float4 cutouts0, float4 cutouts1)
             {
+                float texAspect = _MainTex_TexelSize.z / max(_MainTex_TexelSize.w, 1e-6);
+                float2 metricScale = float2(texAspect, 1.0);
                 float2 center = (rect.xy + rect.zw) * 0.5;
                 float2 halfSize = (rect.zw - rect.xy) * 0.5;
-                half outerRadius = ClampCornerRadius(radius, halfSize);
-                float sdfOuter = RoundedBoxSDF(uv - center, halfSize, outerRadius);
+                half outerRadius = ClampCornerRadius(radius, halfSize, metricScale);
+                float sdfOuter = RoundedBoxSDF(uv - center, halfSize, outerRadius, metricScale);
 
                 // Union of corner cutouts (SDF min). Inactive corners use a huge distance so they do not cut.
                 const float kFarCutout = 1e5;
@@ -109,25 +115,25 @@ Shader "Pharmakos/CardArtClip"
                 if (cutouts0.x > 1e-5 && cutouts0.y > 1e-5)
                 {
                     float2 c = float2(rect.x + cutouts0.x * 0.5, rect.y + cutouts0.y * 0.5);
-                    dCuts = min(dCuts, CutoutRoundedSdf(uv, c, cutouts0.xy, outerRadius));
+                    dCuts = min(dCuts, CutoutRoundedSdf(uv, c, cutouts0.xy, outerRadius, metricScale));
                 }
 
                 if (cutouts0.z > 1e-5 && cutouts0.w > 1e-5)
                 {
                     float2 c = float2(rect.z - cutouts0.z * 0.5, rect.y + cutouts0.w * 0.5);
-                    dCuts = min(dCuts, CutoutRoundedSdf(uv, c, cutouts0.zw, outerRadius));
+                    dCuts = min(dCuts, CutoutRoundedSdf(uv, c, cutouts0.zw, outerRadius, metricScale));
                 }
 
                 if (cutouts1.x > 1e-5 && cutouts1.y > 1e-5)
                 {
                     float2 c = float2(rect.x + cutouts1.x * 0.5, rect.w - cutouts1.y * 0.5);
-                    dCuts = min(dCuts, CutoutRoundedSdf(uv, c, cutouts1.xy, outerRadius));
+                    dCuts = min(dCuts, CutoutRoundedSdf(uv, c, cutouts1.xy, outerRadius, metricScale));
                 }
 
                 if (cutouts1.z > 1e-5 && cutouts1.w > 1e-5)
                 {
                     float2 c = float2(rect.z - cutouts1.z * 0.5, rect.w - cutouts1.w * 0.5);
-                    dCuts = min(dCuts, CutoutRoundedSdf(uv, c, cutouts1.zw, outerRadius));
+                    dCuts = min(dCuts, CutoutRoundedSdf(uv, c, cutouts1.zw, outerRadius, metricScale));
                 }
 
                 // Smooth subtraction: clipped rect minus union of cutouts — no separate fillet discs.
