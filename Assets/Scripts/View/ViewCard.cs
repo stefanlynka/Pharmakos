@@ -24,7 +24,15 @@ public class ViewCard : ViewTarget
 
     public RectTransform NameTextTransform;
 
+    [Header("Art Clip")]
+    [SerializeField] CardArtClipRect artLayout = CardArtClipRect.Full;
+    [SerializeField] CardArtLayoutAsset defaultArtLayoutAsset;
+    [SerializeField] bool useDescriptiveArtLayout;
+    [SerializeField] CardArtClipRect descriptiveArtLayout = CardArtClipRect.BottomHalf(0.55f);
+    [SerializeField] CardArtLayoutAsset descriptiveArtLayoutAsset;
+
     protected bool inDescriptiveMode = false;
+    MaterialPropertyBlock artPropertyBlock;
 
     //public Action<ViewCard> OnClick = null;
 
@@ -75,6 +83,54 @@ public class ViewCard : ViewTarget
         inDescriptiveMode = value;
 
         FullTextBox.SetActive(value);
+        ApplyArtLayout(value);
+    }
+
+    public void SetArtLayout(CardArtClipRect layout)
+    {
+        artLayout = layout;
+        ApplyArtLayout(inDescriptiveMode);
+    }
+
+    public void SetArtLayout(CardArtLayoutAsset layoutAsset)
+    {
+        if (layoutAsset == null)
+        {
+            return;
+        }
+
+        SetArtLayout(layoutAsset.Layout);
+    }
+
+    protected CardArtClipRect GetArtLayoutForMode(bool descriptiveMode)
+    {
+        if (descriptiveMode && useDescriptiveArtLayout)
+        {
+            if (descriptiveArtLayoutAsset != null)
+            {
+                return descriptiveArtLayoutAsset.Layout;
+            }
+
+            return descriptiveArtLayout;
+        }
+
+        if (defaultArtLayoutAsset != null)
+        {
+            return defaultArtLayoutAsset.Layout;
+        }
+
+        return artLayout;
+    }
+
+    protected void ApplyArtLayout(bool descriptiveMode)
+    {
+        if (ArtRenderer == null)
+        {
+            return;
+        }
+
+        artPropertyBlock ??= new MaterialPropertyBlock();
+        CardArtClipUtility.Apply(ArtRenderer, GetArtLayoutForMode(descriptiveMode), artPropertyBlock);
     }
 
     public virtual void SetCostShown(bool value)

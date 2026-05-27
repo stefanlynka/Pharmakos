@@ -236,7 +236,7 @@ public class OverworldMapNode : MonoBehaviour
             pool.RemoveAt(0);
         }
 
-        int shopCount = 1;
+        int shopCount = 0;
         if (r == 4) shopCount = 1;
         else if (r == 7) shopCount = 3;
         shopCount = Mathf.Min(shopCount, pool.Count);

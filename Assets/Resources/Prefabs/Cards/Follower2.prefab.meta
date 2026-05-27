@@ -1,5 +1,7 @@
 fileFormatVersion: 2
 guid: 91d24f4ed48dd954ab97956416234aca
+labels:
+- Fave
 PrefabImporter:
   externalObjects: {}
   userData: 
