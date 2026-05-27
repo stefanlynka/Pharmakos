@@ -80,156 +80,19 @@ Shader "Pharmakos/CardArtClip"
                 return min(radius, min(halfSize.x, halfSize.y));
             }
 
-            // Negative inside the axis-aligned box, positive outside (standard SDF convention).
-            float SharpBoxSDF(float2 p, float2 boxMin, float2 boxMax)
+            // Polynomial smooth max (Inigo Quilez). Blends where abs(a-b) < k; ~max elsewhere.
+            float SmoothedMax(float a, float b, float k)
             {
-                float2 d = max(boxMin - p, p - boxMax);
-                return max(d.x, d.y);
+                k = max(k, 1e-7);
+                float h = saturate(0.5 + 0.5 * (a - b) / k);
+                return lerp(b, a, h) + k * h * (1.0 - h);
             }
 
-            // Rounds a 90-degree convex corner using local edge coordinates.
-            // axisU/axisV point along the two visible edges away from the corner (unit vectors).
-            float ConvexCornerEarTrim(float2 p, float2 corner, float2 axisU, float2 axisV, half radius)
+            float CutoutRoundedSdf(float2 uv, float2 cutoutCenter, float2 cutoutSize, half radiusForClamp)
             {
-                if (radius <= 1e-5)
-                {
-                    return 0.0;
-                }
-
-                float u = dot(p - corner, axisU);
-                float v = dot(p - corner, axisV);
-                if (u < 0.0 || v < 0.0 || u > radius || v > radius)
-                {
-                    return 0.0;
-                }
-
-                float dist = length(float2(u, v) - radius);
-                if (dist < radius)
-                {
-                    return 0.0;
-                }
-
-                return dist - radius;
-            }
-
-            float ApplyConvexCornerRound(
-                float sdf,
-                float2 p,
-                float2 corner,
-                float2 axisU,
-                float2 axisV,
-                half radius)
-            {
-                float trim = ConvexCornerEarTrim(p, corner, axisU, axisV, radius);
-                if (trim > 0.0)
-                {
-                    sdf = max(sdf, trim);
-                }
-
-                return sdf;
-            }
-
-            half CutoutFilletRadius(half outerRadius, float2 cutoutSize)
-            {
-                if (outerRadius <= 1e-5)
-                {
-                    return 0.0;
-                }
-
-                return min(outerRadius, min(cutoutSize.x, cutoutSize.y) * 0.499);
-            }
-
-            float ApplyBottomLeftCutout(float sdf, float2 uv, float4 rect, float2 size, half outerRadius)
-            {
-                if (size.x <= 1e-5 || size.y <= 1e-5)
-                {
-                    return sdf;
-                }
-
-                float2 cutMin = rect.xy;
-                float2 cutMax = rect.xy + size;
-                half r = CutoutFilletRadius(outerRadius, size);
-                const float2 axisRight = float2(1.0, 0.0);
-                const float2 axisLeft = float2(-1.0, 0.0);
-                const float2 axisUp = float2(0.0, 1.0);
-                const float2 axisDown = float2(0.0, -1.0);
-
-                sdf = max(sdf, -SharpBoxSDF(uv, cutMin, cutMax));
-                // Left edge meets notch top, inner notch corner, notch side meets bottom.
-                sdf = ApplyConvexCornerRound(sdf, uv, float2(cutMin.x, cutMax.y), axisUp, axisLeft, r);
-                sdf = ApplyConvexCornerRound(sdf, uv, cutMax, axisRight, axisUp, r);
-                sdf = ApplyConvexCornerRound(sdf, uv, float2(cutMax.x, cutMin.y), axisRight, axisDown, r);
-                return sdf;
-            }
-
-            float ApplyBottomRightCutout(float sdf, float2 uv, float4 rect, float2 size, half outerRadius)
-            {
-                if (size.x <= 1e-5 || size.y <= 1e-5)
-                {
-                    return sdf;
-                }
-
-                float2 cutMin = float2(rect.z - size.x, rect.y);
-                float2 cutMax = float2(rect.z, rect.y + size.y);
-                half r = CutoutFilletRadius(outerRadius, size);
-                const float2 axisRight = float2(1.0, 0.0);
-                const float2 axisLeft = float2(-1.0, 0.0);
-                const float2 axisUp = float2(0.0, 1.0);
-                const float2 axisDown = float2(0.0, -1.0);
-
-                sdf = max(sdf, -SharpBoxSDF(uv, cutMin, cutMax));
-                // Bottom meets cutout side, inner notch corner, notch top meets card right edge.
-                sdf = ApplyConvexCornerRound(sdf, uv, cutMin, axisLeft, axisDown, r);
-                sdf = ApplyConvexCornerRound(sdf, uv, float2(cutMin.x, cutMax.y), axisLeft, axisUp, r);
-                sdf = ApplyConvexCornerRound(sdf, uv, cutMax, axisUp, axisRight, r);
-                return sdf;
-            }
-
-            float ApplyTopLeftCutout(float sdf, float2 uv, float4 rect, float2 size, half outerRadius)
-            {
-                if (size.x <= 1e-5 || size.y <= 1e-5)
-                {
-                    return sdf;
-                }
-
-                float2 cutMin = float2(rect.x, rect.w - size.y);
-                float2 cutMax = float2(rect.x + size.x, rect.w);
-                half r = CutoutFilletRadius(outerRadius, size);
-                const float2 axisRight = float2(1.0, 0.0);
-                const float2 axisLeft = float2(-1.0, 0.0);
-                const float2 axisUp = float2(0.0, 1.0);
-                const float2 axisDown = float2(0.0, -1.0);
-
-                sdf = max(sdf, -SharpBoxSDF(uv, cutMin, cutMax));
-                // Left edge meets notch bottom, inner notch corner, notch side meets top edge.
-                sdf = ApplyConvexCornerRound(sdf, uv, cutMin, axisLeft, axisDown, r);
-                sdf = ApplyConvexCornerRound(sdf, uv, float2(cutMax.x, cutMin.y), axisRight, axisDown, r);
-                sdf = ApplyConvexCornerRound(sdf, uv, cutMax, axisRight, axisUp, r);
-                return sdf;
-            }
-
-            float ApplyTopRightCutout(float sdf, float2 uv, float4 rect, float2 size, half outerRadius)
-            {
-                if (size.x <= 1e-5 || size.y <= 1e-5)
-                {
-                    return sdf;
-                }
-
-                float2 cutMin = float2(rect.z - size.x, rect.w - size.y);
-                float2 cutMax = rect.zw;
-                half r = CutoutFilletRadius(outerRadius, size);
-                const float2 axisRight = float2(1.0, 0.0);
-                const float2 axisLeft = float2(-1.0, 0.0);
-                const float2 axisUp = float2(0.0, 1.0);
-                const float2 axisDown = float2(0.0, -1.0);
-
-                sdf = max(sdf, -SharpBoxSDF(uv, cutMin, cutMax));
-                // Left side meets notch top, left side meets notch bottom, inner corner, card top meets cutout right.
-                sdf = ApplyConvexCornerRound(sdf, uv, float2(cutMin.x, cutMax.y), axisDown, axisRight, r);
-                sdf = ApplyConvexCornerRound(sdf, uv, cutMin, axisRight, axisUp, r);
-                sdf = ApplyConvexCornerRound(sdf, uv, float2(cutMax.x, cutMin.y), axisLeft, axisUp, r);
-                sdf = ApplyConvexCornerRound(sdf, uv, cutMax, axisLeft, axisDown, r);
-                return sdf;
+                float2 halfCut = cutoutSize * 0.5;
+                half rr = ClampCornerRadius(radiusForClamp, halfCut);
+                return RoundedBoxSDF(uv - cutoutCenter, halfCut, rr);
             }
 
             half ArtClipMask(float2 uv, float4 rect, half radius, float4 cutouts0, float4 cutouts1)
@@ -237,12 +100,39 @@ Shader "Pharmakos/CardArtClip"
                 float2 center = (rect.xy + rect.zw) * 0.5;
                 float2 halfSize = (rect.zw - rect.xy) * 0.5;
                 half outerRadius = ClampCornerRadius(radius, halfSize);
-                float sdf = RoundedBoxSDF(uv - center, halfSize, outerRadius);
+                float sdfOuter = RoundedBoxSDF(uv - center, halfSize, outerRadius);
 
-                sdf = ApplyBottomLeftCutout(sdf, uv, rect, cutouts0.xy, outerRadius);
-                sdf = ApplyBottomRightCutout(sdf, uv, rect, cutouts0.zw, outerRadius);
-                sdf = ApplyTopLeftCutout(sdf, uv, rect, cutouts1.xy, outerRadius);
-                sdf = ApplyTopRightCutout(sdf, uv, rect, cutouts1.zw, outerRadius);
+                // Union of corner cutouts (SDF min). Inactive corners use a huge distance so they do not cut.
+                const float kFarCutout = 1e5;
+                float dCuts = kFarCutout;
+
+                if (cutouts0.x > 1e-5 && cutouts0.y > 1e-5)
+                {
+                    float2 c = float2(rect.x + cutouts0.x * 0.5, rect.y + cutouts0.y * 0.5);
+                    dCuts = min(dCuts, CutoutRoundedSdf(uv, c, cutouts0.xy, outerRadius));
+                }
+
+                if (cutouts0.z > 1e-5 && cutouts0.w > 1e-5)
+                {
+                    float2 c = float2(rect.z - cutouts0.z * 0.5, rect.y + cutouts0.w * 0.5);
+                    dCuts = min(dCuts, CutoutRoundedSdf(uv, c, cutouts0.zw, outerRadius));
+                }
+
+                if (cutouts1.x > 1e-5 && cutouts1.y > 1e-5)
+                {
+                    float2 c = float2(rect.x + cutouts1.x * 0.5, rect.w - cutouts1.y * 0.5);
+                    dCuts = min(dCuts, CutoutRoundedSdf(uv, c, cutouts1.xy, outerRadius));
+                }
+
+                if (cutouts1.z > 1e-5 && cutouts1.w > 1e-5)
+                {
+                    float2 c = float2(rect.z - cutouts1.z * 0.5, rect.w - cutouts1.w * 0.5);
+                    dCuts = min(dCuts, CutoutRoundedSdf(uv, c, cutouts1.zw, outerRadius));
+                }
+
+                // Smooth subtraction: clipped rect minus union of cutouts — no separate fillet discs.
+                float kBlend = max(outerRadius * 2.0, 1e-6);
+                float sdf = SmoothedMax(sdfOuter, -dCuts, kBlend);
 
                 return smoothstep(0.0, fwidth(sdf) * 1.5, -sdf);
             }
