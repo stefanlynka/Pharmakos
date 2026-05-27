@@ -30,11 +30,12 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _CornerRadius: 0.02
+    - _CornerRadius: 0.03
+    - _CutoutBlendScale: 1.2
     - _MinVividness: 0.5
     m_Colors:
     - _ArtClipRect: {r: 0, g: 0.03, b: 1, a: 0.89}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _CornerCutouts0: {r: 0.15, g: 0.11, b: 0.15, a: 0.11}
-    - _CornerCutouts1: {r: 0.17, g: 0.07, b: 0, a: 0}
+    - _CornerCutouts1: {r: 0.16, g: 0.07, b: 0, a: 0}
   m_BuildTextureStacks: []

@@ -7,6 +7,7 @@ Shader "Pharmakos/CardArtClip"
         _MinVividness ("Min Vividness", Range(0, 1)) = 0.1
         _ArtClipRect ("Art Clip Rect (minX, minY, maxX, maxY)", Vector) = (0, 0, 1, 1)
         _CornerRadius ("Corner Radius (UV space)", Range(0, 0.5)) = 0
+        _CutoutBlendScale ("Cutout Blend Scale", Range(0.5, 2.0)) = 1.2
         _CornerCutouts0 ("Corner Cutouts BL + BR (width, height each)", Vector) = (0, 0, 0, 0)
         _CornerCutouts1 ("Corner Cutouts TL + TR (width, height each)", Vector) = (0, 0, 0, 0)
     }
@@ -66,6 +67,7 @@ Shader "Pharmakos/CardArtClip"
                 half _MinVividness;
                 float4 _ArtClipRect;
                 half _CornerRadius;
+                half _CutoutBlendScale;
                 float4 _CornerCutouts0;
                 float4 _CornerCutouts1;
             CBUFFER_END
@@ -137,7 +139,7 @@ Shader "Pharmakos/CardArtClip"
                 }
 
                 // Smooth subtraction: clipped rect minus union of cutouts — no separate fillet discs.
-                float kBlend = max(outerRadius * 2.0, 1e-6);
+                float kBlend = max(outerRadius * _CutoutBlendScale, 1e-6);
                 float sdf = SmoothedMax(sdfOuter, -dCuts, kBlend);
 
                 return smoothstep(0.0, fwidth(sdf) * 1.5, -sdf);
