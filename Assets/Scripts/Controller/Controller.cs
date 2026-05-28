@@ -331,12 +331,16 @@ public class Controller : MonoBehaviour
         else
             ProgressionHandler.SetupNextCombatEnemy();
 
-        CurrentScreen = ScreenName.Game;
-        ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, true);
-        ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
-        ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
-
-        LoadLevel();
+        ScreenTransitionAnimation combatTransitionAnimation = new ScreenTransitionAnimation(null, () =>
+        {
+            OverworldMapController.HideMap();
+            CurrentScreen = ScreenName.Game;
+            ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, true);
+            ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
+            ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
+            LoadLevel();
+        }, () => { });
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(combatTransitionAnimation);
     }
 
     private void BeginTempleEncounter()
@@ -491,6 +495,7 @@ public class Controller : MonoBehaviour
     private void HideStarterBundles()
     {
         StarterBundleHandler.Hide();
+        ScreenHandler.Instance.HideScreen(ScreenName.StarterBundle, true);
         View.Instance.DarknessHandler.SetDarkness();
     }
     public void StartTestChamber()

@@ -12,10 +12,8 @@ public class View : MonoBehaviour
 
     public AnimationHandler AnimationHandler = new AnimationHandler();
 
-    public static GameObject FollowerCardPrefab;
-    public static GameObject SpellCardPrefab;
-    private static ObjectPool<GameObject> followerPool = new ObjectPool<GameObject>(CreateFollowerCard, OnCardGet, OnCardRelease, null, false);
-    private static ObjectPool<GameObject> spellPool = new ObjectPool<GameObject>(CreateCard, OnCardGet, OnCardRelease, null, false);
+    public static GameObject CardViewPrefab;
+    private static ObjectPool<GameObject> cardPool = new ObjectPool<GameObject>(CreateCardView, OnCardGet, OnCardRelease, null, false);
 
     public static GameObject OfferingPrefab;
     private static ObjectPool<GameObject> offeringPool = new ObjectPool<GameObject>(CreateOffering, OnOfferingGet, OnOfferingRelease, null, false);
@@ -83,8 +81,7 @@ public class View : MonoBehaviour
         Application.targetFrameRate = targetFrameRate;
 
 
-        FollowerCardPrefab = Resources.Load<GameObject>("Prefabs/Cards/Follower2");
-        SpellCardPrefab = Resources.Load<GameObject>("Prefabs/Cards/Spell2");
+        CardViewPrefab = Resources.Load<GameObject>("Prefabs/Cards/CardView");
         RitualAnimationPrefab = Resources.Load<GameObject>("Prefabs/Animations/MagicCircle2");
 
         OfferingPrefab = Resources.Load<GameObject>("Prefabs/Offerings/Offering");
@@ -173,27 +170,38 @@ public class View : MonoBehaviour
         {
             Debug.LogError("FUCK");
         }
-        GameObject newCard = null;
 
+        GameObject newCard = cardPool.Get();
+        if (newCard == null)
+        {
+            Debug.LogError("Failed to get card from pool for: " + card.GetType().Name);
+            return null;
+        }
+
+        ViewCard viewCard = GetViewCardComponent(newCard, card);
+        if (viewCard == null)
+        {
+            Debug.LogError("Failed to make ViewCard for: " + card.GetType().Name);
+            cardPool.Release(newCard);
+            return null;
+        }
+
+        viewCard.Load(card);
+        viewCard.SetHighlight(false);
+        if (addToCardMap) CardMap[card.ID] = viewCard;
+
+        return viewCard;
+    }
+
+    static ViewCard GetViewCardComponent(GameObject cardObject, Card card)
+    {
         if (card is Follower)
-        {
-            newCard = followerPool.Get();
-        }
-        else if (card is Spell)
-        {
-            newCard = spellPool.Get();
-        }
+            return cardObject.GetComponent<ViewFollower>();
 
-        if (newCard.TryGetComponent(out ViewCard viewCard))
-        {
-            viewCard.Load(card);
-            viewCard.SetHighlight(false);
-            if (addToCardMap) CardMap[card.ID] = viewCard;
+        if (card is Spell)
+            return cardObject.GetComponent<ViewSpell>();
 
-            return viewCard;
-        }
-
-        Debug.LogError("Failed to make ViewCard for: " + card.GetType().Name);
+        Debug.LogError("Unsupported card type for view: " + card.GetType().Name);
         return null;
     }
     public void RemoveCard(int id)
@@ -233,40 +241,17 @@ public class View : MonoBehaviour
             viewHandHandler.RemoveCard(viewCard);
         }
 
-        // If it's a Follower, remove it from the battlerow and release
-        ViewFollower viewFollower = viewCard as ViewFollower;
-        if (viewFollower != null)
-        {
-            if (viewBattleRow != null)
-            {
-                viewBattleRow.TryRemoveFollower(viewFollower);
-                //viewBattleRow.Followers.Remove(viewFollower);
-            }
+        if (viewCard is ViewFollower viewFollower && viewBattleRow != null)
+            viewBattleRow.TryRemoveFollower(viewFollower);
 
-            ReleaseCard(viewCard);
-        }
-        // Or if it's a Spell, just release it
-        ViewSpell viewSpell = viewCard as ViewSpell;
-        if (viewSpell != null)
-        {
-            ReleaseCard(viewCard);
-        }
-
+        ReleaseCard(viewCard);
         CardMap.Remove(cardID);
     }
 
     public void ReleaseCard(ViewCard viewCard)
     {
-        ViewFollower viewFollower = viewCard as ViewFollower;
-        if (viewFollower != null)
-        {
-            followerPool.Release(viewCard.gameObject);
-        }
-        ViewSpell viewSpell = viewCard as ViewSpell;
-        if (viewSpell != null)
-        {
-            spellPool.Release(viewCard.gameObject);
-        }
+        if (viewCard == null) return;
+        cardPool.Release(viewCard.gameObject);
     }
 
     public bool TryGetViewCard(Card card, out ViewCard viewCard)
@@ -298,28 +283,19 @@ public class View : MonoBehaviour
         return Player1.Player == player ? Player1 : Player2;
     }
 
-    private static GameObject CreateFollowerCard()
+    private static GameObject CreateCardView()
     {
-        if (FollowerCardPrefab != null)
-        {
-            GameObject card = Instantiate(FollowerCardPrefab);
-            return card;
-        }
-        Debug.LogError("FollowerCardPrefab was Null when trying to instantiate new Card");
-        return null;
-    }
-    private static GameObject CreateCard()
-    {
-        if (SpellCardPrefab != null)
-        {
-            GameObject card = Instantiate(SpellCardPrefab);
-            return card;
-        }
-        Debug.LogError("SpellCardPrefab was Null when trying to instantiate new Card");
+        if (CardViewPrefab != null)
+            return Instantiate(CardViewPrefab);
+
+        Debug.LogError("CardViewPrefab was Null when trying to instantiate new Card");
         return null;
     }
     private static void OnCardGet(GameObject cardObject)
     {
+        if (!cardObject.TryGetComponent(out CardViewRaycastTarget _))
+            cardObject.AddComponent<CardViewRaycastTarget>();
+
         cardObject.SetActive(true);
         cardObject.transform.SetParent(null);
         cardObject.transform.localScale = new Vector3(1, 1, 1);
@@ -328,13 +304,20 @@ public class View : MonoBehaviour
     {
         cardObject.transform.localScale = new Vector3(1, 1, 1);
         cardObject.transform.SetParent(null);
-        
-        // Clear the ViewCard's card reference to prevent cross-contamination
-        ViewCard viewCard = cardObject.GetComponent<ViewCard>();
-        if (viewCard != null)
-        {
-            viewCard.Card = null;
-        }
+
+        ViewFollower viewFollower = cardObject.GetComponent<ViewFollower>();
+        if (viewFollower != null)
+            viewFollower.ResetForPool();
+
+        ViewSpell viewSpell = cardObject.GetComponent<ViewSpell>();
+        if (viewSpell != null)
+            viewSpell.ResetForPool();
+
+        if (viewFollower != null)
+            viewFollower.ApplyCardMode(isFollower: true);
+
+        if (cardObject.TryGetComponent(out CardViewRaycastTarget raycastTarget))
+            raycastTarget.Clear();
 
         cardObject.SetActive(false);
     }
@@ -516,8 +499,7 @@ public class View : MonoBehaviour
     // Clear static variables before restarting game
     public void ClearPools()
     {
-        followerPool.Clear();
-        spellPool.Clear();
+        cardPool.Clear();
         offeringPool.Clear();
     }
 }

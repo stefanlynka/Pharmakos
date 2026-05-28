@@ -57,9 +57,13 @@ public class SelectionHandler
 
         CurrentHover = null;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // HOWTO Raycast
-        if (Physics.Raycast(ray, out RaycastHit hitData, 1000, targetLayer) && hitData.collider.gameObject.TryGetComponent(out ViewTarget viewTarget))
+        if (Physics.Raycast(ray, out RaycastHit hitData, 1000, targetLayer))
         {
-            CurrentHover = viewTarget;
+            GameObject hitObject = hitData.collider.gameObject;
+            if (hitObject.TryGetComponent(out CardViewRaycastTarget cardViewTarget))
+                CurrentHover = cardViewTarget;
+            else if (hitObject.TryGetComponent(out ViewTarget viewTarget))
+                CurrentHover = viewTarget;
         }
         //if (CurrentHover != null) Debug.LogError("CurrentHover: " +  CurrentHover.gameObject.name);
         Debug.DrawRay(ray.origin, ray.direction * 100, Color.red);
@@ -331,6 +335,9 @@ public class SelectionHandler
 
     public bool IsHoveringOverThisCard(ViewCard card)
     {
+        if (CurrentHover is CardViewRaycastTarget proxy)
+            return proxy.ActiveCard == card;
+
         return CurrentHover == card;
     }
 }

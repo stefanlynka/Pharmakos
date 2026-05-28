@@ -7,6 +7,27 @@ using UnityEngine.UI;
 
 public class ViewFollower : ViewCard
 {
+    [Header("Art Layout")]
+    [SerializeField] CardArtLayoutAsset descriptiveArtLayoutAsset;
+    [SerializeField] CardArtLayoutAsset statsArtLayoutAsset;
+    [SerializeField] CardArtLayoutAsset summaryArtLayoutAsset;
+    [SerializeField] CardArtLayoutAsset fullArtLayoutAsset;
+
+    public CardArtLayoutAsset DescriptiveArtLayoutAsset => descriptiveArtLayoutAsset;
+    public CardArtLayoutAsset StatsArtLayoutAsset => statsArtLayoutAsset;
+    public CardArtLayoutAsset SummaryArtLayoutAsset => summaryArtLayoutAsset;
+    public CardArtLayoutAsset FullArtLayoutAsset => fullArtLayoutAsset;
+
+    [Header("Card mode")]
+    public GameObject FollowerOnlyRoot;
+    public GameObject SpellOnlyRoot;
+
+    [Header("Card base")]
+    [SerializeField] Renderer cardBaseRenderer;
+    [SerializeField] Material followerMaterial;
+    [SerializeField] Material spellMaterial;
+
+    public TextMeshPro FollowerText;
     public TextMeshPro AttackText;
     public TextMeshPro HealthText;
 
@@ -23,16 +44,70 @@ public class ViewFollower : ViewCard
     public GameObject DamageIcon;
     public TextMeshPro DamageText;
 
+    public GameObject StatDivider;
+
     private int attack = 0;
     private int health = 0;
 
+    public void ApplyCardMode(bool isFollower)
+    {
+        if (FollowerOnlyRoot != null)
+            FollowerOnlyRoot.SetActive(isFollower);
+        if (SpellOnlyRoot != null)
+            SpellOnlyRoot.SetActive(!isFollower);
+
+        ApplyCardBaseMaterial(isFollower);
+    }
+
+    void ApplyCardBaseMaterial(bool isFollower)
+    {
+        if (cardBaseRenderer == null)
+            cardBaseRenderer = FindCardBaseRenderer();
+
+        Material material = isFollower ? followerMaterial : spellMaterial;
+        if (cardBaseRenderer == null || material == null)
+            return;
+
+        cardBaseRenderer.sharedMaterial = material;
+    }
+
+    Renderer FindCardBaseRenderer()
+    {
+        if (CardHolder == null)
+            return null;
+
+        Transform cardBasic = CardHolder.transform.Find("CardBasic");
+        return cardBasic != null ? cardBasic.GetComponentInChildren<Renderer>() : null;
+    }
+
+    public void ResetForPool()
+    {
+        if (Follower != null)
+        {
+            Follower.OnChange -= CardChanged;
+            Follower = null;
+        }
+
+        HideDamage();
+        if (FollowerText != null)
+            FollowerText.text = string.Empty;
+        Card = null;
+        Target = null;
+        OnClick = null;
+        SetHighlight(false);
+        inDescriptiveMode = false;
+    }
+
     public override void Load(Card cardData, Action<ViewTarget> onClick = null)
     {
-        base.Load(cardData, onClick);
+        ApplyCardMode(isFollower: true);
         Follower = cardData as Follower;
         if (Follower == null) return;
 
         Target = Follower;
+        base.Load(cardData, onClick);
+        if (FollowerText != null)
+            FollowerText.text = cardData.GetText();
         SetStats(Follower.BaseAttack, Follower.BaseHealth);
 
         SummaryIcon.sprite = CardHandler.GetSummaryIcon(Follower);
@@ -44,6 +119,8 @@ public class ViewFollower : ViewCard
 
         Follower.OnChange -= CardChanged;
         Follower.OnChange += CardChanged;
+
+        GetComponent<CardViewRaycastTarget>()?.SetActiveCard(this);
         //Follower.OnRemove -= CardRemoved;
         //Follower.OnRemove += CardRemoved;
         //attack = Follower.GetCurrentAttack();
@@ -91,6 +168,17 @@ public class ViewFollower : ViewCard
         health += change;
         HealthText.text = health.ToString();
     }
+
+    protected override CardArtLayoutAsset GetArtLayoutAsset(bool descriptiveMode)
+    {
+        if (descriptiveMode)
+            return descriptiveArtLayoutAsset;
+
+        return HasSummaryText() ? summaryArtLayoutAsset : statsArtLayoutAsset;
+    }
+
+    protected bool HasSummaryText() =>
+        Follower != null && Follower.Icon != IconType.None;
 
     public override void SetDescriptiveMode(bool value)
     {

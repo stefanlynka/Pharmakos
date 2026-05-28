@@ -5690,45 +5690,10 @@ MonoBehaviour:
   CardCollider: {fileID: 6499160316123061462}
   FullTextBox: {fileID: 5235752793117992243}
   NameTextTransform: {fileID: 385114746326128242}
-  artLayout:
-    MinX: 0
-    MinY: 0
-    MaxX: 1
-    MaxY: 1
-    CornerRadius: 0
-    BottomLeftCutout:
-      Width: 0
-      Height: 0
-    BottomRightCutout:
-      Width: 0
-      Height: 0
-    TopLeftCutout:
-      Width: 0
-      Height: 0
-    TopRightCutout:
-      Width: 0
-      Height: 0
-  defaultArtLayoutAsset: {fileID: 0}
-  useDescriptiveArtLayout: 0
-  descriptiveArtLayout:
-    MinX: 0
-    MinY: 0
-    MaxX: 1
-    MaxY: 0.55
-    CornerRadius: 0
-    BottomLeftCutout:
-      Width: 0
-      Height: 0
-    BottomRightCutout:
-      Width: 0
-      Height: 0
-    TopLeftCutout:
-      Width: 0
-      Height: 0
-    TopRightCutout:
-      Width: 0
-      Height: 0
-  descriptiveArtLayoutAsset: {fileID: 0}
+  descriptiveArtLayoutAsset: {fileID: 11400000, guid: 1a22a77c18de5ea42b35c81c57ea6c8b, type: 2}
+  statsArtLayoutAsset: {fileID: 11400000, guid: 3571f73df0afc814f9bafb6d0921d1ef, type: 2}
+  summaryArtLayoutAsset: {fileID: 11400000, guid: 5b0e67787cf501442aada7ae4054f029, type: 2}
+  fullArtLayoutAsset: {fileID: 11400000, guid: d02c692c261479d44ba4c926df3ba267, type: 2}
   AttackText: {fileID: 7469097152442852670}
   HealthText: {fileID: 9120081382031426005}
   SkullRenderer: {fileID: 5583048051161705465}

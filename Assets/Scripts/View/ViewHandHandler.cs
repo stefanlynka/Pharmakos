@@ -96,7 +96,7 @@ public class ViewHandHandler : MonoBehaviour
         {
             ViewCard viewCard = ViewCards[i];
             Vector3 newPos = new Vector3(CardWidth / 2 + CardWidth * i + spacing * i, CardY, CardZ - CardZOffset * i);
-            if (View.Instance.CurrentHover == viewCard && !selectingTarget)
+            if (View.Instance.SelectionHandler.IsHoveringOverThisCard(viewCard) && !selectingTarget)
             {
                 viewCard.transform.localScale = HighlightScaleVector;
 

@@ -34,6 +34,7 @@ public class PopupCapture : MonoBehaviour
             {
                 ViewFollower.gameObject.SetActive(true);
                 ViewFollower.Load(card);
+                ViewFollower.ShowMaxStats();
                 ViewFollower.SetDescriptiveMode(true);
                 if (ViewFollower.CardCollider != null)
                     ViewFollower.CardCollider.enabled = false;

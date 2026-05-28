@@ -14,12 +14,17 @@ public class PopupScreenHandler : MonoBehaviour
     public static PopupScreenHandler Instance { get; private set; }
 
     const string TextPopupResourcePath = "Prefabs/Popups/TextPopup";
+    const string ImagePopupResourcePath = "Prefabs/Popups/PopupImage";
+    const string PopupRenderTextureOnePath = "RenderTextures/Popup1";
+    const string PopupRenderTextureTwoPath = "RenderTextures/Popup2";
 
     [Tooltip("Parent for instantiated text popups. Defaults to this object's RectTransform.")]
     public RectTransform PopupContainer;
 
     [Tooltip("Optional template in the scene. If unset, loads from Resources or finds a child TextPopup.")]
     public TextPopup TextPopupTemplate;
+    [Tooltip("Optional template in the scene for image popups. If unset, loads from Resources.")]
+    public RectTransform PopupImageTemplate;
 
     public float ScreenMargin = 24f;
     public float TargetGap = 16f;
@@ -29,6 +34,14 @@ public class PopupScreenHandler : MonoBehaviour
 
     TextPopup _activePopup;
     Transform _hoverAnchor;
+    RectTransform _imagePopupOne;
+    RectTransform _imagePopupTwo;
+    RawImage _imageRawOne;
+    RawImage _imageRawTwo;
+    Transform _imageAnchorOne;
+    Transform _imageAnchorTwo;
+    RenderTexture _popupTextureOne;
+    RenderTexture _popupTextureTwo;
 
     void Awake()
     {
@@ -48,6 +61,9 @@ public class PopupScreenHandler : MonoBehaviour
 
         if (TextPopupTemplate != null)
             TextPopupTemplate.gameObject.SetActive(false);
+
+        if (PopupImageTemplate != null)
+            PopupImageTemplate.gameObject.SetActive(false);
     }
 
     void OnDestroy()
@@ -98,6 +114,69 @@ public class PopupScreenHandler : MonoBehaviour
             _activePopup.gameObject.SetActive(false);
     }
 
+    public void ShowCardPopup(Card card, Transform anchor, PopupPosition position, PopupSlot slot = PopupSlot.One, Camera worldCamera = null)
+    {
+        if (card == null || anchor == null || PopupHandler.Instance == null)
+            return;
+
+        PopupHandler.ShowCard(slot, card);
+        ShowImagePopup(slot, anchor, position, worldCamera);
+    }
+
+    public void ShowRitualPopup(Ritual ritual, Transform anchor, PopupPosition position, PopupSlot slot = PopupSlot.One, Camera worldCamera = null)
+    {
+        if (ritual == null || anchor == null || PopupHandler.Instance == null)
+            return;
+
+        PopupHandler.ShowRitual(slot, ritual);
+        ShowImagePopup(slot, anchor, position, worldCamera);
+    }
+
+    public void ShowTrinketPopup(Trinket trinket, Transform anchor, PopupPosition position, PopupSlot slot = PopupSlot.One, Camera worldCamera = null)
+    {
+        if (trinket == null || anchor == null || PopupHandler.Instance == null)
+            return;
+
+        PopupHandler.ShowTrinket(slot, trinket);
+        ShowImagePopup(slot, anchor, position, worldCamera);
+    }
+
+    public void ShowBuffPopup(StaticPlayerEffect buff, Transform anchor, PopupPosition position, PopupSlot slot = PopupSlot.One, int amount = 1, Camera worldCamera = null)
+    {
+        if (buff == null || anchor == null || PopupHandler.Instance == null)
+            return;
+
+        PopupHandler.ShowBuff(slot, buff, amount);
+        ShowImagePopup(slot, anchor, position, worldCamera);
+    }
+
+    public void ShowHeartstringPopup(Transform anchor, PopupPosition position, PopupSlot slot = PopupSlot.One, Camera worldCamera = null)
+    {
+        if (anchor == null || PopupHandler.Instance == null)
+            return;
+
+        PopupHandler.ShowHeartstring(slot);
+        ShowImagePopup(slot, anchor, position, worldCamera);
+    }
+
+    public void HideImagePopup(PopupSlot slot)
+    {
+        SetImageAnchor(slot, null);
+        RectTransform popup = GetImagePopup(slot);
+        if (popup != null)
+            popup.gameObject.SetActive(false);
+
+        PopupHandler.Clear(slot);
+    }
+
+    public void HideImagePopup(Transform anchor)
+    {
+        if (_imageAnchorOne == anchor)
+            HideImagePopup(PopupSlot.One);
+        if (_imageAnchorTwo == anchor)
+            HideImagePopup(PopupSlot.Two);
+    }
+
     TextPopup GetOrCreatePopup()
     {
         if (_activePopup != null)
@@ -118,6 +197,95 @@ public class PopupScreenHandler : MonoBehaviour
         }
 
         return _activePopup;
+    }
+
+    void ShowImagePopup(PopupSlot slot, Transform anchor, PopupPosition position, Camera worldCamera)
+    {
+        RectTransform popup = GetOrCreateImagePopup(slot);
+        if (popup == null)
+            return;
+
+        popup.gameObject.SetActive(true);
+        SetImageAnchor(slot, anchor);
+        PositionNearTarget(popup, anchor, position, worldCamera);
+    }
+
+    RectTransform GetOrCreateImagePopup(PopupSlot slot)
+    {
+        RectTransform current = GetImagePopup(slot);
+        if (current != null)
+            return current;
+
+        RectTransform template = PopupImageTemplate;
+        if (template == null)
+        {
+            GameObject prefab = Resources.Load<GameObject>(ImagePopupResourcePath);
+            if (prefab == null)
+            {
+                Debug.LogError($"PopupScreenHandler: could not load PopupImage at Resources/{ImagePopupResourcePath}");
+                return null;
+            }
+
+            GameObject instanceFromPrefab = Instantiate(prefab, PopupContainer);
+            current = instanceFromPrefab.GetComponent<RectTransform>();
+        }
+        else
+            current = Instantiate(template, PopupContainer);
+
+        if (current == null)
+            return null;
+
+        RawImage rawImage = current.GetComponentInChildren<RawImage>(true);
+        if (rawImage == null)
+        {
+            Debug.LogError("PopupScreenHandler: PopupImage prefab is missing a RawImage.");
+            Destroy(current.gameObject);
+            return null;
+        }
+
+        rawImage.texture = GetPopupTexture(slot);
+        rawImage.raycastTarget = false;
+        current.gameObject.SetActive(false);
+
+        if (slot == PopupSlot.One)
+        {
+            _imagePopupOne = current;
+            _imageRawOne = rawImage;
+        }
+        else
+        {
+            _imagePopupTwo = current;
+            _imageRawTwo = rawImage;
+        }
+
+        return current;
+    }
+
+    RectTransform GetImagePopup(PopupSlot slot)
+    {
+        return slot == PopupSlot.One ? _imagePopupOne : _imagePopupTwo;
+    }
+
+    void SetImageAnchor(PopupSlot slot, Transform anchor)
+    {
+        if (slot == PopupSlot.One)
+            _imageAnchorOne = anchor;
+        else
+            _imageAnchorTwo = anchor;
+    }
+
+    Texture GetPopupTexture(PopupSlot slot)
+    {
+        if (slot == PopupSlot.One)
+        {
+            if (_popupTextureOne == null)
+                _popupTextureOne = Resources.Load<RenderTexture>(PopupRenderTextureOnePath);
+            return _popupTextureOne;
+        }
+
+        if (_popupTextureTwo == null)
+            _popupTextureTwo = Resources.Load<RenderTexture>(PopupRenderTextureTwoPath);
+        return _popupTextureTwo;
     }
 
     void PositionNearTarget(RectTransform popupRect, Transform anchor, PopupPosition position, Camera worldCamera)

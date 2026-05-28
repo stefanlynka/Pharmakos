@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class ViewBattleRow : MonoBehaviour
 {
@@ -17,9 +15,6 @@ public class ViewBattleRow : MonoBehaviour
 
     public Transform UnitHolderTransform;
 
-    public ViewFollower PopupCard;
-    Vector3 PopupOffset = new Vector3(10.5f, 0, -2);
-
     public float MaxSpacing = 1;
     public float CardWidth = 0;
     public float HandWidth = 0;
@@ -31,10 +26,6 @@ public class ViewBattleRow : MonoBehaviour
     public void Setup(BattleRow battleRow)
     {
         BattleRow = battleRow;
-
-        PopupCard.SetDescriptiveMode(true);
-        PopupCard.transform.localScale = ViewHandHandler.HighlightScaleVector;
-        PopupCard.gameObject.SetActive(false);
     }
 
     public void Clear()
@@ -47,7 +38,7 @@ public class ViewBattleRow : MonoBehaviour
 
         Followers.Clear();
 
-        PopupCard.gameObject.SetActive(false);
+        PopupScreenHandler.Instance?.HideImagePopup(GetPopupSlot());
     }
 
 
@@ -77,7 +68,7 @@ public class ViewBattleRow : MonoBehaviour
     {
         if (BattleRow.Owner == null) return;
 
-        PopupCard.gameObject.SetActive(false); // Hide popup by default
+        PopupScreenHandler.Instance?.HideImagePopup(GetPopupSlot()); // Hide popup by default
 
         int cardCount = Followers.Count;
         if (cardCount == 0) return;
@@ -115,11 +106,11 @@ public class ViewBattleRow : MonoBehaviour
             if (!View.Instance.SelectionHandler.IsHoldingFollower() &&
                 View.Instance.SelectionHandler.IsHoveringOverThisCard(viewFollower))
             {
-                PopupCard.gameObject.SetActive(true);
-                PopupCard.Load(viewFollower.Follower);
-                PopupCard.ShowMaxStats();
-                PopupCard.SetDescriptiveMode(true);
-                PopupCard.transform.position = viewFollower.transform.position + PopupOffset;
+                PopupScreenHandler.Instance?.ShowCardPopup(
+                    viewFollower.Follower,
+                    viewFollower.transform,
+                    PopupPosition.Right,
+                    GetPopupSlot());
             }
         }
         
@@ -175,6 +166,11 @@ public class ViewBattleRow : MonoBehaviour
             }
         }
         return false;
+    }
+
+    PopupSlot GetPopupSlot()
+    {
+        return isHuman ? PopupSlot.One : PopupSlot.Two;
     }
 
     public int GetPlacementIndex()
