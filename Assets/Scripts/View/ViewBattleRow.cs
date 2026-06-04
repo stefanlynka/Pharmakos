@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ViewBattleRow : MonoBehaviour
 {
-    public MeshRenderer Highlight;
+    public SpriteRenderer Highlight;
     public bool isHuman = false;
 
     private LayerMask zoneLayer = 128; // only layer 7
@@ -63,7 +63,58 @@ public class ViewBattleRow : MonoBehaviour
         RefreshPositions();
     }
 
-    List<float> xPositions = new List<float>();
+    List<float> slotCenterLocalX = new List<float>();
+
+    float GetTotalWidth(int cardCount)
+    {
+        if (cardCount <= 0) return 0f;
+        return (cardCount * CardWidth) + ((cardCount - 1) * MaxSpacing);
+    }
+
+    Camera GetRowCamera()
+    {
+        if (ScreenHandler.Instance != null
+            && ScreenHandler.Instance.TryGetScreen(ScreenName.Game, out Screen gameScreen)
+            && gameScreen.Camera != null
+            && gameScreen.Camera.isActiveAndEnabled)
+            return gameScreen.Camera;
+
+        return Camera.main;
+    }
+
+    bool TryGetMouseLocalXOnUnitHolder(out float localX)
+    {
+        localX = 0f;
+        Camera camera = GetRowCamera();
+        if (camera == null || UnitHolderTransform == null)
+            return false;
+
+        Vector3 planePoint = UnitHolderTransform.TransformPoint(new Vector3(0f, CardY, CardZ));
+        Vector3 planeNormal = UnitHolderTransform.forward;
+        if (Vector3.Dot(planeNormal, camera.transform.position - planePoint) > 0f)
+            planeNormal = -planeNormal;
+
+        Plane dragPlane = new Plane(planeNormal, planePoint);
+        Ray ray = camera.ScreenPointToRay(Input.mousePosition);
+        if (!dragPlane.Raycast(ray, out float distance))
+            return false;
+
+        localX = UnitHolderTransform.InverseTransformPoint(ray.GetPoint(distance)).x;
+        return true;
+    }
+
+    int GetInsertionIndexFromMouseLocalX(float mouseLocalX)
+    {
+        int index = 0;
+        for (int i = 0; i < slotCenterLocalX.Count; i++)
+        {
+            if (mouseLocalX < slotCenterLocalX[i])
+                break;
+            index++;
+        }
+        return index;
+    }
+
     private void RefreshPositions()
     {
         if (BattleRow.Owner == null) return;
@@ -73,11 +124,10 @@ public class ViewBattleRow : MonoBehaviour
         int cardCount = Followers.Count;
         if (cardCount == 0) return;
 
+        slotCenterLocalX.Clear();
 
-        xPositions.Clear();
-
-        float totalWidth = (cardCount * CardWidth) + (cardCount - 1 * MaxSpacing);
-        float X = CardWidth/2 - totalWidth/2;
+        float totalWidth = GetTotalWidth(cardCount);
+        float X = CardWidth / 2 - totalWidth / 2;
         for (int i = 0; i < Followers.Count; i++)
         {
             ViewFollower viewFollower = Followers[i];
@@ -85,7 +135,9 @@ public class ViewBattleRow : MonoBehaviour
             Vector3 newPos = new Vector3(X, CardY, CardZ - CardZOffset * i);
 
             viewFollower.transform.localPosition = newPos;
-            xPositions.Add(viewFollower.transform.position.x);
+            viewFollower.transform.localRotation = Quaternion.identity;
+            View.ApplyCombatCardScale(viewFollower.transform);
+            slotCenterLocalX.Add(newPos.x);
 
             X += CardWidth + MaxSpacing;
 
@@ -120,36 +172,25 @@ public class ViewBattleRow : MonoBehaviour
             return;
         }
 
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        if (!TryGetMouseLocalXOnUnitHolder(out float mouseLocalX))
+            return;
 
-        int heldCardIndex = 0;
+        int heldCardIndex = GetInsertionIndexFromMouseLocalX(mouseLocalX);
 
-        for (int i = 0; i < xPositions.Count; i++)
-        {
-            if (mousePosition.x < xPositions[i])
-            {
-                break;
-            }
-            else
-            {
-                heldCardIndex++;
-            }
-        }
-
-        // Now we make room for the held card
-        cardCount++; 
-
-        totalWidth = (cardCount * CardWidth) + (cardCount - 1 * MaxSpacing);
+        cardCount++;
+        totalWidth = GetTotalWidth(cardCount);
         X = CardWidth / 2 - totalWidth / 2;
         for (int i = 0; i < Followers.Count; i++)
         {
-            if (i == heldCardIndex) X += CardWidth + MaxSpacing; // Make space for held card
+            if (i == heldCardIndex)
+                X += CardWidth + MaxSpacing;
 
             ViewFollower viewFollower = Followers[i];
             Vector3 newPos = new Vector3(X, CardY, CardZ - CardZOffset * i);
 
             viewFollower.transform.localPosition = newPos;
-            xPositions.Add(viewFollower.transform.position.x);
+            viewFollower.transform.localRotation = Quaternion.identity;
+            View.ApplyCombatCardScale(viewFollower.transform);
 
             X += CardWidth + MaxSpacing;
         }
@@ -157,7 +198,11 @@ public class ViewBattleRow : MonoBehaviour
 
     public bool IsMouseOverThis()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Camera camera = GetRowCamera();
+        if (camera == null)
+            return false;
+
+        Ray ray = camera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hitData, 1000, zoneLayer))
         {
             if (hitData.collider.gameObject == gameObject)
@@ -178,38 +223,21 @@ public class ViewBattleRow : MonoBehaviour
         int cardCount = Followers.Count;
         if (cardCount == 0) return 0;
 
-        xPositions.Clear();
+        slotCenterLocalX.Clear();
 
-        float totalWidth = (cardCount * CardWidth) + (cardCount - 1 * MaxSpacing);
+        float totalWidth = GetTotalWidth(cardCount);
         float X = CardWidth / 2 - totalWidth / 2;
         for (int i = 0; i < Followers.Count; i++)
         {
-            ViewFollower viewFollower = Followers[i];
             Vector3 newPos = new Vector3(X, CardY, CardZ - CardZOffset * i);
-
-            viewFollower.transform.localPosition = newPos;
-            xPositions.Add(viewFollower.transform.position.x);
-
+            slotCenterLocalX.Add(newPos.x);
             X += CardWidth + MaxSpacing;
         }
 
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        if (!TryGetMouseLocalXOnUnitHolder(out float mouseLocalX))
+            return Followers.Count;
 
-        int heldCardIndex = 0;
-
-        for (int i = 0; i < xPositions.Count; i++)
-        {
-            if (mousePosition.x < xPositions[i])
-            {
-                break;
-            }
-            else
-            {
-                heldCardIndex++;
-            }
-        }
-
-        return heldCardIndex;
+        return GetInsertionIndexFromMouseLocalX(mouseLocalX);
     }
 
     public void AddFollower(ViewFollower viewFollower, int index)
@@ -220,6 +248,8 @@ public class ViewBattleRow : MonoBehaviour
 
         viewFollower.OnClick = FollowerInPlayClicked;
         viewFollower.transform.SetParent(UnitHolderTransform);
+        viewFollower.transform.localRotation = Quaternion.identity;
+        View.ApplyCombatCardScale(viewFollower.transform);
         Followers.Insert(index, viewFollower);
         
         // Hide ViewOfferingCost when follower enters battle row
@@ -272,15 +302,12 @@ public class ViewBattleRow : MonoBehaviour
         Vector3 position = transform.position;
         int cardCount = Followers.Count + 1;
 
-        float totalWidth = (cardCount * CardWidth) + (cardCount - 1 * MaxSpacing);
+        float totalWidth = GetTotalWidth(cardCount);
         float X = CardWidth / 2 - totalWidth / 2;
         for (int i = 0; i < cardCount; i++)
         {
             if (i == index)
-            {
-                //X += CardWidth + MaxSpacing; // Make space for held card
                 return position + new Vector3(X, CardY, CardZ - CardZOffset * i);
-            }
 
             X += CardWidth + MaxSpacing;
         }

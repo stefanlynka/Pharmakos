@@ -82,6 +82,8 @@ public class ViewFollower : ViewCard
 
     public void ResetForPool()
     {
+        CleanupNameText();
+
         if (Follower != null)
         {
             Follower.OnChange -= CardChanged;
@@ -96,6 +98,8 @@ public class ViewFollower : ViewCard
         OnClick = null;
         SetHighlight(false);
         inDescriptiveMode = false;
+        if (StatDivider != null)
+            StatDivider.SetActive(false);
     }
 
     public override void Load(Card cardData, Action<ViewTarget> onClick = null)
@@ -180,6 +184,14 @@ public class ViewFollower : ViewCard
     protected bool HasSummaryText() =>
         Follower != null && Follower.Icon != IconType.None;
 
+    void UpdateStatDividerVisibility()
+    {
+        if (StatDivider == null)
+            return;
+
+        StatDivider.SetActive(IsInDescriptiveMode || HasSummaryText());
+    }
+
     public override void SetDescriptiveMode(bool value)
     {
         if (Card == null) return;
@@ -187,6 +199,7 @@ public class ViewFollower : ViewCard
         ReminderTextBox.SetActive(Card.Text != string.Empty);
 
         base.SetDescriptiveMode(value);
+        UpdateStatDividerVisibility();
     }
 
     public void ShowDamage(int damage)

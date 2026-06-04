@@ -10,6 +10,7 @@ public class ViewCardScroller : MonoBehaviour
     public float CardWidth = 0;
     public float CardHeight = 0;
     public float CardMargin = 0;
+    public float CardScale = 1f;
 
     private List<Card> cards = new List<Card>();
     private List<ViewCard> viewCards = new List<ViewCard>();
@@ -41,7 +42,11 @@ public class ViewCardScroller : MonoBehaviour
         foreach (Card card in cards)
         {
             ViewCard viewCard = View.Instance.MakeNewViewCard(card, false);
-            //viewCard.OnClick = CardClicked;
+            if (viewCard == null)
+                continue;
+
+            // Hide until layout and descriptive mode are applied (avoids one-frame flicker).
+            viewCard.transform.localScale = Vector3.zero;
             viewCard.transform.parent = this.transform;
             viewCard.SetHighlight(false);
             viewCard.SetDescriptiveMode(true);
@@ -49,12 +54,23 @@ public class ViewCardScroller : MonoBehaviour
         }
 
         selectedCards = 0;
+        RepositionCards();
+
+        foreach (ViewCard viewCard in viewCards)
+            ApplyCardScale(viewCard);
+    }
+
+    void ApplyCardScale(ViewCard viewCard)
+    {
+        float scale = CardScale;
+        viewCard.transform.localScale = new Vector3(scale, scale, 1f);
     }
 
     public void ClearViewCards()
     {
         foreach (ViewCard viewCard in viewCards)
         {
+            viewCard.transform.localScale = Vector3.zero;
             View.Instance.ReleaseCard(viewCard);
         }
         viewCards.Clear();

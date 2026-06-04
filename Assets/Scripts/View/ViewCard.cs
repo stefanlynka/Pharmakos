@@ -75,7 +75,7 @@ public class ViewCard : ViewTarget
     public virtual void Load(Card cardData, Action<ViewTarget> onClick = null)
     {
         EnsureHighlightGlowSetup();
-        EnsureNameTextReferences();
+        CleanupNameText();
         Card = cardData;
         ViewOfferingCost.Load(Card.GetCosts());
 
@@ -88,6 +88,7 @@ public class ViewCard : ViewTarget
         OnClick = onClick;
 
         CardCollider.enabled = true;
+        GetComponent<CardViewRaycastTarget>()?.SetActiveCard(this);
 
         SetDescriptiveMode(false);
     }
@@ -195,6 +196,35 @@ public class ViewCard : ViewTarget
 
         if (NameTextWithoutCost == null)
             NameTextWithoutCost = transform.Find("TextWithoutCost")?.GetComponent<TextMeshPro>();
+    }
+
+    /// <summary>
+    /// Resets name labels to the default pooled/creation state so recycled cards
+    /// do not keep battle-row visibility or stale text from a previous use.
+    /// </summary>
+    protected void CleanupNameText()
+    {
+        EnsureNameTextReferences();
+
+        if (NameText != null)
+        {
+            NameText.text = string.Empty;
+            NameText.gameObject.SetActive(true);
+        }
+
+        if (NameTextWithoutCost != null)
+        {
+            NameTextWithoutCost.text = string.Empty;
+            NameTextWithoutCost.gameObject.SetActive(false);
+        }
+
+        isCostShown = true;
+
+        if (NameTextTransform != null)
+            NameTextTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 7.4f);
+
+        if (ViewOfferingCost != null)
+            ViewOfferingCost.gameObject.SetActive(true);
     }
 
     void Awake()

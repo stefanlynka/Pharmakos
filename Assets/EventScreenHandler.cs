@@ -72,6 +72,15 @@ public class EventScreenHandler : MonoBehaviour
         yield return TypeTextRoutine(fullText);
     }
 
+    public void CancelEventBodyTyping()
+    {
+        if (_typewriterRoutine == null)
+            return;
+
+        StopCoroutine(_typewriterRoutine);
+        _typewriterRoutine = null;
+    }
+
     public void HideAllOptions()
     {
         HideOutcomePreview();

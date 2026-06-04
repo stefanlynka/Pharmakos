@@ -17,6 +17,7 @@ public class ViewSpell : ViewCard
 
     public void ResetForPool()
     {
+        CleanupNameText();
         EnterCardMode();
         if (SpellText != null)
             SpellText.text = string.Empty;

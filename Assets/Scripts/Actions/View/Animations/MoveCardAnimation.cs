@@ -21,8 +21,13 @@ public class MoveCardAnimation : AnimationAction
 
     private float duration = 0.5f; // 0.25f
 
-    private float startScale = 1;
-    private float endScale = 1;
+    private bool useCurrentScale = false;
+    private float startScale = 1.2f;
+    private float endScale = 1.2f;
+
+    private bool useCurrentRotation = false;
+    private Vector3 startRotation = new Vector3(0, 0, 0);
+    private Vector3 endRotation = new Vector3(0, 0, 0);
 
     private bool forceDescriptive = false;
 
@@ -46,6 +51,16 @@ public class MoveCardAnimation : AnimationAction
         {
             // Make a new ViewCard
             viewCard = View.Instance.MakeNewViewCard(card);
+
+            if (useCurrentScale)
+            {
+                startScale = viewCard.transform.localScale.x;
+            }
+
+            if (useCurrentRotation)
+            {
+                startRotation = viewCard.transform.eulerAngles;
+            }
 
             // Put it roughly where it should have been
             switch (previousZone)
@@ -130,7 +145,7 @@ public class MoveCardAnimation : AnimationAction
                 }
                 break;
             case GameZone.PlayZone:
-                endPos = new Vector3(-37, 3, 20); // z:10
+                endPos = new Vector3(-27, 4.4f, 20);
                 break;
             default:
                 endPos = new Vector3(50, 0, 10);
@@ -161,10 +176,17 @@ public class MoveCardAnimation : AnimationAction
     }
 
 
-    public void SetScale(float startScale, float endScale)
+    public void SetScale(float startScale, float endScale, bool useCurrentScale = false)
     {
+        this.useCurrentScale = useCurrentScale;
         this.startScale = startScale;
         this.endScale = endScale;
+    }
+    public void SetRotation(Vector3 startRotation, Vector3 endRotation, bool useCurrentRotation = false)
+    {
+        this.useCurrentRotation = useCurrentRotation;
+        this.startRotation = startRotation;
+        this.endRotation = endRotation;
     }
     public void ForceDescriptive(bool value)
     {
@@ -176,6 +198,7 @@ public class MoveCardAnimation : AnimationAction
         viewCard.transform.position = startPos + (endPos - startPos) * progress;
         float newScale = startScale + (endScale - startScale) * progress;
         viewCard.transform.localScale = new Vector3(newScale, newScale, newScale);
+        viewCard.transform.eulerAngles = startRotation + (endRotation - startRotation) * progress;
     }
 
     private void Complete()
@@ -186,6 +209,7 @@ public class MoveCardAnimation : AnimationAction
                 if (viewCard is ViewFollower viewFollower)
                 {
                     View.Instance.MoveFollowerToBattleRow(viewFollower.Follower, newIndex);
+                    View.ApplyCombatCardScale(viewCard.transform);
                     View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Crop);
                 }
                 break;
@@ -198,6 +222,7 @@ public class MoveCardAnimation : AnimationAction
                 {
                     View.Instance.Player2.HandHandler.MoveCardToHand(viewCard);
                 }
+                View.ApplyCombatCardScale(viewCard.transform);
                 break;
             case GameZone.Discard:
                 View.Instance.DiscardCard(viewCard.Card);

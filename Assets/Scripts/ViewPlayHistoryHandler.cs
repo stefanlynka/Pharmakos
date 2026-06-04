@@ -9,8 +9,7 @@ public class ViewPlayHistoryHandler : MonoBehaviour
     public GameObject ContentHolder;
     public static GameObject PlayHistoryItemPrefab;
     private GameObject PortraitComponentPrefab;
-    private GameObject FollowerComponentPrefab;
-    private GameObject SpellComponentPrefab;
+    private GameObject CardComponentPrefab;
     private GameObject TargetComponentPrefab;
     private GameObject AttackComponentPrefab;
     private GameObject RitualComponentPrefab;
@@ -25,8 +24,7 @@ public class ViewPlayHistoryHandler : MonoBehaviour
     {
         PlayHistoryItemPrefab = Resources.Load<GameObject>("Prefabs/UI/PlayHistory/UICardHolder");
         PortraitComponentPrefab = Resources.Load<GameObject>("Prefabs/View/ViewPlayerPortraitBig"); 
-        FollowerComponentPrefab = Resources.Load<GameObject>("Prefabs/Cards/Follower2Big");
-        SpellComponentPrefab = Resources.Load<GameObject>("Prefabs/Cards/Spell2Big");
+        CardComponentPrefab = Resources.Load<GameObject>("Prefabs/Cards/CardView");
         TargetComponentPrefab = Resources.Load<GameObject>("Prefabs/UI/PlayHistory/Components/TargetComponent");
         AttackComponentPrefab = Resources.Load<GameObject>("Prefabs/UI/PlayHistory/Components/AttackComponent");
         RitualComponentPrefab = Resources.Load<GameObject>("Prefabs/View/ViewRitual");
@@ -73,9 +71,8 @@ public class ViewPlayHistoryHandler : MonoBehaviour
             case PlayHistoryComponentType.Player:
                 return PortraitComponentPrefab;
             case PlayHistoryComponentType.Follower:
-                return FollowerComponentPrefab;
             case PlayHistoryComponentType.Spell:
-                return SpellComponentPrefab;
+                return CardComponentPrefab;
             case PlayHistoryComponentType.Target:
                 return TargetComponentPrefab;
             case PlayHistoryComponentType.Attack:
@@ -83,6 +80,17 @@ public class ViewPlayHistoryHandler : MonoBehaviour
             case PlayHistoryComponentType.Ritual:
                 return RitualComponentPrefab;
         }
+        return null;
+    }
+
+    public static ViewCard GetViewCardComponent(GameObject cardObject, Card card)
+    {
+        if (card is Follower)
+            return cardObject.GetComponent<ViewFollower>();
+
+        if (card is Spell)
+            return cardObject.GetComponent<ViewSpell>();
+
         return null;
     }
 
@@ -108,8 +116,9 @@ public class ViewPlayHistoryHandler : MonoBehaviour
         item.transform.localScale = new Vector3(1, 1, 1);
         item.transform.SetParent(null);
 
-        // Clear the ViewCard's card reference to prevent cross-contamination
         ViewPlayHistoryItem viewItem = item.GetComponent<ViewPlayHistoryItem>();
+        if (viewItem != null)
+            viewItem.Clear();
 
         item.SetActive(false);
     }

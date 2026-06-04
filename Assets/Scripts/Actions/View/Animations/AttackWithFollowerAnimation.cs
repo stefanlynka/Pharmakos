@@ -55,10 +55,13 @@ public class AttackWithFollowerAnimation : AnimationAction
             targetPosition = targetViewPlayer.transform.position;
         }
 
-        float distanceBetweenTargets = Vector2.Distance(startPosition, targetPosition);
+        Vector2 startXY = startPosition;
+        Vector2 targetXY = targetPosition;
+        float distanceBetweenTargets = Vector2.Distance(startXY, targetXY);
         float distanceToTargetPercent = distanceBetweenTargets != 0 ? (distanceBetweenTargets - cardSize) / distanceBetweenTargets : 0;
 
-        endPosition = Vector2.Lerp(startPosition, targetPosition, distanceToTargetPercent);
+        Vector2 endXY = Vector2.Lerp(startXY, targetXY, distanceToTargetPercent);
+        endPosition = new Vector3(endXY.x, endXY.y, startPosition.z);
 
         attackMoveDuration = View.Instance.IsHumansTurn ? 0.18f : 0.25f;
         Sequence attackSequence = new Sequence();
@@ -73,9 +76,16 @@ public class AttackWithFollowerAnimation : AnimationAction
     }
 
     private bool hasPlayedSound = false;
+    private void SetAttackerPosition(float progress)
+    {
+        Vector3 pos = Vector3.Lerp(startPosition, endPosition, progress);
+        pos.z = startPosition.z;
+        attackerViewFollower.transform.position = pos;
+    }
+
     private void MoveAttackerForward(float progress)
     {
-        attackerViewFollower.transform.position = Vector2.Lerp(startPosition, endPosition, progress);
+        SetAttackerPosition(progress);
         if (!hasPlayedSound)
         {
             hasPlayedSound = true;
@@ -85,7 +95,7 @@ public class AttackWithFollowerAnimation : AnimationAction
     }
     private void MoveAttacker(float progress)
     {
-        attackerViewFollower.transform.position = Vector2.Lerp(startPosition, endPosition, progress);
+        SetAttackerPosition(progress);
     }
 
     protected override void Log()

@@ -63,6 +63,7 @@ public class MenuSelectionHandler : MonoBehaviour
     {
         if (!IsActive) return;
         if (Controller.Instance != null && Controller.Instance.GamePaused) return;
+        if (GetSelectionCamera() == null) return;
 
         UpdateTargetUnderMouse();
         HandleMouseInputs();
@@ -78,11 +79,18 @@ public class MenuSelectionHandler : MonoBehaviour
         Physics.SyncTransforms();
 
         Ray ray = camera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hitData, 1000f, targetLayer)
-            && hitData.collider.gameObject.TryGetComponent(out ViewTarget viewTarget))
-        {
+        if (!Physics.Raycast(ray, out RaycastHit hitData, 1000f, targetLayer))
+            return;
+
+        GameObject hitObject = hitData.collider.gameObject;
+        if (hitObject.TryGetComponent(out CardViewRaycastTarget cardViewTarget))
+            CurrentHover = cardViewTarget;
+        else if (hitObject.TryGetComponent(out ViewTarget viewTarget))
             CurrentHover = viewTarget;
-        }
+        else if (hitObject.GetComponentInParent<CardViewRaycastTarget>() is CardViewRaycastTarget parentProxy)
+            CurrentHover = parentProxy;
+        else if (hitObject.GetComponentInParent<ViewTarget>() is ViewTarget parentTarget)
+            CurrentHover = parentTarget;
     }
 
     void HandleMouseInputs()
@@ -97,9 +105,13 @@ public class MenuSelectionHandler : MonoBehaviour
     /// <summary>Camera used for menu screen-point rays; falls back to <see cref="Camera.main"/>.</summary>
     public Camera GetSelectionCamera()
     {
-        if (_selectionCamera != null && _selectionCamera.enabled)
+        if (_selectionCamera != null && _selectionCamera.isActiveAndEnabled)
             return _selectionCamera;
 
-        return Camera.main;
+        Camera main = Camera.main;
+        if (main != null && main.isActiveAndEnabled)
+            return main;
+
+        return null;
     }
 }

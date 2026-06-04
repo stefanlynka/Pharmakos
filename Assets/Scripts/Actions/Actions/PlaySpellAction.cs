@@ -39,7 +39,8 @@ public class PlaySpellAction : GameAction
     {
         float duration = Owner.IsHuman ? 0.25f : 0.5f;
         MoveCardAnimation moveCardAnimation = new MoveCardAnimation(this, Spell, Owner, GameZone.Hand, Owner, GameZone.PlayZone, duration);
-        moveCardAnimation.SetScale(1, 2);
+        moveCardAnimation.SetScale(1, 2, true);
+        moveCardAnimation.SetRotation(new Vector3(0, 0, 0), new Vector3(0, 0, 0), true);
         moveCardAnimation.ForceDescriptive(true);
 
         showSpellDuration = Owner.IsHuman ? 0.4f : 0.8f;

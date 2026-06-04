@@ -16,7 +16,7 @@ public class ViewHandHandler : MonoBehaviour
     public float CardZ = 0;
     public float CardZOffset = 1;
 
-    public Vector3 Scale = Vector3.one;
+    public Vector3 Scale = new Vector3(1.2f, 1.2f, 1.2f);
     public float HighlightY = 0;
     public float HighlightZ = 0;
 
@@ -57,8 +57,8 @@ public class ViewHandHandler : MonoBehaviour
         {
             viewCard.OnClick = CardInHandClicked;
         }
-        //RefreshPositions();
-        viewCard.transform.localScale = Scale;
+        View.ApplyCombatCardScale(viewCard.transform);
+        RefreshPositions();
     }
 
     public void RemoveCard(ViewCard viewCard)
@@ -95,6 +95,9 @@ public class ViewHandHandler : MonoBehaviour
         for (int i = 0; i < ViewCards.Count; i++)
         {
             ViewCard viewCard = ViewCards[i];
+            if (View.Instance.SelectionHandler.HeldCard == viewCard)
+                continue;
+
             Vector3 newPos = new Vector3(CardWidth / 2 + CardWidth * i + spacing * i, CardY, CardZ - CardZOffset * i);
             if (View.Instance.SelectionHandler.IsHoveringOverThisCard(viewCard) && !selectingTarget)
             {
@@ -107,7 +110,7 @@ public class ViewHandHandler : MonoBehaviour
             }
             else
             {
-                viewCard.transform.localScale = Scale;
+                View.ApplyCombatCardScale(viewCard.transform);
 
                 viewCard.SetDescriptiveMode(false);
             }

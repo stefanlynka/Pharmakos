@@ -11,8 +11,7 @@ public class SelectionHandler
     public ViewTarget CurrentHover = null;
     public ViewCard HeldCard = null;
     private float timeSinceCardInHandPickedUp = 0;
-    public float heldCardZ = 30;
-    public Vector3 HeldScale = Vector3.one;
+    public float heldCardLocalZ = -4f;
     public List<ITarget> CurrentTargets = new List<ITarget>();
 
     // For picking follower attack target
@@ -45,18 +44,28 @@ public class SelectionHandler
     public void UpdateSelections()
     {
         if (Controller.Instance.GamePaused) return;
+        if (GetSelectionCamera() == null) return;
 
         UpdateTargetUnderMouse();
         HandleMouseInputs();
+    }
+
+    public void UpdateHeldCardAfterHandLayout()
+    {
+        if (Controller.Instance.GamePaused) return;
         UpdateHeldCard();
     }
 
     public void UpdateTargetUnderMouse()
     {
+        CurrentHover = null;
+
+        Camera camera = GetSelectionCamera();
+        if (camera == null) return;
+
         Physics.SyncTransforms();
 
-        CurrentHover = null;
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // HOWTO Raycast
+        Ray ray = camera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hitData, 1000, targetLayer))
         {
             GameObject hitObject = hitData.collider.gameObject;
@@ -65,7 +74,6 @@ public class SelectionHandler
             else if (hitObject.TryGetComponent(out ViewTarget viewTarget))
                 CurrentHover = viewTarget;
         }
-        //if (CurrentHover != null) Debug.LogError("CurrentHover: " +  CurrentHover.gameObject.name);
         Debug.DrawRay(ray.origin, ray.direction * 100, Color.red);
 
         if (HeldCard != null) timeSinceCardInHandPickedUp += Time.deltaTime;
@@ -114,14 +122,65 @@ public class SelectionHandler
         }
     }
 
-    private void UpdateHeldCard()
+    /// <summary>Combat camera; null when no usable world camera (e.g. after leaving combat).</summary>
+    Camera GetSelectionCamera()
+    {
+        if (ScreenHandler.Instance != null
+            && ScreenHandler.Instance.TryGetScreen(ScreenName.Game, out Screen gameScreen)
+            && gameScreen.Camera != null
+            && gameScreen.Camera.isActiveAndEnabled)
+            return gameScreen.Camera;
+
+        Camera main = Camera.main;
+        if (main != null && main.isActiveAndEnabled)
+            return main;
+
+        return null;
+    }
+
+    Transform GetHumanHandTransform()
+    {
+        return View.Instance.Player1.HandHandler.transform;
+    }
+
+    bool TryGetMousePositionOnHandPlane(Camera camera, Transform hand, out Vector3 localPos)
+    {
+        localPos = default;
+
+        Vector3 planePoint = hand.TransformPoint(new Vector3(0f, 0f, heldCardLocalZ));
+        Vector3 planeNormal = hand.forward;
+        if (Vector3.Dot(planeNormal, camera.transform.position - planePoint) > 0f)
+            planeNormal = -planeNormal;
+
+        Plane dragPlane = new Plane(planeNormal, planePoint);
+        Ray ray = camera.ScreenPointToRay(Input.mousePosition);
+        if (!dragPlane.Raycast(ray, out float distance))
+            return false;
+
+        localPos = hand.InverseTransformPoint(ray.GetPoint(distance));
+        localPos.z = heldCardLocalZ;
+        return true;
+    }
+
+    void ApplyHeldCardPosition()
     {
         if (HeldCard == null) return;
 
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePosition.z = heldCardZ;
+        Camera camera = GetSelectionCamera();
+        if (camera == null) return;
 
-        HeldCard.transform.position = mousePosition;
+        Transform hand = GetHumanHandTransform();
+        HeldCard.transform.SetParent(hand, true);
+
+        if (!TryGetMousePositionOnHandPlane(camera, hand, out Vector3 localPos))
+            return;
+
+        HeldCard.transform.localPosition = localPos;
+    }
+
+    private void UpdateHeldCard()
+    {
+        ApplyHeldCardPosition();
     }
 
     private void ViewTargetInHandClicked(ViewTarget target)
@@ -131,34 +190,45 @@ public class SelectionHandler
             DropHeldCard();
             return;
         }
-        ViewCard viewCard = target as ViewCard;
+
+        ViewCard viewCard = ResolveViewCard(target);
         if (viewCard == null) return;
 
-        ViewFollower viewFollower = target as ViewFollower;
-        ViewSpell viewSpell = target as ViewSpell;
+        ViewFollower viewFollower = viewCard as ViewFollower;
+        ViewSpell viewSpell = viewCard as ViewSpell;
         if (viewFollower != null)
         {
             timeSinceCardInHandPickedUp = 0;
-            //viewFollower.SetHighlight(true);
             HeldCard = viewFollower;
-            HeldCard.transform.localScale = HeldScale;
             View.Instance.Player1.HandHandler.RemoveCard(HeldCard);
+            View.ApplyCombatCardScale(HeldCard.transform);
+            ApplyHeldCardPosition();
         }
         else if (viewSpell != null)
         {
             timeSinceCardInHandPickedUp = 0;
             HeldCard = viewSpell;
-            //viewSpell.SetHighlight(true);
-            // Only enter target mode if spell can be played and has legal targets
             if (viewSpell.Spell.CanPlay() && viewSpell.Spell.HasPlayableTargets())
             {
                 viewSpell.EnterTargetMode();
                 CurrentTargets = viewSpell.Spell.GetTargets();
                 View.Instance.HighlightTargets(CurrentTargets);
             }
-            HeldCard.transform.localScale = HeldScale;
             View.Instance.Player1.HandHandler.RemoveCard(HeldCard);
+            View.ApplyCombatCardScale(HeldCard.transform);
+            ApplyHeldCardPosition();
         }
+    }
+
+    static ViewCard ResolveViewCard(ViewTarget target)
+    {
+        if (target is ViewCard viewCard)
+            return viewCard;
+
+        if (target is CardViewRaycastTarget proxy)
+            return proxy.ActiveCard;
+
+        return null;
     }
 
     private void ViewTargetInPlayClicked(ViewTarget target)

@@ -276,8 +276,8 @@ public class Controller : MonoBehaviour
         if (EventHandler == null)
             EventHandler = FindObjectOfType<EventHandler>();
 
-        if (EventHandler != null && EventHandler.EventCamera != null)
-            EventHandler.EventCamera.gameObject.SetActive(false);
+        if (EventHandler != null)
+            EventHandler.CleanupEventPresentation();
     }
 
     public void BeginEncounterFromOverworldNode(OverworldMapNode node)

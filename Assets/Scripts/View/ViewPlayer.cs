@@ -31,6 +31,7 @@ public class ViewPlayer : ViewTarget
 
         ViewResources.Init(Player);
 
+        HandHandler.Scale = View.CombatCardScale;
         BattleRow.Setup(Player.BattleRow);
 
         ViewMinorRitual.Init(Player.MinorRitual);

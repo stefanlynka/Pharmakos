@@ -5,6 +5,8 @@ using UnityEngine.Pool;
 
 public class ViewPlayHistoryItem : MonoBehaviour
 {
+    const float CardScale = 1.5f;
+
     public GameObject ComponentParent;
     public PlayHistoryItem PlayHistoryItem;
     public List<GameObject> PlayHistoryComponents = new List<GameObject>();
@@ -67,24 +69,12 @@ public class ViewPlayHistoryItem : MonoBehaviour
                 }
                 break;
             case PlayHistoryComponentType.Follower:
-                ViewFollower viewFollower = componentObject.GetComponent<ViewFollower>();
-                if (viewFollower != null && componentData is FollowerPlayHistoryComponent followerComponent)
-                {
-                    viewFollower.Load(followerComponent.Follower);
-                    viewFollower.SetDescriptiveMode(true);
-
-                    rectTransform.sizeDelta = new Vector2(12f, 7.5f);
-                }
+                if (componentData is FollowerPlayHistoryComponent followerComponent)
+                    ConfigureCardComponent(componentObject, followerComponent.Follower, rectTransform);
                 break;
             case PlayHistoryComponentType.Spell:
-                ViewSpell viewSpell = componentObject.GetComponent<ViewSpell>();
-                if (viewSpell != null && componentData is SpellPlayHistoryComponent spellComponent)
-                {
-                    viewSpell.Load(spellComponent.Spell);
-                    viewSpell.SetDescriptiveMode(true);
-
-                    rectTransform.sizeDelta = new Vector2(12f, 7.5f);
-                }
+                if (componentData is SpellPlayHistoryComponent spellComponent)
+                    ConfigureCardComponent(componentObject, spellComponent.Spell, rectTransform);
                 break;
             case PlayHistoryComponentType.Target:
                 break;
@@ -106,10 +96,36 @@ public class ViewPlayHistoryItem : MonoBehaviour
         componentObject.transform.localPosition = new Vector3(0, 0, -1);
     }
 
+    void ConfigureCardComponent(GameObject cardObject, Card card, RectTransform holderRect)
+    {
+        ViewCard viewCard = ViewPlayHistoryHandler.GetViewCardComponent(cardObject, card);
+        if (viewCard == null)
+            return;
+
+        viewCard.Load(card);
+        viewCard.SetDescriptiveMode(true);
+        if (viewCard.CardCollider != null)
+            viewCard.CardCollider.enabled = false;
+
+        cardObject.transform.localScale = new Vector3(CardScale, CardScale, 1f);
+        holderRect.sizeDelta = new Vector2(12f, 7.5f);
+    }
+
     public void Clear()
     {
         foreach (GameObject component in PlayHistoryComponents)
         {
+            ViewFollower viewFollower = component.GetComponent<ViewFollower>();
+            if (viewFollower != null)
+                viewFollower.ResetForPool();
+
+            ViewSpell viewSpell = component.GetComponent<ViewSpell>();
+            if (viewSpell != null)
+                viewSpell.ResetForPool();
+
+            if (viewFollower != null)
+                viewFollower.ApplyCardMode(isFollower: true);
+
             GameObject parent = component.transform.parent.gameObject;
             componentHolderPool.Release(parent);
             Destroy(component);

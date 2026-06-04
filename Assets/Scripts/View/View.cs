@@ -10,6 +10,14 @@ public class View : MonoBehaviour
 {
     public static View Instance;
 
+    public static readonly Vector3 CombatCardScale = new Vector3(1.2f, 1.2f, 1.2f);
+
+    public static void ApplyCombatCardScale(Transform cardTransform)
+    {
+        if (cardTransform != null)
+            cardTransform.localScale = CombatCardScale;
+    }
+
     public AnimationHandler AnimationHandler = new AnimationHandler();
 
     public static GameObject CardViewPrefab;
@@ -137,13 +145,25 @@ public class View : MonoBehaviour
 
     public void PlayerUpdate()
     {
-        if (MenuSelectionHandler == null || !MenuSelectionHandler.IsActive)
+        bool useCombatSelection = MenuSelectionHandler == null || !MenuSelectionHandler.IsActive;
+        if (useCombatSelection)
             SelectionHandler.UpdateSelections();
 
         Player1.UpdatePlayer();
         Player2.UpdatePlayer();
 
         //TweenManager.Update();
+    }
+
+    private void LateUpdate()
+    {
+        if (Controller.Instance == null || !Controller.Instance.GameRunning)
+            return;
+
+        if (MenuSelectionHandler != null && MenuSelectionHandler.IsActive)
+            return;
+
+        SelectionHandler.UpdateHeldCardAfterHandLayout();
     }
     public void AnimationUpdate()
     {
@@ -188,7 +208,11 @@ public class View : MonoBehaviour
 
         viewCard.Load(card);
         viewCard.SetHighlight(false);
-        if (addToCardMap) CardMap[card.ID] = viewCard;
+        if (addToCardMap)
+        {
+            CardMap[card.ID] = viewCard;
+            ApplyCombatCardScale(viewCard.transform);
+        }
 
         return viewCard;
     }
@@ -299,6 +323,7 @@ public class View : MonoBehaviour
         cardObject.SetActive(true);
         cardObject.transform.SetParent(null);
         cardObject.transform.localScale = new Vector3(1, 1, 1);
+        cardObject.transform.localRotation = Quaternion.identity;
     }
     private static void OnCardRelease(GameObject cardObject)
     {
@@ -460,6 +485,7 @@ public class View : MonoBehaviour
         //ViewFollower viewFollower = (ViewFollower)MakeNewViewCard(follower);
         ViewBattleRow battleRow = follower.Owner.IsHuman ? Player1.BattleRow : Player2.BattleRow;
         battleRow.AddFollower(viewFollower, index);
+        ApplyCombatCardScale(viewFollower.transform);
 
         viewFollower.SetDescriptiveMode(false);
 
