@@ -23,6 +23,7 @@ public class CardReward : MonoBehaviour
             ViewCard.transform.parent = transform;
             ViewCard.transform.localPosition = new Vector3(0, 0, -0.1f);
             ViewCard.transform.localScale = Vector3.one;
+            ViewCard.transform.localRotation = Quaternion.identity;
             ViewCard.gameObject.SetActive(true);
         }
 

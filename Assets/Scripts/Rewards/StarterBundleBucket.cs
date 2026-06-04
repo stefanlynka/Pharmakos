@@ -23,7 +23,11 @@ public class StarterBundleBucket : MonoBehaviour
     {
         StarterBundle = starterBundle;
 
-        ViewTarget.OnClick = cardClicked;
+        if (ViewTarget != null)
+        {
+            ViewTarget.gameObject.SetActive(true);
+            ViewTarget.OnClick = cardClicked;
+        }
 
         ViewRitual.Init(starterBundle.Ritual, false);
 
@@ -41,6 +45,9 @@ public class StarterBundleBucket : MonoBehaviour
 
     public void SetSelected(bool selected)
     {
+        if (HighlightRenderer == null) return;
+
+        HighlightRenderer.gameObject.SetActive(selected);
         HighlightRenderer.enabled = selected;
     }
 }

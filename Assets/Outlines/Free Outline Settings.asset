@@ -51,6 +51,41 @@ MonoBehaviour:
   outlines:
   - {fileID: -3759576460185717803}
   - {fileID: 8450198284566070102}
+  - {fileID: 7123456789012345678}
+--- !u!114 &7123456789012345678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca2cb9e9790a941d3b51ae2615e6e1bd, type: 3}
+  m_Name: Outline
+  m_EditorClassIdentifier: 
+  material: {fileID: 0}
+  isActive: 1
+  RenderingLayer: 8
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  renderQueue: 0
+  occlusion: 2
+  maskingStrategy: 0
+  color: {r: 1, g: 0, b: 0, a: 0.6745098}
+  enableOcclusion: 0
+  occludedColor: {r: 1, g: 0, b: 0, a: 1}
+  blendMode: 0
+  extrusionMethod: 1
+  scaling: 0
+  width: 4
+  minWidth: 0
+  scaleWithResolution: 0
+  referenceResolution: 0
+  customResolution: 0
+  materialType: 0
+  customMaterial: {fileID: 0}
 --- !u!114 &8450198284566070102
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,31 +1,47 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 public class OfferingLabel : MonoBehaviour
 {
-    public GameObject SummaryObject;
-    public TextMeshPro SummaryText;
     public TextMeshPro OfferingName;
     public TextMeshPro OfferingAmount;
     public SpriteRenderer Icon;
 
-    // This function is called when the mouse enters the Collider.
-    void OnMouseEnter()
+    [Tooltip("Which side of this offering the hover summary popup appears on.")]
+    public PopupPosition SummaryPosition = PopupPosition.Above;
+
+    string summaryDescription = string.Empty;
+
+    public void SetSummaryText(string text)
     {
-        if (SummaryObject != null)
-        {
-            SummaryObject.SetActive(true); // Enable the GameObject.
-        }
+        summaryDescription = text ?? string.Empty;
     }
 
-    // This function is called when the mouse exits the Collider.
+    void OnMouseEnter()
+    {
+        ShowHoverSummary();
+    }
+
     void OnMouseExit()
     {
-        if (SummaryObject != null)
-        {
-            SummaryObject.SetActive(false); // Disable the GameObject.
-        }
+        HideHoverSummary();
+    }
+
+    void OnDisable()
+    {
+        HideHoverSummary();
+    }
+
+    void ShowHoverSummary()
+    {
+        if (string.IsNullOrEmpty(summaryDescription))
+            return;
+
+        PopupScreenHandler.Instance?.ShowTextPopup(summaryDescription, transform, SummaryPosition);
+    }
+
+    void HideHoverSummary()
+    {
+        PopupScreenHandler.Instance?.HideTextPopup(transform);
     }
 }

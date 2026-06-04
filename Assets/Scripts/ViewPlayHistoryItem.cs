@@ -38,8 +38,10 @@ public class ViewPlayHistoryItem : MonoBehaviour
     {
         // Create a ComponentHolder for each component (It has a RectTransform unlike the components we're creating)
         GameObject componentHolder = componentHolderPool.Get();
-        componentHolder.transform.parent = ComponentParent.transform;
+        componentHolder.transform.SetParent(ComponentParent.transform, false);
         RectTransform rectTransform = componentHolder.GetComponent<RectTransform>();
+        if (rectTransform != null)
+            rectTransform.anchoredPosition3D = new Vector3(0, 0, -1);
         if (rectTransform == null) return;
             
         rectTransform.sizeDelta = new Vector2(7.5f, 7.5f);
@@ -92,8 +94,9 @@ public class ViewPlayHistoryItem : MonoBehaviour
         }
 
         PlayHistoryComponents.Add(componentObject);
-        componentObject.transform.parent = componentHolder.transform;
+        componentObject.transform.SetParent(componentHolder.transform, false);
         componentObject.transform.localPosition = new Vector3(0, 0, -1);
+        componentObject.transform.localRotation = Quaternion.identity;
     }
 
     void ConfigureCardComponent(GameObject cardObject, Card card, RectTransform holderRect)
@@ -149,6 +152,10 @@ public class ViewPlayHistoryItem : MonoBehaviour
         item.SetActive(true);
         item.transform.SetParent(null);
         item.transform.localScale = new Vector3(1, 1, 1);
+
+        RectTransform rectTransform = item.GetComponent<RectTransform>();
+        if (rectTransform != null)
+            rectTransform.anchoredPosition3D = new Vector3(0, 0, -1);
     }
 
     private static void OnItemRelease(GameObject item)

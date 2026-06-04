@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class RitualRewardHandler : MonoBehaviour
 {
+    public Camera RitualRewardCamera;
+
     public ViewRitual CurrentTopRitual;
     public ViewRitual CurrentBottomRitual;
 
@@ -15,8 +17,15 @@ public class RitualRewardHandler : MonoBehaviour
 
     List<Ritual> possibleRewards = new List<Ritual>();
 
+    void OnDisable()
+    {
+        DeactivateMenuSelection();
+    }
+
     public void Load(int levelCompleted, Ritual topRitual, Ritual bottomRitual)
     {
+        DeselectAll();
+
         DefaultTopRitual = topRitual;
         DefaultBottomRitual = bottomRitual;
 
@@ -36,6 +45,29 @@ public class RitualRewardHandler : MonoBehaviour
         randomIndex = Controller.Instance.MetaRNG.Next(0, possibleRewards.Count);
         BottomRitualReward.Load(possibleRewards[randomIndex], 1, RitualButtonClicked);
         possibleRewards.RemoveAt(randomIndex);
+
+        ActivateMenuSelection();
+    }
+
+    void ActivateMenuSelection()
+    {
+        if (View.Instance?.MenuSelectionHandler == null) return;
+
+        Camera selectionCamera = RitualRewardCamera;
+        if (selectionCamera == null)
+            selectionCamera = GetComponentInChildren<Camera>(true);
+        if (selectionCamera == null
+            && ScreenHandler.Instance != null
+            && ScreenHandler.Instance.TryGetScreen(ScreenName.RitualRewards, out Screen screen))
+            selectionCamera = screen.Camera;
+
+        View.Instance.MenuSelectionHandler.Activate(selectionCamera, () => false);
+    }
+
+    void DeactivateMenuSelection()
+    {
+        if (View.Instance?.MenuSelectionHandler != null)
+            View.Instance.MenuSelectionHandler.Deactivate();
     }
 
     public void SetRitualsAndContinue()
@@ -60,6 +92,7 @@ public class RitualRewardHandler : MonoBehaviour
     private void Cleanup()
     {
         DeselectAll();
+        DeactivateMenuSelection();
 
         gameObject.SetActive(false);
     }

@@ -23,11 +23,11 @@ public class ViewResources : MonoBehaviour
     {
         this.player = player;
 
-        GoldLabel.SummaryText.text = "Used to play cards. You have " + player.GoldPerTurn + " gold to spend each turn";
-        BloodLabel.SummaryText.text = "When a Player's life changes on your turn, gain that much Blood";
-        BonesLabel.SummaryText.text = "When a Follower dies on your turn, gain one Bone";
-        CropsLabel.SummaryText.text = "When a Follower is summoned on your turn, gain one Crop";
-        ScrollsLabel.SummaryText.text = "When you play a Spell on your turn, gain one Scroll";
+        GoldLabel.SetSummaryText("Used to play cards. You have " + player.GoldPerTurn + " gold to spend each turn");
+        BloodLabel.SetSummaryText("When a Player's life changes on your turn, gain that much Blood");
+        BonesLabel.SetSummaryText("When a Follower dies on your turn, gain one Bone");
+        CropsLabel.SetSummaryText("When a Follower is summoned on your turn, gain one Crop");
+        ScrollsLabel.SetSummaryText("When you play a Spell on your turn, gain one Scroll");
 
         GoldLabel.OfferingName.text = "Gold";
         BloodLabel.OfferingName.text = "Blood";

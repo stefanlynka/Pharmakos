@@ -17,7 +17,8 @@ MonoBehaviour:
   - Default
   - GreenHighlight
   - YellowHighlight
-  m_ValidRenderingLayers: 7
+  - RitualHighlight
+  m_ValidRenderingLayers: 15
   lightLayerName0: 
   lightLayerName1: 
   lightLayerName2: 

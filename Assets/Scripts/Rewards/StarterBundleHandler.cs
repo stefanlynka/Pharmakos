@@ -10,6 +10,8 @@ public class StarterBundleHandler : MonoBehaviour
 
 {
 
+    public Camera StarterBundleCamera;
+
     public List<StarterBundleBucket> BundleBuckets = new List<StarterBundleBucket>();
 
     public List<StarterBundle> StarterBundles = new List<StarterBundle>();
@@ -23,10 +25,13 @@ public class StarterBundleHandler : MonoBehaviour
 
 
     public void Load()
-
     {
+        Camera selectionCamera = StarterBundleCamera;
+        if (selectionCamera == null)
+            selectionCamera = GetComponentInChildren<Camera>(true);
 
-        View.Instance.MenuSelectionHandler.Activate();
+        if (View.Instance.MenuSelectionHandler != null)
+            View.Instance.MenuSelectionHandler.Activate(selectionCamera, () => false);
 
 
 

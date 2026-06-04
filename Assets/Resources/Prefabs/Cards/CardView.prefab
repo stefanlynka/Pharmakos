@@ -3572,7 +3572,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 6.27, y: 8.63, z: 1}
+  m_Size: {x: 5.4, y: 7.59, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!210 &8990427469535383724
 SortingGroup:

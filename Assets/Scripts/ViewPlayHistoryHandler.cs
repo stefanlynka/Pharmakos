@@ -42,7 +42,8 @@ public class ViewPlayHistoryHandler : MonoBehaviour
             ViewPlayHistoryItem viewPlayHistoryItem = newObject.GetComponent<ViewPlayHistoryItem>();
             if (viewPlayHistoryItem != null) ViewPlayHistoryItems[playHistoryItem] = viewPlayHistoryItem;
 
-            newObject.transform.SetParent(ContentHolder.transform);
+            newObject.transform.SetParent(ContentHolder.transform, false);
+            ResetLocalUiPosition(newObject.transform);
             viewPlayHistoryItem.Load(playHistoryItem);
         }
     }
@@ -104,11 +105,24 @@ public class ViewPlayHistoryHandler : MonoBehaviour
         Debug.LogError("PlayHistoryItemPrefab was Null when trying to instantiate new Card");
         return null;
     }
+    private static void ResetLocalUiPosition(Transform transform)
+    {
+        if (transform is RectTransform rectTransform)
+        {
+            rectTransform.anchoredPosition3D = new Vector3(0, 0, -1);
+            return;
+        }
+
+        Vector3 localPosition = transform.localPosition;
+        transform.localPosition = new Vector3(localPosition.x, localPosition.y, 0f);
+    }
+
     private static void OnItemGet(GameObject item)
     {
         item.SetActive(true);
         item.transform.SetParent(null);
         item.transform.localScale = new Vector3(1, 1, 1);
+        ResetLocalUiPosition(item.transform);
     }
     
     private static void OnItemRelease(GameObject item)

@@ -180,10 +180,35 @@ MonoBehaviour:
   ScrollsText: {fileID: 6392942612921389765}
   Title: {fileID: 3250723410816762386}
   Description: {fileID: 6718831043198805541}
-  HighlightHolder: {fileID: 6821277678591841460}
-  Highlight: {fileID: 6632738071690932690}
-  SummaryObject: {fileID: 4521581906987212800}
-  SummaryText: {fileID: 484802178571244946}
+  HighlightHolder: {fileID: 0}
+  Highlight: {fileID: 0}
+  altarRoot: {fileID: 1913495435366552825}
+  useMeshHighlight: 1
+  useOutlineHighlight: 1
+  outlinePulseColorA: {r: 1, g: 0.19862808, b: 0, a: 0.5882353}
+  outlinePulseColorB: {r: 1, g: 1, b: 1, a: 0.5882353}
+  glowCoreColor: {r: 1, g: 0.1253067, b: 0, a: 1}
+  glowOuterColor: {r: 1, g: 0.119365565, b: 0, a: 1}
+  glowSecondaryColor: {r: 1, g: 0.03724619, b: 0, a: 1}
+  glowPulseSpeed: 0.25
+  glowPulseMin: 0.1
+  glowPulseMax: 3
+  glowCoreIntensityMultiplier: 0.9
+  glowOuterIntensityMultiplier: 0.7
+  glowMistSpeed: 4
+  glowMistScale: 3
+  glowMistDetailScale: 8.5
+  glowFlickerSpeed: 1
+  glowFlickerStrength: 0.2
+  glowCoreEmissionStrength: 0.9
+  glowOuterEmissionStrength: 0.55
+  glowDrift: 0.24
+  coreShellExtrusion: 0.024
+  outerShellExtrusion: 0.044
+  coreRimPower: 2.5
+  outerRimPower: 1.35
+  hoverScaleMultiplier: 1.1
+  SummaryPosition: 3
 --- !u!65 &5948811852461810000
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -203,7 +228,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 18.46, y: 21.5, z: 1}
+  m_Size: {x: 18.46, y: 22.08, z: 4.47}
   m_Center: {x: 0, y: -0.3, z: 0}
 --- !u!1 &710347788871353784
 GameObject:

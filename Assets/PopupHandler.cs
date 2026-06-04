@@ -216,6 +216,10 @@ public class PopupHandler : MonoBehaviour
         if (target == null || camera == null)
             return Rect.zero;
 
+        Collider anchorCollider = target.GetComponent<Collider>();
+        if (anchorCollider != null && anchorCollider.enabled)
+            return BoundsToScreenRect(anchorCollider.bounds, camera);
+
         Bounds bounds = default;
         bool hasBounds = false;
 
@@ -265,6 +269,11 @@ public class PopupHandler : MonoBehaviour
                 fallbackSize);
         }
 
+        return BoundsToScreenRect(bounds, camera);
+    }
+
+    static Rect BoundsToScreenRect(Bounds bounds, Camera camera)
+    {
         Vector3[] corners =
         {
             new Vector3(bounds.min.x, bounds.min.y, bounds.min.z),

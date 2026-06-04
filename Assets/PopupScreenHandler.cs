@@ -338,15 +338,15 @@ public class PopupScreenHandler : MonoBehaviour
         for (int i = 0; i < candidateOrder.Length; i++)
         {
             Vector2 candidate = GetPositionForSide(candidateOrder[i], targetScreenRect, halfW, halfH, TargetGap);
-            Rect popupScreenRect = CenteredScreenRect(candidate, popupSize);
-            popupScreenRect = ClampRectToBounds(popupScreenRect, screenBounds);
+            Rect idealPopupRect = CenteredScreenRect(candidate, popupSize);
+            Rect popupScreenRect = ClampRectToBounds(idealPopupRect, screenBounds);
 
             Vector2 localCenter = ScreenPointToContainerLocal(popupScreenRect.center);
             if (localCenter == Vector2.negativeInfinity)
                 continue;
 
-            float score = Overlaps(popupScreenRect, targetScreenRect, TargetGap)
-                ? -RectOverlapArea(popupScreenRect, targetScreenRect)
+            float score = Overlaps(idealPopupRect, targetScreenRect, TargetGap)
+                ? -RectOverlapArea(idealPopupRect, targetScreenRect)
                 : 100000f;
 
             // Strongly prefer the requested side; only use fallbacks when it cannot fit.
@@ -463,6 +463,10 @@ public class PopupScreenHandler : MonoBehaviour
         if (camera == null)
             return Rect.zero;
 
+        Collider anchorCollider = target.GetComponent<Collider>();
+        if (anchorCollider != null && anchorCollider.enabled)
+            return BoundsToScreenRect(anchorCollider.bounds, camera);
+
         Bounds bounds = default;
         bool hasBounds = false;
 
@@ -508,6 +512,11 @@ public class PopupScreenHandler : MonoBehaviour
             return new Rect(screenPoint.x - size * 0.5f, screenPoint.y - size * 0.5f, size, size);
         }
 
+        return BoundsToScreenRect(bounds, camera);
+    }
+
+    static Rect BoundsToScreenRect(Bounds bounds, Camera camera)
+    {
         Vector3[] corners =
         {
             new Vector3(bounds.min.x, bounds.min.y, bounds.min.z),
