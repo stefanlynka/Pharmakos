@@ -46,7 +46,7 @@ public class ShopHandler : MonoBehaviour
         Instance = this;
 
         CacheSlotsFromEditorMarkers();
-        if (ShopCamera != null) ShopCamera.gameObject.SetActive(false);
+        SetShopCameraActive(false);
         SetShopAreaActive(false);
     }
 
@@ -76,7 +76,7 @@ public class ShopHandler : MonoBehaviour
         BuildShopStock();
 
         SetShopAreaActive(true);
-        if (ShopCamera != null) ShopCamera.gameObject.SetActive(true);
+        SetShopCameraActive(true);
 
         if (ShopScreenHandler != null)
         {
@@ -100,7 +100,7 @@ public class ShopHandler : MonoBehaviour
         _soldCardSlots.Clear();
         _soldTrinketSlots.Clear();
 
-        if (ShopCamera != null) ShopCamera.gameObject.SetActive(false);
+        SetShopCameraActive(false);
         SetShopAreaActive(false);
 
         if (View.Instance != null && View.Instance.MenuSelectionHandler != null)
@@ -163,7 +163,7 @@ public class ShopHandler : MonoBehaviour
 
     void OnCardClicked(ViewTarget viewTarget)
     {
-        ViewCard clicked = viewTarget as ViewCard;
+        ViewCard clicked = CardViewRaycastTarget.ResolveViewCard(viewTarget);
         if (clicked == null) return;
 
         if (!_cardViewToSlot.TryGetValue(clicked, out int slot) || _soldCardSlots.Contains(slot)) return;
@@ -304,6 +304,14 @@ public class ShopHandler : MonoBehaviour
         gameObject.SetActive(active);
     }
 
+    void SetShopCameraActive(bool active)
+    {
+        if (ShopCamera == null) return;
+
+        ShopCamera.gameObject.SetActive(active);
+        ShopCamera.enabled = active;
+    }
+
     void UpdateShopHoverHighlights()
     {
         if (Controller.Instance == null)
@@ -359,7 +367,7 @@ public class ShopHandler : MonoBehaviour
         if (MenuSelectionHandler.Instance == null || !MenuSelectionHandler.Instance.IsActive)
             return null;
 
-        ViewCard hoveredCard = MenuSelectionHandler.Instance.CurrentHover as ViewCard;
+        ViewCard hoveredCard = CardViewRaycastTarget.ResolveViewCard(MenuSelectionHandler.Instance.CurrentHover);
         if (hoveredCard == null || !_cardViewToSlot.ContainsKey(hoveredCard))
             return null;
 

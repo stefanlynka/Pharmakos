@@ -18,7 +18,7 @@ public class CardRewardHolder : MonoBehaviour
 
     public void CardClicked(ViewTarget viewTarget)
     {
-        ViewCard viewCard = viewTarget as ViewCard;
+        ViewCard viewCard = CardViewRaycastTarget.ResolveViewCard(viewTarget);
         if (viewCard != null)
         {
             bool alreadyClicked = viewCard.IsHighlighted();

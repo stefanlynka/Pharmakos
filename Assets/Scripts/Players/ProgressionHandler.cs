@@ -7,7 +7,7 @@ using static ProgressionHandler;
 
 public class ProgressionHandler
 {
-    private const int ENEMY_HEALTH_OVERRIDE = -1; // -1 to disables
+    private const int ENEMY_HEALTH_OVERRIDE = 1; // -1 to disables
     public enum DeckName
     {
         None,

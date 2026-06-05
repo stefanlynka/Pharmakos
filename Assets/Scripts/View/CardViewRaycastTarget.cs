@@ -11,6 +11,17 @@ public class CardViewRaycastTarget : ViewTarget
 
     public ViewCard ActiveCard => activeCard;
 
+    public static ViewCard ResolveViewCard(ViewTarget target)
+    {
+        if (target is ViewCard viewCard)
+            return viewCard;
+
+        if (target is CardViewRaycastTarget proxy)
+            return proxy.ActiveCard;
+
+        return null;
+    }
+
     public void SetActiveCard(ViewCard card)
     {
         activeCard = card;

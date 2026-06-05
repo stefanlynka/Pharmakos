@@ -83,14 +83,18 @@ public class MenuSelectionHandler : MonoBehaviour
             return;
 
         GameObject hitObject = hitData.collider.gameObject;
+        ViewTarget hitTarget = null;
         if (hitObject.TryGetComponent(out CardViewRaycastTarget cardViewTarget))
-            CurrentHover = cardViewTarget;
+            hitTarget = cardViewTarget;
         else if (hitObject.TryGetComponent(out ViewTarget viewTarget))
-            CurrentHover = viewTarget;
+            hitTarget = viewTarget;
         else if (hitObject.GetComponentInParent<CardViewRaycastTarget>() is CardViewRaycastTarget parentProxy)
-            CurrentHover = parentProxy;
+            hitTarget = parentProxy;
         else if (hitObject.GetComponentInParent<ViewTarget>() is ViewTarget parentTarget)
-            CurrentHover = parentTarget;
+            hitTarget = parentTarget;
+
+        ViewCard viewCard = CardViewRaycastTarget.ResolveViewCard(hitTarget);
+        CurrentHover = viewCard != null ? viewCard : hitTarget;
     }
 
     void HandleMouseInputs()
@@ -107,6 +111,13 @@ public class MenuSelectionHandler : MonoBehaviour
     {
         if (_selectionCamera != null && _selectionCamera.isActiveAndEnabled)
             return _selectionCamera;
+
+        if (ScreenHandler.Instance != null
+            && ScreenHandler.Instance.TryGetCurrentScreen(out Screen screen)
+            && screen != null
+            && screen.Camera != null
+            && screen.Camera.isActiveAndEnabled)
+            return screen.Camera;
 
         Camera main = Camera.main;
         if (main != null && main.isActiveAndEnabled)

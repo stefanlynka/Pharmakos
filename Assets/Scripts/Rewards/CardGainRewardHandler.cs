@@ -5,9 +5,15 @@ using UnityEngine;
 
 public class CardGainRewardHandler : MonoBehaviour
 {
+    public Camera CardRewardCamera;
     public List<CardRewardHolder> CardRewardHolders = new List<CardRewardHolder>();
 
     public int rewardCount = 2;
+
+    void OnDisable()
+    {
+        DeactivateMenuSelection();
+    }
 
     public void Load(int levelCompleted)
     {
@@ -33,6 +39,39 @@ public class CardGainRewardHandler : MonoBehaviour
             CardRewardHolders[i].Load(cardBuckets[i]);
         }
 
+        ActivateMenuSelection();
+    }
+
+    void ActivateMenuSelection()
+    {
+        if (View.Instance?.MenuSelectionHandler == null) return;
+
+        Camera selectionCamera = CardRewardCamera;
+        if (selectionCamera == null)
+            selectionCamera = GetComponentInChildren<Camera>(true);
+        if (selectionCamera == null
+            && ScreenHandler.Instance != null
+            && ScreenHandler.Instance.TryGetScreen(ScreenName.CardGainRewards, out Screen screen))
+            selectionCamera = screen.Camera;
+
+        SetRewardCameraActive(true);
+        View.Instance.MenuSelectionHandler.Activate(selectionCamera, () => false);
+    }
+
+    void DeactivateMenuSelection()
+    {
+        if (View.Instance?.MenuSelectionHandler != null)
+            View.Instance.MenuSelectionHandler.Deactivate();
+    }
+
+    void SetRewardCameraActive(bool active)
+    {
+        if (CardRewardCamera == null)
+            CardRewardCamera = GetComponentInChildren<Camera>(true);
+        if (CardRewardCamera == null) return;
+
+        CardRewardCamera.gameObject.SetActive(active);
+        CardRewardCamera.enabled = active;
     }
 
     public void SelectCardsAndContinue()
@@ -63,6 +102,8 @@ public class CardGainRewardHandler : MonoBehaviour
     }
     private void Cleanup()
     {
+        DeactivateMenuSelection();
+
         for (int i = 0; i < rewardCount; i++)
         {
             CardRewardHolders[i].Cleanup();
