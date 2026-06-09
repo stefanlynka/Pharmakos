@@ -22,11 +22,15 @@ MonoBehaviour:
   ImageStartingScale: {x: 20, y: 20, z: 1}
   SummaryPosition: 2
   Options:
-  - OptionText: Look upon the past\n(Gain Heartstring)
+  - OptionText: 'Look upon the past
+
+      (Gain Heartstring)'
     Outcome:
       OutcomeType: 8
       RewardInfo: []
-  - OptionText: Look upon the future\n(Gain Rituals)
+  - OptionText: 'Look upon the future
+
+      (Gain Rituals)'
     Outcome:
       OutcomeType: 3
       RewardInfo:

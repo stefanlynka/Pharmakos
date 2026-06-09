@@ -25,11 +25,13 @@ MonoBehaviour:
   ImageStartingScale: {x: 20, y: 20, z: 1}
   SummaryPosition: 2
   Options:
-  - OptionText: Remember who all the sacrifice is for\n(Gain Heartstring)
+  - OptionText: 'Remember who all the sacrifice is for
+
+      (Gain Heartstring)'
     Outcome:
       OutcomeType: 8
       RewardInfo: []
-  - OptionText: "Reflect on the beauty you\u2019ve encountered\\n(Become enemy from
+  - OptionText: "Reflect on the beauty you\u2019ve encountered\n(Become enemy from
       previous combat)"
     Outcome:
       OutcomeType: 9

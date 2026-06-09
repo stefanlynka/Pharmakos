@@ -1090,6 +1090,103 @@ public class HephaestusMajorEffectDef : StaticPlayerEffect
     }
 }
 
+// Whenever a follower attacks the turn it entered, gain a Herald spell
+public class HermesMajor : Ritual
+{
+    public HermesMajor()
+    {
+        Name = "Hermes\nMajor";
+        Description = "Whenever a follower attacks the turn it entered, gain a Herald spell";
+
+        if (Controller.BlitzMode)
+        {
+            Costs = new Dictionary<OfferingType, int>()
+            {
+                {OfferingType.Blood, 0 },
+                {OfferingType.Bone, 0 },
+                {OfferingType.Crop, 0 },
+                {OfferingType.Scroll, 5 },
+            };
+        }
+        else
+        {
+            Costs = new Dictionary<OfferingType, int>()
+            {
+                {OfferingType.Blood, 0 },
+                {OfferingType.Bone, 0 },
+                {OfferingType.Crop, 0 },
+                {OfferingType.Scroll, 5 },
+            };
+        }
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        var targets = new List<ITarget>();
+        targets.Add(Owner);
+        return targets;
+    }
+
+    public override void ExecuteEffect(ITarget target)
+    {
+        if (target is not Player targetPlayer) return;
+        HermesMajorEffectDef effectDef = new HermesMajorEffectDef(Owner, targetPlayer);
+        Owner.AddPlayerEffect(effectDef);
+    }
+}
+
+public class HermesMajorEffectDef : StaticPlayerEffect
+{
+    public HermesMajorEffectDef(Player owner, Player target)
+    {
+        Owner = owner;
+        TargetPlayer = target;
+    }
+
+    public override void Apply()
+    {
+        Owner.GameState.FollowerAttacked += OnFollowerAttacked;
+    }
+
+    public override void Unapply()
+    {
+        Owner.GameState.FollowerAttacked -= OnFollowerAttacked;
+    }
+
+    private void OnFollowerAttacked(Follower follower)
+    {
+        if (follower.Owner != TargetPlayer || !follower.PlayedThisTurn)
+            return;
+
+        Herald herald = new Herald();
+        herald.Costs[OfferingType.Gold] = 0;
+        AddCardCopyToHandAction addAction = new AddCardCopyToHandAction(herald);
+        TargetPlayer.GameState.ActionHandler.AddAction(addAction);
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        HermesMajorEffectDef copy = (HermesMajorEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
+        return copy;
+    }
+
+    public override PlayerEffectDescriptionData GetDescriptionData()
+    {
+        PlayerEffectDescriptionData descriptionData = base.GetDescriptionData();
+        Herald herald = new Herald();
+        herald.Costs[OfferingType.Gold] = 0;
+        descriptionData.HoverCard = herald;
+        return descriptionData;
+    }
+
+    protected override string GetDescription()
+    {
+        return "Whenever a follower attacks the turn it entered, gain a Herald spell";
+    }
+}
+
 // Steal a card from your opponent's deck. It costs 1 less.
 public class HermesMinor : Ritual
 {
@@ -1406,6 +1503,103 @@ public class OldOnesMinor : Ritual
 
         GiveFollowerStaticEffectAction newAction2 = new GiveFollowerStaticEffectAction(echidna, StaticEffect.Sprint);
         Owner.GameState.ActionHandler.AddAction(newAction2, true);
+    }
+}
+
+// Whenever you sacrifice a follower, gain a free Drown spell
+public class PoseidonMajor : Ritual
+{
+    public PoseidonMajor()
+    {
+        Name = "Poseidon\nMajor";
+        Description = "Whenever you sacrifice a follower, gain a free Drown spell";
+
+        if (Controller.BlitzMode)
+        {
+            Costs = new Dictionary<OfferingType, int>()
+            {
+                {OfferingType.Blood, 3 },
+                {OfferingType.Bone, 3 },
+                {OfferingType.Crop, 0 },
+                {OfferingType.Scroll, 3 },
+            };
+        }
+        else
+        {
+            Costs = new Dictionary<OfferingType, int>()
+            {
+                {OfferingType.Blood, 3 },
+                {OfferingType.Bone, 3 },
+                {OfferingType.Crop, 0 },
+                {OfferingType.Scroll, 3 },
+            };
+        }
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        var targets = new List<ITarget>();
+        targets.Add(Owner);
+        return targets;
+    }
+
+    public override void ExecuteEffect(ITarget target)
+    {
+        if (target is not Player targetPlayer) return;
+        PoseidonMajorEffectDef effectDef = new PoseidonMajorEffectDef(Owner, targetPlayer);
+        Owner.AddPlayerEffect(effectDef);
+    }
+}
+
+public class PoseidonMajorEffectDef : StaticPlayerEffect
+{
+    public PoseidonMajorEffectDef(Player owner, Player target)
+    {
+        Owner = owner;
+        TargetPlayer = target;
+    }
+
+    public override void Apply()
+    {
+        Owner.GameState.FollowerSacrificed += OnFollowerSacrificed;
+    }
+
+    public override void Unapply()
+    {
+        Owner.GameState.FollowerSacrificed -= OnFollowerSacrificed;
+    }
+
+    private void OnFollowerSacrificed(Follower follower)
+    {
+        if (follower.Owner != TargetPlayer || !TargetPlayer.IsMyTurn)
+            return;
+
+        Drown drown = new Drown();
+        drown.Costs[OfferingType.Gold] = 0;
+        AddCardCopyToHandAction addAction = new AddCardCopyToHandAction(drown);
+        TargetPlayer.GameState.ActionHandler.AddAction(addAction);
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        PoseidonMajorEffectDef copy = (PoseidonMajorEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
+        return copy;
+    }
+
+    public override PlayerEffectDescriptionData GetDescriptionData()
+    {
+        PlayerEffectDescriptionData descriptionData = base.GetDescriptionData();
+        Drown drown = new Drown();
+        drown.Costs[OfferingType.Gold] = 0;
+        descriptionData.HoverCard = drown;
+        return descriptionData;
+    }
+
+    protected override string GetDescription()
+    {
+        return "Whenever you sacrifice a follower, gain a free Drown spell";
     }
 }
 

@@ -419,6 +419,8 @@ public class Follower : Card, ITarget
     {
         TimesThisAttackedThisTurn++;
 
+        Owner.GameState.FireFollowerAttacked(this);
+
         ApplyOnAttackEffects(target);
 
         Follower defendingFollower = target as Follower;

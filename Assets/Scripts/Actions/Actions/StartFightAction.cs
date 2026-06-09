@@ -6,10 +6,10 @@ using static UnityEngine.GraphicsBuffer;
 
 public class StartFightAction : GameAction
 {
-    private int fightNum;
-    public StartFightAction(int fightNum)
+    private string fightName;
+    public StartFightAction(string fightName)
     {
-        this.fightNum = fightNum;
+        this.fightName = fightName;
     }
 
     public override GameAction DeepCopy(Player newOwner)
@@ -29,7 +29,7 @@ public class StartFightAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new StartFightAnimation(this, fightNum)
+            new StartFightAnimation(this, fightName)
         };
         return animationActions;
     }

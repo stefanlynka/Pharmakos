@@ -200,6 +200,7 @@ public class Controller : MonoBehaviour
         Player1.Init(0);
 
         ProgressionHandler.LoadEnemy(Player2);
+        ProgressionHandler.RecordLastFoughtEnemy();
         //Player2.LoadDeck(Player2.DeckBlueprint);
         Player2.Init(1);
 
@@ -210,7 +211,7 @@ public class Controller : MonoBehaviour
 
         if (!IsTestChamber)
         {
-            var startFightAction = new StartFightAction(ProgressionHandler.CurrentLevel);
+            var startFightAction = new StartFightAction(ProgressionHandler.GetCurrentFightDisplayName());
             CanonGameState.ActionHandler.AddAction(startFightAction);
         }
 
@@ -326,10 +327,11 @@ public class Controller : MonoBehaviour
             return;
         }
 
-        if (node.EncounterType == EncounterType.Boss)
-            ProgressionHandler.SetupNextBossEnemy();
+        int fightNumber = Mathf.Max(1, node.R);
+        if (ProgressionHandler.TryGetBossDeckName(node.EncounterType, out _))
+            ProgressionHandler.SetupBossEncounter(node.EncounterType, fightNumber);
         else
-            ProgressionHandler.SetupNextCombatEnemy();
+            ProgressionHandler.SetupNextCombatEnemy(fightNumber);
 
         ScreenTransitionAnimation combatTransitionAnimation = new ScreenTransitionAnimation(null, () =>
         {
@@ -528,11 +530,22 @@ public class Controller : MonoBehaviour
     }
     public void GoToRitualRewardScreen()
     {
+        GoToRitualRewardScreen(null, null);
+    }
+
+    public void GoToRitualRewardScreen(Ritual offeredTopReward, Ritual offeredBottomReward)
+    {
         CurrentScreen = ScreenName.RitualRewards;
 
         GameField.SetActive(false);
         RitualRewardHandler.gameObject.SetActive(true);
-        RitualRewardHandler.Load(ProgressionHandler.CurrentLevel, HumanPlayerDetails.MajorRituals[0], HumanPlayerDetails.MinorRituals[0]);
+        RitualRewardHandler.Load(
+            ProgressionHandler.CurrentLevel,
+            HumanPlayerDetails.MajorRituals[0],
+            HumanPlayerDetails.MinorRituals[0],
+            offeredTopReward,
+            offeredBottomReward);
+        ScreenHandler.Instance.HideScreen(ScreenName.Event, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.RitualRewards);
     }
     public void GoToCardGainRewardScreen()
@@ -646,7 +659,7 @@ public class Controller : MonoBehaviour
             return;
         }
 
-        if (ProgressionHandler.CurrentLevel >= 10)
+        if (ProgressionHandler.CurrentEnemy == ProgressionHandler.DeckName.Throne)
         {
             ScreenHandler.Instance.ShowScreen(ScreenName.Success);
             return;
@@ -673,6 +686,9 @@ public class Controller : MonoBehaviour
     public void AddTrinket(Trinket trinket)
     {
         HumanPlayerDetails.Trinkets[0].Add(trinket);
+
+        if (trinket is GatesBeyondTrinket)
+            HumanPlayerDetails.CanSacrificeForHeartstrings = true;
     }
     public void AddHeartstrings(int amount)
     {
@@ -696,6 +712,19 @@ public class Controller : MonoBehaviour
             if (card is Follower follower) SacrificedFollowers.Add(follower);
 
             HumanPlayerDetails.DeckBlueprint[0].Remove(card);
+        }
+    }
+
+    public void RemoveOneCardCopyFromPlayerDeck(string cardType)
+    {
+        List<Card> deck = HumanPlayerDetails.DeckBlueprint[0];
+        for (int i = 0; i < deck.Count; i++)
+        {
+            if (deck[i].GetCardType() == cardType)
+            {
+                RemoveCardsFromPlayerDeck(new List<Card> { deck[i] });
+                return;
+            }
         }
     }
 

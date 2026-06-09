@@ -8,7 +8,7 @@ public class StartFightAnimation : AnimationAction
 {
     FightBanner fightBanner;
     private RectTransform targetBanner;
-    private int fightNum;
+    private string fightName;
     private Vector3 startPosition = new Vector3(0, 205, 0);
     private Vector3 endPosition = new Vector3(0, -100, 0);
     private float darknessLevel = 1f;
@@ -16,9 +16,9 @@ public class StartFightAnimation : AnimationAction
     private float moveDuration = 0.35f; // 0.45f
     private float pauseDuration = 1.2f;
 
-    public StartFightAnimation(GameAction gameAction, int fightNumber) : base(gameAction)
+    public StartFightAnimation(GameAction gameAction, string fightName) : base(gameAction)
     {
-        fightNum = fightNumber;
+        this.fightName = fightName;
     }
 
     public override void Play(Action onFinish = null)
@@ -28,7 +28,7 @@ public class StartFightAnimation : AnimationAction
         fightBanner = View.Instance.FightNumberBanner;
         targetBanner = fightBanner.RectTransform;
 
-        fightBanner.SetText(fightNum);
+        fightBanner.SetText(fightName);
 
         SetDarkness(darknessLevel);
 

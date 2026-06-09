@@ -22,7 +22,9 @@ public class OverworldMapNode : MonoBehaviour
         { EncounterType.Temple, new List<string> { "OverworldHex", "White", "White" } },
         { EncounterType.Event, new List<string> { "Event" } },
         { EncounterType.Market, new List<string> { "OverworldHex", "Yellow", "Yellow" } },
-        { EncounterType.Boss, new List<string> { "OverworldHex", "Black", "Black" } },
+        { EncounterType.BossFate, new List<string> { "OverworldHex", "Green", "Green" } },
+        { EncounterType.BossGate, new List<string> { "OverworldHex", "Blue", "Blue" } },
+        { EncounterType.BossThrone, new List<string> { "OverworldHex", "Black", "Black" } },
     };
 
     [Tooltip("Axial hex coordinates. Use context menu to sync from position.")]
@@ -96,10 +98,23 @@ public class OverworldMapNode : MonoBehaviour
     /// Sets <see cref="EncounterType"/> and loads the hex base mesh from Resources/Overworld/Hexes/Meshes.
     /// Applies materials named in <see cref="MaterialsByEncounterType"/>, loaded from <c>Resources/Overworld/Hexes/Materials/</c>.
     /// </summary>
+    static string GetMeshKeyForEncounter(EncounterType type)
+    {
+        switch (type)
+        {
+            case EncounterType.BossFate:
+            case EncounterType.BossGate:
+            case EncounterType.BossThrone:
+                return "Boss";
+            default:
+                return type.ToString();
+        }
+    }
+
     public void ApplyEncounter(EncounterType type)
     {
         EncounterType = type;
-        string key = type.ToString();
+        string key = GetMeshKeyForEncounter(type);
 
         if (HexMeshRenderer == null)
             HexMeshRenderer = GetComponentInChildren<MeshRenderer>();
@@ -215,30 +230,34 @@ public class OverworldMapNode : MonoBehaviour
             AssignEncountersOnFloor(kv.Value, kv.Key);
     }
 
-    static void AssignEncountersOnFloor(List<OverworldMapNode> floorNodes, int r)
+    static void AssignEncountersOnFloor(List<OverworldMapNode> floorNodes, int floor)
     {
-        int nTotal = floorNodes.Count;
-        if (nTotal == 0) return;
-
-        if (r >= 10 && r <= 12)
+        var pool = new List<OverworldMapNode>();
+        foreach (var node in floorNodes)
         {
-            foreach (var node in floorNodes)
-                node.ApplyEncounter(EncounterType.Boss);
-            return;
+            if (node == null) continue;
+            if (node.EncounterType != EncounterType.None)
+            {
+                node.ApplyEncounter(node.EncounterType);
+                continue;
+            }
+            pool.Add(node);
         }
 
-        var pool = new List<OverworldMapNode>(floorNodes);
+        int nTotal = pool.Count;
+        if (nTotal == 0) return;
+
         ShuffleInPlace(pool);
 
-        if (r == 0 && pool.Count > 0)
+        if (floor == 0 && pool.Count > 0)
         {
             pool[0].ApplyEncounter(EncounterType.Market);
             pool.RemoveAt(0);
         }
 
         int shopCount = 0;
-        if (r == 4) shopCount = 1;
-        else if (r == 7) shopCount = 3;
+        if (floor == 4) shopCount = 2;
+        else if (floor == 7) shopCount = 2;
         shopCount = Mathf.Min(shopCount, pool.Count);
 
         for (int i = 0; i < shopCount; i++)
@@ -246,12 +265,14 @@ public class OverworldMapNode : MonoBehaviour
         pool.RemoveRange(0, shopCount);
 
         int templeTarget = 0;
-        if (r >= 2)
+        if (floor >= 2 && floor != 7)
         {
-            bool oddFloor = (r & 1) != 0;
-            templeTarget = oddFloor
-                ? Mathf.CeilToInt(nTotal / 3f)
-                : Mathf.FloorToInt(nTotal / 3f);
+            templeTarget = 1;
+            
+            // bool oddFloor = (r & 1) != 0;
+            // templeTarget = oddFloor
+            //     ? Mathf.CeilToInt(nTotal / 3f)
+            //     : Mathf.FloorToInt(nTotal / 3f);
         }
         // templeTarget = 1;
         templeTarget = Mathf.Clamp(templeTarget, 0, pool.Count);
@@ -260,7 +281,8 @@ public class OverworldMapNode : MonoBehaviour
             pool[i].ApplyEncounter(EncounterType.Temple);
         pool.RemoveRange(0, templeTarget);
 
-        int eventTarget = Mathf.CeilToInt(pool.Count / 4f);
+        int eventTarget = 1; //Mathf.CeilToInt(pool.Count / 4f);
+        if (floor == 4 || floor == 4 || floor == 7) eventTarget = 0;
         eventTarget = Mathf.Min(eventTarget, pool.Count);
         ShuffleInPlace(pool);
         for (int i = 0; i < eventTarget; i++)
@@ -312,6 +334,9 @@ public enum EncounterType
     Combat,
     Temple,
     Event,
-    Boss,
     Market,
+    BossFate,
+    BossGate,
+    BossThrone,
+    Styx,
 }

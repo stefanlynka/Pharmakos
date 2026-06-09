@@ -6,6 +6,7 @@ namespace Pharmakos.Events
     [System.Serializable]
     public class EventOptionData
     {
+        [Multiline]
         public string OptionText;
         public EventOutcomeData Outcome = new EventOutcomeData();
     }
@@ -61,6 +62,6 @@ namespace Pharmakos.Events
         BecomeLastEnemy,
         GoldenFleeceFight,
         RebukeTheGods,
-        
+        RemoveAllSmallFollowers,
     }
 }

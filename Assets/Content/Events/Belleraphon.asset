@@ -25,12 +25,16 @@ MonoBehaviour:
   ImageStartingScale: {x: 18, y: 18, z: 1}
   SummaryPosition: 2
   Options:
-  - OptionText: Invite him to join you as you too seek a God\n(Gain Card)
+  - OptionText: 'Invite him to join you as you too seek a God
+
+      (Gain Card)'
     Outcome:
       OutcomeType: 1
       RewardInfo:
       - Pegasus
-  - OptionText: Hear more of his tales before wishing him luck\n(Gain Rituals)
+  - OptionText: 'Hear more of his tales before wishing him luck
+
+      (Gain Rituals)'
     Outcome:
       OutcomeType: 3
       RewardInfo:

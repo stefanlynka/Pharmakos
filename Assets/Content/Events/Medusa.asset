@@ -20,13 +20,17 @@ MonoBehaviour:
   ImageStartingScale: {x: 18, y: 18, z: 1}
   SummaryPosition: 1
   Options:
-  - OptionText: He accepted his fate and wished to see what few others had\n(Gain
-      Heartstring)
+  - OptionText: 'He accepted his fate and wished to see what few others had
+
+      (Gain
+      Heartstring)'
     Outcome:
       OutcomeType: 8
       RewardInfo: []
-  - OptionText: His resolve failed him. Not all are ready for such a quest\n(Remove
-      Card from deck)
+  - OptionText: 'His resolve failed him. Not all are ready for such a quest
+
+      (Remove
+      All 0 and 1 cost Followers from deck)'
     Outcome:
-      OutcomeType: 7
+      OutcomeType: 12
       RewardInfo: []

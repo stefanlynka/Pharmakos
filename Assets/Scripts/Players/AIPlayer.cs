@@ -8,6 +8,7 @@ using System;
 public class AIPlayer : Player
 {
     public AITurnPhase TurnPhase = AITurnPhase.Setup;
+    public bool TurnInterruptedEarly = false;
 
     private DecisionSet playerDecisions = new DecisionSet();
 
@@ -41,6 +42,7 @@ public class AIPlayer : Player
         }
 
         TurnPhase = AITurnPhase.Setup;
+        TurnInterruptedEarly = false;
 
         base.StartTurn();
     }
@@ -127,15 +129,14 @@ public class AIPlayer : Player
                     {
                         Debug.LogWarning("Decision Failed");
                     }
-                    if (View.Instance.DoingEndOfTurnActions)
+                    if (TurnInterruptedEarly)
                     {
                         Debug.LogWarning("AI turn interrupted early.");
-                        TurnPhase = AITurnPhase.Waiting;
                         break;
                     }
                 }
 
-                TurnPhase = AITurnPhase.Ending;
+                TurnPhase = TurnInterruptedEarly ? AITurnPhase.Waiting : AITurnPhase.Ending;
                 break;
             case AITurnPhase.Ending:
                 Debug.LogWarning("Ending AI Turn");

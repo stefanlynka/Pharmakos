@@ -62,14 +62,7 @@ public class AttackWithFollowerAction : GameAction
 
     public override List<AnimationAction> GetAnimationActions()
     {
-        if (!attackSuccessful) return new List<AnimationAction>();
-
-        List<AnimationAction> animationActions = new List<AnimationAction>()
-        {
-            new AttackWithFollowerAnimation(this)
-        };
-
-        return animationActions;
+        return new List<AnimationAction>();
     }
 
     public override void LogAction()

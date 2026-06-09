@@ -9,8 +9,8 @@ public class FightBanner : MonoBehaviour
 
     public TextMeshProUGUI BannerText;
 
-    public void SetText(int fightNum)
+    public void SetText(string fightName)
     {
-        BannerText.text = "Fight " + fightNum.ToString();
+        BannerText.text = fightName;
     }
 }

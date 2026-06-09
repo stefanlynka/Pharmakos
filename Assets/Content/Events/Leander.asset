@@ -22,14 +22,18 @@ MonoBehaviour:
   ImageStartingScale: {x: 18, y: 18, z: 1}
   SummaryPosition: 0
   Options:
-  - OptionText: You will be the third to hope for his safe arrival on the shore\n(Gain
-      Rituals)
+  - OptionText: 'You will be the third to hope for his safe arrival on the shore
+
+      (Gain
+      Rituals)'
     Outcome:
       OutcomeType: 3
       RewardInfo:
       - AphroditeMajor
       - PoseidonMajor
-  - OptionText: You have seen how these stories often end\n(Gain Cards)
+  - OptionText: 'You have seen how these stories often end
+
+      (Gain Cards)'
     Outcome:
       OutcomeType: 1
       RewardInfo:

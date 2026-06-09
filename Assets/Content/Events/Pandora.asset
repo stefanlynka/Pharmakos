@@ -21,12 +21,16 @@ MonoBehaviour:
   ImageStartingScale: {x: 18, y: 18, z: 1}
   SummaryPosition: 2
   Options:
-  - OptionText: Offer to take the box from her\n(Gain Trinket)
+  - OptionText: 'Offer to take the box from her
+
+      (Gain Trinket)'
     Outcome:
       OutcomeType: 2
       RewardInfo:
       - PandorasBox
-  - OptionText: Offer to open the box for her\n(Gain Trinket)
+  - OptionText: 'Offer to open the box for her
+
+      (Gain Trinket)'
     Outcome:
       OutcomeType: 2
       RewardInfo:

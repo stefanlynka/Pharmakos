@@ -21,16 +21,22 @@ MonoBehaviour:
   ImageStartingScale: {x: 18, y: 18, z: 1}
   SummaryPosition: 1
   Options:
-  - OptionText: Fight off the eagle to give him a day of rest\n(Combat)
+  - OptionText: 'Fight off the eagle to give him a day of rest
+
+      (Combat)'
     Outcome:
       OutcomeType: 4
       RewardInfo: []
-  - OptionText: Listen to his tale of the first flame\n(Gain Card)
+  - OptionText: 'Listen to his tale of the first flame
+
+      (Gain Card)'
     Outcome:
       OutcomeType: 1
       RewardInfo:
       - FirstFlame
-  - OptionText: Leave\n(Nothing)
+  - OptionText: 'Leave
+
+      (Nothing)'
     Outcome:
       OutcomeType: 0
       RewardInfo: []

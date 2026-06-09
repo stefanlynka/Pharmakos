@@ -23,12 +23,21 @@ public class ProgressionHandler
         Caves,
         Trials,
         Delphi,
-        Underworld,
+        Throne,
+        Fates,
+        TheGate,
     }
 
     public int CurrentLevel = 0;
+    /// <summary>Overworld floor (<see cref="OverworldMapNode.R"/>) for the current combat; drives enemy scaling.</summary>
+    public int CurrentFightNumber = 0;
     public DeckName CurrentEnemy = DeckName.None;
-    public int CurrentPool { get { return Mathf.CeilToInt(CurrentLevel / 3f); } }
+    public DeckName LastFoughtEnemyDeckName = DeckName.None;
+    public int LastFoughtEnemyPoolNum = 0;
+    public int CurrentPool { get { return GetFightPool(CurrentFightNumber > 0 ? CurrentFightNumber : CurrentLevel); } }
+
+    public static int GetFightPool(int fightNumber) =>
+        Mathf.Max(1, Mathf.CeilToInt(fightNumber / 3f));
 
     public Dictionary<DeckName, PlayerDetails> DetailsByDeckName = new Dictionary<DeckName, PlayerDetails>();
     //public Dictionary<int, List<DeckName>> EnemyPools = new Dictionary<int, List<DeckName>>();
@@ -1454,7 +1463,7 @@ public class ProgressionHandler
             }
         };
 
-        DetailsByDeckName[DeckName.Underworld] = new PlayerDetails
+        DetailsByDeckName[DeckName.Throne] = new PlayerDetails
         {
             IsFightableEnemy = false,
             IsBoss = true,
@@ -1533,6 +1542,76 @@ public class ProgressionHandler
                 new PriceOfProfit(),
                 new PriceOfLegacy(),
             }
+        };
+
+        DetailsByDeckName[DeckName.Fates] = new PlayerDetails
+        {
+            IsFightableEnemy = false,
+            IsBoss = true,
+            BaseHealth = 10,
+            Pool = 4,
+            PortraitName = "Fates",
+            MinorRituals = new Dictionary<int, Ritual>(),
+            MajorRituals = new Dictionary<int, Ritual>(),
+            Trinkets = new Dictionary<int, List<Trinket>>(),
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>>(),
+            TwistOfFateIntervals = new Dictionary<int, int>(),
+            DeckBlueprint = new Dictionary<int, List<Card>>(),
+            StartingBattleRow = new Dictionary<int, List<Follower>>(),
+            Rewards = new List<Card>(),
+        };
+
+        DetailsByDeckName[DeckName.TheGate] = new PlayerDetails
+        {
+            IsFightableEnemy = false,
+            IsBoss = true,
+            BaseHealth = 10,
+            Pool = 4,
+            PortraitName = "TheGate",
+            MinorRituals = new Dictionary<int, Ritual>(),
+            MajorRituals = new Dictionary<int, Ritual>(),
+            Trinkets = new Dictionary<int, List<Trinket>>(),
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>>()
+            {
+                [4] = new List<Trinket>() { new CreakingOpenTrinket() },
+            },
+            TwistOfFateIntervals = new Dictionary<int, int>()
+            {
+                [4] = 1,
+            },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [4] = new List<Card>
+                {
+                    new EyesInTheDark(),
+                    new EyesInTheDark(),
+                    new EyesInTheDark(),
+                    new EyesInTheDark(),
+                    new EyesInTheDark(),
+                    new EyesInTheDark(),
+                    new EyesInTheDark(),
+                    new EyesInTheDark(),
+                    new EyesInTheDark(),
+                    new EyesInTheDark(),
+                    new Gnaw(),
+                    new Gnaw(),
+                    new Gnaw(),
+                    new Gnaw(),
+                    new Gnaw(),
+                    new Roar(),
+                    new Roar(),
+                    new Roar(),
+                    new Roar(),
+                    new Roar(),
+                },
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>(),
+            Rewards = new List<Card>
+            {
+                new EyesInTheDark(),
+                new Gnaw(),
+                new Roar(),
+            },
         };
 
         // Add enemy decks to their respective pool
@@ -1614,28 +1693,36 @@ public class ProgressionHandler
             }, randomTrinket));
     }
 
+    private List<Trinket> CreateFullTrinketPool()
+    {
+        return new List<Trinket>
+        {
+            new CyclopsEyeTrinket(),
+            new AresWhetstoneTrinket(),
+            new FuneralAmphoraTrinket(),
+            new DemetersSickleTrinket(),
+            new AthenasQuillTrinket(),
+            new PeltastTrumpetTrinket(),
+            new GoldenFleeceTuftTrinket(),
+            new LyreOfApolloTrinket(),
+            new VialOfAmbrosiaTrinket(),
+            new PansFluteTrinket(),
+            new HermesSandalsTrinket(),
+            new TheAegisTrinket(),
+            new RodOfAsclepiusTrinket(),
+            new HydrasScaleTrinket(),
+            new TunicOfNessusTrinket(),
+            new MedeasPotionTrinket(),
+            new WingsOfIcarusTrinket(),
+            new PandorasBoxTrinket(),
+            new PandorasHopeTrinket(),
+            new OdysseyTrinket(),
+        };
+    }
+
     private void SetupTrinkets()
     {
-        availableTrinkets.Clear();
-        availableTrinkets.Add(new CyclopsEyeTrinket());
-        availableTrinkets.Add(new AresWhetstoneTrinket());
-        availableTrinkets.Add(new FuneralAmphoraTrinket());
-        availableTrinkets.Add(new DemetersSickleTrinket());
-        availableTrinkets.Add(new AthenasQuillTrinket());
-        availableTrinkets.Add(new PeltastTrumpetTrinket());
-        availableTrinkets.Add(new GoldenFleeceTuftTrinket());
-        availableTrinkets.Add(new LyreOfApolloTrinket());
-        availableTrinkets.Add(new VialOfAmbrosiaTrinket());
-        availableTrinkets.Add(new PansFluteTrinket());
-        availableTrinkets.Add(new HermesSandalsTrinket());
-        availableTrinkets.Add(new TheAegisTrinket());
-        availableTrinkets.Add(new RodOfAsclepiusTrinket());
-        availableTrinkets.Add(new HydrasScaleTrinket());
-        availableTrinkets.Add(new TunicOfNessusTrinket());
-        availableTrinkets.Add(new MedeasPotionTrinket());
-        availableTrinkets.Add(new WingsOfIcarusTrinket());
-        availableTrinkets.Add(new PandorasBoxTrinket());
-        availableTrinkets.Add(new OdysseyTrinket());
+        availableTrinkets = CreateFullTrinketPool();
     }
 
     // Get a random trinket that's viable with the given ritual
@@ -1687,6 +1774,7 @@ public class ProgressionHandler
             ritualRewards.Add(new AphroditeMinor());
             ritualRewards.Add(new DionysusMinor());
             ritualRewards.Add(new HermesMinor());
+            ritualRewards.Add(new HermesMajor());
             ritualRewards.Add(new HestiaMinor());
             ritualRewards.Add(new HadesMinor());
             ritualRewards.Add(new DemeterMinor());
@@ -1701,6 +1789,7 @@ public class ProgressionHandler
             ritualRewards.Add(new HephaestusMajor());
             ritualRewards.Add(new ZeusMajor());
             ritualRewards.Add(new ApolloMajor());
+            ritualRewards.Add(new PoseidonMajor());
             ritualRewards.Add(new OldOnesMinor());
             ritualRewards.Add(new HeraMajor());
         }
@@ -1729,6 +1818,97 @@ public class ProgressionHandler
     public void Reset()
     {
         CurrentLevel = 0;
+        CurrentFightNumber = 0;
+        LastFoughtEnemyDeckName = DeckName.None;
+        LastFoughtEnemyPoolNum = 0;
+    }
+
+    public static string FormatDeckNameAsFightName(DeckName deckName)
+    {
+        string name = deckName.ToString();
+        if (string.IsNullOrEmpty(name))
+            return "";
+
+        var formatted = new System.Text.StringBuilder();
+        for (int i = 0; i < name.Length; i++)
+        {
+            char c = name[i];
+            if (i > 0 && char.IsUpper(c) && !char.IsUpper(name[i - 1]))
+                formatted.Append(' ');
+            formatted.Append(c);
+        }
+
+        return formatted.ToString();
+    }
+
+    public string GetCurrentFightDisplayName() => FormatDeckNameAsFightName(CurrentEnemy);
+
+    public void RecordLastFoughtEnemy()
+    {
+        if (CurrentEnemy == DeckName.None)
+            return;
+
+        LastFoughtEnemyDeckName = CurrentEnemy;
+        LastFoughtEnemyPoolNum = CurrentPool;
+    }
+
+    public bool ApplyBecomeLastEnemy()
+    {
+        if (LastFoughtEnemyDeckName == DeckName.None)
+        {
+            Debug.LogWarning("BecomeLastEnemy: No last fought enemy recorded.");
+            return false;
+        }
+
+        if (!DetailsByDeckName.TryGetValue(LastFoughtEnemyDeckName, out PlayerDetails enemyDetails))
+        {
+            Debug.LogError("BecomeLastEnemy: Enemy deck not found: " + LastFoughtEnemyDeckName);
+            return false;
+        }
+
+        if (Controller.Instance?.HumanPlayerDetails == null)
+        {
+            Debug.LogError("BecomeLastEnemy: HumanPlayerDetails is not available.");
+            return false;
+        }
+
+        int pool = LastFoughtEnemyPoolNum;
+        PlayerDetails playerDetails = Controller.Instance.HumanPlayerDetails;
+
+        if (!enemyDetails.DeckBlueprint.TryGetValue(pool, out List<Card> enemyDeck) || enemyDeck == null)
+        {
+            Debug.LogWarning("BecomeLastEnemy: Enemy deck not found for pool " + pool + " on " + LastFoughtEnemyDeckName);
+            return false;
+        }
+
+        var newDeck = new List<Card>();
+        foreach (Card card in enemyDeck)
+            newDeck.Add(card.MakeBaseCopy());
+        playerDetails.DeckBlueprint[0] = newDeck;
+
+        if (enemyDetails.MinorRituals.TryGetValue(pool, out Ritual minorRitual) && minorRitual != null)
+            playerDetails.MinorRituals[0] = minorRitual.MakeBaseCopy();
+        else
+            playerDetails.MinorRituals[0] = null;
+
+        if (enemyDetails.MajorRituals.TryGetValue(pool, out Ritual majorRitual) && majorRitual != null)
+            playerDetails.MajorRituals[0] = majorRitual.MakeBaseCopy();
+        else
+            playerDetails.MajorRituals[0] = null;
+
+        if (!playerDetails.Trinkets.ContainsKey(0))
+            playerDetails.Trinkets[0] = new List<Trinket>();
+
+        if (enemyDetails.Trinkets.TryGetValue(pool, out List<Trinket> enemyTrinkets))
+        {
+            foreach (Trinket trinket in enemyTrinkets)
+            {
+                if (trinket != null)
+                    playerDetails.Trinkets[0].Add(trinket.MakeBaseCopy());
+            }
+        }
+
+        return true;
     }
 
     public void CurrentEnemyDefeated()
@@ -1798,9 +1978,10 @@ public class ProgressionHandler
         }
     }
 
-    public void SetupNextCombatEnemy()
+    public void SetupNextCombatEnemy(int floorFightNumber = -1)
     {
         CurrentLevel++;
+        CurrentFightNumber = floorFightNumber >= 0 ? floorFightNumber : CurrentLevel;
         RefillEnemyPoolIfDepleted();
         if (EnemyPool.Count == 0)
         {
@@ -1826,6 +2007,40 @@ public class ProgressionHandler
 
         int idx = Controller.Instance.MetaRNG.Next(0, BossPool.Count);
         CurrentEnemy = BossPool[idx];
+    }
+
+    public void SetupBossEncounter(EncounterType bossType, int floorFightNumber = -1)
+    {
+        CurrentLevel++;
+        CurrentFightNumber = floorFightNumber >= 0 ? floorFightNumber : CurrentLevel;
+        if (!TryGetBossDeckName(bossType, out DeckName bossDeck))
+        {
+            CurrentLevel--;
+            Debug.LogError("Unknown boss encounter type: " + bossType + "; using a regular combat encounter instead.");
+            SetupNextCombatEnemy();
+            return;
+        }
+
+        CurrentEnemy = bossDeck;
+    }
+
+    public static bool TryGetBossDeckName(EncounterType bossType, out DeckName deckName)
+    {
+        switch (bossType)
+        {
+            case EncounterType.BossFate:
+                deckName = DeckName.Fates;
+                return true;
+            case EncounterType.BossGate:
+                deckName = DeckName.TheGate;
+                return true;
+            case EncounterType.BossThrone:
+                deckName = DeckName.Throne;
+                return true;
+            default:
+                deckName = DeckName.None;
+                return false;
+        }
     }
 
     public void SetupNextEnemy(bool isTestChamber = false)
@@ -1855,8 +2070,10 @@ public class ProgressionHandler
         {
             if (newDetails.IsEnemy)
             {
-                newDetails.BaseHealth = ENEMY_HEALTH_OVERRIDE > 0 ? ENEMY_HEALTH_OVERRIDE : CurrentPool * 10 + ((CurrentLevel - 1) % 3) * 5;
-                newDetails.GoldPerTurn = CurrentLevel >= 10 ? 5 : 2 + Mathf.Min(CurrentPool, 2);
+                int fightNumber = CurrentFightNumber > 0 ? CurrentFightNumber : CurrentLevel;
+                int fightPool = GetFightPool(fightNumber);
+                newDetails.BaseHealth = ENEMY_HEALTH_OVERRIDE > 0 ? ENEMY_HEALTH_OVERRIDE : fightPool * 10 + ((fightNumber - 1) % 3) * 5;
+                newDetails.GoldPerTurn = fightNumber >= 10 ? 5 : 2 + Mathf.Min(fightPool, 2);
             }
             else newDetails.BaseHealth = GetPlayerHealth();
         }
@@ -1876,7 +2093,43 @@ public class ProgressionHandler
 
     public void LoadEnemy(Player player)
     {
+        if (CurrentEnemy == DeckName.Fates)
+            PrepareFatesDetailsFromPlayer(CurrentPool);
+
         LoadPlayer(player, CurrentEnemy);
+    }
+
+    private void PrepareFatesDetailsFromPlayer(int pool)
+    {
+        PlayerDetails fatesDetails = DetailsByDeckName[DeckName.Fates];
+        PlayerDetails humanDetails = Controller.Instance.HumanPlayerDetails;
+
+        var deckCopy = new List<Card>();
+        if (humanDetails.DeckBlueprint.TryGetValue(0, out List<Card> playerDeck))
+        {
+            foreach (Card card in playerDeck)
+                deckCopy.Add(card.MakeBaseCopy());
+        }
+        fatesDetails.DeckBlueprint[pool] = deckCopy;
+
+        fatesDetails.MinorRituals[pool] = humanDetails.MinorRituals.TryGetValue(0, out Ritual minorRitual) && minorRitual != null
+            ? minorRitual.MakeBaseCopy()
+            : null;
+        fatesDetails.MajorRituals[pool] = humanDetails.MajorRituals.TryGetValue(0, out Ritual majorRitual) && majorRitual != null
+            ? majorRitual.MakeBaseCopy()
+            : null;
+
+        fatesDetails.Trinkets[pool] = new List<Trinket>();
+        if (humanDetails.Trinkets.TryGetValue(0, out List<Trinket> playerTrinkets))
+        {
+            foreach (Trinket trinket in playerTrinkets)
+                fatesDetails.Trinkets[pool].Add(trinket.MakeBaseCopy());
+        }
+
+        fatesDetails.TwistOfFateIntervals[pool] = 1;
+        fatesDetails.TwistOfFateBuffs[pool] = new List<Trinket>();
+        foreach (Trinket trinket in CreateFullTrinketPool())
+            fatesDetails.TwistOfFateBuffs[pool].Add(trinket.MakeBaseCopy());
     }
 
     private static bool UsesConfiguredBaseHealth(DeckName deckName) =>

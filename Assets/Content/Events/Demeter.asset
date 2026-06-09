@@ -21,22 +21,30 @@ MonoBehaviour:
   ImageStartingScale: {x: 18, y: 18, z: 1}
   SummaryPosition: 2
   Options:
-  - OptionText: Summer\n(Gain Card)
+  - OptionText: 'Summer
+
+      (Gain Card)'
     Outcome:
       OutcomeType: 1
       RewardInfo:
       - LastingGift
-  - OptionText: Fall\n(Gain Card)
+  - OptionText: 'Fall
+
+      (Gain Card)'
     Outcome:
       OutcomeType: 1
       RewardInfo:
       - LastingGift
-  - OptionText: Winter\n(Gain Card)
+  - OptionText: 'Winter
+
+      (Gain Card)'
     Outcome:
       OutcomeType: 1
       RewardInfo:
       - LastingGift
-  - OptionText: Spring\n(Gain Card)
+  - OptionText: 'Spring
+
+      (Gain Card)'
     Outcome:
       OutcomeType: 1
       RewardInfo:

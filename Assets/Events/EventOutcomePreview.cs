@@ -156,6 +156,33 @@ public static class EventOutcomePreview
         }
     }
 
+    public static bool TryGetOfferedRituals(System.Collections.Generic.List<string> rewardInfo, out Ritual topReward, out Ritual bottomReward)
+    {
+        topReward = null;
+        bottomReward = null;
+        if (rewardInfo == null || rewardInfo.Count == 0)
+            return false;
+
+        int found = 0;
+        foreach (string rewardName in rewardInfo)
+        {
+            Ritual ritual = TryCreateRitual(rewardName);
+            if (ritual == null) continue;
+
+            if (found == 0)
+                topReward = ritual;
+            else if (found == 1)
+            {
+                bottomReward = ritual;
+                return true;
+            }
+
+            found++;
+        }
+
+        return topReward != null && bottomReward != null;
+    }
+
     static void ApplyGainCards(System.Collections.Generic.List<string> rewardInfo)
     {
         var cards = new System.Collections.Generic.List<Card>();

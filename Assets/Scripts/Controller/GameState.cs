@@ -22,6 +22,8 @@ public class GameState
     public Action<Follower> FollowerDies;
     public void FireFollowerSacrificed(Follower follower) { if (FollowerSacrificed != null) FollowerSacrificed(follower); }
     public Action<Follower> FollowerSacrificed;
+    public void FireFollowerAttacked(Follower attacker) { if (FollowerAttacked != null) FollowerAttacked(attacker); }
+    public Action<Follower> FollowerAttacked;
     public void FireFollowerHealthChanges(Follower follower, int change) { if (FollowerHealthChanges != null) FollowerHealthChanges(follower); }
     public Action<Follower> FollowerHealthChanges;
 
@@ -29,6 +31,8 @@ public class GameState
     public Action<Spell> SpellPlayed;
     public void FireRitualUsed(Ritual ritual) { if (RitualUsed != null) RitualUsed(ritual); }
     public Action<Ritual> RitualUsed;
+    public void FireCardDiscarded(Player player, Card card) { if (CardDiscarded != null) CardDiscarded(player, card); }
+    public Action<Player, Card> CardDiscarded;
 
     public Follower LastFollowerThatDied = null;
     public int FollowerDeathsThisTurn = 0;
@@ -192,8 +196,10 @@ public class GameState
         FollowerEnters = null;
         FollowerDies = null;
         FollowerSacrificed = null;
+        FollowerAttacked = null;
         SpellPlayed = null;
         RitualUsed = null;
+        CardDiscarded = null;
         // Reset other fields as needed
         FollowerDeathsThisTurn = 0;
         CurrentTeamID = 0;

@@ -24,6 +24,11 @@ public class RitualRewardHandler : MonoBehaviour
 
     public void Load(int levelCompleted, Ritual topRitual, Ritual bottomRitual)
     {
+        Load(levelCompleted, topRitual, bottomRitual, null, null);
+    }
+
+    public void Load(int levelCompleted, Ritual topRitual, Ritual bottomRitual, Ritual offeredTopReward, Ritual offeredBottomReward)
+    {
         DeselectAll();
 
         DefaultTopRitual = topRitual;
@@ -32,19 +37,26 @@ public class RitualRewardHandler : MonoBehaviour
         CurrentTopRitual.Init(topRitual);
         CurrentBottomRitual.Init(bottomRitual);
 
+        if (offeredTopReward != null && offeredBottomReward != null)
+        {
+            TopRitualReward.Load(offeredTopReward, 0, RitualButtonClicked);
+            BottomRitualReward.Load(offeredBottomReward, 1, RitualButtonClicked);
+        }
+        else
+        {
+            System.Type type1 = topRitual != null ? topRitual.GetType() : null;
+            System.Type type2 = bottomRitual != null ? bottomRitual.GetType() : null;
+            possibleRewards = Controller.Instance.ProgressionHandler.GetPossibleRitualRewards(); //CardHandler.GetPossibleRitualRewards(levelCompleted);
+            possibleRewards.RemoveAll(ritual => ritual.GetType() == type1 || ritual.GetType() == type2);
 
-        System.Type type1 = topRitual != null ? topRitual.GetType() : null;
-        System.Type type2 = bottomRitual != null ? bottomRitual.GetType() : null;
-        possibleRewards = Controller.Instance.ProgressionHandler.GetPossibleRitualRewards(); //CardHandler.GetPossibleRitualRewards(levelCompleted);
-        possibleRewards.RemoveAll(ritual => ritual.GetType() == type1 || ritual.GetType() == type2);
+            int randomIndex = Controller.Instance.MetaRNG.Next(0, possibleRewards.Count);
+            TopRitualReward.Load(possibleRewards[randomIndex], 0, RitualButtonClicked);
+            possibleRewards.RemoveAt(randomIndex);
 
-        int randomIndex = Controller.Instance.MetaRNG.Next(0, possibleRewards.Count);
-        TopRitualReward.Load(possibleRewards[randomIndex], 0, RitualButtonClicked);
-        possibleRewards.RemoveAt(randomIndex);
-
-        randomIndex = Controller.Instance.MetaRNG.Next(0, possibleRewards.Count);
-        BottomRitualReward.Load(possibleRewards[randomIndex], 1, RitualButtonClicked);
-        possibleRewards.RemoveAt(randomIndex);
+            randomIndex = Controller.Instance.MetaRNG.Next(0, possibleRewards.Count);
+            BottomRitualReward.Load(possibleRewards[randomIndex], 1, RitualButtonClicked);
+            possibleRewards.RemoveAt(randomIndex);
+        }
 
         ActivateMenuSelection();
     }

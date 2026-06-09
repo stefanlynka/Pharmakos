@@ -23,11 +23,15 @@ MonoBehaviour:
   ImageStartingScale: {x: 20, y: 20, z: 1}
   SummaryPosition: 2
   Options:
-  - OptionText: Find courage in her words\n(Gain Heartstring)
+  - OptionText: 'Find courage in her words
+
+      (Gain Heartstring)'
     Outcome:
       OutcomeType: 8
       RewardInfo: []
-  - OptionText: Hear more of her trials\n(Gain Rituals)
+  - OptionText: 'Hear more of her trials
+
+      (Gain Rituals)'
     Outcome:
       OutcomeType: 3
       RewardInfo:

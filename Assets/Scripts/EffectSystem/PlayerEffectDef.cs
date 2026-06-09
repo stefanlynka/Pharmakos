@@ -62,4 +62,5 @@ public class PlayerEffectDescriptionData
     public Player BuffIconHolder; // Who has the buff icon appear next to them
     public string Description;
     public Sprite Icon;
+    public Card HoverCard;
 }

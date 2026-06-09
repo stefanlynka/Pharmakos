@@ -23,21 +23,28 @@ public class PreAttackWithFollowerAction : GameAction
 
     public override void Execute(bool simulated = false, bool success = true)
     {
+        if (!simulated && ShouldPlayAttackAnimation())
+        {
+            View.Instance.AnimationHandler.AddAnimationActionToQueue(new AttackWithFollowerAnimation(this));
+        }
+
         Attacker.AttackTarget(Target);
 
         base.Execute(simulated);
     }
 
+    private bool ShouldPlayAttackAnimation()
+    {
+        if (Attacker == null || Target == null) return false;
+        if (Attacker.CurrentHealth <= 0) return false;
+        if (Target is Follower follower && follower.CurrentHealth <= 0) return false;
+        if (Target is Player player && player.Health <= 0) return false;
+        return true;
+    }
+
     public override List<AnimationAction> GetAnimationActions()
     {
-        //if (!attackHappened) return new List<AnimationAction>();
-
-        List<AnimationAction> animationActions = new List<AnimationAction>()
-        {
-            //new AttackWithFollowerAnimation(this)
-        };
-
-        return animationActions;
+        return new List<AnimationAction>();
     }
 
     public override void LogAction()

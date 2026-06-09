@@ -22,12 +22,17 @@ MonoBehaviour:
   ImageStartingScale: {x: 18, y: 18, z: 1}
   SummaryPosition: 2
   Options:
-  - OptionText: Join him in this great hunt\n(Gain Trinket)
+  - OptionText: 'Join him in this great hunt
+
+      (Gain Trinket)'
     Outcome:
       OutcomeType: 2
       RewardInfo:
       - HermesSandals
-  - OptionText: Follow his gaze to what lies beyond\n(Unlock future event)
+  - OptionText: 'Follow his gaze to what lies beyond
+
+      (Gain Trinket)'
     Outcome:
-      OutcomeType: 10
-      RewardInfo: []
+      OutcomeType: 2
+      RewardInfo:
+      - GoldenFleeceTuft

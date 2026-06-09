@@ -69,7 +69,9 @@ public class AudioHandler : MonoBehaviour
         MusicMultipliers[DeckName.Trials] = 0.2f;
         MusicMultipliers[DeckName.Caves] = 0.2f;
         MusicMultipliers[DeckName.Delphi] = 0.4f;
-        MusicMultipliers[DeckName.Underworld] = 0.25f;
+        MusicMultipliers[DeckName.Throne] = 0.25f;
+        MusicMultipliers[DeckName.Fates] = 0.25f;
+        MusicMultipliers[DeckName.TheGate] = 0.25f;
 
         userMusicVolume = PlayerPrefs.GetFloat("UserMusicVolume", 0.5f);
         MusicSlider.value = userMusicVolume;

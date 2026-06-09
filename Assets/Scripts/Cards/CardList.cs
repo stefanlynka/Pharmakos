@@ -2684,6 +2684,76 @@ public class Typhon : Follower
     }
 }
 
+// 2/1
+public class Ataphoi : Follower
+{
+    public Ataphoi() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Monster;
+
+        SetBaseStats(2, 1);
+
+        Text = "";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+    }
+}
+
+// OnDeath: Summon an Ataphoi
+public class Phantasma : Follower
+{
+    public Phantasma() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Type = FollowerType.Monster;
+
+        SetBaseStats(2, 1);
+
+        Text = "On Death: Summon an Ataphoi";
+        Icon = IconType.Skull;
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
+    {
+        SummonFollowerInstance newEffectInstance = new SummonFollowerInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnDeath);
+        newEffectInstance.Init(typeof(Ataphoi));
+        effectDef.EffectInstances.Add(newEffectInstance);
+    }
+}
+
 // OnKill: Summon a Monster
 public class Echidna : Follower
 {
@@ -3239,6 +3309,323 @@ public class Talaria : Spell
         {
             GiveFollowerStaticEffectAction newAction = new GiveFollowerStaticEffectAction(target, StaticEffect.Sprint);
             Owner.GameState.ActionHandler.AddAction(newAction);
+        }
+    }
+}
+
+// Draw a card
+public class Herald : Spell
+{
+    public Herald()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 0},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Text = "Draw a card";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+        targets.Add(Owner);
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        DrawCardAction drawAction = new DrawCardAction(Owner, target, 1);
+        Owner.GameState.ActionHandler.AddAction(drawAction);
+    }
+}
+
+// Randomly summon one of several outcomes
+public class EyesInTheDark : Spell
+{
+    public EyesInTheDark()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 4},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        OverrideName = "Eyes in the Dark";
+        Text = "Randomly summon one of: 5 Rats, a Hydra, an Echidna, a Typhon, a Cerberus, a Minotaur, 2 Pytho, or a Nemean Lion";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+        targets.Add(Owner);
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        if (target is not Player playerTarget) return;
+
+        void Summon(Follower follower)
+        {
+            int index = playerTarget.BattleRow.Followers.Count;
+            follower.Init(playerTarget);
+            GameAction summonAction = new SummonFollowerAction(follower, index);
+            playerTarget.GameState.ActionHandler.AddAction(summonAction);
+        }
+
+        switch (Owner.GameState.RNG.Next(0, 8))
+        {
+            case 0:
+                for (int i = 0; i < 5; i++) Summon(new Rat());
+                break;
+            case 1:
+                Summon(new Hydra());
+                break;
+            case 2:
+                Summon(new Echidna());
+                break;
+            case 3:
+                Summon(new Typhon());
+                break;
+            case 4:
+                Summon(new Cerberus());
+                break;
+            case 5:
+                Summon(new Minotaur());
+                break;
+            case 6:
+                Summon(new Pytho());
+                Summon(new Pytho());
+                break;
+            case 7:
+                Summon(new NemeanLion());
+                break;
+        }
+    }
+}
+
+// Spend all your Blood: Add that many Heralds to your hand
+public class PropheticDraught : Spell
+{
+    public PropheticDraught()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 0},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        OverrideName = "Prophetic Draught";
+        Text = "Spend all your Blood: Add that many Heralds to your hand";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+        targets.Add(Owner);
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        int bloodSpent = Owner.Offerings[OfferingType.Blood];
+        Owner.Offerings[OfferingType.Blood] = 0;
+
+        for (int i = 0; i < bloodSpent; i++)
+        {
+            Herald herald = new Herald();
+            herald.Costs[OfferingType.Gold] = 0;
+            herald.Init(Owner);
+            AddCardCopyToHandAction addAction = new AddCardCopyToHandAction(herald);
+            Owner.GameState.ActionHandler.AddAction(addAction);
+        }
+    }
+}
+
+// Spend all your Scrolls: Gain that many Bones and half that much Gold (rounded up)
+public class FinalRites : Spell
+{
+    public FinalRites()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 0},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        OverrideName = "Final Rites";
+        Text = "Spend all your Scrolls: Gain that many Bones and half that much Gold (rounded up)";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+        targets.Add(Owner);
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        int scrollsSpent = Owner.Offerings[OfferingType.Scroll];
+        Owner.Offerings[OfferingType.Scroll] = 0;
+
+        if (scrollsSpent > 0)
+        {
+            ChangeResourceAction boneAction = new ChangeResourceAction(Owner, OfferingType.Bone, scrollsSpent);
+            Owner.GameState.ActionHandler.AddAction(boneAction);
+
+            int goldGained = Mathf.CeilToInt(scrollsSpent / 2f);
+            ChangeResourceAction goldAction = new ChangeResourceAction(Owner, OfferingType.Gold, goldGained);
+            Owner.GameState.ActionHandler.AddAction(goldAction);
+        }
+    }
+}
+
+// Spend all your Bones: Summon that many Peltasts
+public class MacabreFestivities : Spell
+{
+    public MacabreFestivities()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 0},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        OverrideName = "Macabre Festivities";
+        Text = "Spend all your Bones: Summon that many Peltasts";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+        targets.Add(Owner);
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        int bonesSpent = Owner.Offerings[OfferingType.Bone];
+        Owner.Offerings[OfferingType.Bone] = 0;
+
+        for (int i = 0; i < bonesSpent; i++)
+        {
+            int index = Owner.BattleRow.Followers.Count;
+            Peltast peltast = new Peltast();
+            peltast.Init(Owner);
+            GameAction summonAction = new SummonFollowerAction(peltast, index);
+            Owner.GameState.ActionHandler.AddAction(summonAction);
+        }
+    }
+}
+
+// Deal 4 damage to a Follower and gain 4 life
+public class Gnaw : Spell
+{
+    private int damage = 4;
+    private int healthGained = 4;
+
+    public Gnaw()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 2},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Text = "Deal 4 damage to a Follower and gain 4 life";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+        targets.AddRange(ITarget.GetAllFollowers(Owner));
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
+        Owner.GameState.ActionHandler.AddAction(damageAction);
+
+        ChangePlayerHealthAction gainLifeAction = new ChangePlayerHealthAction(Owner, Owner, healthGained);
+        Owner.GameState.ActionHandler.AddAction(gainLifeAction, true);
+    }
+}
+
+// All enemy Followers lose 1 Attack
+public class Roar : Spell
+{
+    public Roar()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 2},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Text = "All enemy Followers lose 1 Attack";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+        targets.Add(Owner.GetOtherPlayer());
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        Player otherPlayer = Owner.GetOtherPlayer();
+        List<Follower> enemyFollowers = new List<Follower>(otherPlayer.BattleRow.Followers);
+        foreach (Follower follower in enemyFollowers)
+        {
+            ChangeStatsAction statsAction = new ChangeStatsAction(follower, -1, 0);
+            Owner.GameState.ActionHandler.AddAction(statsAction);
         }
     }
 }

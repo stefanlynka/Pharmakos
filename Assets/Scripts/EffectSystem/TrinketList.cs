@@ -1120,6 +1120,72 @@ public class PandorasBoxTrinketEffectDef : TrinketPlayerEffect
     }
 }
 
+// Pandora's Hope: The first time you lose a heartstring each combat, gain a heartstring
+public class PandorasHopeTrinket : Trinket<PandorasHopeTrinketEffectDef>
+{
+    public PandorasHopeTrinket()
+    {
+        Name = "Pandora's Hope";
+        Description = "The first time you lose a heartstring each combat, gain a heartstring";
+    }
+}
+public class PandorasHopeTrinketEffectDef : TrinketPlayerEffect
+{
+    bool lostHeartstringThisCombat;
+    int lastHeartstringCount;
+
+    public PandorasHopeTrinketEffectDef(Player owner)
+    {
+        Owner = owner;
+        TargetPlayer = owner;
+    }
+
+    public override void Apply()
+    {
+        lastHeartstringCount = TargetPlayer.CurrentHeartStrings;
+        TargetPlayer.OnHeartStringsChange += OnHeartStringsChanged;
+    }
+
+    public override void Unapply()
+    {
+        TargetPlayer.OnHeartStringsChange -= OnHeartStringsChanged;
+    }
+
+    void OnHeartStringsChanged()
+    {
+        if (lostHeartstringThisCombat)
+        {
+            lastHeartstringCount = TargetPlayer.CurrentHeartStrings;
+            return;
+        }
+
+        if (TargetPlayer.CurrentHeartStrings >= lastHeartstringCount)
+        {
+            lastHeartstringCount = TargetPlayer.CurrentHeartStrings;
+            return;
+        }
+
+        lostHeartstringThisCombat = true;
+        lastHeartstringCount = TargetPlayer.CurrentHeartStrings;
+
+        ChangeHeartStringsAction gainAction = new ChangeHeartStringsAction(TargetPlayer, 1, Owner);
+        TargetPlayer.GameState.ActionHandler.AddAction(gainAction);
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        PandorasHopeTrinketEffectDef copy = (PandorasHopeTrinketEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
+        return copy;
+    }
+
+    protected override string GetDescription()
+    {
+        return "The first time you lose a heartstring each combat, gain a heartstring";
+    }
+}
+
 
 // A trinket that grants the effect of the AresMinor Ritual
 public class AresMinorTrinket : Trinket<AresMinorEffectDef>
@@ -1629,5 +1695,175 @@ public class ResetOdysseyTrinketFlagAction : GameAction
     public override List<AnimationAction> GetAnimationActions()
     {
         return new List<AnimationAction>();
+    }
+}
+
+// Creaking Open: Gain 1 Gold per turn
+public class CreakingOpenTrinket : Trinket<CreakingOpenTrinketEffectDef>
+{
+    public CreakingOpenTrinket()
+    {
+        Name = "Creaking Open";
+        Description = "Gain 1 Gold per turn";
+        RepeatTrinket = false;
+    }
+}
+public class CreakingOpenTrinketEffectDef : TrinketPlayerEffect
+{
+    public CreakingOpenTrinketEffectDef(Player owner)
+    {
+        Owner = owner;
+        TargetPlayer = owner;
+    }
+
+    public override void Apply()
+    {
+        TargetPlayer.GoldPerTurn++;
+    }
+
+    public override void Unapply()
+    {
+        TargetPlayer.GoldPerTurn--;
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        CreakingOpenTrinketEffectDef copy = (CreakingOpenTrinketEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
+        return copy;
+    }
+
+    protected override string GetDescription()
+    {
+        return "Gain 1 Gold per turn";
+    }
+}
+
+// Strings of Fate: The first card you discard each combat is removed from your deck
+public class StringsOfFateTrinket : Trinket<StringsOfFateTrinketEffectDef>
+{
+    public StringsOfFateTrinket()
+    {
+        Name = "Strings of Fate";
+        Description = "The first card you discard each combat is removed from your deck";
+        RepeatTrinket = false;
+    }
+}
+public class StringsOfFateTrinketEffectDef : TrinketPlayerEffect
+{
+    private bool firstDiscardUsed = false;
+
+    public StringsOfFateTrinketEffectDef(Player owner)
+    {
+        Owner = owner;
+        TargetPlayer = owner;
+    }
+
+    public override void Apply()
+    {
+        firstDiscardUsed = false;
+        Owner.GameState.CardDiscarded += OnCardDiscarded;
+    }
+
+    public override void Unapply()
+    {
+        Owner.GameState.CardDiscarded -= OnCardDiscarded;
+    }
+
+    private void OnCardDiscarded(Player player, Card card)
+    {
+        if (firstDiscardUsed || player != TargetPlayer || !player.IsHuman || card == null)
+            return;
+
+        firstDiscardUsed = true;
+        RemoveOneCopyFromDeck(player, card);
+    }
+
+    private void RemoveOneCopyFromDeck(Player player, Card discardedCard)
+    {
+        string cardType = discardedCard.GetCardType();
+
+        for (int i = 0; i < player.DeckBlueprint.Count; i++)
+        {
+            if (player.DeckBlueprint[i].GetCardType() == cardType)
+            {
+                player.DeckBlueprint.RemoveAt(i);
+                break;
+            }
+        }
+
+        for (int i = 0; i < player.Deck.Count; i++)
+        {
+            if (player.Deck[i].GetCardType() == cardType)
+            {
+                player.Deck.RemoveAt(i);
+                break;
+            }
+        }
+
+        if (Controller.Instance != null)
+            Controller.Instance.RemoveOneCardCopyFromPlayerDeck(cardType);
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        StringsOfFateTrinketEffectDef copy = (StringsOfFateTrinketEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
+        return copy;
+    }
+
+    protected override string GetDescription()
+    {
+        return "The first card you discard each combat is removed from your deck";
+    }
+}
+
+// Gates Beyond: Sacrifice trinkets and rituals for heartstrings on the overworld
+public class GatesBeyondTrinket : Trinket<GatesBeyondTrinketEffectDef>
+{
+    public GatesBeyondTrinket()
+    {
+        Name = "Gates Beyond";
+        Description = "Sacrifice trinkets and rituals for heartstrings on the overworld";
+        RepeatTrinket = false;
+    }
+}
+public class GatesBeyondTrinketEffectDef : TrinketPlayerEffect
+{
+    public GatesBeyondTrinketEffectDef(Player owner)
+    {
+        Owner = owner;
+        TargetPlayer = owner;
+    }
+
+    public override void Apply()
+    {
+        if (!TargetPlayer.IsHuman || Controller.Instance?.HumanPlayerDetails == null)
+            return;
+
+        Controller.Instance.HumanPlayerDetails.CanSacrificeForHeartstrings = true;
+    }
+
+    public override void Unapply()
+    {
+        if (!TargetPlayer.IsHuman || Controller.Instance?.HumanPlayerDetails == null)
+            return;
+
+        Controller.Instance.HumanPlayerDetails.CanSacrificeForHeartstrings = false;
+    }
+
+    public override PlayerEffect DeepCopy(Player newOwner)
+    {
+        GatesBeyondTrinketEffectDef copy = (GatesBeyondTrinketEffectDef)MemberwiseClone();
+        copy.Owner = newOwner.GameState.GetTargetByID<Player>(Owner.GetID());
+        copy.TargetPlayer = newOwner.GameState.GetTargetByID<Player>(TargetPlayer.GetID());
+        return copy;
+    }
+
+    protected override string GetDescription()
+    {
+        return "Sacrifice trinkets and rituals for heartstrings on the overworld";
     }
 }

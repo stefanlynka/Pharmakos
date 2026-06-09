@@ -21,11 +21,15 @@ MonoBehaviour:
   ImageStartingScale: {x: 18, y: 18, z: 1}
   SummaryPosition: 2
   Options:
-  - OptionText: She knows he would not give up either\n(Gain Heartstring)
+  - OptionText: 'She knows he would not give up either
+
+      (Gain Heartstring)'
     Outcome:
       OutcomeType: 8
       RewardInfo: []
-  - OptionText: Why move on when she is strong enough to wait\n(Gain Trinket)
+  - OptionText: 'Why move on when she is strong enough to wait
+
+      (Gain Trinket)'
     Outcome:
       OutcomeType: 2
       RewardInfo:

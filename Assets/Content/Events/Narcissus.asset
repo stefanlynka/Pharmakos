@@ -22,11 +22,16 @@ MonoBehaviour:
   ImageStartingScale: {x: 18, y: 18, z: 1}
   SummaryPosition: 1
   Options:
-  - OptionText: You turn your eye to those that follow you\n(Copy Card in deck)
+  - OptionText: 'You turn your eye to those that follow you
+
+      (Copy Card in
+      deck)'
     Outcome:
       OutcomeType: 6
       RewardInfo: []
-  - OptionText: You turn your eye to your own reflection\n(Gain Card)
+  - OptionText: 'You turn your eye to your own reflection
+
+      (Gain Card)'
     Outcome:
       OutcomeType: 1
       RewardInfo:

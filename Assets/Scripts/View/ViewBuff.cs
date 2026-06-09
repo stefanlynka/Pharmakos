@@ -26,12 +26,15 @@ public class ViewBuff : MonoBehaviour
     private int amount = 0;
     private bool summaryForced = false;
     private string summaryDescription = string.Empty;
+    private Card hoverCard;
+    private PopupSlot hoverPopupSlot = PopupSlot.One;
 
     public void SetBuffData(StaticPlayerEffect playerEffect, PlayerEffectDescriptionData descriptionData)
     {
         PlayerEffect = playerEffect;
         Icon.sprite = descriptionData.Icon;
         summaryDescription = descriptionData.Description;
+        hoverCard = descriptionData.HoverCard;
 
         if (SummaryText != null)
             SummaryText.text = summaryDescription;
@@ -90,6 +93,12 @@ public class ViewBuff : MonoBehaviour
 
     void ShowHoverSummary()
     {
+        if (hoverCard != null)
+        {
+            PopupScreenHandler.Instance?.ShowCardPopup(hoverCard, transform, SummaryPosition, hoverPopupSlot);
+            return;
+        }
+
         if (string.IsNullOrEmpty(summaryDescription))
             return;
 
@@ -98,6 +107,12 @@ public class ViewBuff : MonoBehaviour
 
     void HideHoverSummary()
     {
+        if (hoverCard != null)
+        {
+            PopupScreenHandler.Instance?.HideImagePopup(hoverPopupSlot);
+            return;
+        }
+
         PopupScreenHandler.Instance?.HideTextPopup(transform);
     }
 

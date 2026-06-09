@@ -55,6 +55,10 @@ public class ChangeHeartStringsAction : GameAction
         if (actualChange < 0 && interruptAiTurnOnLoss && !player.GameState.CurrentPlayer.IsHuman)
         {
             player.GameState.ActionHandler.ClearStack();
+            if (!simulated && player.GameState.AI is AIPlayer aiPlayer)
+            {
+                aiPlayer.TurnInterruptedEarly = true;
+            }
             TryEndTurnAction tryEndTurnAction = new TryEndTurnAction(player.GameState.CurrentPlayer);
             player.GameState.ActionHandler.AddAction(tryEndTurnAction, true, true, false);
 

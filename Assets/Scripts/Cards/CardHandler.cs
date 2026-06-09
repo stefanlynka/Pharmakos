@@ -83,6 +83,8 @@ public static class CardHandler
         new Erinyes(),
         new Typhon(),
         new Echidna(),
+        new Ataphoi(),
+        new Phantasma(),
 
         // SPELLS
         new DragonTeeth(),
@@ -95,6 +97,13 @@ public static class CardHandler
         new Blessing(),
         new Talaria(),
         new HarpeOfPerseus(),
+        new Herald(),
+        new EyesInTheDark(),
+        new PropheticDraught(),
+        new FinalRites(),
+        new MacabreFestivities(),
+        new Gnaw(),
+        new Roar(),
         new ShieldOfAjax(),
         new StygianPact(),
         new Restoration(),

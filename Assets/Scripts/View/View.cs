@@ -67,7 +67,9 @@ public class View : MonoBehaviour
         { DeckName.Trials, "Images/Backgrounds/Trials" },
         { DeckName.SeasideCliffs, "Images/Backgrounds/Cliffs" },
         { DeckName.Delphi, "Images/Backgrounds/Temple" },
-        { DeckName.Underworld, "Images/Backgrounds/Underworld" }
+        { DeckName.Throne, "Images/Backgrounds/Underworld" },
+        { DeckName.Fates, "Images/Backgrounds/Underworld" },
+        { DeckName.TheGate, "Images/Backgrounds/Underworld" }
     };
 
     private readonly int targetFrameRate = 60;

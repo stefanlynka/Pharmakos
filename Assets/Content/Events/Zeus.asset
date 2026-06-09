@@ -24,13 +24,17 @@ MonoBehaviour:
   ImageStartingScale: {x: 20, y: 20, z: 1}
   SummaryPosition: 2
   Options:
-  - OptionText: You know better than to clash with Zeus\n(Gain Rituals)
+  - OptionText: 'You know better than to clash with Zeus
+
+      (Gain Rituals)'
     Outcome:
       OutcomeType: 3
       RewardInfo:
       - ZeusMinor
       - ZeusMajor
-  - OptionText: This cannot stand\n(Rebuke the Gods)
+  - OptionText: 'This cannot stand
+
+      (Rebuke the Gods)'
     Outcome:
       OutcomeType: 11
       RewardInfo: []

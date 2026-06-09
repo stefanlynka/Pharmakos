@@ -9,23 +9,28 @@ public class AttackWithFollowerAnimation : AnimationAction
     AttackWithFollowerAction attackAction;
 
     private float attackMoveDuration = 0.18f;
-    //private float moveDistance = 1f;
     private float cardSize = 3f;
+    private float attackLiftHeight = 1.2f;
     private ViewFollower attackerViewFollower;
-    private Vector3 startPosition;
-    private Vector3 endPosition;
+    private Transform unitHolder;
+    private Vector3 startLocal;
+    private Vector3 endLocal;
     private Follower attacker;
     private ITarget target;
 
     public AttackWithFollowerAnimation(GameAction gameAction) : base(gameAction)
     {
-        if (gameAction is AttackWithFollowerAction)
+        if (gameAction is AttackWithFollowerAction attackWithFollowerAction)
         {
-            attackAction = (AttackWithFollowerAction)gameAction;
+            attackAction = attackWithFollowerAction;
             attacker = attackAction.Attacker;
             target = attackAction.Target;
         }
-
+        else if (gameAction is PreAttackWithFollowerAction preAttackAction)
+        {
+            attacker = preAttackAction.Attacker;
+            target = preAttackAction.Target;
+        }
     }
 
     public override void Play(Action onFinish = null)
@@ -37,31 +42,35 @@ public class AttackWithFollowerAnimation : AnimationAction
             CallCallback();
             return;
         }
-        startPosition = attackerViewFollower.transform.position;
+        ViewBattleRow attackerBattleRow = attacker.Owner.IsHuman
+            ? View.Instance.Player1.BattleRow
+            : View.Instance.Player2.BattleRow;
+        unitHolder = attackerBattleRow.UnitHolderTransform;
 
-        //Debug.LogWarning(attackAction.Attacker.GetName() + " attacked " + attackAction.Target.GetName() + " Animation start");
+        startLocal = attackerViewFollower.transform.localPosition;
 
-        Vector3 targetPosition = Vector3.zero;
+        Vector3 targetWorldPosition = Vector3.zero;
 
         Card cardTarget = target as Card;
         Player playerTarget = target as Player;
         if (cardTarget != null && View.Instance.TryGetViewFollower(cardTarget, out ViewFollower targetViewFollower))
         {
-            targetPosition = targetViewFollower.transform.position;
+            targetWorldPosition = targetViewFollower.transform.position;
         }
         else if (playerTarget != null)
         {
             ViewPlayer targetViewPlayer = View.Instance.GetViewPlayer(playerTarget);
-            targetPosition = targetViewPlayer.transform.position;
+            targetWorldPosition = targetViewPlayer.transform.position;
         }
 
-        Vector2 startXY = startPosition;
-        Vector2 targetXY = targetPosition;
-        float distanceBetweenTargets = Vector2.Distance(startXY, targetXY);
+        Vector3 targetLocal = unitHolder.InverseTransformPoint(targetWorldPosition);
+        targetLocal.z = startLocal.z;
+
+        float distanceBetweenTargets = Vector3.Distance(startLocal, targetLocal);
         float distanceToTargetPercent = distanceBetweenTargets != 0 ? (distanceBetweenTargets - cardSize) / distanceBetweenTargets : 0;
 
-        Vector2 endXY = Vector2.Lerp(startXY, targetXY, distanceToTargetPercent);
-        endPosition = new Vector3(endXY.x, endXY.y, startPosition.z);
+        endLocal = Vector3.Lerp(startLocal, targetLocal, distanceToTargetPercent);
+        endLocal.z = startLocal.z;
 
         attackMoveDuration = View.Instance.IsHumansTurn ? 0.18f : 0.25f;
         Sequence attackSequence = new Sequence();
@@ -76,16 +85,20 @@ public class AttackWithFollowerAnimation : AnimationAction
     }
 
     private bool hasPlayedSound = false;
-    private void SetAttackerPosition(float progress)
+
+    private void SetAttackerPosition(float progress, bool applyLift)
     {
-        Vector3 pos = Vector3.Lerp(startPosition, endPosition, progress);
-        pos.z = startPosition.z;
-        attackerViewFollower.transform.position = pos;
+        Vector3 pos = Vector3.Lerp(startLocal, endLocal, progress);
+        pos.z = startLocal.z;
+        if (applyLift)
+            pos.y += attackLiftHeight * (1f - progress);
+
+        attackerViewFollower.transform.localPosition = pos;
     }
 
     private void MoveAttackerForward(float progress)
     {
-        SetAttackerPosition(progress);
+        SetAttackerPosition(progress, applyLift: true);
         if (!hasPlayedSound)
         {
             hasPlayedSound = true;
@@ -95,7 +108,7 @@ public class AttackWithFollowerAnimation : AnimationAction
     }
     private void MoveAttacker(float progress)
     {
-        SetAttackerPosition(progress);
+        SetAttackerPosition(progress, applyLift: false);
     }
 
     protected override void Log()

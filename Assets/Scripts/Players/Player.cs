@@ -588,6 +588,7 @@ public class Player : ITarget
     {
         Hand.Remove(card);
         Graveyard.Add(card);
+        GameState?.FireCardDiscarded(this, card);
         //View.Instance.DiscardCard(card);
     }
 
@@ -889,6 +890,8 @@ public class PlayerDetails
             { OfferingType.Crop, 0},
             { OfferingType.Scroll, 0},
         };
+
+    public bool CanSacrificeForHeartstrings = false;
 
     public PlayerDetails() { }
 }

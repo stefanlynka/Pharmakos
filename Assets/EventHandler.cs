@@ -211,14 +211,27 @@ public class EventHandler : MonoBehaviour
             case EventOutcomeType.RemoveCardFromDeck:
                 break;
             case EventOutcomeType.BecomeLastEnemy:
+                Controller.Instance.ProgressionHandler.ApplyBecomeLastEnemy();
                 break;
             case EventOutcomeType.GoldenFleeceFight:
                 break;
             case EventOutcomeType.GainRituals:
+                ApplyGainRituals(outcome);
                 break;
             default:
                 break;
         }
+    }
+
+    void ApplyGainRituals(EventOutcomeData outcome)
+    {
+        if (!EventOutcomePreview.TryGetOfferedRituals(outcome?.RewardInfo, out Ritual topReward, out Ritual bottomReward))
+        {
+            Debug.LogWarning("EventHandler: GainRituals outcome needs two valid ritual types in RewardInfo.");
+            return;
+        }
+
+        _onEventComplete = () => Controller.Instance.GoToRitualRewardScreen(topReward, bottomReward);
     }
 
     void RemoveRandomCardsFromDeck(int count)
