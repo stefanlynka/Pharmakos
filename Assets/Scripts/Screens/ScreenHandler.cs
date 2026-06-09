@@ -27,6 +27,8 @@ public class ScreenHandler : MonoBehaviour
             Instance = this;
         }
 
+        RegisterUnlistedSceneScreens();
+        EnsurePauseStyxUnlocksHandler();
         SetupAll();
         HideAll(true);
         EnablePersistentScreens(true);
@@ -35,6 +37,28 @@ public class ScreenHandler : MonoBehaviour
 
         ShowScreen(ScreenName.Game, true, false);
         //ShowScreen(ScreenName.Start, false, false);
+    }
+
+    /// <summary>
+    /// Picks up Screen components in the scene that aren't in the serialized list,
+    /// so new screens can be added without editing this handler's inspector list.
+    /// </summary>
+    protected virtual void RegisterUnlistedSceneScreens()
+    {
+        foreach (Screen screen in FindObjectsOfType<Screen>(true))
+        {
+            if (!Screens.Contains(screen))
+                Screens.Add(screen);
+        }
+    }
+
+    protected virtual void EnsurePauseStyxUnlocksHandler()
+    {
+        if (!TryGetScreen(ScreenName.Pause, out Screen pauseScreen))
+            return;
+
+        if (pauseScreen.GetComponent<PauseStyxUnlocksHandler>() == null)
+            pauseScreen.gameObject.AddComponent<PauseStyxUnlocksHandler>();
     }
 
     protected virtual void SetupAll()
@@ -159,5 +183,10 @@ public enum ScreenName
     Temple,
     Shop,
     Popup,
+    Styx,
+    TrinketUnlock,
+    StyxTrinketSelect,
+    Status,
+    StatusButton,
 }
 

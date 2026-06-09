@@ -1,8 +1,12 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PopupHandler : MonoBehaviour
 {
     public static PopupHandler Instance;
+
+    const string PopupRenderTextureOnePath = "RenderTextures/Popup1";
+    const string PopupRenderTextureTwoPath = "RenderTextures/Popup2";
 
     public PopupCapture Popup1;
     public PopupCapture Popup2;
@@ -26,6 +30,7 @@ public class PopupHandler : MonoBehaviour
 
         Instance = this;
         AutoResolvePopupViews();
+        BindPopupViewTextures();
     }
 
     void OnDestroy()
@@ -124,6 +129,26 @@ public class PopupHandler : MonoBehaviour
 
         if (Popup2View == null && eventScreenHandler.Popup2 != null)
             Popup2View = eventScreenHandler.Popup2.GetComponent<RectTransform>();
+    }
+
+    void BindPopupViewTextures()
+    {
+        BindPopupViewTexture(Popup1View, PopupRenderTextureOnePath);
+        BindPopupViewTexture(Popup2View, PopupRenderTextureTwoPath);
+    }
+
+    static void BindPopupViewTexture(RectTransform popupView, string textureResourcePath)
+    {
+        if (popupView == null || string.IsNullOrEmpty(textureResourcePath))
+            return;
+
+        RawImage rawImage = popupView.GetComponentInChildren<RawImage>(true);
+        if (rawImage == null)
+            return;
+
+        RenderTexture texture = Resources.Load<RenderTexture>(textureResourcePath);
+        if (texture != null)
+            rawImage.texture = texture;
     }
 
     void PositionPopupNearTarget(RectTransform popupRect, Transform anchor, PopupPosition side, Camera worldCamera)

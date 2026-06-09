@@ -41,7 +41,7 @@ public class EventHandler : MonoBehaviour
         }
 
         int idx = Controller.Instance.MetaRNG.Next(0, Events.Count);
-        idx = 0; // TODO: Remove this
+        // idx = 0; // TODO: Remove this
         var def = Events[idx];
         if (def == null)
         {

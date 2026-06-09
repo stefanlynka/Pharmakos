@@ -45,6 +45,9 @@ public class Controller : MonoBehaviour
 
     public List<Follower> SacrificedFollowers = new List<Follower>();
 
+    /// <summary>Tracks cards/rituals/trinkets removed during the current run for the River Styx node.</summary>
+    public StyxRunState StyxRunState = new StyxRunState();
+
     /// <summary>Human player's heartstring count for the current run; persists between combats and events.</summary>
     public int RunHeartStrings = Player.StartingHeartStrings;
 
@@ -83,6 +86,11 @@ public class Controller : MonoBehaviour
     public TempleHandler TempleHandler;
     public ShopHandler ShopHandler;
 
+    private StyxScreenHandler _styxScreenHandler;
+    private TrinketUnlockHandler _trinketUnlockHandler;
+    private StyxTrinketSelectHandler _styxTrinketSelectHandler;
+    private StatusScreenHandler _statusScreenHandler;
+
     private OverworldMapNode _lastOverworldNodeEntered;
 
     private void Awake()
@@ -110,29 +118,70 @@ public class Controller : MonoBehaviour
 
     private void Update()
     {
-        //if (Player1 == null || Player2 == null || !GameRunning) return;
-
         if (Player1 != null && Player2 != null && GameRunning)
         {
             Player1.RunUpdate();
             Player2.RunUpdate();
             View.Instance.PlayerUpdate();
-
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                if (GamePaused)
-                {
-                    UnPauseGame();
-                }
-                else
-                {
-                    PauseGame();
-                }
-            }
         }
 
+        if (Input.GetKeyDown(KeyCode.Escape))
+            HandleEscapeKey();
 
         View.Instance.AnimationUpdate();
+    }
+
+    private void HandleEscapeKey()
+    {
+        if (DeckViewer != null && DeckViewer.gameObject.activeSelf)
+        {
+            HideDeckViewer();
+            return;
+        }
+
+        if (ViewPlayHistoryHandler != null && ViewPlayHistoryHandler.gameObject.activeSelf)
+        {
+            HidePlayHistory();
+            return;
+        }
+
+        if (GamePaused)
+        {
+            if (ScreenHandler.Instance.CurrentScreen != null
+                && ScreenHandler.Instance.CurrentScreen.Name == ScreenName.Options)
+            {
+                GoToPause();
+                return;
+            }
+
+            UnPauseGame();
+            return;
+        }
+
+        if (!CanOpenPauseMenu())
+            return;
+
+        PauseGame();
+    }
+
+    private bool CanOpenPauseMenu()
+    {
+        if (!isGameSetup)
+            return false;
+
+        switch (CurrentScreen)
+        {
+            case ScreenName.Start:
+            case ScreenName.Blank:
+            case ScreenName.Pause:
+            case ScreenName.Options:
+            case ScreenName.GameOver:
+            case ScreenName.Success:
+            case ScreenName.Tutorial:
+                return false;
+            default:
+                return true;
+        }
     }
 
     void OnDisable() // Called when exiting Play Mode
@@ -259,6 +308,7 @@ public class Controller : MonoBehaviour
             OverworldMapController.ReturnToMap(completedNode);
             CurrentScreen = ScreenName.Overworld;
             ScreenHandler.Instance.ShowScreen(ScreenName.Overworld);
+            ScreenHandler.Instance.ShowScreen(ScreenName.StatusButton, false, false);
         });
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }
@@ -299,6 +349,13 @@ public class Controller : MonoBehaviour
         {
             ProgressionHandler.RegisterMarketEncounter();
             BeginShopEncounter();
+            return;
+        }
+
+        // Styx = exchange deck/rituals/trinkets for everything removed this run (no combat).
+        if (node.EncounterType == EncounterType.Styx)
+        {
+            BeginStyxEncounter();
             return;
         }
 
@@ -365,6 +422,28 @@ public class Controller : MonoBehaviour
             ScreenHandler.Instance.ShowScreen(ScreenName.Temple, true, true);
             ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
             TempleHandler.BeginTempleSacrifice();
+        }, () => { });
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
+
+    private void BeginStyxEncounter()
+    {
+        StyxScreenHandler styxScreenHandler = GetStyxScreenHandler();
+        if (styxScreenHandler == null)
+        {
+            Debug.LogError("Controller: No StyxScreenHandler found in the scene.");
+            StartNextLevel();
+            return;
+        }
+
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
+        {
+            OverworldMapController.HideMap();
+            GameField.SetActive(false);
+            CurrentScreen = ScreenName.Styx;
+            ScreenHandler.Instance.ShowScreen(ScreenName.Styx, true, true);
+            ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
+            styxScreenHandler.BeginStyx();
         }, () => { });
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }
@@ -456,6 +535,7 @@ public class Controller : MonoBehaviour
     public void StartGame()
     {
         RunHeartStrings = Player.StartingHeartStrings;
+        StyxRunState.Reset();
         FirstTimeSetup();
 
         if (!IsTestChamber && OverworldMapController != null)
@@ -484,6 +564,7 @@ public class Controller : MonoBehaviour
                 HideStarterBundles();
                 CurrentScreen = ScreenName.Overworld;
                 ScreenHandler.Instance.ShowScreen(ScreenName.Overworld, true, false);
+                ScreenHandler.Instance.ShowScreen(ScreenName.StatusButton, true, false);
             });
             View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
         }
@@ -584,16 +665,46 @@ public class Controller : MonoBehaviour
 
     public void PauseGame()
     {
+        if (GamePaused)
+            return;
+
         GamePaused = true;
-        //GameField.SetActive(false);
         ScreenHandler.Instance.ShowScreen(ScreenName.Pause, true);
     }
+
     public void UnPauseGame()
     {
+        if (!GamePaused)
+            return;
+
         GamePaused = false;
-        GameField.SetActive(true);
         ScreenHandler.Instance.HideScreen(ScreenName.Pause, true);
-        ScreenHandler.Instance.ShowScreen(ScreenName.Game, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.Options, true);
+        RestoreScreenAfterUnpause();
+    }
+
+    private void RestoreScreenAfterUnpause()
+    {
+        GameField.SetActive(CurrentScreen == ScreenName.Game && GameRunning);
+
+        ScreenHandler.Instance.ShowScreen(CurrentScreen, true, true);
+
+        switch (CurrentScreen)
+        {
+            case ScreenName.Game:
+                ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+                ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, true, false);
+                break;
+            case ScreenName.Overworld:
+                ScreenHandler.Instance.ShowScreen(ScreenName.StatusButton, true, false);
+                break;
+            case ScreenName.Status:
+                GetStatusScreenHandler()?.Open();
+                break;
+            case ScreenName.StarterBundle:
+                ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+                break;
+        }
     }
     public void QuitGame()
     {
@@ -653,6 +764,39 @@ public class Controller : MonoBehaviour
 
     void ApplyPostEncounterProgression(bool offerCardPackReward)
     {
+        if (TryShowStyxTrinketUnlock(offerCardPackReward))
+            return;
+
+        ApplyPostEncounterProgressionCore(offerCardPackReward);
+    }
+
+    /// <summary>
+    /// First-time Fates/Gate boss kills permanently unlock a Styx trinket and show the
+    /// reveal screen before the usual post-encounter rewards.
+    /// </summary>
+    private bool TryShowStyxTrinketUnlock(bool offerCardPackReward)
+    {
+        Trinket unlockedTrinket = null;
+
+        if (ProgressionHandler.CurrentEnemy == ProgressionHandler.DeckName.Fates && !StyxUnlocks.StringsOfFateUnlocked)
+        {
+            StyxUnlocks.UnlockStringsOfFate();
+            unlockedTrinket = new StringsOfFateTrinket();
+        }
+        else if (ProgressionHandler.CurrentEnemy == ProgressionHandler.DeckName.TheGate && !StyxUnlocks.GatesBeyondUnlocked)
+        {
+            StyxUnlocks.UnlockGatesBeyond();
+            unlockedTrinket = new GatesBeyondTrinket();
+        }
+
+        if (unlockedTrinket == null) return false;
+
+        GoToTrinketUnlockScreen(unlockedTrinket, () => ApplyPostEncounterProgressionCore(offerCardPackReward));
+        return true;
+    }
+
+    void ApplyPostEncounterProgressionCore(bool offerCardPackReward)
+    {
         if (ProgressionHandler.CurrentLevel == 5)
         {
             GoToTrinketScreen();
@@ -680,15 +824,108 @@ public class Controller : MonoBehaviour
     }
     public void SetRituals(Ritual topRitual, Ritual bottomRitual)
     {
+        RecordReplacedRitual(HumanPlayerDetails.MajorRituals[0], topRitual);
+        RecordReplacedRitual(HumanPlayerDetails.MinorRituals[0], bottomRitual);
+
         HumanPlayerDetails.MajorRituals[0] = topRitual;
         HumanPlayerDetails.MinorRituals[0] = bottomRitual;
     }
+
+    /// <summary>Rituals swapped out for a different ritual count as removed for the Styx.</summary>
+    private void RecordReplacedRitual(Ritual previousRitual, Ritual newRitual)
+    {
+        if (previousRitual == null) return;
+        if (newRitual != null && newRitual.GetType() == previousRitual.GetType()) return;
+
+        StyxRunState.RecordRemovedRitual(previousRitual);
+    }
+
     public void AddTrinket(Trinket trinket)
     {
         HumanPlayerDetails.Trinkets[0].Add(trinket);
 
         if (trinket is GatesBeyondTrinket)
             HumanPlayerDetails.CanSacrificeForHeartstrings = true;
+    }
+
+    public bool RemoveTrinket(Trinket trinket)
+    {
+        if (trinket == null) return false;
+        if (!HumanPlayerDetails.Trinkets[0].Remove(trinket)) return false;
+
+        StyxRunState.RecordRemovedTrinket(trinket);
+        RefreshCanSacrificeForHeartstrings();
+        return true;
+    }
+
+    private void RefreshCanSacrificeForHeartstrings()
+    {
+        HumanPlayerDetails.CanSacrificeForHeartstrings =
+            HumanPlayerDetails.Trinkets[0].Exists(trinket => trinket is GatesBeyondTrinket);
+    }
+
+    /// <summary>Gates Beyond: sacrifice a trinket to the Styx in exchange for a heartstring.</summary>
+    public bool TrySacrificeTrinketForHeartstring(Trinket trinket)
+    {
+        if (!HumanPlayerDetails.CanSacrificeForHeartstrings) return false;
+        if (RunHeartStrings >= Player.MaxHeartStrings) return false;
+        if (!RemoveTrinket(trinket)) return false;
+
+        AddHeartstrings(1);
+        return true;
+    }
+
+    /// <summary>Gates Beyond: sacrifice the major or minor ritual to the Styx in exchange for a heartstring.</summary>
+    public bool TrySacrificeRitualForHeartstring(bool major)
+    {
+        if (!HumanPlayerDetails.CanSacrificeForHeartstrings) return false;
+        if (RunHeartStrings >= Player.MaxHeartStrings) return false;
+
+        Dictionary<int, Ritual> slot = major ? HumanPlayerDetails.MajorRituals : HumanPlayerDetails.MinorRituals;
+        Ritual ritual = slot[0];
+        if (ritual == null) return false;
+
+        slot[0] = null;
+        StyxRunState.RecordRemovedRitual(ritual);
+        AddHeartstrings(1);
+        return true;
+    }
+
+    /// <summary>
+    /// The River Styx exchange: the Styx deck/trinkets/chosen rituals become the player's,
+    /// while everything the player carried joins the removed pool.
+    /// </summary>
+    public void ApplyStyxExchange(List<Ritual> chosenRituals)
+    {
+        if (chosenRituals == null) chosenRituals = new List<Ritual>();
+
+        // Deck swap.
+        List<Card> oldDeck = HumanPlayerDetails.DeckBlueprint[0];
+        HumanPlayerDetails.DeckBlueprint[0] = StyxRunState.GetStyxDeck();
+        StyxRunState.RemovedCards.Clear();
+        foreach (Card card in oldDeck)
+            StyxRunState.RecordRemovedCard(card);
+
+        // Trinket swap.
+        List<Trinket> oldTrinkets = new List<Trinket>(HumanPlayerDetails.Trinkets[0]);
+        HumanPlayerDetails.Trinkets[0] = new List<Trinket>(StyxRunState.RemovedTrinkets);
+        StyxRunState.RemovedTrinkets.Clear();
+        StyxRunState.RemovedTrinkets.AddRange(oldTrinkets);
+
+        // Rituals: first chosen -> Major, second chosen -> Minor; old rituals join the pool.
+        Ritual newMajor = chosenRituals.Count > 0 ? chosenRituals[0] : null;
+        Ritual newMinor = chosenRituals.Count > 1 ? chosenRituals[1] : null;
+        StyxRunState.RemovedRituals.Remove(newMajor);
+        StyxRunState.RemovedRituals.Remove(newMinor);
+
+        Ritual oldMajor = HumanPlayerDetails.MajorRituals[0];
+        Ritual oldMinor = HumanPlayerDetails.MinorRituals[0];
+        HumanPlayerDetails.MajorRituals[0] = newMajor;
+        HumanPlayerDetails.MinorRituals[0] = newMinor;
+        StyxRunState.RecordRemovedRitual(oldMajor);
+        StyxRunState.RecordRemovedRitual(oldMinor);
+
+        RefreshCanSacrificeForHeartstrings();
     }
     public void AddHeartstrings(int amount)
     {
@@ -711,7 +948,8 @@ public class Controller : MonoBehaviour
         {
             if (card is Follower follower) SacrificedFollowers.Add(follower);
 
-            HumanPlayerDetails.DeckBlueprint[0].Remove(card);
+            if (HumanPlayerDetails.DeckBlueprint[0].Remove(card))
+                StyxRunState.RecordRemovedCard(card);
         }
     }
 
@@ -855,5 +1093,120 @@ public class Controller : MonoBehaviour
         //ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.TrinketRewardScreen);
+    }
+
+    // ---------------------------------------------------------------------
+    // Styx feature: handler lookups (found in scene on demand, like ShopHandler).
+    // ---------------------------------------------------------------------
+
+    private StyxScreenHandler GetStyxScreenHandler()
+    {
+        if (_styxScreenHandler == null)
+            _styxScreenHandler = FindObjectOfType<StyxScreenHandler>(true);
+        return _styxScreenHandler;
+    }
+
+    private TrinketUnlockHandler GetTrinketUnlockHandler()
+    {
+        if (_trinketUnlockHandler == null)
+            _trinketUnlockHandler = FindObjectOfType<TrinketUnlockHandler>(true);
+        return _trinketUnlockHandler;
+    }
+
+    private StyxTrinketSelectHandler GetStyxTrinketSelectHandler()
+    {
+        if (_styxTrinketSelectHandler == null)
+            _styxTrinketSelectHandler = FindObjectOfType<StyxTrinketSelectHandler>(true);
+        return _styxTrinketSelectHandler;
+    }
+
+    private StatusScreenHandler GetStatusScreenHandler()
+    {
+        if (_statusScreenHandler == null)
+            _statusScreenHandler = FindObjectOfType<StatusScreenHandler>(true);
+        return _statusScreenHandler;
+    }
+
+    /// <summary>Reveal screen for a newly unlocked Styx trinket; continues the reward flow afterwards.</summary>
+    public void GoToTrinketUnlockScreen(Trinket trinket, Action onContinue)
+    {
+        TrinketUnlockHandler trinketUnlockHandler = GetTrinketUnlockHandler();
+        if (trinketUnlockHandler == null)
+        {
+            Debug.LogError("Controller: No TrinketUnlockHandler found in the scene.");
+            onContinue?.Invoke();
+            return;
+        }
+
+        CurrentScreen = ScreenName.TrinketUnlock;
+
+        GameField.SetActive(false);
+        trinketUnlockHandler.Show(trinket, onContinue);
+
+        ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
+        ScreenHandler.Instance.ShowScreen(ScreenName.TrinketUnlock);
+    }
+
+    /// <summary>
+    /// Shown after the starting devotion pick when the player has unlocked Styx trinkets.
+    /// The handler calls StartGame() once a choice is made.
+    /// </summary>
+    public void GoToStyxTrinketSelectScreen()
+    {
+        StyxTrinketSelectHandler styxTrinketSelectHandler = GetStyxTrinketSelectHandler();
+        if (styxTrinketSelectHandler == null)
+        {
+            Debug.LogError("Controller: No StyxTrinketSelectHandler found in the scene.");
+            StartGame();
+            return;
+        }
+
+        CurrentScreen = ScreenName.StyxTrinketSelect;
+
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
+        {
+            StarterBundleHandler.Hide();
+            ScreenHandler.Instance.HideScreen(ScreenName.StarterBundle, true);
+            ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
+            ScreenHandler.Instance.ShowScreen(ScreenName.StyxTrinketSelect, true, true);
+            styxTrinketSelectHandler.Show();
+        }, () => { });
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
+
+    public void ToggleStatusScreen()
+    {
+        if (CurrentScreen == ScreenName.Status)
+            CloseStatusScreen();
+        else
+            OpenStatusScreen();
+    }
+
+    public void OpenStatusScreen()
+    {
+        if (CurrentScreen != ScreenName.Overworld) return;
+
+        StatusScreenHandler statusScreenHandler = GetStatusScreenHandler();
+        if (statusScreenHandler == null)
+        {
+            Debug.LogError("Controller: No StatusScreenHandler found in the scene.");
+            return;
+        }
+
+        CurrentScreen = ScreenName.Status;
+        ScreenHandler.Instance.ShowScreen(ScreenName.Status, true, true);
+        statusScreenHandler.Open();
+    }
+
+    public void CloseStatusScreen()
+    {
+        if (CurrentScreen != ScreenName.Status) return;
+
+        GetStatusScreenHandler()?.Close();
+
+        CurrentScreen = ScreenName.Overworld;
+        ScreenHandler.Instance.HideScreen(ScreenName.Status, true);
+        ScreenHandler.Instance.ShowScreen(ScreenName.Overworld, true, false);
+        ScreenHandler.Instance.ShowScreen(ScreenName.StatusButton, true, false);
     }
 }

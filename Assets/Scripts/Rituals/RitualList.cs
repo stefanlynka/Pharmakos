@@ -1518,7 +1518,7 @@ public class PoseidonMajor : Ritual
         {
             Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 3 },
+                {OfferingType.Blood, 2 },
                 {OfferingType.Bone, 3 },
                 {OfferingType.Crop, 0 },
                 {OfferingType.Scroll, 3 },

@@ -79,7 +79,11 @@ public class StarterBundleHandler : MonoBehaviour
 
         //Controller.Instance.HideStarterBundleScreen();
 
-        Controller.Instance.StartGame();
+        // If any Styx trinkets are unlocked, let the player pick starting Styx trinkets first.
+        if (StyxUnlocks.AnyUnlocked)
+            Controller.Instance.GoToStyxTrinketSelectScreen();
+        else
+            Controller.Instance.StartGame();
 
     }
 
