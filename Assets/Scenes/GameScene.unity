@@ -27242,7 +27242,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 20.2, y: 0}
+  m_AnchoredPosition: {x: 20.199951, y: 0}
   m_SizeDelta: {x: 160, y: 70.04}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &221551385
@@ -67363,7 +67363,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 11.679993, y: -11.299988}
+  m_AnchoredPosition: {x: 11.679932, y: -11.300049}
   m_SizeDelta: {x: 183.72, y: 88.07}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &400281012
@@ -72136,8 +72136,8 @@ MonoBehaviour:
   CardWidth: 6.55
   HandWidth: 45
   CardY: 0
-  CardZ: 0
-  CardZOffset: -0.3
+  CardZ: 2.5
+  CardZOffset: 0.48
   Scale: {x: 1, y: 1, z: 1}
   HighlightY: 4.25
   HighlightZ: -5
@@ -141732,7 +141732,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 85.95
+  m_fontSize: 79.75
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -141768,7 +141768,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -178.70218, y: -71.91692, z: -179.41547, w: -34.025497}
+  m_margin: {x: -158.01035, y: -57.2715, z: -159.99078, w: -13.126057}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -161016,7 +161016,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1101567061}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -269090,7 +269090,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 13.200012, y: -11.299988}
+  m_AnchoredPosition: {x: 13.199951, y: -11.300049}
   m_SizeDelta: {x: 183.72, y: 70.5}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1756453020
@@ -285915,7 +285915,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -178.70218, y: -71.91692, z: -179.41547, w: -34.025497}
+  m_margin: {x: -158.018, y: -56.248093, z: -166.62659, w: -13.103802}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -295350,8 +295350,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a9f51820314b5c6d7e8f9011a2b3c4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  StatusArea: {fileID: 2150000400}
-  CardScroller: {fileID: 2150000411}
 --- !u!1 &2150000140
 GameObject:
   m_ObjectHideFlags: 0

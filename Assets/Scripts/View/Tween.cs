@@ -117,10 +117,12 @@ public class Tween : SequenceItem
     // Return true when complete
     public bool Progress()
     {
-        if (TimeRemaining <= 0 || action == null) return true;
+        if (TimeRemaining <= 0) return true;
 
         TimeRemaining -= Time.deltaTime;
         TimeRemaining = Mathf.Max(0, TimeRemaining);
+
+        if (action == null) return TimeRemaining <= 0;
 
         float rawProgress = (TotalDuration - TimeRemaining) / TotalDuration;
         float easedProgress = ApplyEasing(rawProgress);

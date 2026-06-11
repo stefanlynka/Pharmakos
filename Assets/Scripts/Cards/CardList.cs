@@ -503,6 +503,44 @@ public class Peltast : Follower
     }
 }
 
+// OnEnter: Draw a card
+public class Shade : Follower
+{
+    public Shade() : base()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+        Type = FollowerType.Mortal;
+        SetBaseStats(1, 1);
+
+        Text = "On Enter: Draw a card";
+
+        SetupInnateEffects();
+    }
+
+    public override void SetupInnateEffects()
+    {
+        base.SetupInnateEffects();
+
+        CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
+        customEffectDef.ApplyInstanceAction = CustomEffectAction;
+        InnateEffects.Add(customEffectDef);
+    }
+
+    private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
+    {
+        DrawCardsInstance newEffectInstance = new DrawCardsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnEnter);
+        newEffectInstance.Init(1);
+        effectDef.EffectInstances.Add(newEffectInstance);
+    }
+}
+
 // 1/3
 public class Hoplite : Follower
 {
@@ -1539,7 +1577,7 @@ public class Odysseus : Follower
 
         SetBaseStats(1, 2);
 
-        Text = "Sprint\nOn Attack: Draw a card. It costs 0.";
+        Text = "Sprint\nOn Attack: Draw a card. It costs 1 less gold.";
         Icon = IconType.Bolt;
 
         SetupInnateEffects();
@@ -1559,7 +1597,7 @@ public class Odysseus : Follower
     private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
         DrawCardsInstance drawCardInstance = new DrawCardsInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnAttack);
-        drawCardInstance.Init(1, true);
+        drawCardInstance.Init(1, 1);
         effectDef.EffectInstances.Add(drawCardInstance);
     }
 }
@@ -3030,6 +3068,47 @@ public class ThrowStone : Spell
 
         DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
         Owner.GameState.ActionHandler.AddAction(damageAction);
+    }
+}
+
+// Deal 1 damage and Draw a card
+public class Haunt : Spell
+{
+    private int damage = 1;
+    public Haunt()
+    {
+        Costs = new Dictionary<OfferingType, int>()
+        {
+            { OfferingType.Gold, 1},
+            { OfferingType.Blood, 0},
+            { OfferingType.Bone, 0},
+            { OfferingType.Crop, 0},
+            { OfferingType.Scroll, 0},
+        };
+
+        Text = "Deal 1 Damage\nDraw a card";
+        HasTargets = true;
+    }
+
+    public override List<ITarget> GetTargets()
+    {
+        List<ITarget> targets = new List<ITarget>();
+
+        targets.AddRange(ITarget.GetAllPlayers(Owner));
+        targets.AddRange(ITarget.GetAllFollowers(Owner));
+
+        return targets;
+    }
+
+    public override void Play(ITarget target)
+    {
+        base.Play(target);
+
+        DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
+        Owner.GameState.ActionHandler.AddAction(damageAction);
+
+        DrawCardAction drawAction = new DrawCardAction(Owner, Owner, 1);
+        Owner.GameState.ActionHandler.AddAction(drawAction, true);
     }
 }
 

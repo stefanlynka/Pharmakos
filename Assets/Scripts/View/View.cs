@@ -22,6 +22,7 @@ public class View : MonoBehaviour
 
     public static GameObject CardViewPrefab;
     private static ObjectPool<GameObject> cardPool = new ObjectPool<GameObject>(CreateCardView, OnCardGet, OnCardRelease, null, false);
+    static int targetLayer = -1;
 
     public static GameObject OfferingPrefab;
     private static ObjectPool<GameObject> offeringPool = new ObjectPool<GameObject>(CreateOffering, OnOfferingGet, OnOfferingRelease, null, false);
@@ -326,6 +327,7 @@ public class View : MonoBehaviour
         if (!cardObject.TryGetComponent(out CardViewRaycastTarget _))
             cardObject.AddComponent<CardViewRaycastTarget>();
 
+        SetLayerRecursively(cardObject, GetTargetLayer());
         cardObject.SetActive(true);
         cardObject.transform.SetParent(null);
         cardObject.transform.localScale = new Vector3(1, 1, 1);
@@ -351,6 +353,23 @@ public class View : MonoBehaviour
             raycastTarget.Clear();
 
         cardObject.SetActive(false);
+    }
+
+    static int GetTargetLayer()
+    {
+        if (targetLayer < 0)
+            targetLayer = LayerMask.NameToLayer("Target");
+        return targetLayer;
+    }
+
+    static void SetLayerRecursively(GameObject target, int layer)
+    {
+        if (target == null || layer < 0)
+            return;
+
+        target.layer = layer;
+        foreach (Transform child in target.transform)
+            SetLayerRecursively(child.gameObject, layer);
     }
 
 

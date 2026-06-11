@@ -26,8 +26,12 @@ public class LightingHandler : MonoBehaviour
     }
     public void DoRitualAnimation(GameObject Target)
     {
-        // Control spotlight
-        EyeLight.transform.position = new Vector3(Target.transform.position.x, Target.transform.position.y, EyeLight.transform.position.z);
+        // Position in the tilted light rig's local space so the spotlight stays over the target
+        // on the tilted gamefield (world-space XY alone is wrong once TiltContainer rotates the field).
+        Transform lightRig = EyeLight.transform.parent;
+        Vector3 targetLocal = lightRig.InverseTransformPoint(Target.transform.position);
+        Vector3 eyeLocal = EyeLight.transform.localPosition;
+        EyeLight.transform.localPosition = new Vector3(targetLocal.x, targetLocal.y, eyeLocal.z);
 
         Sequence spotlightSequence = new Sequence();
         spotlightSequence.Add(new Tween(SetSpotlightIntensity, 0, maxEyeLightIntensity, ritualFadeDuration));

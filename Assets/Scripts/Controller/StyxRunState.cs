@@ -39,7 +39,7 @@ public class StyxRunState
     }
 
     /// <summary>
-    /// The Styx deck starts as 10 Peltasts and 10 Throw Stones (alternating). Each card
+    /// The Styx deck starts as 10 Shades and 10 Haunts (alternating). Each card
     /// removed during the run replaces one base card, in removal order. Removals beyond
     /// the base 20 are appended.
     /// </summary>
@@ -48,8 +48,8 @@ public class StyxRunState
         List<Card> deck = new List<Card>();
         for (int i = 0; i < StyxBaseDeckSize; i++)
         {
-            if (i % 2 == 0) deck.Add(new Peltast());
-            else deck.Add(new ThrowStone());
+            if (i % 2 == 0) deck.Add(new Shade());
+            else deck.Add(new Haunt());
         }
 
         for (int i = 0; i < RemovedCards.Count; i++)

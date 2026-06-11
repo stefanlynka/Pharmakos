@@ -48,6 +48,9 @@ public class Controller : MonoBehaviour
     /// <summary>Tracks cards/rituals/trinkets removed during the current run for the River Styx node.</summary>
     public StyxRunState StyxRunState = new StyxRunState();
 
+    /// <summary>Event definitions the player has already seen this run.</summary>
+    public HashSet<Pharmakos.Events.EventDefinition> EncounteredEventsThisRun = new HashSet<Pharmakos.Events.EventDefinition>();
+
     /// <summary>Human player's heartstring count for the current run; persists between combats and events.</summary>
     public int RunHeartStrings = Player.StartingHeartStrings;
 
@@ -592,6 +595,7 @@ public class Controller : MonoBehaviour
     {
         RunHeartStrings = Player.StartingHeartStrings;
         StyxRunState.Reset();
+        EncounteredEventsThisRun.Clear();
         FirstTimeSetup();
 
         if (!IsTestChamber && OverworldMapController != null)
@@ -1344,7 +1348,7 @@ public class Controller : MonoBehaviour
 
         _screenBeforeStatus = CurrentScreen;
         CurrentScreen = ScreenName.Status;
-        ScreenHandler.Instance.ShowScreen(ScreenName.Status, true, true);
+        ScreenHandler.Instance.ShowScreen(ScreenName.Status, true, false);
         statusScreenHandler.Open();
     }
 
@@ -1357,10 +1361,9 @@ public class Controller : MonoBehaviour
         ScreenName returnScreen = _screenBeforeStatus;
         CurrentScreen = returnScreen;
         ScreenHandler.Instance.HideScreen(ScreenName.Status, true);
-        ScreenHandler.Instance.ShowScreen(returnScreen, true, false);
 
-        if (returnScreen == ScreenName.StarterBundle)
-            ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+        if (ScreenHandler.Instance.TryGetScreen(returnScreen, out Screen screen))
+            ScreenHandler.Instance.CurrentScreen = screen;
 
         ShowStatusButton();
     }

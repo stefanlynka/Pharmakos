@@ -40,16 +40,24 @@ public class EventHandler : MonoBehaviour
             return;
         }
 
-        int idx = Controller.Instance.MetaRNG.Next(0, Events.Count);
-        // idx = 0; // TODO: Remove this
-        var def = Events[idx];
-        if (def == null)
+        var encountered = Controller.Instance.EncounteredEventsThisRun;
+        var pool = new List<EventDefinition>();
+        foreach (var e in Events)
         {
-            Debug.LogError($"EventHandler: event at index {idx} is null.");
+            if (e != null && !encountered.Contains(e))
+                pool.Add(e);
+        }
+
+        if (pool.Count == 0)
+        {
+            Debug.LogWarning("EventHandler: all events have already been encountered this run.");
             onEventComplete?.Invoke();
             return;
         }
 
+        int idx = Controller.Instance.MetaRNG.Next(0, pool.Count);
+        var def = pool[idx];
+        encountered.Add(def);
         BeginEvent(def, onEventComplete);
     }
 

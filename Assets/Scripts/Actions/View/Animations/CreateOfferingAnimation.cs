@@ -80,6 +80,13 @@ public class CreateOfferingAnimation : AnimationAction
         Sequence soundEffects = new Sequence();
         float delay = 0.1f;
 
+        if (offeringType == OfferingType.Bone)
+        {
+            float initialDelay = UnityEngine.Random.Range(0f, 0.12f);
+            if (initialDelay > 0f)
+                soundEffects.Add(new Tween(null, 0, 1, initialDelay, EaseType.Linear));
+        }
+
 		int remaining = Mathf.Max(1, amount);
 		for (int i = 0; i < remaining; i++)
 		{

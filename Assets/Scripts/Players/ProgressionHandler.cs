@@ -7,8 +7,14 @@ using static ProgressionHandler;
 
 public class ProgressionHandler
 {
-    private const int ENEMY_HEALTH_OVERRIDE = 1; // -1 to disables
+    private const int ENEMY_HEALTH_OVERRIDE = -1; // -1 to disables
     public const int BossPoolNumber = 4;
+
+    static readonly HashSet<Type> ShopExcludedCardTypes = new HashSet<Type>
+    {
+        typeof(Shade),
+        typeof(Haunt),
+    };
     public enum DeckName
     {
         None,
@@ -1967,6 +1973,7 @@ public class ProgressionHandler
             {
                 if (card == null) continue;
                 Type cardType = card.GetType();
+                if (ShopExcludedCardTypes.Contains(cardType)) continue;
                 if (!seenTypes.Add(cardType)) continue;
                 pool.Add(card.MakeBaseCopy());
             }
@@ -2118,8 +2125,41 @@ public class ProgressionHandler
     {
         if (CurrentEnemy == DeckName.Fates)
             PrepareFatesDetailsFromPlayer(CurrentPool);
+        else if (CurrentEnemy == DeckName.TheGate)
+            PrepareTheGateDetails(CurrentPool);
 
         LoadPlayer(player, CurrentEnemy);
+    }
+
+    private const int StartingBattleRowTargetGoldCost = 6;
+
+    private static List<Follower> GetFollowersFromDeck(IEnumerable<Card> deck)
+    {
+        var followers = new List<Follower>();
+        foreach (Card card in deck)
+        {
+            if (card is Follower follower)
+                followers.Add(follower);
+        }
+        return followers;
+    }
+
+    private static List<Follower> BuildRandomStartingBattleRow(List<Follower> candidates, CustomRandom rng, int targetGoldCost = StartingBattleRowTargetGoldCost)
+    {
+        var pool = new List<Follower>(candidates);
+        var result = new List<Follower>();
+        int totalGold = 0;
+
+        while (pool.Count > 0 && totalGold < targetGoldCost)
+        {
+            int idx = rng.Next(0, pool.Count);
+            Follower picked = pool[idx];
+            pool.RemoveAt(idx);
+            result.Add((Follower)picked.MakeBaseCopy());
+            totalGold += picked.Costs[OfferingType.Gold];
+        }
+
+        return result;
     }
 
     private void PrepareFatesDetailsFromPlayer(int pool)
@@ -2153,6 +2193,18 @@ public class ProgressionHandler
         fatesDetails.TwistOfFateBuffs[pool] = new List<Trinket>();
         foreach (Trinket trinket in CreateFullTrinketPool())
             fatesDetails.TwistOfFateBuffs[pool].Add(trinket.MakeBaseCopy());
+
+        fatesDetails.StartingBattleRow[pool] = BuildRandomStartingBattleRow(
+            GetFollowersFromDeck(deckCopy),
+            Controller.Instance.MetaRNG);
+    }
+
+    private void PrepareTheGateDetails(int pool)
+    {
+        PlayerDetails gateDetails = DetailsByDeckName[DeckName.TheGate];
+        gateDetails.StartingBattleRow[pool] = BuildRandomStartingBattleRow(
+            CardHandler.AllMonsters,
+            Controller.Instance.MetaRNG);
     }
 
     private static bool UsesConfiguredBaseHealth(DeckName deckName) =>

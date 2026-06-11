@@ -61,7 +61,7 @@ public class RitualAnimation : AnimationAction
         ritualObject.transform.rotation = Quaternion.Euler(-90, 0, 0);
         ritualObject.transform.localScale = Vector3.one * 2.5f;
 
-        Controller.Instance.LightingHandler.DoRitualAnimation(ritualObject);
+        Controller.Instance.LightingHandler.DoRitualAnimation(viewTarget.gameObject);
         
 
         Sequence moveSequence = new Sequence();

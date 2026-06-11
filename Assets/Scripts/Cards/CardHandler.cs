@@ -23,6 +23,7 @@ public static class CardHandler
 
         // MORTALS
         new Peltast(),
+        new Shade(),
         new Hoplite(),
         new Hippeis(),
         new Myrmidon(),
@@ -92,6 +93,7 @@ public static class CardHandler
         new CreateFilth(),
         new Smite(),
         new ThrowStone(),
+        new Haunt(),
         new Lightning(),
         new Scry(),
         new Blessing(),

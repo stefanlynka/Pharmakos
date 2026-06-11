@@ -142,6 +142,7 @@ public class OverworldMapController : MonoBehaviour
             _currentNode.ApplyEncounter(EncounterType.None);
 
         UpdatePlayerMarker();
+        CenterCameraOnCurrentNode();
         RefreshHexInteractionLayers();
         ResetHexVisualScales();
         PositionSideLightsForCurrentRow();
@@ -272,6 +273,40 @@ public class OverworldMapController : MonoBehaviour
 
         PlayerMarker.position = _currentNode.transform.position + Vector3.up * PlayerIconHeight;
         PlayerMarker.gameObject.SetActive(true);
+    }
+
+    /// <summary>
+    /// Pans the overworld camera so the view center falls on <see cref="_currentNode"/>.
+    /// Keeps the current zoom height (local Y).
+    /// </summary>
+    void CenterCameraOnCurrentNode()
+    {
+        if (_currentNode == null) return;
+
+        var cam = GetOverworldCamera();
+        if (cam == null) return;
+
+        Transform camTransform = cam.transform;
+        Transform camParent = camTransform.parent;
+        if (camParent == null) return;
+
+        Vector3 nodeLocal = camParent.InverseTransformPoint(_currentNode.transform.position);
+        Vector3 local = camTransform.localPosition;
+
+        float pitchRad = camTransform.localEulerAngles.x * Mathf.Deg2Rad;
+        float sinPitch = Mathf.Sin(pitchRad);
+        if (Mathf.Abs(sinPitch) < 1e-4f)
+            return;
+
+        float cosPitch = Mathf.Cos(pitchRad);
+        float t = (nodeLocal.y - local.y) / (-sinPitch);
+        float focusZ = nodeLocal.z - t * cosPitch;
+
+        local.x = Mathf.Clamp(nodeLocal.x, CameraMinX, CameraMaxX);
+        local.z = Mathf.Clamp(focusZ, CameraMinZ, CameraMaxZ);
+        camTransform.localPosition = local;
+
+        _cameraPanVelocityLocal = Vector2.zero;
     }
 
     void RefreshPlayerLyre()
