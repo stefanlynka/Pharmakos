@@ -98,6 +98,7 @@ public class Controller : MonoBehaviour
 
     private static readonly ScreenName[] StatusButtonScreens =
     {
+        ScreenName.Game,
         ScreenName.Overworld,
         ScreenName.StarterBundle,
         ScreenName.CardGainRewards,
@@ -449,7 +450,7 @@ public class Controller : MonoBehaviour
             OverworldMapController.HideMap();
             CurrentScreen = ScreenName.Game;
             ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, true);
-            ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
+            // ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
             ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
             LoadLevel();
         }, () => { });
@@ -542,7 +543,7 @@ public class Controller : MonoBehaviour
         ScreenHandler.Instance.HideScreen(ScreenName.RitualRewards, true);
         ScreenHandler.Instance.HideScreen(ScreenName.Temple, true);
         ScreenHandler.Instance.HideScreen(ScreenName.Shop, true);
-        ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
+        // ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
         ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
         ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, false);
     }
@@ -715,7 +716,7 @@ public class Controller : MonoBehaviour
         {
             ScreenHandler.Instance.HideScreen(ScreenName.Start, true);
             ScreenHandler.Instance.ShowScreen(ScreenName.StarterBundle, true, false);
-            ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+            // ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
             ShowStatusButton();
 
             GameField.SetActive(false);
@@ -756,14 +757,14 @@ public class Controller : MonoBehaviour
         switch (CurrentScreen)
         {
             case ScreenName.Game:
-                ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+                // ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
                 ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, true, false);
                 break;
             case ScreenName.Status:
                 GetStatusScreenHandler()?.Open();
                 break;
             case ScreenName.StarterBundle:
-                ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+                // ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
                 ShowStatusButton();
                 break;
             default:
@@ -1089,7 +1090,7 @@ public class Controller : MonoBehaviour
     public void LoadDeckViewer()
     {
         ScreenHandler.Instance.HideScreen(CurrentScreen, true);
-        ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
+        // ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
 
         List<Card> playerDeck = new List<Card>(HumanPlayerDetails.DeckBlueprint[0]);
@@ -1143,7 +1144,7 @@ public class Controller : MonoBehaviour
         if (CurrentScreen == ScreenName.Game)
         {
             ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, true, false);
-            ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+            // ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
         }
     }
     bool IsContentScrollViewActive() => ContentScrollView.IsActive;
@@ -1163,7 +1164,7 @@ public class Controller : MonoBehaviour
     public void LoadPlayHistory()
     {
         ScreenHandler.Instance.HideScreen(CurrentScreen, true);
-        ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
+        // ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
 
         List<PlayHistoryItem> items = PlayHistoryHandler.GetPlayHistoryItems();
@@ -1280,7 +1281,7 @@ public class Controller : MonoBehaviour
         {
             StarterBundleHandler.Hide();
             ScreenHandler.Instance.HideScreen(ScreenName.StarterBundle, true);
-            ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
+            // ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
             ScreenHandler.Instance.ShowScreen(ScreenName.StyxTrinketSelect, true, true);
             styxTrinketSelectHandler.Show();
         }, () => { });

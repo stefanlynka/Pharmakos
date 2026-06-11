@@ -8,75 +8,54 @@ using UnityEngine.UI;
 ///  - Current: the player's current deck, rituals, and trinkets. With the Gates Beyond
 ///    trinket, rituals/trinkets can be sacrificed to the Styx in exchange for a heartstring.
 ///  - Styx: the Styx deck, removed rituals, and removed trinkets that await at the river.
-/// Lives on the StatusScreen GameObject; the deck is rendered via ContentScrollView.
+/// The static layout is authored in the scene under the StatusScreen GameObject; the
+/// ritual/trinket rows are cloned from inactive scene templates at runtime.
+/// The deck is rendered via ContentScrollView into the scene-authored DeckContent image.
 /// </summary>
 public class StatusScreenHandler : MonoBehaviour
 {
-    const string DeckViewerRenderTexturePath = "RenderTextures/DeckViewer";
+    [Header("Scene References")]
+    public Button CurrentTabButton;
+    public Button StyxTabButton;
+    public Button CloseButton;
+    public TextMeshProUGUI TitleText;
+    public TextMeshProUGUI HeartstringsText;
+    public RectTransform SideContentRoot;
+
+    [Header("Templates (inactive in scene, cloned into SideContent)")]
+    public TextMeshProUGUI SectionHeaderTemplate;
+    public TextMeshProUGUI EmptyRowTemplate;
+    public TextMeshProUGUI SacrificeNoteTemplate;
+    public StatusRowView RitualRowTemplate;
+    public StatusRowView TrinketRowTemplate;
+
+    [Header("Tab Colors")]
+    public Color TabColor = new Color(0.23f, 0.27f, 0.37f, 1f);
+    public Color TabSelectedColor = new Color(0.62f, 0.5f, 0.16f, 1f);
+
+    const float HeaderTopPadding = 6f;
+    const float HeaderSpacing = 12f;
+    const float EmptyRowSpacing = 8f;
+    const float RowSpacing = 10f;
+    const float NoteTopPadding = 8f;
 
     bool styxTabActive;
 
-    RectTransform uiRoot;
-    RectTransform sideContentRoot;
-    TextMeshProUGUI titleText;
-    TextMeshProUGUI heartstringsText;
-    Image currentTabBackground;
-    Image styxTabBackground;
-
     void Awake()
     {
-        Screen screen = GetComponent<Screen>();
-        if (screen != null)
-            screen.Camera = null;
+        CurrentTabButton.onClick.AddListener(() => ShowTab(false));
+        StyxTabButton.onClick.AddListener(() => ShowTab(true));
+        CloseButton.onClick.AddListener(() => Controller.Instance.CloseStatusScreen());
     }
 
     public void Open()
     {
-        BuildUIIfNeeded();
         ShowTab(false);
     }
 
     public void Close()
     {
         ContentScrollView.Hide();
-    }
-
-    void BuildUIIfNeeded()
-    {
-        if (uiRoot != null) return;
-
-        uiRoot = StyxUI.CreateStretchedRect(transform, "StatusUI");
-
-        CreateDeckContentImage(uiRoot).transform.SetAsFirstSibling();
-
-        currentTabBackground = (Image)StyxUI.CreateButton(uiRoot, "CurrentTab", "Current", 24, () => ShowTab(false)).targetGraphic;
-        StyxUI.SetAnchored(currentTabBackground.rectTransform, new Vector2(0f, 1f), new Vector2(30, -25), new Vector2(180, 55));
-
-        styxTabBackground = (Image)StyxUI.CreateButton(uiRoot, "StyxTab", "Styx", 24, () => ShowTab(true)).targetGraphic;
-        StyxUI.SetAnchored(styxTabBackground.rectTransform, new Vector2(0f, 1f), new Vector2(225, -25), new Vector2(180, 55));
-
-        titleText = StyxUI.CreateText(uiRoot, "Title", "", 36, TextAlignmentOptions.Center);
-        StyxUI.SetAnchored(titleText.rectTransform, new Vector2(0.5f, 1f), new Vector2(-100, -35), new Vector2(700, 55));
-
-        Button closeButton = StyxUI.CreateButton(uiRoot, "CloseButton", "Close", 24, () => Controller.Instance.CloseStatusScreen());
-        StyxUI.SetAnchored((RectTransform)closeButton.transform, new Vector2(1f, 0f), new Vector2(-415, 25), new Vector2(170, 55));
-
-        // Right-side panel for rituals and trinkets; the deck render texture shows on the left.
-        Image sidePanel = StyxUI.CreatePanel(uiRoot, "SidePanel", StyxUI.PanelColor);
-        sidePanel.rectTransform.anchorMin = new Vector2(1f, 0f);
-        sidePanel.rectTransform.anchorMax = new Vector2(1f, 1f);
-        sidePanel.rectTransform.pivot = new Vector2(1f, 0.5f);
-        sidePanel.rectTransform.anchoredPosition = Vector2.zero;
-        sidePanel.rectTransform.sizeDelta = new Vector2(400, 0);
-
-        sideContentRoot = StyxUI.CreateRect(sidePanel.transform, "SideContent");
-        sideContentRoot.anchorMin = new Vector2(0f, 0f);
-        sideContentRoot.anchorMax = new Vector2(1f, 1f);
-        sideContentRoot.offsetMin = new Vector2(15, 15);
-        sideContentRoot.offsetMax = new Vector2(-15, -15);
-
-        heartstringsText = StyxUI.CreateText(uiRoot, "Heartstrings", "", 24, TextAlignmentOptions.Left);
-        StyxUI.SetAnchored(heartstringsText.rectTransform, new Vector2(0f, 0f), new Vector2(30, 25), new Vector2(500, 40));
     }
 
     void ShowTab(bool styxTab)
@@ -87,16 +66,16 @@ public class StatusScreenHandler : MonoBehaviour
 
     void Rebuild()
     {
-        currentTabBackground.color = styxTabActive ? StyxUI.ButtonColor : StyxUI.ButtonSelectedColor;
-        styxTabBackground.color = styxTabActive ? StyxUI.ButtonSelectedColor : StyxUI.ButtonColor;
-        titleText.text = styxTabActive ? "What Waits At The Styx" : "Your Current Possessions";
-        heartstringsText.text = "Heartstrings: " + Controller.Instance.RunHeartStrings + " / " + Player.MaxHeartStrings;
+        CurrentTabButton.targetGraphic.color = styxTabActive ? TabColor : TabSelectedColor;
+        StyxTabButton.targetGraphic.color = styxTabActive ? TabSelectedColor : TabColor;
+        TitleText.text = styxTabActive ? "What Waits At The Styx" : "Your Current Possessions";
+        HeartstringsText.text = "Heartstrings: " + Controller.Instance.RunHeartStrings + " / " + Player.MaxHeartStrings;
 
         ContentScrollView.ShowCards(GetSortedDeck(styxTabActive
             ? Controller.Instance.StyxRunState.GetStyxDeck()
             : Controller.Instance.HumanPlayerDetails.DeckBlueprint[0]));
 
-        StyxUI.Clear(sideContentRoot);
+        StyxUI.Clear(SideContentRoot);
         if (styxTabActive) PopulateStyxSide();
         else PopulateCurrentSide();
     }
@@ -133,8 +112,8 @@ public class StatusScreenHandler : MonoBehaviour
             sacrificeMajor = () => SacrificeRitual(true);
             sacrificeMinor = () => SacrificeRitual(false);
         }
-        y = AddRitualRow(y, details.MajorRituals[0], "Major", sacrificeMajor, heartstringsFull);
-        y = AddRitualRow(y, details.MinorRituals[0], "Minor", sacrificeMinor, heartstringsFull);
+        y = AddRitualRow(y, details.MajorRituals[0], sacrificeMajor, heartstringsFull);
+        y = AddRitualRow(y, details.MinorRituals[0], sacrificeMinor, heartstringsFull);
 
         y = AddSectionHeader(y, "Trinkets");
         List<Trinket> trinkets = details.Trinkets[0];
@@ -151,13 +130,11 @@ public class StatusScreenHandler : MonoBehaviour
 
         if (canSacrifice)
         {
-            TextMeshProUGUI note = StyxUI.CreateText(sideContentRoot, "SacrificeNote",
-                heartstringsFull
-                    ? "Your heartstrings are full. The Styx offers nothing more."
-                    : "Gates Beyond: sacrifice a ritual or trinket to the Styx for a heartstring.",
-                17, TextAlignmentOptions.TopLeft);
-            note.color = StyxUI.DimTextColor;
-            StyxUI.SetAnchored(note.rectTransform, new Vector2(0f, 1f), new Vector2(0, y - 8), new Vector2(370, 60));
+            TextMeshProUGUI note = CloneTemplate(SacrificeNoteTemplate);
+            note.text = heartstringsFull
+                ? "Your heartstrings are full. The Styx offers nothing more."
+                : "Gates Beyond: sacrifice a ritual or trinket to the Styx for a heartstring.";
+            SetY(note.rectTransform, y - NoteTopPadding);
         }
     }
 
@@ -166,11 +143,11 @@ public class StatusScreenHandler : MonoBehaviour
         StyxRunState styxState = Controller.Instance.StyxRunState;
 
         float y = 0f;
-        y = AddSectionHeader(y, "Removed Rituals"); // (choose 2 at the Styx)");
+        y = AddSectionHeader(y, "Removed Rituals");
         if (styxState.RemovedRituals.Count == 0)
             y = AddEmptyRow(y, "None yet");
         foreach (Ritual ritual in styxState.RemovedRituals)
-            y = AddRitualRow(y, ritual, "", null, false);
+            y = AddRitualRow(y, ritual, null, false);
 
         y = AddSectionHeader(y, "Removed Trinkets");
         if (styxState.RemovedTrinkets.Count == 0)
@@ -181,83 +158,86 @@ public class StatusScreenHandler : MonoBehaviour
 
     float AddSectionHeader(float y, string label)
     {
-        TextMeshProUGUI header = StyxUI.CreateText(sideContentRoot, "Header_" + label, label, 23, TextAlignmentOptions.Left);
-        StyxUI.SetAnchored(header.rectTransform, new Vector2(0f, 1f), new Vector2(0, y - 6), new Vector2(370, 32));
-        return y - 44f;
+        TextMeshProUGUI header = CloneTemplate(SectionHeaderTemplate);
+        header.gameObject.name = "Header_" + label;
+        header.text = label;
+        SetY(header.rectTransform, y - HeaderTopPadding);
+        return y - HeaderTopPadding - header.rectTransform.sizeDelta.y - HeaderSpacing;
     }
 
     float AddEmptyRow(float y, string label)
     {
-        TextMeshProUGUI text = StyxUI.CreateText(sideContentRoot, "Empty", label, 19, TextAlignmentOptions.Left);
-        text.color = StyxUI.DimTextColor;
-        StyxUI.SetAnchored(text.rectTransform, new Vector2(0f, 1f), new Vector2(10, y), new Vector2(350, 28));
-        return y - 36f;
+        TextMeshProUGUI text = CloneTemplate(EmptyRowTemplate);
+        text.text = label;
+        SetY(text.rectTransform, y);
+        return y - text.rectTransform.sizeDelta.y - EmptyRowSpacing;
     }
 
-    float AddRitualRow(float y, Ritual ritual, string slotLabel, System.Action onSacrifice, bool sacrificeDisabled)
+    float AddRitualRow(float y, Ritual ritual, System.Action onSacrifice, bool sacrificeDisabled)
     {
-        const float rowHeight = 64f;
-        Image row = StyxUI.CreatePanel(sideContentRoot, "RitualRow", StyxUI.RowColor);
-        row.rectTransform.anchorMin = new Vector2(0f, 1f);
-        row.rectTransform.anchorMax = new Vector2(1f, 1f);
-        row.rectTransform.pivot = new Vector2(0.5f, 1f);
-        row.rectTransform.anchoredPosition = new Vector2(0, y);
-        row.rectTransform.sizeDelta = new Vector2(0, rowHeight);
+        StatusRowView row = CloneTemplate(RitualRowTemplate);
+        RectTransform rowRect = (RectTransform)row.transform;
+        SetY(rowRect, y);
 
-        string name = ritual != null ? ritual.Name : "(empty)";
-        name = name.Replace("\n", " ");
-        string prefix = string.IsNullOrEmpty(slotLabel) ? "" : slotLabel + ": ";
-        TextMeshProUGUI nameText = StyxUI.CreateText(row.transform, "Name", name, 19, TextAlignmentOptions.Left);
-        StyxUI.SetAnchored(nameText.rectTransform, new Vector2(0f, 1f), new Vector2(10, -4), new Vector2(355, 26));
+        row.NameText.text = ritual != null ? ritual.Name.Replace("\n", " ") : "(empty)";
 
         if (ritual != null)
-        {
-            TextMeshProUGUI descriptionText = StyxUI.CreateText(row.transform, "Description", ritual.Description, 14, TextAlignmentOptions.TopLeft);
-            descriptionText.color = StyxUI.DimTextColor;
-            StyxUI.SetAnchored(descriptionText.rectTransform, new Vector2(0f, 1f), new Vector2(10, -30), new Vector2(255, 32));
-        }
+            row.DescriptionText.text = ritual.Description;
+        else
+            row.DescriptionText.gameObject.SetActive(false);
 
-        if (ritual != null && onSacrifice != null)
-            AddSacrificeButton(row.transform, onSacrifice, sacrificeDisabled);
+        SetupSacrificeButton(row, ritual != null ? onSacrifice : null, sacrificeDisabled);
 
-        return y - rowHeight - 10f;
+        return y - rowRect.sizeDelta.y - RowSpacing;
     }
 
     float AddTrinketRow(float y, Trinket trinket, System.Action onSacrifice, bool sacrificeDisabled)
     {
-        const float rowHeight = 64f;
-        Image row = StyxUI.CreatePanel(sideContentRoot, "TrinketRow", StyxUI.RowColor);
-        row.rectTransform.anchorMin = new Vector2(0f, 1f);
-        row.rectTransform.anchorMax = new Vector2(1f, 1f);
-        row.rectTransform.pivot = new Vector2(0.5f, 1f);
-        row.rectTransform.anchoredPosition = new Vector2(0, y);
-        row.rectTransform.sizeDelta = new Vector2(0, rowHeight);
+        StatusRowView row = CloneTemplate(TrinketRowTemplate);
+        RectTransform rowRect = (RectTransform)row.transform;
+        SetY(rowRect, y);
 
         PlayerEffectDescriptionData descriptionData = trinket.GetDescriptionData();
-        Image icon = StyxUI.CreateIcon(row.transform, "Icon", descriptionData != null ? descriptionData.Icon : null);
-        StyxUI.SetAnchored(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(8, 0), new Vector2(48, 48));
+        Sprite icon = descriptionData != null ? descriptionData.Icon : null;
+        if (icon != null)
+            row.Icon.sprite = icon;
+        else
+            row.Icon.color = StyxUI.IconFallbackColor;
 
-        TextMeshProUGUI nameText = StyxUI.CreateText(row.transform, "Name", trinket.Name, 19, TextAlignmentOptions.Left);
-        StyxUI.SetAnchored(nameText.rectTransform, new Vector2(0f, 1f), new Vector2(64, -4), new Vector2(300, 26));
+        row.NameText.text = trinket.Name;
+        row.DescriptionText.text = trinket.Description;
 
-        TextMeshProUGUI descriptionText = StyxUI.CreateText(row.transform, "Description", trinket.Description, 14, TextAlignmentOptions.TopLeft);
-        descriptionText.color = StyxUI.DimTextColor;
-        // descriptionText.autoSizeTextContainer = true;
-        descriptionText.fontSizeMin = 6;
-        descriptionText.enableAutoSizing = true;
-        StyxUI.SetAnchored(descriptionText.rectTransform, new Vector2(0f, 1f), new Vector2(64, -30), new Vector2(200, 32));
+        SetupSacrificeButton(row, onSacrifice, sacrificeDisabled);
 
-        if (onSacrifice != null)
-            AddSacrificeButton(row.transform, onSacrifice, sacrificeDisabled);
-
-        return y - rowHeight - 10f;
+        return y - rowRect.sizeDelta.y - RowSpacing;
     }
 
-    void AddSacrificeButton(Transform row, System.Action onSacrifice, bool disabled)
+    void SetupSacrificeButton(StatusRowView row, System.Action onSacrifice, bool disabled)
     {
-        Button button = StyxUI.CreateButton(row, "SacrificeButton", "Sacrifice", 16, onSacrifice);
-        StyxUI.SetAnchored((RectTransform)button.transform, new Vector2(1f, 0.5f), new Vector2(-8, 0), new Vector2(95, 42));
-        button.interactable = !disabled;
+        if (row.SacrificeButton == null) return;
+
+        if (onSacrifice == null)
+        {
+            row.SacrificeButton.gameObject.SetActive(false);
+            return;
+        }
+
+        row.SacrificeButton.interactable = !disabled;
+        row.SacrificeButton.onClick.AddListener(() => onSacrifice());
+    }
+
+    T CloneTemplate<T>(T template) where T : Component
+    {
+        T clone = Instantiate(template, SideContentRoot);
+        clone.gameObject.SetActive(true);
+        return clone;
+    }
+
+    static void SetY(RectTransform rect, float y)
+    {
+        Vector2 position = rect.anchoredPosition;
+        position.y = y;
+        rect.anchoredPosition = position;
     }
 
     void SacrificeRitual(bool major)
@@ -270,23 +250,5 @@ public class StatusScreenHandler : MonoBehaviour
     {
         if (Controller.Instance.TrySacrificeTrinketForHeartstring(trinket))
             Rebuild();
-    }
-
-    static RawImage CreateDeckContentImage(Transform parent)
-    {
-        RectTransform rect = StyxUI.CreateRect(parent, "DeckContent");
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = new Vector2(15f, 60f);
-        rect.offsetMax = new Vector2(-415f, -80f);
-
-        RawImage rawImage = rect.gameObject.AddComponent<RawImage>();
-        rawImage.raycastTarget = false;
-
-        RenderTexture texture = Resources.Load<RenderTexture>(DeckViewerRenderTexturePath);
-        if (texture != null)
-            rawImage.texture = texture;
-
-        return rawImage;
     }
 }
