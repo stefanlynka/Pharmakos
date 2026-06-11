@@ -214,7 +214,6 @@ public class StyxScreenHandler : MonoBehaviour
         if (CardScroller != null) CardScroller.Exit();
         if (StyxArea != null) StyxArea.SetActive(false);
 
-        ScreenHandler.Instance.HideScreen(ScreenName.Styx, true);
         Controller.Instance.StartNextLevel();
     }
 }

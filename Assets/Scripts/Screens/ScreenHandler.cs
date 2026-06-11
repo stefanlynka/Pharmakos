@@ -84,11 +84,11 @@ public class ScreenHandler : MonoBehaviour
             popup.Enter(instant);
     }
 
-    public virtual void ShowScreen(ScreenName name, bool instant = false, bool hideOthers = true)
+    public virtual void ShowScreen(ScreenName name, bool instant = false, bool hideOthers = true, bool hideOthersInstant = false)
     {
         if (TryGetScreen(name, out Screen screen))
         {
-            if (hideOthers) HideAll();
+            if (hideOthers) HideAll(hideOthersInstant);
             screen.Enter(instant);
             CurrentScreen = screen;
         }

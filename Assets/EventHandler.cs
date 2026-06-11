@@ -218,6 +218,9 @@ public class EventHandler : MonoBehaviour
             case EventOutcomeType.GainRituals:
                 ApplyGainRituals(outcome);
                 break;
+            case EventOutcomeType.RemoveAllSmallFollowers:
+                RemoveAllSmallFollowers();
+                break;
             default:
                 break;
         }
@@ -232,6 +235,22 @@ public class EventHandler : MonoBehaviour
         }
 
         _onEventComplete = () => Controller.Instance.GoToRitualRewardScreen(topReward, bottomReward);
+    }
+
+    void RemoveAllSmallFollowers()
+    {
+        var deck = Controller.Instance.HumanPlayerDetails.DeckBlueprint[0];
+        if (deck == null || deck.Count == 0) return;
+
+        var toRemove = new List<Card>();
+        foreach (Card card in deck)
+        {
+            if (card is Follower follower && follower.Costs[OfferingType.Gold] <= 1)
+                toRemove.Add(card);
+        }
+
+        if (toRemove.Count > 0)
+            Controller.Instance.RemoveCardsFromPlayerDeck(toRemove);
     }
 
     void RemoveRandomCardsFromDeck(int count)
@@ -276,7 +295,6 @@ public class EventHandler : MonoBehaviour
 
         _eventRunning = false;
         StopEventCoroutines();
-        CleanupEventPresentation();
 
         if (EventScreenHandler != null)
         {

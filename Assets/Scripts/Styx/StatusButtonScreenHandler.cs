@@ -2,12 +2,19 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Overlay screen holding the "Status" button shown on the overworld map.
+/// Overlay screen holding the "Status" button shown on the overworld and non-combat menus.
 /// The button is built at runtime; clicking it opens the status screen.
 /// </summary>
 public class StatusButtonScreenHandler : MonoBehaviour
 {
     Button button;
+
+    void Awake()
+    {
+        Screen screen = GetComponent<Screen>();
+        if (screen != null)
+            screen.InstantExit = true;
+    }
 
     void Start()
     {

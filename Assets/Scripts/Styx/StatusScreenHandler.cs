@@ -163,7 +163,7 @@ public class StatusScreenHandler : MonoBehaviour
         StyxRunState styxState = Controller.Instance.StyxRunState;
 
         float y = 0f;
-        y = AddSectionHeader(y, "Removed Rituals (choose 2 at the Styx)");
+        y = AddSectionHeader(y, "Removed Rituals"); // (choose 2 at the Styx)");
         if (styxState.RemovedRituals.Count == 0)
             y = AddEmptyRow(y, "None yet");
         foreach (Ritual ritual in styxState.RemovedRituals)
@@ -202,9 +202,10 @@ public class StatusScreenHandler : MonoBehaviour
         row.rectTransform.sizeDelta = new Vector2(0, rowHeight);
 
         string name = ritual != null ? ritual.Name : "(empty)";
+        name = name.Replace("\n", " ");
         string prefix = string.IsNullOrEmpty(slotLabel) ? "" : slotLabel + ": ";
-        TextMeshProUGUI nameText = StyxUI.CreateText(row.transform, "Name", prefix + name, 19, TextAlignmentOptions.Left);
-        StyxUI.SetAnchored(nameText.rectTransform, new Vector2(0f, 1f), new Vector2(10, -4), new Vector2(255, 26));
+        TextMeshProUGUI nameText = StyxUI.CreateText(row.transform, "Name", name, 19, TextAlignmentOptions.Left);
+        StyxUI.SetAnchored(nameText.rectTransform, new Vector2(0f, 1f), new Vector2(10, -4), new Vector2(355, 26));
 
         if (ritual != null)
         {
@@ -234,10 +235,13 @@ public class StatusScreenHandler : MonoBehaviour
         StyxUI.SetAnchored(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(8, 0), new Vector2(48, 48));
 
         TextMeshProUGUI nameText = StyxUI.CreateText(row.transform, "Name", trinket.Name, 19, TextAlignmentOptions.Left);
-        StyxUI.SetAnchored(nameText.rectTransform, new Vector2(0f, 1f), new Vector2(64, -4), new Vector2(200, 26));
+        StyxUI.SetAnchored(nameText.rectTransform, new Vector2(0f, 1f), new Vector2(64, -4), new Vector2(300, 26));
 
         TextMeshProUGUI descriptionText = StyxUI.CreateText(row.transform, "Description", trinket.Description, 14, TextAlignmentOptions.TopLeft);
         descriptionText.color = StyxUI.DimTextColor;
+        // descriptionText.autoSizeTextContainer = true;
+        descriptionText.fontSizeMin = 6;
+        descriptionText.enableAutoSizing = true;
         StyxUI.SetAnchored(descriptionText.rectTransform, new Vector2(0f, 1f), new Vector2(64, -30), new Vector2(200, 32));
 
         if (onSacrifice != null)

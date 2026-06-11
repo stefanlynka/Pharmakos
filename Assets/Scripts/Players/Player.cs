@@ -6,7 +6,7 @@ public class Player : ITarget
 {
     public static int MaxHandSize = 10;
     public static int MaxFollowerCount = 8;
-    public const int MaxHeartStrings = 5;
+    public const int MaxHeartStrings = 6;
     public const int StartingHeartStrings = 3;
     /// Deep Copied
     ///

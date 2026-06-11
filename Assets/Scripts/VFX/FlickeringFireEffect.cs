@@ -40,14 +40,14 @@ public sealed class FlickeringFireEffect : MonoBehaviour
     void Reset()
     {
         AssignDefaultMaterialsIfNeeded();
-        Rebuild();
+        ScheduleDeferredRebuild();
     }
 
     void OnValidate()
     {
         AssignDefaultMaterialsIfNeeded();
         if (flameMaterial != null && sparkMaterial != null)
-            Rebuild();
+            ScheduleDeferredRebuild();
     }
 
     void AssignDefaultMaterialsIfNeeded()
@@ -56,6 +56,20 @@ public sealed class FlickeringFireEffect : MonoBehaviour
             flameMaterial = AssetDatabase.LoadAssetAtPath<Material>(FlameMaterialPath);
         if (sparkMaterial == null)
             sparkMaterial = AssetDatabase.LoadAssetAtPath<Material>(SparkMaterialPath);
+    }
+
+    void ScheduleDeferredRebuild()
+    {
+        EditorApplication.delayCall -= DeferredRebuild;
+        EditorApplication.delayCall += DeferredRebuild;
+    }
+
+    void DeferredRebuild()
+    {
+        if (this == null)
+            return;
+
+        Rebuild();
     }
 #endif
 
@@ -66,8 +80,13 @@ public sealed class FlickeringFireEffect : MonoBehaviour
             Debug.LogWarning(
                 $"{nameof(FlickeringFireEffect)} on '{name}': assign flame and spark materials (defaults are applied automatically when using Reset in the editor).",
                 this);
-            return;
         }
+    }
+
+    void Start()
+    {
+        if (flameMaterial == null || sparkMaterial == null)
+            return;
 
         Rebuild();
     }
@@ -77,6 +96,11 @@ public sealed class FlickeringFireEffect : MonoBehaviour
     {
 #if UNITY_EDITOR
         AssignDefaultMaterialsIfNeeded();
+        if (!Application.isPlaying)
+        {
+            ScheduleDeferredRebuild();
+            return;
+        }
 #endif
         Rebuild();
     }

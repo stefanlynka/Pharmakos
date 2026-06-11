@@ -90,8 +90,23 @@ public class Controller : MonoBehaviour
     private TrinketUnlockHandler _trinketUnlockHandler;
     private StyxTrinketSelectHandler _styxTrinketSelectHandler;
     private StatusScreenHandler _statusScreenHandler;
+    private ScreenName _screenBeforeStatus;
+
+    private static readonly ScreenName[] StatusButtonScreens =
+    {
+        ScreenName.Overworld,
+        ScreenName.StarterBundle,
+        ScreenName.CardGainRewards,
+        ScreenName.Temple,
+        ScreenName.Event,
+        ScreenName.Shop,
+        ScreenName.RitualRewards,
+        ScreenName.TrinketRewardScreen,
+    };
 
     private OverworldMapNode _lastOverworldNodeEntered;
+
+    public const int OverworldStatusDisabledFloor = 11;
 
     private void Awake()
     {
@@ -282,13 +297,16 @@ public class Controller : MonoBehaviour
 
         View.Instance.Clear();
     }
-    public void StartNextLevel()
+    public void StartNextLevel(bool useScreenTransition = true)
     {
         PlayHistoryHandler.Clear();
 
         if (!IsTestChamber && OverworldMapController != null)
         {
-            ReturnToOverworld();
+            if (useScreenTransition)
+                ReturnToOverworld();
+            else
+                ReturnToOverworldImmediate();
             return;
         }
 
@@ -301,16 +319,17 @@ public class Controller : MonoBehaviour
     private void ReturnToOverworld()
     {
         View.Instance.DarknessHandler.SetDarkness();
-        var completedNode = _lastOverworldNodeEntered;
-        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
-        {
-            TearDownOverworldEncounter();
-            OverworldMapController.ReturnToMap(completedNode);
-            CurrentScreen = ScreenName.Overworld;
-            ScreenHandler.Instance.ShowScreen(ScreenName.Overworld);
-            ScreenHandler.Instance.ShowScreen(ScreenName.StatusButton, false, false);
-        });
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, ReturnToOverworldImmediate);
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
+
+    private void ReturnToOverworldImmediate()
+    {
+        TearDownOverworldEncounter();
+        OverworldMapController.ReturnToMap(_lastOverworldNodeEntered);
+        CurrentScreen = ScreenName.Overworld;
+        ScreenHandler.Instance.ShowScreen(ScreenName.Overworld);
+        ShowStatusButton();
     }
 
     /// <summary>
@@ -329,6 +348,26 @@ public class Controller : MonoBehaviour
 
         if (EventHandler != null)
             EventHandler.CleanupEventPresentation();
+
+        ScreenHandler.Instance.HideScreen(ScreenName.Event, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.Styx, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.TrinketUnlock, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.Game, true);
+        GameField.SetActive(false);
+        SetMainCombatCameraActive(false);
+    }
+
+    void SetMainCombatCameraActive(bool active)
+    {
+        if (ScreenHandler.Instance == null
+            || !ScreenHandler.Instance.TryGetScreen(ScreenName.Overworld, out Screen screen))
+            return;
+
+        OverworldScreen overworldScreen = screen as OverworldScreen;
+        if (overworldScreen == null || overworldScreen.MainCamera == null)
+            return;
+
+        overworldScreen.MainCamera.gameObject.SetActive(active);
     }
 
     public void BeginEncounterFromOverworldNode(OverworldMapNode node)
@@ -371,10 +410,12 @@ public class Controller : MonoBehaviour
                 ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
                 {
                     OverworldMapController.HideMap();
+                    SetMainCombatCameraActive(false);
                     CurrentScreen = ScreenName.Event;
                     ScreenHandler.Instance.ShowScreen(ScreenName.Event, true, true);
                     ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
-                    EventHandler.BeginRandomEvent(StartNextLevel);
+                    ShowStatusButton();
+                    EventHandler.BeginRandomEvent(() => StartNextLevel());
                 }, () => {});
                 transitionAnimation.FadeInDuration = EventHandler.FadeInDuration;
                 View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
@@ -418,9 +459,11 @@ public class Controller : MonoBehaviour
         {
             OverworldMapController.HideMap();
             GameField.SetActive(false);
+            SetMainCombatCameraActive(false);
             CurrentScreen = ScreenName.Temple;
             ScreenHandler.Instance.ShowScreen(ScreenName.Temple, true, true);
             ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
+            ShowStatusButton();
             TempleHandler.BeginTempleSacrifice();
         }, () => { });
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
@@ -440,6 +483,7 @@ public class Controller : MonoBehaviour
         {
             OverworldMapController.HideMap();
             GameField.SetActive(false);
+            SetMainCombatCameraActive(false);
             CurrentScreen = ScreenName.Styx;
             ScreenHandler.Instance.ShowScreen(ScreenName.Styx, true, true);
             ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
@@ -464,9 +508,11 @@ public class Controller : MonoBehaviour
         {
             OverworldMapController.HideMap();
             GameField.SetActive(false);
+            SetMainCombatCameraActive(false);
             CurrentScreen = ScreenName.Shop;
             ScreenHandler.Instance.ShowScreen(ScreenName.Shop, true, true);
             ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
+            ShowStatusButton();
             ShopHandler.BeginShop();
         }, () => { });
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
@@ -562,9 +608,10 @@ public class Controller : MonoBehaviour
             ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
             {
                 HideStarterBundles();
+                ScreenHandler.Instance.HideScreen(ScreenName.StyxTrinketSelect, true);
                 CurrentScreen = ScreenName.Overworld;
                 ScreenHandler.Instance.ShowScreen(ScreenName.Overworld, true, false);
-                ScreenHandler.Instance.ShowScreen(ScreenName.StatusButton, true, false);
+                ShowStatusButton();
             });
             View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
         }
@@ -628,6 +675,7 @@ public class Controller : MonoBehaviour
             offeredBottomReward);
         ScreenHandler.Instance.HideScreen(ScreenName.Event, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.RitualRewards);
+        ShowStatusButton();
     }
     public void GoToCardGainRewardScreen()
     {
@@ -640,6 +688,7 @@ public class Controller : MonoBehaviour
         //ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.CardGainRewards);
+        ShowStatusButton();
     }
 
     public void GoToStarterBundleScreen()
@@ -653,6 +702,7 @@ public class Controller : MonoBehaviour
             ScreenHandler.Instance.HideScreen(ScreenName.Start, true);
             ScreenHandler.Instance.ShowScreen(ScreenName.StarterBundle, true, false);
             ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+            ShowStatusButton();
 
             GameField.SetActive(false);
             StarterBundleHandler.gameObject.SetActive(true);
@@ -669,7 +719,7 @@ public class Controller : MonoBehaviour
             return;
 
         GamePaused = true;
-        ScreenHandler.Instance.ShowScreen(ScreenName.Pause, true);
+        ScreenHandler.Instance.ShowScreen(ScreenName.Pause, true, true, true);
     }
 
     public void UnPauseGame()
@@ -695,14 +745,16 @@ public class Controller : MonoBehaviour
                 ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
                 ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, true, false);
                 break;
-            case ScreenName.Overworld:
-                ScreenHandler.Instance.ShowScreen(ScreenName.StatusButton, true, false);
-                break;
             case ScreenName.Status:
                 GetStatusScreenHandler()?.Open();
                 break;
             case ScreenName.StarterBundle:
                 ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+                ShowStatusButton();
+                break;
+            default:
+                if (ScreenSupportsStatusButton(CurrentScreen))
+                    ShowStatusButton();
                 break;
         }
     }
@@ -791,31 +843,31 @@ public class Controller : MonoBehaviour
 
         if (unlockedTrinket == null) return false;
 
-        GoToTrinketUnlockScreen(unlockedTrinket, () => ApplyPostEncounterProgressionCore(offerCardPackReward));
+        GoToTrinketUnlockScreen(unlockedTrinket, () => ApplyPostEncounterProgressionCore(offerCardPackReward, useScreenTransition: false));
         return true;
     }
 
-    void ApplyPostEncounterProgressionCore(bool offerCardPackReward)
+    void ApplyPostEncounterProgressionCore(bool offerCardPackReward, bool useScreenTransition = true)
     {
-        if (ProgressionHandler.CurrentLevel == 5)
-        {
-            GoToTrinketScreen();
-            return;
-        }
-
         if (ProgressionHandler.CurrentEnemy == ProgressionHandler.DeckName.Throne)
         {
             ScreenHandler.Instance.ShowScreen(ScreenName.Success);
             return;
         }
 
+        if (ProgressionHandler.IsCurrentEnemyBoss())
+        {
+            StartNextLevel(useScreenTransition);
+            return;
+        }
+
         if (offerCardPackReward)
         {
-            // Combat and boss nodes: card gain only. Temple uses removal + rituals without a fight.
+            // Combat nodes: card gain only. Temple uses removal + rituals without a fight.
             GoToCardGainRewardScreen();
         }
         else
-            StartNextLevel();
+            StartNextLevel(useScreenTransition);
     }
 
     public void AddCardsToPlayerDeck(List<Card> cards)
@@ -838,6 +890,16 @@ public class Controller : MonoBehaviour
         if (newRitual != null && newRitual.GetType() == previousRitual.GetType()) return;
 
         StyxRunState.RecordRemovedRitual(previousRitual);
+    }
+
+    /// <summary>Cards and rituals given up in a full deck swap count as sacrificed to the Styx.</summary>
+    public void RecordSacrificedDeckAndRituals()
+    {
+        foreach (Card card in HumanPlayerDetails.DeckBlueprint[0])
+            StyxRunState.RecordRemovedCard(card);
+
+        StyxRunState.RecordRemovedRitual(HumanPlayerDetails.MajorRituals[0]);
+        StyxRunState.RecordRemovedRitual(HumanPlayerDetails.MinorRituals[0]);
     }
 
     public void AddTrinket(Trinket trinket)
@@ -1093,6 +1155,7 @@ public class Controller : MonoBehaviour
         //ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.TrinketRewardScreen);
+        ShowStatusButton();
     }
 
     // ---------------------------------------------------------------------
@@ -1141,10 +1204,24 @@ public class Controller : MonoBehaviour
         CurrentScreen = ScreenName.TrinketUnlock;
 
         GameField.SetActive(false);
+        SetMainCombatCameraActive(false);
         trinketUnlockHandler.Show(trinket, onContinue);
 
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.TrinketUnlock);
+    }
+
+    /// <summary>Fades out through the blank screen before running post-trinket-unlock progression.</summary>
+    public void ContinueFromTrinketUnlockScreen(Action onContinue)
+    {
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
+        {
+            ScreenHandler.Instance.HideScreen(ScreenName.TrinketUnlock, true);
+            GameField.SetActive(false);
+            SetMainCombatCameraActive(false);
+            onContinue?.Invoke();
+        });
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }
 
     /// <summary>
@@ -1174,6 +1251,45 @@ public class Controller : MonoBehaviour
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }
 
+    static bool ScreenSupportsStatusButton(ScreenName screen)
+    {
+        foreach (ScreenName supportedScreen in StatusButtonScreens)
+        {
+            if (supportedScreen == screen)
+                return true;
+        }
+
+        return false;
+    }
+
+    void ShowStatusButton()
+    {
+        if (IsOverworldStatusDisabled())
+        {
+            HideStatusButton();
+            return;
+        }
+
+        ScreenHandler.Instance.ShowScreen(ScreenName.StatusButton, true, false);
+    }
+
+    void HideStatusButton()
+    {
+        if (CurrentScreen == ScreenName.Status)
+            CloseStatusScreen();
+
+        ScreenHandler.Instance.HideScreen(ScreenName.StatusButton, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.Status, true);
+    }
+
+    bool IsOverworldStatusDisabled()
+    {
+        return !IsTestChamber
+            && OverworldMapController != null
+            && OverworldMapController.CurrentNode != null
+            && OverworldMapController.CurrentNode.R == OverworldStatusDisabledFloor;
+    }
+
     public void ToggleStatusScreen()
     {
         if (CurrentScreen == ScreenName.Status)
@@ -1184,7 +1300,8 @@ public class Controller : MonoBehaviour
 
     public void OpenStatusScreen()
     {
-        if (CurrentScreen != ScreenName.Overworld) return;
+        if (!ScreenSupportsStatusButton(CurrentScreen)) return;
+        if (CurrentScreen == ScreenName.Overworld && IsOverworldStatusDisabled()) return;
 
         StatusScreenHandler statusScreenHandler = GetStatusScreenHandler();
         if (statusScreenHandler == null)
@@ -1193,6 +1310,7 @@ public class Controller : MonoBehaviour
             return;
         }
 
+        _screenBeforeStatus = CurrentScreen;
         CurrentScreen = ScreenName.Status;
         ScreenHandler.Instance.ShowScreen(ScreenName.Status, true, true);
         statusScreenHandler.Open();
@@ -1204,9 +1322,14 @@ public class Controller : MonoBehaviour
 
         GetStatusScreenHandler()?.Close();
 
-        CurrentScreen = ScreenName.Overworld;
+        ScreenName returnScreen = _screenBeforeStatus;
+        CurrentScreen = returnScreen;
         ScreenHandler.Instance.HideScreen(ScreenName.Status, true);
-        ScreenHandler.Instance.ShowScreen(ScreenName.Overworld, true, false);
-        ScreenHandler.Instance.ShowScreen(ScreenName.StatusButton, true, false);
+        ScreenHandler.Instance.ShowScreen(returnScreen, true, false);
+
+        if (returnScreen == ScreenName.StarterBundle)
+            ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+
+        ShowStatusButton();
     }
 }

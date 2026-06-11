@@ -183,8 +183,8 @@ public class TempleHandler : MonoBehaviour
             viewCard.transform.localPosition = _offScreenPoses[i].LocalPosition;
             viewCard.transform.localEulerAngles = _offScreenPoses[i].LocalEulerAngles;
             viewCard.transform.localScale = _offScreenPoses[i].LocalScale;
-            viewCard.SetDescriptiveMode(true);
             viewCard.Load(batch[i], OnSacrificeCardClicked);
+            viewCard.SetDescriptiveMode(true);
             if (viewCard.CardCollider != null) viewCard.CardCollider.enabled = true;
             viewCard.SetHighlight(false);
             viewCard.gameObject.SetActive(true);

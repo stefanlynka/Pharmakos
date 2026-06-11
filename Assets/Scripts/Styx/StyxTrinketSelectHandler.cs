@@ -123,7 +123,6 @@ public class StyxTrinketSelectHandler : MonoBehaviour
                 Controller.Instance.AddTrinket(entry.Trinket);
         }
 
-        ScreenHandler.Instance.HideScreen(ScreenName.StyxTrinketSelect, true);
         Controller.Instance.StartGame();
     }
 }

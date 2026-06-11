@@ -71,6 +71,11 @@ public class TrinketUnlockHandler : MonoBehaviour
     {
         Action callback = onContinue;
         onContinue = null;
-        callback?.Invoke();
+        if (callback == null) return;
+
+        if (Controller.Instance != null)
+            Controller.Instance.ContinueFromTrinketUnlockScreen(callback);
+        else
+            callback.Invoke();
     }
 }

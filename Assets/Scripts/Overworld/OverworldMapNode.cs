@@ -23,9 +23,9 @@ public class OverworldMapNode : MonoBehaviour
         { EncounterType.Event, new List<string> { "Event" } },
         { EncounterType.Market, new List<string> { "OverworldHex", "Yellow", "Yellow" } },
         { EncounterType.BossFate, new List<string> { "OverworldHex", "Green", "Green" } },
-        { EncounterType.BossGate, new List<string> { "OverworldHex", "Blue", "Blue" } },
+        { EncounterType.BossGate, new List<string> { "OverworldHex", "Purple", "Purple" } },
         { EncounterType.BossThrone, new List<string> { "OverworldHex", "Black", "Black" } },
-        { EncounterType.Styx, new List<string> { "OverworldHex", "Blue", "White" } },
+        { EncounterType.Styx, new List<string> { "OverworldHex", "Blue", "Blue" } },
     };
 
     [Tooltip("Axial hex coordinates. Use context menu to sync from position.")]
@@ -107,8 +107,6 @@ public class OverworldMapNode : MonoBehaviour
             case EncounterType.BossGate:
             case EncounterType.BossThrone:
                 return "Boss";
-            case EncounterType.Styx:
-                return "Temple"; // No dedicated Styx mesh yet; reuse the temple hex with Styx colors.
             default:
                 return type.ToString();
         }

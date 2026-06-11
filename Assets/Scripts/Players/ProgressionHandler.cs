@@ -8,6 +8,7 @@ using static ProgressionHandler;
 public class ProgressionHandler
 {
     private const int ENEMY_HEALTH_OVERRIDE = 1; // -1 to disables
+    public const int BossPoolNumber = 4;
     public enum DeckName
     {
         None,
@@ -34,10 +35,30 @@ public class ProgressionHandler
     public DeckName CurrentEnemy = DeckName.None;
     public DeckName LastFoughtEnemyDeckName = DeckName.None;
     public int LastFoughtEnemyPoolNum = 0;
-    public int CurrentPool { get { return GetFightPool(CurrentFightNumber > 0 ? CurrentFightNumber : CurrentLevel); } }
+    public int CurrentPool =>
+        CurrentEnemy != DeckName.None && DetailsByDeckName.TryGetValue(CurrentEnemy, out PlayerDetails currentDetails)
+            ? GetDetailsPool(currentDetails)
+            : GetFightPool(CurrentFightNumber > 0 ? CurrentFightNumber : CurrentLevel);
 
     public static int GetFightPool(int fightNumber) =>
         Mathf.Max(1, Mathf.CeilToInt(fightNumber / 3f));
+
+    public static int GetDetailsPool(PlayerDetails details, int fightNumber) =>
+        details.IsBoss ? BossPoolNumber : GetFightPool(fightNumber);
+
+    public int GetDetailsPool(PlayerDetails details)
+    {
+        if (!details.IsEnemy)
+            return 0;
+
+        int fightNumber = CurrentFightNumber > 0 ? CurrentFightNumber : CurrentLevel;
+        return GetDetailsPool(details, fightNumber);
+    }
+
+    public bool IsCurrentEnemyBoss() =>
+        CurrentEnemy != DeckName.None
+        && DetailsByDeckName.TryGetValue(CurrentEnemy, out PlayerDetails details)
+        && details.IsBoss;
 
     public Dictionary<DeckName, PlayerDetails> DetailsByDeckName = new Dictionary<DeckName, PlayerDetails>();
     //public Dictionary<int, List<DeckName>> EnemyPools = new Dictionary<int, List<DeckName>>();
@@ -1881,6 +1902,8 @@ public class ProgressionHandler
             return false;
         }
 
+        Controller.Instance.RecordSacrificedDeckAndRituals();
+
         var newDeck = new List<Card>();
         foreach (Card card in enemyDeck)
             newDeck.Add(card.MakeBaseCopy());
@@ -2071,14 +2094,14 @@ public class ProgressionHandler
             if (newDetails.IsEnemy)
             {
                 int fightNumber = CurrentFightNumber > 0 ? CurrentFightNumber : CurrentLevel;
-                int fightPool = GetFightPool(fightNumber);
+                int fightPool = GetDetailsPool(newDetails, fightNumber);
                 newDetails.BaseHealth = ENEMY_HEALTH_OVERRIDE > 0 ? ENEMY_HEALTH_OVERRIDE : fightPool * 10 + ((fightNumber - 1) % 3) * 5;
                 newDetails.GoldPerTurn = fightNumber >= 10 ? 5 : 2 + Mathf.Min(fightPool, 2);
             }
             else newDetails.BaseHealth = GetPlayerHealth();
         }
 
-        int pool = newDetails.IsEnemy ? CurrentPool : 0;
+        int pool = GetDetailsPool(newDetails);
         player.LoadDetails(newDetails, pool);
     }
     public List<Follower> GetPlayerStartingFollowers(DeckName deckName, int pool)

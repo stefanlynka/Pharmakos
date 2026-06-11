@@ -28,6 +28,10 @@ public class MoveCardAnimation : AnimationAction
     private bool useCurrentRotation = false;
     private Vector3 startRotation = new Vector3(0, 0, 0);
     private Vector3 endRotation = new Vector3(0, 0, 0);
+    private bool tweenRotation = false;
+    private bool useQuaternionRotation = false;
+    private Quaternion startRotationQuat = Quaternion.identity;
+    private Quaternion endRotationQuat = Quaternion.identity;
 
     private bool forceDescriptive = false;
 
@@ -122,6 +126,12 @@ public class MoveCardAnimation : AnimationAction
             }
         }
 
+        if (newZone == GameZone.BattleRow)
+        {
+            viewCard.transform.SetParent(null, true);
+            SetupBattleRowRotationTween();
+        }
+
         startPos = viewCard.transform.position;
 
         // Determine the card's destination
@@ -187,6 +197,20 @@ public class MoveCardAnimation : AnimationAction
         this.useCurrentRotation = useCurrentRotation;
         this.startRotation = startRotation;
         this.endRotation = endRotation;
+        tweenRotation = true;
+        useQuaternionRotation = false;
+    }
+
+    void SetupBattleRowRotationTween()
+    {
+        ViewBattleRow battleRow = View.Instance.GetViewPlayer(newOwner).BattleRow;
+        if (battleRow?.UnitHolderTransform == null)
+            return;
+
+        startRotationQuat = viewCard.transform.rotation;
+        endRotationQuat = battleRow.UnitHolderTransform.rotation;
+        tweenRotation = true;
+        useQuaternionRotation = true;
     }
     public void ForceDescriptive(bool value)
     {
@@ -198,7 +222,18 @@ public class MoveCardAnimation : AnimationAction
         viewCard.transform.position = startPos + (endPos - startPos) * progress;
         float newScale = startScale + (endScale - startScale) * progress;
         viewCard.transform.localScale = new Vector3(newScale, newScale, newScale);
-        viewCard.transform.eulerAngles = startRotation + (endRotation - startRotation) * progress;
+
+        if (tweenRotation)
+        {
+            if (useQuaternionRotation)
+            {
+                viewCard.transform.rotation = Quaternion.Slerp(startRotationQuat, endRotationQuat, progress);
+            }
+            else
+            {
+                viewCard.transform.eulerAngles = startRotation + (endRotation - startRotation) * progress;
+            }
+        }
     }
 
     private void Complete()

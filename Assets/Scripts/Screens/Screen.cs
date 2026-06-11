@@ -10,6 +10,7 @@ public class Screen : MonoBehaviour
 
     protected bool neverHide = false;
     public bool ManualHide = false;
+    public bool InstantExit = false;
 
     public Action OnEnter;
     public Action OnExit;
@@ -37,6 +38,7 @@ public class Screen : MonoBehaviour
     public virtual void Exit(bool instant = false)
     {
         if (neverHide) return;
+        if (InstantExit) instant = true;
 
         OnExit?.Invoke();
         OnExit = null;

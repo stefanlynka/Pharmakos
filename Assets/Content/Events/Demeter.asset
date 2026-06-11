@@ -34,18 +34,18 @@ MonoBehaviour:
     Outcome:
       OutcomeType: 1
       RewardInfo:
-      - LastingGift
+      - PropheticDraught
   - OptionText: 'Winter
 
       (Gain Card)'
     Outcome:
       OutcomeType: 1
       RewardInfo:
-      - LastingGift
+      - FinalRites
   - OptionText: 'Spring
 
       (Gain Card)'
     Outcome:
       OutcomeType: 1
       RewardInfo:
-      - LastingGift
+      - MacabreFestivities
