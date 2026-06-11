@@ -76,6 +76,7 @@ public class Controller : MonoBehaviour
     public TutorialHandler TutorialHandler;
     public ProgressionHandler ProgressionHandler;
     public DeckViewer DeckViewer;
+    public ContentScrollView ContentScrollView;
     public TextHandler TextHandler = new TextHandler();
     public PlayHistoryHandler PlayHistoryHandler = new PlayHistoryHandler();
     public ViewPlayHistoryHandler ViewPlayHistoryHandler;
@@ -148,6 +149,15 @@ public class Controller : MonoBehaviour
 
     private void HandleEscapeKey()
     {
+        if (ContentScrollView.IsActive)
+        {
+            if (CurrentScreen == ScreenName.Status)
+                CloseStatusScreen();
+            else
+                HideContentScrollView();
+            return;
+        }
+
         if (DeckViewer != null && DeckViewer.gameObject.activeSelf)
         {
             HideDeckViewer();
@@ -1067,21 +1077,17 @@ public class Controller : MonoBehaviour
     }
     public void ToggleDeckViewer()
     {
-        if (DeckViewer.gameObject.activeSelf)
-        {
-            HideDeckViewer();
-        }
+        if (IsContentScrollViewActive())
+            HideContentScrollView();
         else
-        {
             LoadDeckViewer();
-        }
     }
     public void LoadDeckViewer()
     {
         ScreenHandler.Instance.HideScreen(CurrentScreen, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
 
-        DeckViewer.gameObject.SetActive(true);
         List<Card> playerDeck = new List<Card>(HumanPlayerDetails.DeckBlueprint[0]);
 
         // Sort by Gold cost, then by type (Followers before Spells)
@@ -1098,16 +1104,45 @@ public class Controller : MonoBehaviour
             if (!aIsFollower && bIsFollower) return 1;
             return 0;
         });
-        DeckViewer.Load(playerDeck);
-    }
-    public void HideDeckViewer()
-    {
-        ScreenHandler.Instance.ShowScreen(CurrentScreen, true);
-        if (CurrentScreen == ScreenName.Game) ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, true, false);
 
-        DeckViewer.Exit();
-        DeckViewer.gameObject.SetActive(false);
+        ScreenHandler.Instance.ShowScreen(ScreenName.DeckViewerScreen, true, false);
+
+        if (ContentScrollView.Instance != null)
+            ContentScrollView.ShowCards(playerDeck);
+        else if (DeckViewer != null)
+        {
+            DeckViewer.gameObject.SetActive(true);
+            DeckViewer.Load(playerDeck);
+        }
     }
+    public void HideDeckViewer() => HideContentScrollView();
+    public void HideContentScrollView()
+    {
+        if (ContentScrollView.Instance != null)
+            ContentScrollView.Hide();
+
+        ScreenHandler.Instance.HideScreen(ScreenName.DeckViewerScreen, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryScreen, true);
+
+        if (DeckViewer != null && DeckViewer.gameObject.activeSelf)
+        {
+            DeckViewer.Exit();
+            DeckViewer.gameObject.SetActive(false);
+        }
+        else if (ViewPlayHistoryHandler != null && ViewPlayHistoryHandler.gameObject.activeSelf)
+        {
+            ViewPlayHistoryHandler.Exit();
+            ViewPlayHistoryHandler.gameObject.SetActive(false);
+        }
+
+        ScreenHandler.Instance.ShowScreen(CurrentScreen, true);
+        if (CurrentScreen == ScreenName.Game)
+        {
+            ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, true, false);
+            ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+        }
+    }
+    bool IsContentScrollViewActive() => ContentScrollView.IsActive;
     public static int GetRandomMetaSeed()
     {
         //return 1; // For consistent testing
@@ -1116,33 +1151,30 @@ public class Controller : MonoBehaviour
 
     public void TogglePlayHistory()
     {
-        if (ViewPlayHistoryHandler.gameObject.activeSelf)
-        {
+        if (IsContentScrollViewActive())
             HidePlayHistory();
-        }
         else
-        {
             LoadPlayHistory();
-        }
     }
     public void LoadPlayHistory()
     {
         ScreenHandler.Instance.HideScreen(CurrentScreen, true);
         ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
 
-        ViewPlayHistoryHandler.gameObject.SetActive(true);
-        
-        List<PlayHistoryItem> items = PlayHistoryHandler.GetPlayHistoryItems(); // new List<PlayHistoryItem>();
-        ViewPlayHistoryHandler.Load(items);
-    }
-    public void HidePlayHistory()
-    {
-        ViewPlayHistoryHandler.Exit();
-        ViewPlayHistoryHandler.gameObject.SetActive(false);
+        List<PlayHistoryItem> items = PlayHistoryHandler.GetPlayHistoryItems();
 
-        ScreenHandler.Instance.ShowScreen(CurrentScreen, true);
-        ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, true, false);
+        ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryScreen, true, false);
+
+        if (ContentScrollView.Instance != null)
+            ContentScrollView.ShowPlayHistory(items);
+        else if (ViewPlayHistoryHandler != null)
+        {
+            ViewPlayHistoryHandler.gameObject.SetActive(true);
+            ViewPlayHistoryHandler.Load(items);
+        }
     }
+    public void HidePlayHistory() => HideContentScrollView();
 
     public void GoToTrinketScreen()
     {

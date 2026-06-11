@@ -19,6 +19,9 @@ public class OfferingLabel : MonoBehaviour
 
     void OnMouseEnter()
     {
+        if (ContentScrollView.BlocksGameInput)
+            return;
+
         ShowHoverSummary();
     }
 
@@ -34,6 +37,9 @@ public class OfferingLabel : MonoBehaviour
 
     void ShowHoverSummary()
     {
+        if (ContentScrollView.BlocksGameInput)
+            return;
+
         if (string.IsNullOrEmpty(summaryDescription))
             return;
 

@@ -147,7 +147,8 @@ public class View : MonoBehaviour
 
     public void PlayerUpdate()
     {
-        bool useCombatSelection = MenuSelectionHandler == null || !MenuSelectionHandler.IsActive;
+        bool useCombatSelection = !ContentScrollView.BlocksGameInput
+            && (MenuSelectionHandler == null || !MenuSelectionHandler.IsActive);
         if (useCombatSelection)
             SelectionHandler.UpdateSelections();
 
@@ -160,6 +161,9 @@ public class View : MonoBehaviour
     private void LateUpdate()
     {
         if (Controller.Instance == null || !Controller.Instance.GameRunning)
+            return;
+
+        if (ContentScrollView.BlocksGameInput)
             return;
 
         if (MenuSelectionHandler != null && MenuSelectionHandler.IsActive)

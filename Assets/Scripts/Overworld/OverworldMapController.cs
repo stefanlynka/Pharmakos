@@ -343,11 +343,14 @@ public class OverworldMapController : MonoBehaviour
             _cameraScrollInitialized = true;
         }
 
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
-        if (scroll != 0f)
+        if (!ContentScrollView.CapturesScrollWheel)
         {
-            _cameraScrollTargetY -= scroll * CameraScrollZoomSpeed;
-            _cameraScrollTargetY = Mathf.Clamp(_cameraScrollTargetY, CameraMinY, CameraMaxY);
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            if (scroll != 0f)
+            {
+                _cameraScrollTargetY -= scroll * CameraScrollZoomSpeed;
+                _cameraScrollTargetY = Mathf.Clamp(_cameraScrollTargetY, CameraMinY, CameraMaxY);
+            }
         }
 
         float smooth = Mathf.Max(0.0001f, CameraScrollSmoothTime);

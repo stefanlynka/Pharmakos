@@ -8,14 +8,11 @@ using UnityEngine.UI;
 ///  - Current: the player's current deck, rituals, and trinkets. With the Gates Beyond
 ///    trinket, rituals/trinkets can be sacrificed to the Styx in exchange for a heartstring.
 ///  - Styx: the Styx deck, removed rituals, and removed trinkets that await at the river.
-/// Lives on the StatusScreen GameObject; the 3D card grid lives in the StatusArea.
+/// Lives on the StatusScreen GameObject; the deck is rendered via ContentScrollView.
 /// </summary>
 public class StatusScreenHandler : MonoBehaviour
 {
-    [Tooltip("Root of the 3D area that shows the deck (activated while the screen is open).")]
-    public GameObject StatusArea;
-    [Tooltip("Card grid inside the StatusArea used to display the deck.")]
-    public ViewCardScroller CardScroller;
+    const string DeckViewerRenderTexturePath = "RenderTextures/DeckViewer";
 
     bool styxTabActive;
 
@@ -26,17 +23,22 @@ public class StatusScreenHandler : MonoBehaviour
     Image currentTabBackground;
     Image styxTabBackground;
 
+    void Awake()
+    {
+        Screen screen = GetComponent<Screen>();
+        if (screen != null)
+            screen.Camera = null;
+    }
+
     public void Open()
     {
-        if (StatusArea != null) StatusArea.SetActive(true);
         BuildUIIfNeeded();
         ShowTab(false);
     }
 
     public void Close()
     {
-        if (CardScroller != null) CardScroller.Exit();
-        if (StatusArea != null) StatusArea.SetActive(false);
+        ContentScrollView.Hide();
     }
 
     void BuildUIIfNeeded()
@@ -44,6 +46,8 @@ public class StatusScreenHandler : MonoBehaviour
         if (uiRoot != null) return;
 
         uiRoot = StyxUI.CreateStretchedRect(transform, "StatusUI");
+
+        CreateDeckContentImage(uiRoot).transform.SetAsFirstSibling();
 
         currentTabBackground = (Image)StyxUI.CreateButton(uiRoot, "CurrentTab", "Current", 24, () => ShowTab(false)).targetGraphic;
         StyxUI.SetAnchored(currentTabBackground.rectTransform, new Vector2(0f, 1f), new Vector2(30, -25), new Vector2(180, 55));
@@ -57,7 +61,7 @@ public class StatusScreenHandler : MonoBehaviour
         Button closeButton = StyxUI.CreateButton(uiRoot, "CloseButton", "Close", 24, () => Controller.Instance.CloseStatusScreen());
         StyxUI.SetAnchored((RectTransform)closeButton.transform, new Vector2(1f, 0f), new Vector2(-415, 25), new Vector2(170, 55));
 
-        // Right-side panel for rituals and trinkets; the 3D card grid shows on the left.
+        // Right-side panel for rituals and trinkets; the deck render texture shows on the left.
         Image sidePanel = StyxUI.CreatePanel(uiRoot, "SidePanel", StyxUI.PanelColor);
         sidePanel.rectTransform.anchorMin = new Vector2(1f, 0f);
         sidePanel.rectTransform.anchorMax = new Vector2(1f, 1f);
@@ -88,10 +92,9 @@ public class StatusScreenHandler : MonoBehaviour
         titleText.text = styxTabActive ? "What Waits At The Styx" : "Your Current Possessions";
         heartstringsText.text = "Heartstrings: " + Controller.Instance.RunHeartStrings + " / " + Player.MaxHeartStrings;
 
-        if (CardScroller != null)
-            CardScroller.Load(GetSortedDeck(styxTabActive
-                ? Controller.Instance.StyxRunState.GetStyxDeck()
-                : Controller.Instance.HumanPlayerDetails.DeckBlueprint[0]));
+        ContentScrollView.ShowCards(GetSortedDeck(styxTabActive
+            ? Controller.Instance.StyxRunState.GetStyxDeck()
+            : Controller.Instance.HumanPlayerDetails.DeckBlueprint[0]));
 
         StyxUI.Clear(sideContentRoot);
         if (styxTabActive) PopulateStyxSide();
@@ -267,5 +270,23 @@ public class StatusScreenHandler : MonoBehaviour
     {
         if (Controller.Instance.TrySacrificeTrinketForHeartstring(trinket))
             Rebuild();
+    }
+
+    static RawImage CreateDeckContentImage(Transform parent)
+    {
+        RectTransform rect = StyxUI.CreateRect(parent, "DeckContent");
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = new Vector2(15f, 60f);
+        rect.offsetMax = new Vector2(-415f, -80f);
+
+        RawImage rawImage = rect.gameObject.AddComponent<RawImage>();
+        rawImage.raycastTarget = false;
+
+        RenderTexture texture = Resources.Load<RenderTexture>(DeckViewerRenderTexturePath);
+        if (texture != null)
+            rawImage.texture = texture;
+
+        return rawImage;
     }
 }

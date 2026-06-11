@@ -44,6 +44,7 @@ public class SelectionHandler
     public void UpdateSelections()
     {
         if (Controller.Instance.GamePaused) return;
+        if (ContentScrollView.BlocksGameInput) return;
         if (GetSelectionCamera() == null) return;
 
         UpdateTargetUnderMouse();

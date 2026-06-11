@@ -10,6 +10,7 @@ public class Screen : MonoBehaviour
 
     protected bool neverHide = false;
     public bool ManualHide = false;
+    public bool InstantEnter = false;
     public bool InstantExit = false;
 
     public Action OnEnter;
@@ -28,6 +29,8 @@ public class Screen : MonoBehaviour
 
     public virtual void Enter(bool instant = false)
     {
+        if (InstantEnter) instant = true;
+
         SetUIActive(true, instant);
 
         if (Camera != null) Camera.enabled = true;

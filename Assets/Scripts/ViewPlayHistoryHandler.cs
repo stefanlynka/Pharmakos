@@ -23,11 +23,11 @@ public class ViewPlayHistoryHandler : MonoBehaviour
     private void Awake()
     {
         PlayHistoryItemPrefab = Resources.Load<GameObject>("Prefabs/UI/PlayHistory/UICardHolder");
-        PortraitComponentPrefab = Resources.Load<GameObject>("Prefabs/View/ViewPlayerPortraitBig"); 
+        PortraitComponentPrefab = Resources.Load<GameObject>("Prefabs/View/ViewPlayerPortrait"); 
         CardComponentPrefab = Resources.Load<GameObject>("Prefabs/Cards/CardView");
         TargetComponentPrefab = Resources.Load<GameObject>("Prefabs/UI/PlayHistory/Components/TargetComponent");
         AttackComponentPrefab = Resources.Load<GameObject>("Prefabs/UI/PlayHistory/Components/AttackComponent");
-        RitualComponentPrefab = Resources.Load<GameObject>("Prefabs/View/ViewRitual");
+        RitualComponentPrefab = Resources.Load<GameObject>("Prefabs/View/ViewRitual3");
     }
 
     public void Load(List<PlayHistoryItem> playHistoryItems)

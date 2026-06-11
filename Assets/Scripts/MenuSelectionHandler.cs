@@ -63,6 +63,7 @@ public class MenuSelectionHandler : MonoBehaviour
     {
         if (!IsActive) return;
         if (Controller.Instance != null && Controller.Instance.GamePaused) return;
+        if (ContentScrollView.BlocksGameInput) return;
         if (GetSelectionCamera() == null) return;
 
         UpdateTargetUnderMouse();

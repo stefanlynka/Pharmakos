@@ -139,6 +139,12 @@ public class ViewRitual : ViewTarget
         if (collider != null) collider.enabled = clickable;
     }
 
+    public void SetDisplayScale(Vector3 scale)
+    {
+        defaultLocalScale = scale;
+        transform.localScale = scale;
+    }
+
     public void Refresh()
     {
         gameObject.SetActive(Ritual != null);

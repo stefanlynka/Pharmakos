@@ -188,5 +188,7 @@ public enum ScreenName
     StyxTrinketSelect,
     Status,
     StatusButton,
+    DeckViewerScreen,
+    PlayHistoryScreen,
 }
 
