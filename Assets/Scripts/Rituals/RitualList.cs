@@ -149,7 +149,7 @@ public class ApolloMinor : Ritual
     public override List<ITarget> GetTargets()
     {
         var targets = new List<ITarget>();
-        targets.AddRange(ITarget.GetAllPlayers(Owner));
+        targets.Add(Owner);
         return targets;
     }
 
@@ -879,7 +879,7 @@ public class HadesMinor : Ritual
     public override List<ITarget> GetTargets()
     {
         var targets = new List<ITarget>();
-        targets.AddRange(ITarget.GetAllPlayers(Owner));
+        targets.Add(Owner);
         return targets;
     }
 

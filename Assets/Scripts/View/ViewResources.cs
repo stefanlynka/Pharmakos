@@ -61,4 +61,25 @@ public class ViewResources : MonoBehaviour
         //CropsText.text = player.Offerings[OfferingType.Crop].ToString();
         //ScrollsText.text = player.Offerings[OfferingType.Scroll].ToString();
     }
+
+    public Vector3 GetOfferingPosition(OfferingType type)
+    {
+        TextMeshPro text = type switch
+        {
+            OfferingType.Gold => GoldText,
+            OfferingType.Blood => BloodText,
+            OfferingType.Bone => BonesText,
+            OfferingType.Crop => CropsText,
+            OfferingType.Scroll => ScrollsText,
+            _ => null
+        };
+
+        if (text == null)
+        {
+            Debug.LogError("Offering type not recognized: " + type.ToString());
+            return transform.position;
+        }
+
+        return text.transform.position;
+    }
 }

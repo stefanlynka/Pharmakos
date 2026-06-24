@@ -49,6 +49,12 @@ public class ViewRitual : ViewTarget
     [Tooltip("Which side of this ritual the hover summary popup appears on.")]
     public PopupPosition SummaryPosition = PopupPosition.Above;
 
+    [Header("Idle Rattle")]
+    [SerializeField] float rattleIntervalMin = 4f;
+    [SerializeField] float rattleIntervalMax = 6f;
+    [SerializeField] float rattleDuration = 0.1f;
+    [SerializeField] float rattleAngleDegrees = 1.75f;
+
     const uint RenderingLayerRitualHighlight = 1u << 3;
     const string GlowShaderName = "Pharmakos/MeshEdgeMistGlow";
     const string GlowShellRootName = "RitualGlowShells";
@@ -81,6 +87,13 @@ public class ViewRitual : ViewTarget
     Transform glowShellRoot;
     bool isHoverSummaryShown;
 
+    public Transform rattleTarget;
+    Quaternion defaultRattleLocalRotation;
+    bool hasDefaultRattleRotation;
+    bool isRattling;
+    float nextRattleAt = -1f;
+    float rattleEndTime;
+
     sealed class RitualGlowShell
     {
         public Renderer Renderer;
@@ -100,6 +113,7 @@ public class ViewRitual : ViewTarget
     {
         UpdateHoverScale();
         UpdateHoverSummary();
+        UpdateIdleRattle();
 
         if (!isHighlightActive)
             return;
@@ -123,6 +137,7 @@ public class ViewRitual : ViewTarget
     void OnDisable()
     {
         HideHoverSummary();
+        StopIdleRattle(resetSchedule: true);
     }
 
     public void Init(Ritual ritual, bool clickable = true)
@@ -239,6 +254,112 @@ public class ViewRitual : ViewTarget
         return MenuSelectionHandler.Instance != null
             && MenuSelectionHandler.Instance.IsActive
             && MenuSelectionHandler.Instance.CurrentHover == this;
+    }
+
+    bool IsReadyToUse()
+    {
+        if (Ritual == null || View.Instance == null)
+            return false;
+
+        if (View.Instance.SelectionHandler.SelectedRitual != null
+            && View.Instance.SelectionHandler.SelectedRitual != this)
+            return false;
+
+        return Ritual.Owner != null
+            && Ritual.Owner.IsHuman
+            && Ritual.CanPlay()
+            && View.Instance.IsInteractible;
+    }
+
+    bool ShouldIdleRattle()
+    {
+        return IsReadyToUse()
+            && !IsHovered()
+            && View.Instance.SelectionHandler.SelectedRitual != this;
+    }
+
+    void EnsureRattleTarget()
+    {
+        if (rattleTarget != null)
+            return;
+
+        rattleTarget = ResolveAltarRoot();
+        if (rattleTarget == null)
+            return;
+
+        defaultRattleLocalRotation = rattleTarget.localRotation;
+        hasDefaultRattleRotation = true;
+    }
+
+    void UpdateIdleRattle()
+    {
+        if (!ShouldIdleRattle())
+        {
+            StopIdleRattle(resetSchedule: true);
+            return;
+        }
+
+        EnsureRattleTarget();
+        if (rattleTarget == null)
+            return;
+
+        if (isRattling)
+        {
+            ApplyIdleRattle();
+            if (Time.unscaledTime >= rattleEndTime)
+                StopIdleRattle(resetSchedule: false);
+            return;
+        }
+
+        if (nextRattleAt < 0f)
+            ScheduleNextRattle();
+
+        if (Time.unscaledTime >= nextRattleAt)
+            StartIdleRattle();
+    }
+
+    void ScheduleNextRattle()
+    {
+        float interval = Random.Range(rattleIntervalMin, rattleIntervalMax);
+        nextRattleAt = Time.unscaledTime + interval;
+    }
+
+    void StartIdleRattle()
+    {
+        EnsureRattleTarget();
+        if (rattleTarget == null)
+            return;
+
+        isRattling = true;
+        rattleEndTime = Time.unscaledTime + rattleDuration;
+        ApplyIdleRattle();
+    }
+
+    void ApplyIdleRattle()
+    {
+        if (rattleTarget == null || !hasDefaultRattleRotation)
+            return;
+
+        float elapsed = rattleDuration - (rattleEndTime - Time.unscaledTime);
+        float t = Mathf.Clamp01(elapsed / rattleDuration);
+        float dampen = 1f - t;
+        float wobble = dampen * rattleAngleDegrees;
+        float x = Mathf.Sin(t * 50f) * wobble;
+        float z = Mathf.Cos(t * 43f) * wobble * 0.75f;
+        rattleTarget.localRotation = defaultRattleLocalRotation * Quaternion.Euler(x, 0f, z);
+    }
+
+    void StopIdleRattle(bool resetSchedule)
+    {
+        if (isRattling && rattleTarget != null && hasDefaultRattleRotation)
+            rattleTarget.localRotation = defaultRattleLocalRotation;
+
+        isRattling = false;
+
+        if (resetSchedule)
+            nextRattleAt = -1f;
+        else
+            ScheduleNextRattle();
     }
 
     void UpdateHoverSummary()

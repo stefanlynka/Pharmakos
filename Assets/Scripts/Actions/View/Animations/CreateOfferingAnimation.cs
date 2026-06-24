@@ -68,9 +68,9 @@ public class CreateOfferingAnimation : AnimationAction
         }
 
         ViewTarget destinationTarget = View.Instance.GetViewTargetByID(destinationID);
-        if (destinationTarget is ViewPlayer)
+        if (destinationTarget is ViewPlayer viewPlayer)
         {
-            endPos = OfferingHandler.Instance.GetOfferingPosition(owner, offeringType);
+            endPos = viewPlayer.ViewResources.GetOfferingPosition(offeringType);
         }
         else if (destinationTarget is ViewRitual)
         {

@@ -233,6 +233,7 @@ public class GoldenFleeceTuftTrinket : Trinket<GoldenFleeceTuftTrinketEffectDef>
     {
         Name = "Golden Fleece Tuft";
         Description = "When you use a ritual: gain 1 gold";
+        AvailableAsStartingTrinket = false;
     }
 }
 public class GoldenFleeceTuftTrinketEffectDef : TrinketPlayerEffect
@@ -1127,6 +1128,7 @@ public class PandorasHopeTrinket : Trinket<PandorasHopeTrinketEffectDef>
     {
         Name = "Pandora's Hope";
         Description = "The first time you lose a heartstring each combat, gain a heartstring";
+        AvailableAsStartingTrinket = false;
     }
 }
 public class PandorasHopeTrinketEffectDef : TrinketPlayerEffect
@@ -1572,6 +1574,7 @@ public class OdysseyTrinket : Trinket<OdysseyTrinketEffectDef>
     {
         Name = "Odyssey";
         Description = "When you play a follower, play a spell, and use a ritual in the same turn for the first time, summon Odysseus";
+        AvailableAsStartingTrinket = false;
     }
 }
 

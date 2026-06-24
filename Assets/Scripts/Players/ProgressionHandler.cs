@@ -9,11 +9,22 @@ public class ProgressionHandler
 {
     private const int ENEMY_HEALTH_OVERRIDE = -1; // -1 to disables
     public const int BossPoolNumber = 4;
+    public const int HighestEnemyPoolNumber = 3;
 
     static readonly HashSet<Type> ShopExcludedCardTypes = new HashSet<Type>
     {
+        typeof(Contraption),
+        typeof(FirstFlame),
         typeof(Shade),
         typeof(Haunt),
+        typeof(Hippeis),
+        typeof(Hoplite),
+        typeof(Myrmidon),
+        typeof(Prey1),
+        typeof(Prey2),
+        typeof(Prey3),
+        typeof(Gnaw),
+        typeof(Roar),
     };
     public enum DeckName
     {
@@ -50,7 +61,7 @@ public class ProgressionHandler
         Mathf.Max(1, Mathf.CeilToInt(fightNumber / 3f));
 
     public static int GetDetailsPool(PlayerDetails details, int fightNumber) =>
-        details.IsBoss ? BossPoolNumber : GetFightPool(fightNumber);
+        details.IsBoss ? BossPoolNumber : Mathf.Min(GetFightPool(fightNumber), HighestEnemyPoolNumber);
 
     public int GetDetailsPool(PlayerDetails details)
     {
@@ -1666,7 +1677,7 @@ public class ProgressionHandler
         starterBundles.Clear();
         alreadyDisplayedTrinkets.Clear();
 
-        Trinket randomTrinket = GetRandomTrinket(new List<Ritual> { new ZeusMinor() });
+        Trinket randomTrinket = GetRandomTrinket(new List<Ritual> { new ZeusMinor() }, forStartingBundle: true);
         alreadyDisplayedTrinkets.Add(randomTrinket);
         starterBundles.Add(new StarterBundle(
             new ZeusMinor(), // ZeusMinor
@@ -1677,7 +1688,7 @@ public class ProgressionHandler
             },
             randomTrinket));
 
-        randomTrinket = GetRandomTrinket(new List<Ritual> { new HadesMinor() });
+        randomTrinket = GetRandomTrinket(new List<Ritual> { new HadesMinor() }, forStartingBundle: true);
         alreadyDisplayedTrinkets.Add(randomTrinket);
         starterBundles.Add(new StarterBundle(
             new HadesMinor(), // HadesMinor
@@ -1688,7 +1699,7 @@ public class ProgressionHandler
             },
             randomTrinket));
 
-        randomTrinket = GetRandomTrinket(new List<Ritual> { new AphroditeMinor() });
+        randomTrinket = GetRandomTrinket(new List<Ritual> { new AphroditeMinor() }, forStartingBundle: true);
         alreadyDisplayedTrinkets.Add(randomTrinket);
         starterBundles.Add(new StarterBundle(
             new AphroditeMinor(), // AphroditeMinor
@@ -1699,7 +1710,7 @@ public class ProgressionHandler
             },
             randomTrinket));
 
-        randomTrinket = GetRandomTrinket(new List<Ritual> { new HermesMinor() });
+        randomTrinket = GetRandomTrinket(new List<Ritual> { new HermesMinor() }, forStartingBundle: true);
         alreadyDisplayedTrinkets.Add(randomTrinket);
         starterBundles.Add(new StarterBundle(
             new HermesMinor(),
@@ -1709,7 +1720,7 @@ public class ProgressionHandler
                 new Melpomene(),
             }, randomTrinket));
 
-        randomTrinket = GetRandomTrinket(new List<Ritual> { new HestiaMinor() });
+        randomTrinket = GetRandomTrinket(new List<Ritual> { new HestiaMinor() }, forStartingBundle: true);
         alreadyDisplayedTrinkets.Add(randomTrinket);
         starterBundles.Add(new StarterBundle(
             new HestiaMinor(),
@@ -1753,7 +1764,7 @@ public class ProgressionHandler
     }
 
     // Get a random trinket that's viable with the given ritual
-    private Trinket GetRandomTrinket(List<Ritual> rituals, bool ignoreSelectedTrinkets = true)
+    private Trinket GetRandomTrinket(List<Ritual> rituals, bool ignoreSelectedTrinkets = true, bool forStartingBundle = false)
     {
         HashSet<OfferingType> relevantOfferings = new HashSet<OfferingType>();
         foreach (Ritual ritual in rituals)
@@ -1768,6 +1779,8 @@ public class ProgressionHandler
         List<Trinket> viableTrinkets = new List<Trinket>();
         foreach (Trinket trinket in availableTrinkets)
         {
+            if (forStartingBundle && !trinket.AvailableAsStartingTrinket) continue;
+
             // Ignore trinkets already displayed on the current reward screen
             if (alreadyDisplayedTrinkets.Contains(trinket)) continue;
 
@@ -1959,6 +1972,18 @@ public class ProgressionHandler
         CurrentLevel++;
     }
 
+    /// <summary>Overworld event node: advance level without combat.</summary>
+    public void RegisterEventEncounter()
+    {
+        CurrentLevel++;
+    }
+
+    /// <summary>Overworld Styx node: advance level without combat.</summary>
+    public void RegisterStyxEncounter()
+    {
+        CurrentLevel++;
+    }
+
     public List<Card> GetShopCardPool()
     {
         var pool = new List<Card>();
@@ -2047,7 +2072,7 @@ public class ProgressionHandler
         {
             CurrentLevel--;
             Debug.LogError("Unknown boss encounter type: " + bossType + "; using a regular combat encounter instead.");
-            SetupNextCombatEnemy();
+            SetupNextCombatEnemy(floorFightNumber);
             return;
         }
 
@@ -2102,7 +2127,10 @@ public class ProgressionHandler
             {
                 int fightNumber = CurrentFightNumber > 0 ? CurrentFightNumber : CurrentLevel;
                 int fightPool = GetDetailsPool(newDetails, fightNumber);
-                newDetails.BaseHealth = ENEMY_HEALTH_OVERRIDE > 0 ? ENEMY_HEALTH_OVERRIDE : fightPool * 10 + ((fightNumber - 1) % 3) * 5;
+                if (TryGetFixedBossHealth(deckName, out int bossHealth))
+                    newDetails.BaseHealth = bossHealth;
+                else
+                    newDetails.BaseHealth = ENEMY_HEALTH_OVERRIDE > 0 ? ENEMY_HEALTH_OVERRIDE : fightPool * 10 + ((fightNumber - 1) % 3) * 5;
                 newDetails.GoldPerTurn = fightNumber >= 10 ? 5 : 2 + Mathf.Min(fightPool, 2);
             }
             else newDetails.BaseHealth = GetPlayerHealth();
@@ -2210,6 +2238,23 @@ public class ProgressionHandler
     private static bool UsesConfiguredBaseHealth(DeckName deckName) =>
         deckName == DeckName.TestPlayer || deckName == DeckName.TestEnemy;
 
+    private static bool TryGetFixedBossHealth(DeckName deckName, out int health)
+    {
+        switch (deckName)
+        {
+            case DeckName.Fates:
+            case DeckName.TheGate:
+                health = 50;
+                return true;
+            case DeckName.Throne:
+                health = 60;
+                return true;
+            default:
+                health = 0;
+                return false;
+        }
+    }
+
     public int GetPlayerHealth(bool isHuman = true)
     {
         //return 1;
@@ -2221,9 +2266,7 @@ public class ProgressionHandler
 
         if (!isHuman && ENEMY_HEALTH_OVERRIDE > 0) return ENEMY_HEALTH_OVERRIDE;
 
-        if (CurrentLevel >= 10) return 50;
-
-
+        if (CurrentLevel >= 10) return 40;
 
         return 15 + Mathf.FloorToInt(CurrentLevel / 3f) * 5; // CurrentPool * 5;
     }

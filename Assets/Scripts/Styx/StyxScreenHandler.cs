@@ -7,7 +7,9 @@ using UnityEngine.UI;
 /// The River Styx node screen. Replaces the player's deck with their Styx deck,
 /// replaces their trinkets with the trinkets removed during the run, and lets them
 /// choose up to two removed rituals (first pick = Major, second pick = Minor).
-/// Lives on the StyxScreen GameObject; the 3D card grid lives in the StyxArea.
+/// The static layout is authored in the scene under the StyxScreen GameObject;
+/// ritual rows and trinket entries are cloned from inactive scene templates.
+/// The 3D card grid lives in the StyxArea.
 /// </summary>
 public class StyxScreenHandler : MonoBehaviour
 {
@@ -15,6 +17,23 @@ public class StyxScreenHandler : MonoBehaviour
     public GameObject StyxArea;
     [Tooltip("Card grid inside the StyxArea used to display the Styx deck.")]
     public ViewCardScroller CardScroller;
+
+    [Header("Scene References")]
+    public RectTransform RitualListRoot;
+    public RectTransform TrinketListRoot;
+    public Button ContinueButton;
+    public TextMeshProUGUI EmptyRitualsText;
+    public TextMeshProUGUI EmptyTrinketsText;
+
+    [Header("Templates (inactive in scene, cloned at runtime)")]
+    public StatusRowView RitualRowTemplate;
+    public StatusRowView TrinketEntryTemplate;
+
+    [Header("Row Colors")]
+    public Color RowColor = new Color(0.14f, 0.16f, 0.22f, 0.9f);
+    public Color RowSelectedColor = new Color(0.62f, 0.5f, 0.16f, 1f);
+
+    const float RitualRowSpacing = 12f;
 
     class RitualEntry
     {
@@ -26,17 +45,15 @@ public class StyxScreenHandler : MonoBehaviour
     readonly List<RitualEntry> ritualEntries = new List<RitualEntry>();
     readonly List<Ritual> selectedRituals = new List<Ritual>();
 
-    RectTransform uiRoot;
-    RectTransform ritualListRoot;
-    RectTransform trinketListRoot;
-    TextMeshProUGUI ritualsHeader;
-    TextMeshProUGUI trinketsHeader;
+    void Awake()
+    {
+        ContinueButton.onClick.AddListener(Continue);
+    }
 
     public void BeginStyx()
     {
         if (StyxArea != null) StyxArea.SetActive(true);
 
-        BuildUIIfNeeded();
         selectedRituals.Clear();
 
         if (CardScroller != null)
@@ -46,107 +63,39 @@ public class StyxScreenHandler : MonoBehaviour
         PopulateTrinkets();
     }
 
-    void BuildUIIfNeeded()
-    {
-        if (uiRoot != null) return;
-
-        uiRoot = StyxUI.CreateStretchedRect(transform, "StyxUI");
-
-        TextMeshProUGUI header = StyxUI.CreateText(uiRoot, "Header", "The River Styx", 44, TextAlignmentOptions.Center);
-        StyxUI.SetAnchored(header.rectTransform, new Vector2(0.5f, 1f), new Vector2(-160, -45), new Vector2(900, 60));
-
-        TextMeshProUGUI subtitle = StyxUI.CreateText(uiRoot, "Subtitle",
-            "All you have cast aside returns to you, and all you carry is washed away.\nThis becomes your deck. The trinkets below become your trinkets. Choose up to two rituals.",
-            21, TextAlignmentOptions.Center);
-        subtitle.color = StyxUI.DimTextColor;
-        StyxUI.SetAnchored(subtitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(-160, -105), new Vector2(1100, 60));
-
-        // Right-side ritual selection panel.
-        Image sidePanel = StyxUI.CreatePanel(uiRoot, "RitualPanel", StyxUI.PanelColor);
-        sidePanel.rectTransform.anchorMin = new Vector2(1f, 0f);
-        sidePanel.rectTransform.anchorMax = new Vector2(1f, 1f);
-        sidePanel.rectTransform.pivot = new Vector2(1f, 0.5f);
-        sidePanel.rectTransform.anchoredPosition = Vector2.zero;
-        sidePanel.rectTransform.sizeDelta = new Vector2(380, 0);
-
-        ritualsHeader = StyxUI.CreateText(sidePanel.transform, "RitualsHeader", "Choose Rituals", 28, TextAlignmentOptions.Center);
-        StyxUI.SetAnchored(ritualsHeader.rectTransform, new Vector2(0.5f, 1f), new Vector2(0, -20), new Vector2(340, 40));
-
-        ritualListRoot = StyxUI.CreateRect(sidePanel.transform, "RitualList");
-        ritualListRoot.anchorMin = new Vector2(0f, 0f);
-        ritualListRoot.anchorMax = new Vector2(1f, 1f);
-        ritualListRoot.offsetMin = new Vector2(15, 100);
-        ritualListRoot.offsetMax = new Vector2(-15, -70);
-
-        Button continueButton = StyxUI.CreateButton(sidePanel.transform, "ContinueButton", "Cross The Styx", 24, Continue);
-        StyxUI.SetAnchored((RectTransform)continueButton.transform, new Vector2(0.5f, 0f), new Vector2(0, 25), new Vector2(280, 60));
-
-        // Bottom strip listing the trinkets the player will receive.
-        Image bottomPanel = StyxUI.CreatePanel(uiRoot, "TrinketPanel", StyxUI.PanelColor);
-        bottomPanel.rectTransform.anchorMin = new Vector2(0f, 0f);
-        bottomPanel.rectTransform.anchorMax = new Vector2(1f, 0f);
-        bottomPanel.rectTransform.pivot = new Vector2(0.5f, 0f);
-        bottomPanel.rectTransform.offsetMin = new Vector2(0, 0);
-        bottomPanel.rectTransform.offsetMax = new Vector2(-380, 130);
-
-        trinketsHeader = StyxUI.CreateText(bottomPanel.transform, "TrinketsHeader", "Your New Trinkets", 22, TextAlignmentOptions.Left);
-        StyxUI.SetAnchored(trinketsHeader.rectTransform, new Vector2(0f, 1f), new Vector2(20, -8), new Vector2(400, 30));
-
-        trinketListRoot = StyxUI.CreateRect(bottomPanel.transform, "TrinketList");
-        trinketListRoot.anchorMin = new Vector2(0f, 0f);
-        trinketListRoot.anchorMax = new Vector2(1f, 1f);
-        trinketListRoot.offsetMin = new Vector2(20, 8);
-        trinketListRoot.offsetMax = new Vector2(-20, -40);
-    }
-
     void PopulateRituals()
     {
-        StyxUI.Clear(ritualListRoot);
+        StyxUI.Clear(RitualListRoot);
         ritualEntries.Clear();
 
         List<Ritual> removedRituals = Controller.Instance.StyxRunState.RemovedRituals;
-        if (removedRituals.Count == 0)
-        {
-            TextMeshProUGUI empty = StyxUI.CreateText(ritualListRoot, "Empty",
-                "You removed no rituals this run.\nYou will cross with none.", 22, TextAlignmentOptions.Center);
-            empty.color = StyxUI.DimTextColor;
-            StyxUI.SetAnchored(empty.rectTransform, new Vector2(0.5f, 1f), new Vector2(0, -20), new Vector2(330, 80));
-            return;
-        }
+        EmptyRitualsText.gameObject.SetActive(removedRituals.Count == 0);
+        if (removedRituals.Count == 0) return;
 
-        const float rowHeight = 92f;
-        const float rowSpacing = 12f;
+        float rowHeight = ((RectTransform)RitualRowTemplate.transform).sizeDelta.y;
         float y = -rowHeight * 0.5f;
 
         foreach (Ritual ritual in removedRituals)
         {
-            RitualEntry entry = new RitualEntry { Ritual = ritual };
+            StatusRowView row = CloneTemplate(RitualRowTemplate, RitualListRoot);
+            row.gameObject.name = "Ritual_" + ritual.Name;
 
-            Image row = StyxUI.CreatePanel(ritualListRoot, "Ritual_" + ritual.Name, StyxUI.RowColor);
-            row.rectTransform.anchorMin = new Vector2(0f, 1f);
-            row.rectTransform.anchorMax = new Vector2(1f, 1f);
-            row.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            row.rectTransform.anchoredPosition = new Vector2(0, y);
-            row.rectTransform.sizeDelta = new Vector2(0, rowHeight);
-            entry.Background = row;
+            RectTransform rowRect = (RectTransform)row.transform;
+            rowRect.anchoredPosition = new Vector2(rowRect.anchoredPosition.x, y);
 
-            Button rowButton = row.gameObject.AddComponent<Button>();
-            rowButton.targetGraphic = row;
-            rowButton.onClick.AddListener(() => RitualClicked(entry));
+            row.NameText.text = ritual.Name;
+            row.DescriptionText.text = ritual.Description;
 
-            TextMeshProUGUI nameText = StyxUI.CreateText(row.transform, "Name", ritual.Name, 23, TextAlignmentOptions.Left);
-            StyxUI.SetAnchored(nameText.rectTransform, new Vector2(0f, 1f), new Vector2(12, -6), new Vector2(240, 30));
-
-            TextMeshProUGUI descriptionText = StyxUI.CreateText(row.transform, "Description", ritual.Description, 17, TextAlignmentOptions.TopLeft);
-            descriptionText.color = StyxUI.DimTextColor;
-            StyxUI.SetAnchored(descriptionText.rectTransform, new Vector2(0f, 1f), new Vector2(12, -38), new Vector2(250, 50));
-
-            TextMeshProUGUI slotLabel = StyxUI.CreateText(row.transform, "Slot", "", 19, TextAlignmentOptions.Center);
-            StyxUI.SetAnchored(slotLabel.rectTransform, new Vector2(1f, 0.5f), new Vector2(-8, 0), new Vector2(80, 30));
-            entry.SlotLabel = slotLabel;
+            RitualEntry entry = new RitualEntry
+            {
+                Ritual = ritual,
+                Background = row.Background,
+                SlotLabel = row.TagText
+            };
+            row.RowButton.onClick.AddListener(() => RitualClicked(entry));
 
             ritualEntries.Add(entry);
-            y -= rowHeight + rowSpacing;
+            y -= rowHeight + RitualRowSpacing;
         }
 
         RefreshRitualVisuals();
@@ -174,37 +123,49 @@ public class StyxScreenHandler : MonoBehaviour
         {
             int index = selectedRituals.IndexOf(entry.Ritual);
             bool selected = index >= 0;
-            entry.Background.color = selected ? StyxUI.ButtonSelectedColor : StyxUI.RowColor;
+            entry.Background.color = selected ? RowSelectedColor : RowColor;
             entry.SlotLabel.text = index == 0 ? "Major" : index == 1 ? "Minor" : "";
         }
     }
 
     void PopulateTrinkets()
     {
-        StyxUI.Clear(trinketListRoot);
+        StyxUI.Clear(TrinketListRoot);
 
         List<Trinket> removedTrinkets = Controller.Instance.StyxRunState.RemovedTrinkets;
-        if (removedTrinkets.Count == 0)
-        {
-            TextMeshProUGUI empty = StyxUI.CreateText(trinketListRoot, "Empty",
-                "You removed no trinkets this run. You will cross with none.", 20, TextAlignmentOptions.Left);
-            empty.color = StyxUI.DimTextColor;
-            StyxUI.SetAnchored(empty.rectTransform, new Vector2(0f, 0.5f), new Vector2(0, 0), new Vector2(800, 40));
-            return;
-        }
+        EmptyTrinketsText.gameObject.SetActive(removedTrinkets.Count == 0);
+        if (removedTrinkets.Count == 0) return;
 
-        float x = 35f;
+        RectTransform templateRect = (RectTransform)TrinketEntryTemplate.transform;
+        float x = templateRect.anchoredPosition.x;
+        float step = templateRect.sizeDelta.x;
+
         foreach (Trinket trinket in removedTrinkets)
         {
+            StatusRowView entry = CloneTemplate(TrinketEntryTemplate, TrinketListRoot);
+            entry.gameObject.name = "Trinket_" + trinket.Name;
+
+            RectTransform rect = (RectTransform)entry.transform;
+            rect.anchoredPosition = new Vector2(x, rect.anchoredPosition.y);
+
             PlayerEffectDescriptionData descriptionData = trinket.GetDescriptionData();
-            Image icon = StyxUI.CreateIcon(trinketListRoot, "Trinket_" + trinket.Name, descriptionData != null ? descriptionData.Icon : null);
-            StyxUI.SetAnchored(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(x - 35f, 8), new Vector2(70, 70));
+            Sprite icon = descriptionData != null ? descriptionData.Icon : null;
+            if (icon != null)
+                entry.Icon.sprite = icon;
+            else
+                entry.Icon.color = StyxUI.IconFallbackColor;
 
-            TextMeshProUGUI nameText = StyxUI.CreateText(trinketListRoot, "Name_" + trinket.Name, trinket.Name, 14, TextAlignmentOptions.Center);
-            StyxUI.SetAnchored(nameText.rectTransform, new Vector2(0f, 0.5f), new Vector2(x - 55f, -38), new Vector2(110, 30));
+            entry.NameText.text = trinket.Name;
 
-            x += 120f;
+            x += step;
         }
+    }
+
+    static StatusRowView CloneTemplate(StatusRowView template, RectTransform parent)
+    {
+        StatusRowView clone = Object.Instantiate(template, parent);
+        clone.gameObject.SetActive(true);
+        return clone;
     }
 
     public void Continue()

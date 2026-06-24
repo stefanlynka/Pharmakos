@@ -12,6 +12,7 @@ public abstract class Trinket
     public StaticPlayerEffect MyEffect;
 
     public bool RepeatTrinket = true;
+    public bool AvailableAsStartingTrinket = true;
     public OfferingType RelevantOffering = OfferingType.None;
 
     public abstract void ApplyEffect(Player owner);

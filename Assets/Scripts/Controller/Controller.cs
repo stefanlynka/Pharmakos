@@ -408,12 +408,14 @@ public class Controller : MonoBehaviour
         // Styx = exchange deck/rituals/trinkets for everything removed this run (no combat).
         if (node.EncounterType == EncounterType.Styx)
         {
+            ProgressionHandler.RegisterStyxEncounter();
             BeginStyxEncounter();
             return;
         }
 
         if (node.EncounterType == EncounterType.Event)
         {
+            ProgressionHandler.RegisterEventEncounter();
             if (EventHandler == null)
             {
                 EventHandler = FindObjectOfType<EventHandler>();
@@ -794,6 +796,7 @@ public class Controller : MonoBehaviour
         if (Player1.Health <= 0)
         {
             ClearLevel();
+            GameRunning = false;
 
             GoToGameOverScreen();
             Player1.Health = 1;
@@ -802,6 +805,7 @@ public class Controller : MonoBehaviour
         else if (Player2.Health <= 0)
         {
             ClearLevel();
+            GameRunning = false;
 
             ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, ProgressToNextLevel);
             View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
@@ -866,6 +870,10 @@ public class Controller : MonoBehaviour
     {
         if (ProgressionHandler.CurrentEnemy == ProgressionHandler.DeckName.Throne)
         {
+            GameField.SetActive(false);
+            SetMainCombatCameraActive(false);
+            CurrentScreen = ScreenName.Success;
+            ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
             ScreenHandler.Instance.ShowScreen(ScreenName.Success);
             return;
         }

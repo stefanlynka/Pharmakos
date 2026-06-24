@@ -34,48 +34,6 @@ public class OfferingHandler : MonoBehaviour
         return sprite;
     }
 
-    public Vector3 GetOfferingPosition(Player player, OfferingType type)
-    {
-        if (player.IsHuman)
-        {
-            switch (type)
-            {
-                case OfferingType.Gold:
-                    return new Vector3(-40.2f, -20, 30);
-                case OfferingType.Blood:
-                    return new Vector3(-30, -18, 30);
-                case OfferingType.Bone:
-                    return new Vector3(-21.7f, -18, 30);
-                case OfferingType.Crop:
-                    return new Vector3(-30, -22, 30);
-                case OfferingType.Scroll:
-                    return new Vector3(-21.7f, -22, 30);
-                default:
-                    Debug.LogError("Offering type not recognized: " + type.ToString());
-                    return new Vector3(0, -11, 30);
-            }
-        }
-        else
-        {
-            switch (type)
-            {
-                case OfferingType.Gold:
-                    return new Vector3(23.7f, 21.9f, 30);
-                case OfferingType.Blood:
-                    return new Vector3(33.8f, 23.9f, 30);
-                case OfferingType.Bone:
-                    return new Vector3(42.3f, 23.9f, 30);
-                case OfferingType.Crop:
-                    return new Vector3(33.8f, 20.1f, 30);
-                case OfferingType.Scroll:
-                    return new Vector3(42.3f, 20.1f, 30);
-                default:
-                    Debug.LogError("Offering type not recognized: " + type.ToString());
-                    return new Vector3(0, 19, 30);
-            }
-            //return new Vector3(0, 19, 30);
-        }
-    }
 }
 
 
