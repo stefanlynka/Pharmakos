@@ -170,8 +170,12 @@ public class Player : ITarget
         GoldPerTurn = playerDetails.GoldPerTurn;
 
 
-        if (playerDetails.MinorRituals[pool] != null) MinorRitual = playerDetails.MinorRituals[pool].MakeBaseCopy();
-        if (playerDetails.MajorRituals[pool] != null) MajorRitual = playerDetails.MajorRituals[pool].MakeBaseCopy();
+        MinorRitual = playerDetails.MinorRituals.TryGetValue(pool, out Ritual minorRitual) && minorRitual != null
+            ? minorRitual.MakeBaseCopy()
+            : null;
+        MajorRitual = playerDetails.MajorRituals.TryGetValue(pool, out Ritual majorRitual) && majorRitual != null
+            ? majorRitual.MakeBaseCopy()
+            : null;
 
         Trinkets.Clear();
         if (playerDetails.Trinkets.ContainsKey(pool))

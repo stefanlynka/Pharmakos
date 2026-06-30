@@ -18,6 +18,7 @@ public class ViewRitual : ViewTarget
     public MeshRenderer Highlight;
 
     [Header("3D Highlight")]
+    [SerializeField] Material glowMaterialTemplate;
     [SerializeField] Transform altarRoot;
     [SerializeField] bool useMeshHighlight = true;
     [SerializeField] bool useOutlineHighlight = true;
@@ -617,10 +618,19 @@ public class ViewRitual : ViewTarget
         renderer.SetPropertyBlock(propertyBlock);
     }
 
-    static Material GetOrCreateGlowMaterial()
+    Material GetOrCreateGlowMaterial()
     {
         if (glowSharedMaterial != null)
             return glowSharedMaterial;
+
+        if (glowMaterialTemplate != null)
+        {
+            glowSharedMaterial = new Material(glowMaterialTemplate)
+            {
+                name = "MeshEdgeMistGlow_Runtime"
+            };
+            return glowSharedMaterial;
+        }
 
         if (attemptedToLoadGlowShader)
             return null;

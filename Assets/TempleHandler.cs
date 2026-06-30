@@ -96,7 +96,6 @@ public class TempleHandler : MonoBehaviour
     public void RefuseSacrifice()
     {
         if (_busy) return;
-        EndTemple();
         Controller.Instance.StartNextLevel();
     }
 

@@ -264,9 +264,6 @@ public class Controller : MonoBehaviour
         CardRemovalRewardHandler.gameObject.SetActive(false);
         GameField.SetActive(true);
 
-        if (Player1 != null && Player1.IsHuman)
-            RunHeartStrings = Mathf.Clamp(Player1.CurrentHeartStrings, 0, Player.MaxHeartStrings);
-
         Player1 = new HumanPlayer();
         Player2 = new AIPlayer();
         CanonGameState = new GameState(Player1, Player2);
@@ -356,6 +353,12 @@ public class Controller : MonoBehaviour
 
         if (ShopHandler != null && ShopHandler.gameObject.activeInHierarchy)
             ShopHandler.EndShop();
+
+        if (TempleHandler == null)
+            TempleHandler = FindObjectOfType<TempleHandler>();
+
+        if (TempleHandler != null && TempleHandler.gameObject.activeInHierarchy)
+            TempleHandler.EndTemple();
 
         if (EventHandler == null)
             EventHandler = FindObjectOfType<EventHandler>();

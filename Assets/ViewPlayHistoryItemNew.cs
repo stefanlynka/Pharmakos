@@ -6,6 +6,8 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
 {
     const float CardScale = 1.5f;
     const float ComponentY = 0.05f;
+    const float PortraitY = 1.4f;
+    const float HumanPortraitScale = 0.77f;
     const float DefaultWidth = 7.5f;
     const float PortraitWithHealthWidth = 12.5f;
     const float PortraitNoHealthWidth = 15f;
@@ -160,6 +162,7 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
         switch (componentType)
         {
             case PlayHistoryComponentType.Player:
+                componentObject.transform.localPosition = new Vector3(0, PortraitY, 0);
                 componentObject.transform.localScale = new Vector3(1.3f, 1.3f, 1f);
                 ViewPlayerPortrait viewPlayerPortrait = componentObject.GetComponent<ViewPlayerPortrait>();
                 if (viewPlayerPortrait != null && componentData is PlayerPlayHistoryComponent playerComponent)
@@ -167,6 +170,12 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
                     viewPlayerPortrait.Load(playerComponent.Player);
                     viewPlayerPortrait.SetHealth(playerComponent.Health);
                     viewPlayerPortrait.SetHealthVisible(playerComponent.ShowHealth);
+
+                    if (playerComponent.Player.IsHuman && viewPlayerPortrait.PortraitRenderer != null)
+                    {
+                        viewPlayerPortrait.PortraitRenderer.transform.localScale =
+                            new Vector3(HumanPortraitScale, HumanPortraitScale, 1f);
+                    }
                 }
                 break;
             case PlayHistoryComponentType.Follower:

@@ -87,7 +87,7 @@ public class MoveCardAnimation : AnimationAction
                     }
                     else
                     {
-                        viewCard.transform.position = new Vector3(0, 32, 10);
+                        viewCard.transform.position = new Vector3(0, 50, 10);
                     }
                     break;
                 default:

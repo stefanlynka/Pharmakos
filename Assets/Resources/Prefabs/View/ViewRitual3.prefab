@@ -182,6 +182,7 @@ MonoBehaviour:
   Description: {fileID: 6718831043198805541}
   HighlightHolder: {fileID: 0}
   Highlight: {fileID: 0}
+  glowMaterialTemplate: {fileID: 2100000, guid: d4c8e2a91f7b3c5489e6d1a0b5f4e827, type: 2}
   altarRoot: {fileID: 1913495435366552825}
   useMeshHighlight: 1
   useOutlineHighlight: 1
