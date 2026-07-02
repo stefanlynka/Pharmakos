@@ -1437,8 +1437,58 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 91f24473264874b4899452ba502f612b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8563477635543952298}
   m_SourcePrefab: {fileID: 100100000, guid: 91f24473264874b4899452ba502f612b, type: 3}
+--- !u!1 &2345198669848102455 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 91f24473264874b4899452ba502f612b, type: 3}
+  m_PrefabInstance: {fileID: 3191565674066410342}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8563477635543952298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2345198669848102455}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f4c0d2e3a5497b9c1d2e3f4a5b6c7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetRoot: {fileID: 0}
+  glowMaterialTemplate: {fileID: 2100000, guid: d1e2f3a4b5c6478091a2b3c4d5e6f708, type: 2}
+  settings: {fileID: 11400000, guid: 5e91646741b2bf648b36139aff285ebf, type: 2}
+  explicitRenderers: []
+  glowColor: {r: 0.2, g: 0.95, b: 0.35, a: 1}
+  hotColor: {r: 0.85, g: 1, b: 0.75, a: 1}
+  outerColor: {r: 0.05, g: 0.55, b: 0.15, a: 1}
+  outerShellGlowColor: {r: 0.12, g: 0.72, b: 0.22, a: 0.85}
+  outerShellOuterColor: {r: 0.02, g: 0.35, b: 0.08, a: 0.75}
+  coreFlameExtent: 0.022
+  coreFlameExtentMin: 0.003
+  outerFlameExtent: 0.055
+  outerFlameExtentMin: 0.008
+  noiseScale: 4.5
+  noiseSpeed: 1.35
+  coreNoiseStrength: 0.85
+  outerNoiseStrength: 1.15
+  flameSoftness: 0.65
+  outerFlameSoftness: 0.95
+  flowBias: 0.55
+  intensity: 1.4
+  coreIntensityMultiplier: 1
+  outerIntensityMultiplier: 0.75
+  emissionBoost: 2.5
+  outerEmissionBoost: 1.8
+  flickerSpeed: 2.8
+  flickerStrength: 0.22
+  pulseSpeed: 0.75
+  pulseMin: 0.62
+  pulseMax: 0.95
 --- !u!4 &3152521316866956429 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 91f24473264874b4899452ba502f612b, type: 3}

@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7e3b9c1d2f5486a8b0c1d2e3f4a5b6c, type: 3}
+  m_Name: SelectableGreenHighlight
+  m_EditorClassIdentifier: 
+  glowColor: {r: 0.15, g: 0.95, b: 0.28, a: 1}
+  hotColor: {r: 1, g: 1, b: 0.82, a: 1}
+  outerColor: {r: 0.02, g: 0.45, b: 0.08, a: 1}
+  outerShellGlowColor: {r: 0.1, g: 0.78, b: 0.18, a: 0.9}
+  outerShellOuterColor: {r: 0.01, g: 0.28, b: 0.05, a: 0.75}
+  coreFlameExtent: 0.012
+  coreFlameExtentMin: 0.001
+  outerFlameExtent: 0.032
+  outerFlameExtentMin: 0.004
+  edgePower: 3.8
+  outerEdgePower: 2.6
+  edgeMin: 0.35
+  riseStrength: 1.1
+  coreTongueThreshold: 0.46
+  outerTongueThreshold: 0.58
+  tongueSharpness: 0.11
+  tipFalloff: 1.35
+  outerTipFalloff: 1.05
+  noiseScale: 11
+  noiseSpeed: 2.2
+  coreNoiseStrength: 1.15
+  outerNoiseStrength: 1.35
+  flowBias: 1.35
+  intensity: 2.2
+  coreIntensityMultiplier: 1
+  outerIntensityMultiplier: 0.55
+  emissionBoost: 3.2
+  outerEmissionBoost: 2.1
+  flickerSpeed: 4.5
+  flickerStrength: 0.38
+  pulseSpeed: 1.2
+  pulseMin: 0.88
+  pulseMax: 1

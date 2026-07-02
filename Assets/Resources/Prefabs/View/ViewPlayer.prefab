@@ -65,6 +65,7 @@ MonoBehaviour:
   - {fileID: 4869051557630002573}
   - {fileID: 8100338159131273373}
   - {fileID: 7935494394521269062}
+  MeshHighlightEffect: {fileID: 5895206082604740891}
 --- !u!65 &8102085265349944151
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -599,6 +600,186 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: edgeMin
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: flowBias
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: pulseMax
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: pulseMin
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: settings
+      value: 
+      objectReference: {fileID: 11400000, guid: acdb656a44020584786aa82fda1de812, type: 2}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: edgePower
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: intensity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: hotColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: hotColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: noiseScale
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: noiseSpeed
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: pulseSpeed
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: targetRoot
+      value: 
+      objectReference: {fileID: 925611031375005244}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: tipFalloff
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: glowColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: glowColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: glowColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: flickerSpeed
+      value: 0.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: riseStrength
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: emissionBoost
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerEdgePower
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: coreFlameExtent
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: flickerStrength
+      value: 0.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerTipFalloff
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: tongueSharpness
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerFlameExtent
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: coreNoiseStrength
+      value: 1.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: coreFlameExtentMin
+      value: 0.08
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerEmissionBoost
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerNoiseStrength
+      value: 1.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: coreTongueThreshold
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerFlameExtentMin
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerTongueThreshold
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerShellGlowColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerShellGlowColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerShellGlowColor.g
+      value: 0.108384065
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerShellGlowColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerShellOuterColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerShellOuterColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerShellOuterColor.g
+      value: 0.16288736
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerShellOuterColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: outerIntensityMultiplier
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -607,6 +788,11 @@ PrefabInstance:
       addedObject: {fileID: 7325361618474990652}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+--- !u!4 &925611031375005244 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3152521316866956429, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+  m_PrefabInstance: {fileID: 2817123867791317681}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1315509123692625792 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3844332109133129009, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
@@ -623,6 +809,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1737245118499357980, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
   m_PrefabInstance: {fileID: 2817123867791317681}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &5895206082604740891 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8563477635543952298, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+  m_PrefabInstance: {fileID: 2817123867791317681}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f4c0d2e3a5497b9c1d2e3f4a5b6c7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &7672101218743247798 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5575641415602518279, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}

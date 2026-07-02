@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7e3b9c1d2f5486a8b0c1d2e3f4a5b6c, type: 3}
+  m_Name: Altar
+  m_EditorClassIdentifier: 
+  glowColor: {r: 1, g: 1, b: 1, a: 1}
+  hotColor: {r: 1, g: 1, b: 1, a: 1}
+  outerColor: {r: 0, g: 1, b: 0.845695, a: 1}
+  outerShellGlowColor: {r: 1, g: 0.108384065, b: 0, a: 1}
+  outerShellOuterColor: {r: 1, g: 0.16288736, b: 0, a: 1}
+  coreFlameExtent: 1.02
+  coreFlameExtentMin: 0.08
+  outerFlameExtent: 0
+  outerFlameExtentMin: 0
+  edgePower: 3.8
+  outerEdgePower: 2.6
+  edgeMin: 0.35
+  riseStrength: 1.46
+  coreTongueThreshold: 0.46
+  outerTongueThreshold: 0.58
+  tongueSharpness: 0.11
+  tipFalloff: 0.1
+  outerTipFalloff: 0.1
+  noiseScale: 2.24
+  noiseSpeed: 0.1
+  coreNoiseStrength: 1.15
+  outerNoiseStrength: 1.35
+  flowBias: -4
+  intensity: 2
+  coreIntensityMultiplier: 1
+  outerIntensityMultiplier: 5.83
+  emissionBoost: 1
+  outerEmissionBoost: 2.1
+  flickerSpeed: 0.65
+  flickerStrength: 0.38
+  pulseSpeed: 0.3
+  pulseMin: 0.4
+  pulseMax: 0.8

@@ -7,8 +7,8 @@ using UnityEngine.UI;
 
 public class ViewSpell : ViewCard
 {
-    //public TextMeshPro AttackText;
-    //public TextMeshPro HealthText;
+    [Header("Highlight")]
+    [SerializeField] MeshHighlightSettings spellHighlightSettings;
 
     public TextMeshPro SpellText;
     public SpriteRenderer TargetSprite;
@@ -36,6 +36,7 @@ public class ViewSpell : ViewCard
             viewFollower.ApplyCardMode(isFollower: false);
 
         base.Load(cardData, onClick);
+        ApplyHighlightSettings(spellHighlightSettings);
         Spell = cardData as Spell;
         if (SpellText != null)
             SpellText.text = cardData.GetText();

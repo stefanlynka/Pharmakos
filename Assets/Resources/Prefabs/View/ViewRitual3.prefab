@@ -180,6 +180,7 @@ MonoBehaviour:
   ScrollsText: {fileID: 6392942612921389765}
   Title: {fileID: 3250723410816762386}
   Description: {fileID: 6718831043198805541}
+  MeshHighlightEffect: {fileID: 4402534108423839911}
   HighlightHolder: {fileID: 0}
   Highlight: {fileID: 0}
   glowMaterialTemplate: {fileID: 2100000, guid: d4c8e2a91f7b3c5489e6d1a0b5f4e827, type: 2}
@@ -5329,8 +5330,65 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 33e4c4b85cd7bf8438e3aa1e47d1e548, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4402534108423839911}
   m_SourcePrefab: {fileID: 100100000, guid: 33e4c4b85cd7bf8438e3aa1e47d1e548, type: 3}
+--- !u!1 &1280651054268714563 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 33e4c4b85cd7bf8438e3aa1e47d1e548, type: 3}
+  m_PrefabInstance: {fileID: 2090972635782951698}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4402534108423839911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1280651054268714563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f4c0d2e3a5497b9c1d2e3f4a5b6c7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetRoot: {fileID: 1913495435366552825}
+  glowMaterialTemplate: {fileID: 2100000, guid: d1e2f3a4b5c6478091a2b3c4d5e6f708, type: 2}
+  settings: {fileID: 11400000, guid: 9751ff2767bf5d94487a141143170fb1, type: 2}
+  explicitRenderers: []
+  glowColor: {r: 1, g: 1, b: 1, a: 1}
+  hotColor: {r: 1, g: 1, b: 1, a: 1}
+  outerColor: {r: 1, g: 0.5712824, b: 0, a: 1}
+  outerShellGlowColor: {r: 1, g: 0.108384065, b: 0, a: 1}
+  outerShellOuterColor: {r: 1, g: 0.16288736, b: 0, a: 1}
+  coreFlameExtent: 1.02
+  coreFlameExtentMin: 0.08
+  outerFlameExtent: 0
+  outerFlameExtentMin: 0
+  edgePower: 3.8
+  outerEdgePower: 2.6
+  edgeMin: 0.35
+  riseStrength: 1.46
+  coreTongueThreshold: 0.46
+  outerTongueThreshold: 0.58
+  tongueSharpness: 0.11
+  tipFalloff: 0.1
+  outerTipFalloff: 0.1
+  noiseScale: 2.24
+  noiseSpeed: 0.1
+  coreNoiseStrength: 1.15
+  outerNoiseStrength: 1.35
+  flowBias: -4
+  intensity: 2
+  coreIntensityMultiplier: 1
+  outerIntensityMultiplier: 5.83
+  emissionBoost: 1
+  outerEmissionBoost: 2.1
+  flickerSpeed: 0.65
+  flickerStrength: 0.38
+  pulseSpeed: 0.3
+  pulseMin: 0.4
+  pulseMax: 0.8
 --- !u!4 &1913495435366552825 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 33e4c4b85cd7bf8438e3aa1e47d1e548, type: 3}

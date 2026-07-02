@@ -18,6 +18,7 @@ public class ViewPlayer : ViewTarget
     public ViewRitual ViewMajorRitual;
 
     public List<ViewBuff> Buffs = new List<ViewBuff>();
+    public MeshHighlightEffect MeshHighlightEffect;
 
     public void Load(Player player)
     {
@@ -63,7 +64,17 @@ public class ViewPlayer : ViewTarget
 
     public void SetHighlight(bool active)
     {
-        ViewPlayerPortrait.Highlight.enabled = active;
+        if (MeshHighlightEffect != null)
+        {
+            if (ViewPlayerPortrait != null && ViewPlayerPortrait.Highlight != null)
+                ViewPlayerPortrait.Highlight.enabled = false;
+
+            MeshHighlightEffect.SetActive(active);
+            return;
+        }
+
+        if (ViewPlayerPortrait != null && ViewPlayerPortrait.Highlight != null)
+            ViewPlayerPortrait.Highlight.enabled = active;
     }
 
     private void PlayerChanged(int healthChange)

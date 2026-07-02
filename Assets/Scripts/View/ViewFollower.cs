@@ -27,6 +27,9 @@ public class ViewFollower : ViewCard
     [SerializeField] Material followerMaterial;
     [SerializeField] Material spellMaterial;
 
+    [Header("Highlight")]
+    [SerializeField] MeshHighlightSettings followerHighlightSettings;
+
     public TextMeshPro FollowerText;
     public TextMeshPro AttackText;
     public TextMeshPro HealthText;
@@ -105,6 +108,7 @@ public class ViewFollower : ViewCard
     public override void Load(Card cardData, Action<ViewTarget> onClick = null)
     {
         ApplyCardMode(isFollower: true);
+        ApplyHighlightSettings(followerHighlightSettings);
         Follower = cardData as Follower;
         if (Follower == null) return;
 
