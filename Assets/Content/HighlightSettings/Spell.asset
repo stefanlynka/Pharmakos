@@ -12,36 +12,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e3b9c1d2f5486a8b0c1d2e3f4a5b6c, type: 3}
   m_Name: Spell
   m_EditorClassIdentifier: 
-  glowColor: {r: 1, g: 1, b: 1, a: 1}
-  hotColor: {r: 1, g: 1, b: 1, a: 1}
+  glowColor: {r: 0.68, g: 0.82, b: 1, a: 0.87058824}
+  hotColor: {r: 0.9, g: 0.95, b: 1, a: 0.92941177}
   outerColor: {r: 0, g: 0.18552971, b: 1, a: 1}
-  outerShellGlowColor: {r: 1, g: 0.108384065, b: 0, a: 1}
-  outerShellOuterColor: {r: 1, g: 0.16288736, b: 0, a: 1}
-  coreFlameExtent: 1
-  coreFlameExtentMin: 0.08
-  outerFlameExtent: 0
-  outerFlameExtentMin: 0
-  edgePower: 100
-  outerEdgePower: 1
-  edgeMin: 0
-  riseStrength: 0
-  coreTongueThreshold: 0
-  outerTongueThreshold: 0
-  tongueSharpness: 0
-  tipFalloff: 0.1
-  outerTipFalloff: 0.1
-  noiseScale: 10
-  noiseSpeed: 1
+  outerShellGlowColor: {r: 0.15, g: 0.45, b: 1, a: 0.95686275}
+  outerShellOuterColor: {r: 0.02, g: 0.12, b: 0.55, a: 0.75}
+  coreFlameExtent: 0.012
+  coreFlameExtentMin: 0.001
+  outerFlameExtent: 0.032
+  outerFlameExtentMin: 0.004
+  edgeMode: 0
+  geomEdgeWidth: 0.08
+  geomEdgeStrength: 1
+  hybridBlend: 0.65
+  topFaceSuppress: 0
+  edgePower: 3.8
+  outerEdgePower: 2.6
+  edgeMin: 0.35
+  riseStrength: 1.1
+  coreTongueThreshold: 0.46
+  outerTongueThreshold: 0.58
+  tongueSharpness: 0.11
+  tipFalloff: 1.35
+  outerTipFalloff: 1.05
+  noiseScale: 3
+  noiseSpeed: 0.85
   coreNoiseStrength: 1.15
   outerNoiseStrength: 1.35
-  flowBias: 0
+  flowBias: 0.24
   intensity: 1
   coreIntensityMultiplier: 1
   outerIntensityMultiplier: 1
-  emissionBoost: 1
-  outerEmissionBoost: 1
+  emissionBoost: 2
+  outerEmissionBoost: 2
   flickerSpeed: 0.65
   flickerStrength: 0.38
   pulseSpeed: 0.3
-  pulseMin: 0.2
-  pulseMax: 1
+  pulseMin: 0.4
+  pulseMax: 1.2

@@ -12,7 +12,7 @@ public class ViewCard : ViewTarget
     public Card Card;
 
     public SpriteRenderer Highlight;
-    public MeshHighlightEffect MeshHighlightEffect;
+    public CardHighlightEffect CardHighlightEffect;
     [SerializeField] MeshHighlightSettings highlightSettings;
 
     public GameObject CardHolder;
@@ -34,7 +34,7 @@ public class ViewCard : ViewTarget
 
     public virtual void Load(Card cardData, Action<ViewTarget> onClick = null)
     {
-        EnsureMeshHighlight();
+        EnsureCardHighlight();
         CleanupNameText();
         Card = cardData;
         ViewOfferingCost.Load(Card.GetCosts());
@@ -54,18 +54,15 @@ public class ViewCard : ViewTarget
 
     public void SetHighlight(bool highlight)
     {
-        EnsureMeshHighlight();
+        EnsureCardHighlight();
 
         if (isHighlightActive == highlight)
             return;
 
         isHighlightActive = highlight;
 
-        if (Highlight != null)
-            Highlight.enabled = false;
-
-        if (MeshHighlightEffect != null)
-            MeshHighlightEffect.SetActive(highlight);
+        if (CardHighlightEffect != null)
+            CardHighlightEffect.SetActive(highlight);
     }
 
     public bool IsHighlighted()
@@ -131,10 +128,10 @@ public class ViewCard : ViewTarget
             return;
 
         highlightSettings = settings;
-        EnsureMeshHighlight();
-        if (MeshHighlightEffect != null)
+        EnsureCardHighlight();
+        if (CardHighlightEffect != null)
         {
-            MeshHighlightEffect.ApplySettings(settings);
+            CardHighlightEffect.ApplySettings(settings);
             hasAppliedHighlightSettings = true;
         }
     }
@@ -144,10 +141,10 @@ public class ViewCard : ViewTarget
         if (hasAppliedHighlightSettings || highlightSettings == null)
             return;
 
-        EnsureMeshHighlight();
-        if (MeshHighlightEffect != null)
+        EnsureCardHighlight();
+        if (CardHighlightEffect != null)
         {
-            MeshHighlightEffect.ApplySettings(highlightSettings);
+            CardHighlightEffect.ApplySettings(highlightSettings);
             hasAppliedHighlightSettings = true;
         }
     }
@@ -171,7 +168,7 @@ public class ViewCard : ViewTarget
             NameText.gameObject.SetActive(true);
     }
 
-    void EnsureNameTextReferences()
+    protected void EnsureNameTextReferences()
     {
         if (NameText == null)
             NameText = transform.Find("TextWithCost")?.GetComponent<TextMeshPro>();
@@ -207,14 +204,14 @@ public class ViewCard : ViewTarget
 
     void Awake()
     {
-        EnsureMeshHighlight();
+        EnsureCardHighlight();
         ApplyHighlightSettingsOnce();
         SetHighlight(false);
     }
 
-    void EnsureMeshHighlight()
+    void EnsureCardHighlight()
     {
-        if (MeshHighlightEffect == null)
-            MeshHighlightEffect = GetComponentInChildren<MeshHighlightEffect>(true);
+        if (CardHighlightEffect == null)
+            CardHighlightEffect = GetComponent<CardHighlightEffect>();
     }
 }

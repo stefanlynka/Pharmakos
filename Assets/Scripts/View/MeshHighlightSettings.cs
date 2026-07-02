@@ -16,6 +16,19 @@ public class MeshHighlightSettings : ScriptableObject
     public float outerFlameExtent = 0.032f;
     public float outerFlameExtentMin = 0.004f;
 
+    [Header("Outline")]
+    public MeshHighlightEdgeMode edgeMode = MeshHighlightEdgeMode.Fresnel;
+    [Tooltip("Width of the geometry-based outline band in mesh-local units.")]
+    public float geomEdgeWidth = 0.08f;
+    [Tooltip("Strength multiplier for the geometry-based outline.")]
+    public float geomEdgeStrength = 1f;
+    [Tooltip("Hybrid mode: 0 = geometry only, 1 = max(geometry, fresnel).")]
+    [Range(0f, 1f)]
+    public float hybridBlend = 0.65f;
+    [Tooltip("Suppress glow on mesh-local upward-facing surfaces (normalOS.y) above this threshold. 0 = disabled.")]
+    [Range(0f, 1f)]
+    public float topFaceSuppress = 0f;
+
     [Header("Shape")]
     public float edgePower = 3.8f;
     public float outerEdgePower = 2.6f;

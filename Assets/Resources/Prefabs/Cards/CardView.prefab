@@ -3470,6 +3470,7 @@ GameObject:
   - component: {fileID: 6499160316123061462}
   - component: {fileID: 8990427469535383724}
   - component: {fileID: 6170356042196714945}
+  - component: {fileID: 8765432198765432101}
   m_Layer: 6
   m_Name: CardView
   m_TagString: Untagged
@@ -3511,7 +3512,7 @@ MonoBehaviour:
   NameText: {fileID: 4184667891807405936}
   NameTextWithoutCost: {fileID: 2854370000619572468}
   Highlight: {fileID: 3741040750318140638}
-  MeshHighlightEffect: {fileID: 2906458643690206633}
+  CardHighlightEffect: {fileID: 8765432198765432101}
   highlightSettings: {fileID: 11400000, guid: 4bfbd096a4e566b4c9a790af8940c60d, type: 2}
   CardHolder: {fileID: 352102127151652614}
   CardCollider: {fileID: 6499160316123061462}
@@ -3588,7 +3589,7 @@ MonoBehaviour:
   NameText: {fileID: 4184667891807405936}
   NameTextWithoutCost: {fileID: 0}
   Highlight: {fileID: 3741040750318140638}
-  MeshHighlightEffect: {fileID: 2906458643690206633}
+  CardHighlightEffect: {fileID: 8765432198765432101}
   highlightSettings: {fileID: 11400000, guid: 8cc07dd7762adca48945461dd4e84bc8, type: 2}
   CardHolder: {fileID: 352102127151652614}
   CardCollider: {fileID: 6499160316123061462}
@@ -3597,6 +3598,38 @@ MonoBehaviour:
   spellHighlightSettings: {fileID: 11400000, guid: 8cc07dd7762adca48945461dd4e84bc8, type: 2}
   SpellText: {fileID: 3333907658013090552}
   TargetSprite: {fileID: 5473938926118159153}
+--- !u!114 &8765432198765432101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6622656725543288254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7e8d9c0b1a2436580fedcba98765432, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  coreHighlight: {fileID: 3741040750318140638}
+  outerHighlight: {fileID: 2573462631380288580}
+  glowMaterialTemplate: {fileID: 2100000, guid: e8d9c0b1a2f3446580fedcba98765431, type: 2}
+  settings: {fileID: 11400000, guid: 4bfbd096a4e566b4c9a790af8940c60d, type: 2}
+  glowCoreColor: {r: 0.68, g: 0.9, b: 1, a: 0.78}
+  glowOuterColor: {r: 0.1, g: 0.78, b: 0.18, a: 0.9}
+  glowSecondaryColor: {r: 0.9, g: 0.97, b: 1, a: 0.8}
+  glowCoreIntensityMultiplier: 0.9
+  glowOuterIntensityMultiplier: 0.7
+  glowCoreEmissionStrength: 0.9
+  glowOuterEmissionStrength: 0.55
+  glowPulseSpeed: 0.3
+  glowPulseMin: 0.2
+  glowPulseMax: 1
+  glowMistSpeed: 0.85
+  glowMistScale: 3
+  glowMistDetailScale: 8.5
+  glowFlickerSpeed: 0.65
+  glowFlickerStrength: 0.38
+  glowDrift: 0.24
 --- !u!1 &6684529594841847457
 GameObject:
   m_ObjectHideFlags: 0
@@ -5118,13 +5151,12 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: acb7a1f151bdca343917e98df2e3ef8e, type: 3}
+      removedComponent: {fileID: 2906458643690206633}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: acb7a1f151bdca343917e98df2e3ef8e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2906458643690206633}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: acb7a1f151bdca343917e98df2e3ef8e, type: 3}
 --- !u!4 &7312976659492520149 stripped
 Transform:
@@ -5136,52 +5168,3 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: acb7a1f151bdca343917e98df2e3ef8e, type: 3}
   m_PrefabInstance: {fileID: 7130976102603499326}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2906458643690206633
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7941879321473718895}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b8f4c0d2e3a5497b9c1d2e3f4a5b6c7d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetRoot: {fileID: 7312976659492520149}
-  glowMaterialTemplate: {fileID: 2100000, guid: d1e2f3a4b5c6478091a2b3c4d5e6f708, type: 2}
-  settings: {fileID: 11400000, guid: 4bfbd096a4e566b4c9a790af8940c60d, type: 2}
-  explicitRenderers: []
-  glowColor: {r: 1, g: 1, b: 1, a: 1}
-  hotColor: {r: 1, g: 1, b: 1, a: 1}
-  outerColor: {r: 0, g: 1, b: 0.13798285, a: 1}
-  outerShellGlowColor: {r: 1, g: 0.108384065, b: 0, a: 1}
-  outerShellOuterColor: {r: 1, g: 0.16288736, b: 0, a: 1}
-  coreFlameExtent: 1
-  coreFlameExtentMin: 0.08
-  outerFlameExtent: 0
-  outerFlameExtentMin: 0
-  edgePower: 100
-  outerEdgePower: 1
-  edgeMin: 0
-  riseStrength: 0
-  coreTongueThreshold: 0
-  outerTongueThreshold: 0
-  tongueSharpness: 0
-  tipFalloff: 0.1
-  outerTipFalloff: 0.1
-  noiseScale: 10
-  noiseSpeed: 1
-  coreNoiseStrength: 1.15
-  outerNoiseStrength: 1.35
-  flowBias: 0
-  intensity: 1
-  coreIntensityMultiplier: 1
-  outerIntensityMultiplier: 1
-  emissionBoost: 1
-  outerEmissionBoost: 1
-  flickerSpeed: 0.65
-  flickerStrength: 0.38
-  pulseSpeed: 0.3
-  pulseMin: 0.2
-  pulseMax: 1

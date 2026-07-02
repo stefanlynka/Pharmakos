@@ -12,6 +12,13 @@ Shader "Pharmakos/MeshFlameHighlight"
         _NoiseStrength ("Noise Strength", Range(0, 2)) = 1.15
         _EdgePower ("Edge Power", Range(0.5, 12)) = 3.8
         _EdgeMin ("Edge Min", Range(0, 1)) = 0.35
+        _EdgeMode ("Edge Mode", Float) = 0
+        _ObjectCenterOS ("Object Center OS", Vector) = (0, 0, 0, 0)
+        _ObjectHalfExtents ("Object Half Extents", Vector) = (0.5, 0.5, 0.5, 0)
+        _GeomEdgeWidth ("Geom Edge Width", Range(0, 1)) = 0.08
+        _GeomEdgeStrength ("Geom Edge Strength", Range(0, 2)) = 1
+        _HybridBlend ("Hybrid Blend", Range(0, 1)) = 0.65
+        _TopFaceSuppress ("Top Face Suppress", Range(0, 1)) = 0
         _RiseStrength ("Rise Strength", Range(0, 3)) = 1.1
         _TongueThreshold ("Tongue Threshold", Range(0, 1)) = 0.46
         _TongueSharpness ("Tongue Sharpness", Range(0.01, 0.5)) = 0.11
@@ -64,6 +71,8 @@ Shader "Pharmakos/MeshFlameHighlight"
                 float3 normalWS : TEXCOORD1;
                 float flameFactor : TEXCOORD2;
                 float shapeNoise : TEXCOORD3;
+                float3 positionOS : TEXCOORD4;
+                float3 normalOS : TEXCOORD5;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -78,6 +87,13 @@ Shader "Pharmakos/MeshFlameHighlight"
                 half _NoiseStrength;
                 half _EdgePower;
                 half _EdgeMin;
+                half _EdgeMode;
+                float4 _ObjectCenterOS;
+                float4 _ObjectHalfExtents;
+                half _GeomEdgeWidth;
+                half _GeomEdgeStrength;
+                half _HybridBlend;
+                half _TopFaceSuppress;
                 half _RiseStrength;
                 half _TongueThreshold;
                 half _TongueSharpness;
@@ -157,14 +173,50 @@ Shader "Pharmakos/MeshFlameHighlight"
                 return FractalNoise3(samplePos);
             }
 
+            float ComputeGeometryEdgeGate(float3 positionOS)
+            {
+                float3 localPos = positionOS - _ObjectCenterOS.xyz;
+                float3 distToFace = _ObjectHalfExtents.xyz - abs(localPos);
+                // Use the second-smallest face distance so entire faces don't glow — only true box edges/corners do.
+                float nearestFace = min(distToFace.x, min(distToFace.y, distToFace.z));
+                float farthestFace = max(distToFace.x, max(distToFace.y, distToFace.z));
+                float distToEdge = distToFace.x + distToFace.y + distToFace.z - nearestFace - farthestFace;
+                return (1.0 - smoothstep(0.0, _GeomEdgeWidth, distToEdge)) * _GeomEdgeStrength;
+            }
+
+            float ComputeEdgeGate(float3 positionOS, float3 normalWS, float3 viewDirWS)
+            {
+                float rim = pow(saturate(1.0 - saturate(dot(normalWS, viewDirWS))), _EdgePower);
+                float fresnelGate = smoothstep(_EdgeMin, 1.0, rim);
+                float geomGate = ComputeGeometryEdgeGate(positionOS);
+
+                if (_EdgeMode < 0.5)
+                    return fresnelGate;
+
+                if (_EdgeMode < 1.5)
+                    return geomGate;
+
+                return lerp(geomGate, max(fresnelGate, geomGate), _HybridBlend);
+            }
+
+            float ComputeTopFaceMask(float3 normalOS)
+            {
+                if (_TopFaceSuppress <= 0.001)
+                    return 1.0;
+
+                return 1.0 - smoothstep(_TopFaceSuppress - 0.08, _TopFaceSuppress, normalOS.y);
+            }
+
             Varyings vert(Attributes input)
             {
                 Varyings output;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
-                float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
-                float3 normalWS = normalize(TransformObjectToWorldNormal(input.normalOS));
+                float3 positionOS = input.positionOS.xyz;
+                float3 normalOS = input.normalOS;
+                float3 positionWS = TransformObjectToWorld(positionOS);
+                float3 normalWS = normalize(TransformObjectToWorldNormal(normalOS));
 
                 float time = _Time.y * _NoiseSpeed;
                 float shapeNoise = SampleFlameNoise(positionWS, time, 1.0);
@@ -178,13 +230,16 @@ Shader "Pharmakos/MeshFlameHighlight"
                 float outerLayerBoost = lerp(1.0, 1.45, saturate(_ShellLayer));
                 extrusion *= lerp(0.55 + combinedNoise * 0.85, 0.35 + combinedNoise * 0.95, saturate(_ShellLayer)) * outerLayerBoost;
 
+                float horizontalMask = 1.0 - saturate(abs(normalOS.y));
                 float3 riseDir = normalize(float3(normalWS.x * 0.18, 1.0, normalWS.z * 0.18));
-                float rise = extrusion * _RiseStrength * combinedNoise;
+                float rise = extrusion * _RiseStrength * combinedNoise * horizontalMask;
                 float3 displacedWS = positionWS + normalWS * extrusion + riseDir * rise;
 
                 output.positionCS = TransformWorldToHClip(displacedWS);
                 output.positionWS = displacedWS;
                 output.normalWS = normalWS;
+                output.positionOS = positionOS;
+                output.normalOS = normalOS;
                 output.flameFactor = saturate(extrusion / max(_FlameExtent * outerLayerBoost, 0.0001));
                 output.shapeNoise = combinedNoise;
                 return output;
@@ -194,8 +249,8 @@ Shader "Pharmakos/MeshFlameHighlight"
             {
                 float3 normalWS = normalize(input.normalWS);
                 float3 viewDirWS = normalize(GetWorldSpaceViewDir(input.positionWS));
-                float rim = pow(saturate(1.0 - saturate(dot(normalWS, viewDirWS))), _EdgePower);
-                float edgeGate = smoothstep(_EdgeMin, 1.0, rim);
+                float edgeGate = ComputeEdgeGate(input.positionOS, normalWS, viewDirWS);
+                edgeGate *= ComputeTopFaceMask(input.normalOS);
 
                 float time = _Time.y;
                 float nPrimary = SampleFlameNoise(input.positionWS, time * 1.1, 1.0);

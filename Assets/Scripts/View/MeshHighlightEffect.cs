@@ -24,6 +24,11 @@ public class MeshHighlightEffect : MonoBehaviour
     [SerializeField] float coreFlameExtentMin = 0.001f;
     [SerializeField] float outerFlameExtent = 0.032f;
     [SerializeField] float outerFlameExtentMin = 0.004f;
+    [SerializeField] MeshHighlightEdgeMode edgeMode = MeshHighlightEdgeMode.Fresnel;
+    [SerializeField] float geomEdgeWidth = 0.08f;
+    [SerializeField] float geomEdgeStrength = 1f;
+    [SerializeField] [Range(0f, 1f)] float hybridBlend = 0.65f;
+    [SerializeField] [Range(0f, 1f)] float topFaceSuppress = 0f;
     [SerializeField] float edgePower = 3.8f;
     [SerializeField] float outerEdgePower = 2.6f;
     [SerializeField] float edgeMin = 0.35f;
@@ -62,6 +67,13 @@ public class MeshHighlightEffect : MonoBehaviour
     static readonly int NoiseStrengthId = Shader.PropertyToID("_NoiseStrength");
     static readonly int EdgePowerId = Shader.PropertyToID("_EdgePower");
     static readonly int EdgeMinId = Shader.PropertyToID("_EdgeMin");
+    static readonly int EdgeModeId = Shader.PropertyToID("_EdgeMode");
+    static readonly int ObjectCenterOSId = Shader.PropertyToID("_ObjectCenterOS");
+    static readonly int ObjectHalfExtentsId = Shader.PropertyToID("_ObjectHalfExtents");
+    static readonly int GeomEdgeWidthId = Shader.PropertyToID("_GeomEdgeWidth");
+    static readonly int GeomEdgeStrengthId = Shader.PropertyToID("_GeomEdgeStrength");
+    static readonly int HybridBlendId = Shader.PropertyToID("_HybridBlend");
+    static readonly int TopFaceSuppressId = Shader.PropertyToID("_TopFaceSuppress");
     static readonly int RiseStrengthId = Shader.PropertyToID("_RiseStrength");
     static readonly int TongueThresholdId = Shader.PropertyToID("_TongueThreshold");
     static readonly int TongueSharpnessId = Shader.PropertyToID("_TongueSharpness");
@@ -86,6 +98,8 @@ public class MeshHighlightEffect : MonoBehaviour
         public MaterialPropertyBlock PropertyBlock;
         public bool IsOuter;
         public float Seed;
+        public Vector3 BoundsCenter;
+        public Vector3 BoundsExtents;
     }
 
     void Awake()
@@ -159,6 +173,11 @@ public class MeshHighlightEffect : MonoBehaviour
         target.coreFlameExtentMin = coreFlameExtentMin;
         target.outerFlameExtent = outerFlameExtent;
         target.outerFlameExtentMin = outerFlameExtentMin;
+        target.edgeMode = edgeMode;
+        target.geomEdgeWidth = geomEdgeWidth;
+        target.geomEdgeStrength = geomEdgeStrength;
+        target.hybridBlend = hybridBlend;
+        target.topFaceSuppress = topFaceSuppress;
         target.edgePower = edgePower;
         target.outerEdgePower = outerEdgePower;
         target.edgeMin = edgeMin;
@@ -213,6 +232,11 @@ public class MeshHighlightEffect : MonoBehaviour
         coreFlameExtentMin = source.coreFlameExtentMin;
         outerFlameExtent = source.outerFlameExtent;
         outerFlameExtentMin = source.outerFlameExtentMin;
+        edgeMode = source.edgeMode;
+        geomEdgeWidth = source.geomEdgeWidth;
+        geomEdgeStrength = source.geomEdgeStrength;
+        hybridBlend = source.hybridBlend;
+        topFaceSuppress = source.topFaceSuppress;
         edgePower = source.edgePower;
         outerEdgePower = source.outerEdgePower;
         edgeMin = source.edgeMin;
@@ -300,6 +324,7 @@ public class MeshHighlightEffect : MonoBehaviour
 
     FlameGlowShell CreateGlowShell(Transform sourceTransform, Mesh mesh, Material glowMaterial, bool isOuter, float seed)
     {
+        Bounds meshBounds = mesh.bounds;
         string suffix = isOuter ? OuterGlowSuffix : CoreGlowSuffix;
         Transform existing = glowShellRoot.Find(sourceTransform.name + suffix);
         Renderer renderer;
@@ -340,7 +365,9 @@ public class MeshHighlightEffect : MonoBehaviour
             Renderer = renderer,
             PropertyBlock = new MaterialPropertyBlock(),
             IsOuter = isOuter,
-            Seed = seed
+            Seed = seed,
+            BoundsCenter = meshBounds.center,
+            BoundsExtents = meshBounds.extents,
         };
     }
 
@@ -378,7 +405,9 @@ public class MeshHighlightEffect : MonoBehaviour
                 tongueThreshold,
                 shellTipFalloff,
                 isOuter ? 1f : 0f,
-                shell.Seed);
+                shell.Seed,
+                shell.BoundsCenter,
+                shell.BoundsExtents);
         }
     }
 
@@ -397,7 +426,9 @@ public class MeshHighlightEffect : MonoBehaviour
         float tongueThreshold,
         float shellTipFalloff,
         float shellLayer,
-        float seed)
+        float seed,
+        Vector3 boundsCenter,
+        Vector3 boundsExtents)
     {
         renderer.GetPropertyBlock(propertyBlock);
         propertyBlock.SetColor(GlowColorId, primaryGlow);
@@ -412,6 +443,13 @@ public class MeshHighlightEffect : MonoBehaviour
         propertyBlock.SetFloat(NoiseStrengthId, noiseStrength);
         propertyBlock.SetFloat(EdgePowerId, shellEdgePower);
         propertyBlock.SetFloat(EdgeMinId, edgeMin);
+        propertyBlock.SetFloat(EdgeModeId, (float)edgeMode);
+        propertyBlock.SetVector(ObjectCenterOSId, boundsCenter);
+        propertyBlock.SetVector(ObjectHalfExtentsId, boundsExtents);
+        propertyBlock.SetFloat(GeomEdgeWidthId, geomEdgeWidth);
+        propertyBlock.SetFloat(GeomEdgeStrengthId, geomEdgeStrength);
+        propertyBlock.SetFloat(HybridBlendId, hybridBlend);
+        propertyBlock.SetFloat(TopFaceSuppressId, topFaceSuppress);
         propertyBlock.SetFloat(RiseStrengthId, riseStrength);
         propertyBlock.SetFloat(TongueThresholdId, tongueThreshold);
         propertyBlock.SetFloat(TongueSharpnessId, tongueSharpness);

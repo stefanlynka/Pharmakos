@@ -181,34 +181,7 @@ MonoBehaviour:
   Title: {fileID: 3250723410816762386}
   Description: {fileID: 6718831043198805541}
   MeshHighlightEffect: {fileID: 4402534108423839911}
-  HighlightHolder: {fileID: 0}
-  Highlight: {fileID: 0}
-  glowMaterialTemplate: {fileID: 2100000, guid: d4c8e2a91f7b3c5489e6d1a0b5f4e827, type: 2}
   altarRoot: {fileID: 1913495435366552825}
-  useMeshHighlight: 1
-  useOutlineHighlight: 1
-  outlinePulseColorA: {r: 1, g: 0.19862808, b: 0, a: 0.5882353}
-  outlinePulseColorB: {r: 1, g: 1, b: 1, a: 0.5882353}
-  glowCoreColor: {r: 1, g: 0.1253067, b: 0, a: 1}
-  glowOuterColor: {r: 1, g: 0.119365565, b: 0, a: 1}
-  glowSecondaryColor: {r: 1, g: 0.03724619, b: 0, a: 1}
-  glowPulseSpeed: 0.25
-  glowPulseMin: 0.1
-  glowPulseMax: 3
-  glowCoreIntensityMultiplier: 0.9
-  glowOuterIntensityMultiplier: 0.7
-  glowMistSpeed: 4
-  glowMistScale: 3
-  glowMistDetailScale: 8.5
-  glowFlickerSpeed: 1
-  glowFlickerStrength: 0.2
-  glowCoreEmissionStrength: 0.9
-  glowOuterEmissionStrength: 0.55
-  glowDrift: 0.24
-  coreShellExtrusion: 0.024
-  outerShellExtrusion: 0.044
-  coreRimPower: 2.5
-  outerRimPower: 1.35
   hoverScaleMultiplier: 1.1
   SummaryPosition: 3
   rattleIntervalMin: 4
@@ -5365,10 +5338,15 @@ MonoBehaviour:
   coreFlameExtentMin: 0.08
   outerFlameExtent: 0
   outerFlameExtentMin: 0
-  edgePower: 3.8
-  outerEdgePower: 2.6
+  edgeMode: 2
+  geomEdgeWidth: 0.1
+  geomEdgeStrength: 0.4
+  hybridBlend: 0.45
+  topFaceSuppress: 0.5
+  edgePower: 1
+  outerEdgePower: 1
   edgeMin: 0.35
-  riseStrength: 1.46
+  riseStrength: 0.35
   coreTongueThreshold: 0.46
   outerTongueThreshold: 0.58
   tongueSharpness: 0.11
@@ -5378,7 +5356,7 @@ MonoBehaviour:
   noiseSpeed: 0.1
   coreNoiseStrength: 1.15
   outerNoiseStrength: 1.35
-  flowBias: -4
+  flowBias: -3
   intensity: 2
   coreIntensityMultiplier: 1
   outerIntensityMultiplier: 5.83
