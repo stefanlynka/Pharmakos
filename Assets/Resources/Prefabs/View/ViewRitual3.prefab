@@ -188,7 +188,7 @@ MonoBehaviour:
   rattleIntervalMax: 6
   rattleDuration: 0.1
   rattleAngleDegrees: 1.75
-  rattleTarget: {fileID: 8524862095652594471}
+  rattleTarget: {fileID: 1913495435366552825}
 --- !u!65 &5948811852461810000
 BoxCollider:
   m_ObjectHideFlags: 0

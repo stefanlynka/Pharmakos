@@ -15,9 +15,15 @@ public class StarterBundleBucket : MonoBehaviour
     public List<CardReward> CardRewards = new List<CardReward>();
 
     public ViewTarget ViewTarget;
-    public MeshRenderer HighlightRenderer;
+    public CardHighlightEffect CardHighlightEffect;
 
     public ViewBuff ViewTrinket;
+
+    void Awake()
+    {
+        EnsureCardHighlight();
+        SetSelected(false);
+    }
 
     public void Load(StarterBundle starterBundle, Action<ViewTarget> cardClicked)
     {
@@ -45,9 +51,17 @@ public class StarterBundleBucket : MonoBehaviour
 
     public void SetSelected(bool selected)
     {
-        if (HighlightRenderer == null) return;
+        EnsureCardHighlight();
 
-        HighlightRenderer.gameObject.SetActive(selected);
-        HighlightRenderer.enabled = selected;
+        if (CardHighlightEffect != null)
+            CardHighlightEffect.SetActive(selected);
+    }
+
+    void EnsureCardHighlight()
+    {
+        if (CardHighlightEffect != null)
+            return;
+
+        CardHighlightEffect = GetComponentInChildren<CardHighlightEffect>(true);
     }
 }

@@ -162,16 +162,21 @@ public class Controller : MonoBehaviour
             return;
         }
 
-        if (DeckViewer != null && DeckViewer.gameObject.activeSelf)
+        // Legacy SetActive viewers only. ViewPlayHistoryHandler sits on DeckViewerScreen,
+        // which stays active while hidden, so activeSelf must not gate Escape.
+        if (ContentScrollView.Instance == null)
         {
-            HideDeckViewer();
-            return;
-        }
+            if (DeckViewer != null && DeckViewer.gameObject.activeSelf)
+            {
+                HideDeckViewer();
+                return;
+            }
 
-        if (ViewPlayHistoryHandler != null && ViewPlayHistoryHandler.gameObject.activeSelf)
-        {
-            HidePlayHistory();
-            return;
+            if (ViewPlayHistoryHandler != null && ViewPlayHistoryHandler.gameObject.activeSelf)
+            {
+                HidePlayHistory();
+                return;
+            }
         }
 
         if (GamePaused)
@@ -1140,15 +1145,20 @@ public class Controller : MonoBehaviour
         ScreenHandler.Instance.HideScreen(ScreenName.DeckViewerScreen, true);
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryScreen, true);
 
-        if (DeckViewer != null && DeckViewer.gameObject.activeSelf)
+        // Legacy SetActive path only; Screen-hosted handlers stay active while hidden.
+        if (ContentScrollView.Instance == null)
         {
-            DeckViewer.Exit();
-            DeckViewer.gameObject.SetActive(false);
-        }
-        else if (ViewPlayHistoryHandler != null && ViewPlayHistoryHandler.gameObject.activeSelf)
-        {
-            ViewPlayHistoryHandler.Exit();
-            ViewPlayHistoryHandler.gameObject.SetActive(false);
+            if (DeckViewer != null && DeckViewer.gameObject.activeSelf)
+            {
+                DeckViewer.Exit();
+                DeckViewer.gameObject.SetActive(false);
+            }
+
+            if (ViewPlayHistoryHandler != null && ViewPlayHistoryHandler.gameObject.activeSelf)
+            {
+                ViewPlayHistoryHandler.Exit();
+                ViewPlayHistoryHandler.gameObject.SetActive(false);
+            }
         }
 
         ScreenHandler.Instance.ShowScreen(CurrentScreen, true);

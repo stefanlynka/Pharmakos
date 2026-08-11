@@ -220,15 +220,22 @@ public class ViewRitual : ViewTarget
 
     void EnsureRattleTarget()
     {
-        if (rattleTarget != null)
-            return;
+        // Prefab may wire rattleTarget to this transform; prefer the altar mesh.
+        if (rattleTarget == null || rattleTarget == transform)
+        {
+            Transform altar = ResolveAltarRoot();
+            if (altar != null)
+                rattleTarget = altar;
+        }
 
-        rattleTarget = ResolveAltarRoot();
         if (rattleTarget == null)
             return;
 
-        defaultRattleLocalRotation = rattleTarget.localRotation;
-        hasDefaultRattleRotation = true;
+        if (!hasDefaultRattleRotation)
+        {
+            defaultRattleLocalRotation = rattleTarget.localRotation;
+            hasDefaultRattleRotation = true;
+        }
     }
 
     void UpdateIdleRattle()

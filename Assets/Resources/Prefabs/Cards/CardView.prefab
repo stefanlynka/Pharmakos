@@ -406,7 +406,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0.08}
-  m_LocalScale: {x: 0.76, y: 0.76, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5833012995457108982}
@@ -452,12 +452,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 8422b8e1d7afedd44b458771ad573f09, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 24b97ba1010929a439b944f734788f85, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 5.33, y: 7.17}
+  m_DrawMode: 1
+  m_Size: {x: 6.35, y: 8.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -4680,7 +4680,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0.08}
-  m_LocalScale: {x: 0.79, y: 0.79, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5833012995457108982}
@@ -4726,12 +4726,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 8422b8e1d7afedd44b458771ad573f09, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 24b97ba1010929a439b944f734788f85, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 5.33, y: 7.17}
+  m_DrawMode: 1
+  m_Size: {x: 6.35, y: 8.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -5152,8 +5152,7 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: acb7a1f151bdca343917e98df2e3ef8e, type: 3}
-      removedComponent: {fileID: 2906458643690206633}
+    - {fileID: 0}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -5161,10 +5160,5 @@ PrefabInstance:
 --- !u!4 &7312976659492520149 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: acb7a1f151bdca343917e98df2e3ef8e, type: 3}
-  m_PrefabInstance: {fileID: 7130976102603499326}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &7941879321473718895 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: acb7a1f151bdca343917e98df2e3ef8e, type: 3}
   m_PrefabInstance: {fileID: 7130976102603499326}
   m_PrefabAsset: {fileID: 0}
