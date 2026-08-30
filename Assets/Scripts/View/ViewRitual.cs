@@ -25,6 +25,8 @@ public class ViewRitual : ViewTarget
     [SerializeField] float rattleIntervalMax = 6f;
     [SerializeField] float rattleDuration = 0.1f;
     [SerializeField] float rattleAngleDegrees = 1.75f;
+    [Tooltip("Multiplier for rattle angle and shake speed. 0 = none, 1 = default.")]
+    [SerializeField] float rattleIntensity = 1f;
 
     bool isHighlightActive;
     Vector3 defaultLocalScale;
@@ -290,9 +292,10 @@ public class ViewRitual : ViewTarget
         float elapsed = rattleDuration - (rattleEndTime - Time.unscaledTime);
         float t = Mathf.Clamp01(elapsed / rattleDuration);
         float dampen = 1f - t;
-        float wobble = dampen * rattleAngleDegrees;
-        float x = Mathf.Sin(t * 50f) * wobble;
-        float z = Mathf.Cos(t * 43f) * wobble * 0.75f;
+        float intensity = Mathf.Max(0f, rattleIntensity);
+        float wobble = dampen * rattleAngleDegrees * intensity;
+        float x = Mathf.Sin(t * 50f * intensity) * wobble;
+        float z = Mathf.Cos(t * 43f * intensity) * wobble * 0.75f;
         rattleTarget.localRotation = defaultRattleLocalRotation * Quaternion.Euler(x, 0f, z);
     }
 

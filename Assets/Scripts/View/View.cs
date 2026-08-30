@@ -56,21 +56,22 @@ public class View : MonoBehaviour
     public ViewTarget CurrentHover { get { return SelectionHandler.CurrentHover; } }
 
     public SpriteRenderer BackgroundRenderer;
+    public Transform NewBackgroundHolder;
     public Dictionary<DeckName, string> backgroundNamesByDeckName = new Dictionary<DeckName, string>()
     {
-        { DeckName.TestEnemy, "Images/Backgrounds/Underworld" },
-        { DeckName.Cyclops, "Images/Backgrounds/Cyclops" },
-        { DeckName.Labyrinth, "Images/Backgrounds/Labyrinth" },
-        { DeckName.Bacchanalia, "Images/Backgrounds/Bacchanalia" },
-        { DeckName.Caves, "Images/Backgrounds/Cave" },
-        { DeckName.Hunt, "Images/Backgrounds/Hunt" },
-        { DeckName.Troy, "Images/Backgrounds/Troy" },
-        { DeckName.Trials, "Images/Backgrounds/Trials" },
-        { DeckName.SeasideCliffs, "Images/Backgrounds/Cliffs" },
-        { DeckName.Delphi, "Images/Backgrounds/Temple" },
-        { DeckName.Throne, "Images/Backgrounds/Underworld" },
-        { DeckName.Fates, "Images/Backgrounds/Underworld" },
-        { DeckName.TheGate, "Images/Backgrounds/Underworld" }
+        { DeckName.TestEnemy, "Underworld" },
+        { DeckName.Cyclops, "Cyclops" },
+        { DeckName.Labyrinth, "Labyrinth" },
+        { DeckName.Bacchanalia, "Bacchanalia" },
+        { DeckName.Caves, "Caves" },
+        { DeckName.Hunt, "Hunt" },
+        { DeckName.Troy, "Troy" },
+        { DeckName.Trials, "Trials" },
+        { DeckName.SeasideCliffs, "Cliffs" },
+        { DeckName.Delphi, "Temple" },
+        { DeckName.Throne, "Underworld" },
+        { DeckName.Fates, "Underworld" },
+        { DeckName.TheGate, "Underworld" }
     };
 
     private readonly int targetFrameRate = 60;
@@ -178,16 +179,62 @@ public class View : MonoBehaviour
         AnimationHandler.UpdateAnimations();
     }
 
+    private const string BackgroundMaterialFolder = "Images/Backgrounds/Materials/";
+
     private void LoadBackground()
     {
-        if (!backgroundNamesByDeckName.ContainsKey(Controller.Instance.ProgressionHandler.CurrentEnemy))
+        if (!backgroundNamesByDeckName.TryGetValue(Controller.Instance.ProgressionHandler.CurrentEnemy, out string materialBaseName))
         {
             Debug.LogError("No background found for current enemy: " + Controller.Instance.ProgressionHandler.CurrentEnemy);
             return;
         }
-        string backgroundName = backgroundNamesByDeckName[Controller.Instance.ProgressionHandler.CurrentEnemy];
 
-        BackgroundRenderer.sprite = Resources.Load<Sprite>(backgroundName);
+        if (BackgroundRenderer != null)
+            BackgroundRenderer.enabled = false;
+
+        MeshRenderer backgroundRenderer = FindChildMeshRenderer("Background");
+        MeshRenderer aiBattleRowRenderer = FindChildMeshRenderer("AIBattleRow");
+        MeshRenderer playerBattleRowRenderer = FindChildMeshRenderer("PlayerBattleRow");
+
+        ApplySharedMaterial(backgroundRenderer, LoadBackgroundMaterial(materialBaseName, 1), materialBaseName, 1);
+
+        Material battleRowMaterial = LoadBackgroundMaterial(materialBaseName, 2);
+        ApplySharedMaterial(aiBattleRowRenderer, battleRowMaterial, materialBaseName, 2);
+        ApplySharedMaterial(playerBattleRowRenderer, battleRowMaterial, materialBaseName, 2);
+    }
+
+    private MeshRenderer FindChildMeshRenderer(string childName)
+    {
+        if (NewBackgroundHolder == null)
+            return null;
+
+        Transform child = NewBackgroundHolder.Find(childName);
+        return child != null ? child.GetComponent<MeshRenderer>() : null;
+    }
+
+    private static Material LoadBackgroundMaterial(string materialBaseName, int variant)
+    {
+        Material material = Resources.Load<Material>(BackgroundMaterialFolder + materialBaseName + "_" + variant);
+        if (material == null && materialBaseName == "Trials" && variant == 1)
+            material = Resources.Load<Material>(BackgroundMaterialFolder + "Trails_1");
+        return material;
+    }
+
+    private static void ApplySharedMaterial(MeshRenderer renderer, Material material, string materialBaseName, int variant)
+    {
+        if (renderer == null)
+        {
+            Debug.LogError("Missing mesh renderer for background material: " + materialBaseName + "_" + variant);
+            return;
+        }
+
+        if (material == null)
+        {
+            Debug.LogError("No material found for: " + BackgroundMaterialFolder + materialBaseName + "_" + variant);
+            return;
+        }
+
+        renderer.sharedMaterial = material;
     }
     
 
