@@ -19,6 +19,8 @@ public class ViewResources : MonoBehaviour
 
 
     private Player player;
+    private readonly Dictionary<OfferingType, int> pendingCollectReveals = new Dictionary<OfferingType, int>();
+
     public void Init(Player player)
     {
         this.player = player;
@@ -44,22 +46,121 @@ public class ViewResources : MonoBehaviour
         player.OnOfferingsChange -= RefreshResources;
         player.OnOfferingsChange += RefreshResources;
 
+        pendingCollectReveals.Clear();
         RefreshResources();
     }
 
     public void RefreshResources()
     {
-        GoldLabel.OfferingAmount.text = player.Offerings[OfferingType.Gold] + "/" + player.GoldPerTurn;
-        BloodLabel.OfferingAmount.text = player.Offerings[OfferingType.Blood].ToString();
-        BonesLabel.OfferingAmount.text = player.Offerings[OfferingType.Bone].ToString();
-        CropsLabel.OfferingAmount.text = player.Offerings[OfferingType.Crop].ToString();
-        ScrollsLabel.OfferingAmount.text = player.Offerings[OfferingType.Scroll].ToString();
+        ApplyDisplayedAmount(OfferingType.Gold);
+        ApplyDisplayedAmount(OfferingType.Blood);
+        ApplyDisplayedAmount(OfferingType.Bone);
+        ApplyDisplayedAmount(OfferingType.Crop);
+        ApplyDisplayedAmount(OfferingType.Scroll);
+    }
 
-        //GoldText.text = player.Offerings[OfferingType.Gold] + "/" + player.GoldPerTurn;
-        //BloodText.text = player.Offerings[OfferingType.Blood].ToString();
-        //BonesText.text = player.Offerings[OfferingType.Bone].ToString();
-        //CropsText.text = player.Offerings[OfferingType.Crop].ToString();
-        //ScrollsText.text = player.Offerings[OfferingType.Scroll].ToString();
+    public void QueuePendingCollect(OfferingType type, int amount)
+    {
+        if (amount <= 0) return;
+
+        pendingCollectReveals.TryGetValue(type, out int pending);
+        pendingCollectReveals[type] = pending + amount;
+        ApplyDisplayedAmount(type);
+    }
+
+    public OfferingLabel GetOfferingLabel(OfferingType type)
+    {
+        return type switch
+        {
+            OfferingType.Gold => GoldLabel,
+            OfferingType.Blood => BloodLabel,
+            OfferingType.Bone => BonesLabel,
+            OfferingType.Crop => CropsLabel,
+            OfferingType.Scroll => ScrollsLabel,
+            _ => null
+        };
+    }
+
+    public void PlayCollectPulse(OfferingType type)
+    {
+        if (pendingCollectReveals.TryGetValue(type, out int pending) && pending > 0)
+            pendingCollectReveals[type] = pending - 1;
+
+        ApplyDisplayedAmount(type);
+
+        OfferingLabel label = GetOfferingLabel(type);
+        if (label != null)
+            label.PlayCollectPulse();
+
+        SyncRitualReadyState();
+    }
+
+    public int GetDisplayedAmount(OfferingType type)
+    {
+        if (player == null || player.Offerings == null || !player.Offerings.ContainsKey(type))
+            return 0;
+
+        int actual = player.Offerings[type];
+        pendingCollectReveals.TryGetValue(type, out int pending);
+        if (pending > actual)
+            pending = actual;
+        if (pending < 0)
+            pending = 0;
+
+        return actual - pending;
+    }
+
+    public bool HasDisplayedOfferingsFor(Ritual ritual)
+    {
+        if (ritual == null)
+            return false;
+
+        foreach (KeyValuePair<OfferingType, int> cost in ritual.Costs)
+        {
+            if (GetDisplayedAmount(cost.Key) < ritual.GetCost(cost.Key))
+                return false;
+        }
+
+        return true;
+    }
+
+    void SyncRitualReadyState()
+    {
+        if (player == null || View.Instance == null)
+            return;
+
+        ViewPlayer viewPlayer = View.Instance.GetViewPlayer(player);
+        if (viewPlayer == null)
+            return;
+
+        if (viewPlayer.ViewMajorRitual != null)
+            viewPlayer.ViewMajorRitual.SyncOfferingReadyState();
+        if (viewPlayer.ViewMinorRitual != null)
+            viewPlayer.ViewMinorRitual.SyncOfferingReadyState();
+    }
+
+    private void ApplyDisplayedAmount(OfferingType type)
+    {
+        if (player == null || player.Offerings == null || !player.Offerings.ContainsKey(type))
+            return;
+
+        OfferingLabel label = GetOfferingLabel(type);
+        if (label == null || label.OfferingAmount == null)
+            return;
+
+        int actual = player.Offerings[type];
+        pendingCollectReveals.TryGetValue(type, out int pending);
+        if (pending > actual)
+        {
+            pending = actual;
+            pendingCollectReveals[type] = pending;
+        }
+
+        int shown = actual - pending;
+        if (type == OfferingType.Gold)
+            label.OfferingAmount.text = shown + "/" + player.GoldPerTurn;
+        else
+            label.OfferingAmount.text = shown.ToString();
     }
 
     public Vector3 GetOfferingPosition(OfferingType type)

@@ -14,7 +14,27 @@ public class AudioHandler : MonoBehaviour
     public AudioSource MusicSource;
     public AudioSource SoundEffectSource;
     public AudioSource OtherSource;
+    
+    private Dictionary<OfferingType, AudioClip> offeringCollectClips = new Dictionary<OfferingType, AudioClip>();
+    public AudioSource offeringCollectSource;
 
+    [Header("Offering Collect")]
+    [Tooltip("Semitone offset of the 0→1 collect for this offering, relative to the recorded clip. Tweak in Play Mode.")]
+    public float GoldBaseSemitones = 0f;
+    public float BloodBaseSemitones = 0f;
+    public float BoneBaseSemitones = 0f;
+    public float CropBaseSemitones = 0f;
+    public float ScrollBaseSemitones = 0f;
+    [Tooltip("Rise in pitch for each additional offering of that type you hold.")]
+    public float SemitonesPerOffering = 1f;
+    [Tooltip("Base volume for this offering's collect note. Still scaled by the SFX slider.")]
+    [Range(0f, 2f)] public float GoldBaseVolume = 1f;
+    [Range(0f, 2f)] public float BloodBaseVolume = 1f;
+    [Range(0f, 2f)] public float BoneBaseVolume = 1f;
+    [Range(0f, 2f)] public float CropBaseVolume = 1f;
+    [Range(0f, 2f)] public float ScrollBaseVolume = 1f;
+    [Tooltip("Minimum time between queued collect notes, so stacked landings still punch one at a time.")]
+    public float MinOfferingCollectInterval = 0.12f;
 
     public Dictionary<DeckName, AudioClip> MusicByName = new Dictionary<DeckName, AudioClip>();
     public Dictionary<SoundEffectType, AudioClip> SoundEffectsByName = new Dictionary<SoundEffectType, AudioClip>();
@@ -22,12 +42,32 @@ public class AudioHandler : MonoBehaviour
 
     public Dictionary<DeckName, float> MusicMultipliers = new Dictionary<DeckName, float>();
 
+    [Header("Ritual Flames")]
+    [Tooltip("Seconds after a ritual flare begins before the looping flame bed starts.")]
+    public float FlameOngoingDelay = 2f;
+
     private float baseMusicVolume = 0.1f;
 
     private float userMusicVolume = 0.5f;
     private float userSoundEffectVolume = 0.5f;
 
     private float currentMusicMultiplier = 1.0f;
+
+    private readonly Queue<OfferingCollectNote> offeringCollectQueue = new Queue<OfferingCollectNote>();
+    private float nextOfferingCollectTime;
+
+    AudioClip flameStartClip;
+    AudioClip flameOngoingClip;
+    AudioSource flameOngoingSource;
+    readonly HashSet<ViewRitual> readyRituals = new HashSet<ViewRitual>();
+    float flameOngoingStartTime = -1f;
+
+    private struct OfferingCollectNote
+    {
+        public OfferingType Type;
+        public int CountAfterCollect;
+        public Action OnPlayed;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -79,6 +119,172 @@ public class AudioHandler : MonoBehaviour
         SoundEffectSlider.value = userSoundEffectVolume;
 
         OtherAudioByName[OtherSoundType.Rumble] = Resources.Load<AudioClip>("Audio/Other/Rumble");
+
+        LoadOfferingCollectSounds();
+        LoadRitualFlameSounds();
+    }
+
+    private void LoadOfferingCollectSounds()
+    {
+        if (offeringCollectSource == null) offeringCollectSource = gameObject.AddComponent<AudioSource>();
+        offeringCollectSource.playOnAwake = false;
+        offeringCollectSource.spatialBlend = 0f;
+        offeringCollectSource.loop = false;
+
+        IList offeringTypes = Enum.GetValues(typeof(OfferingType));
+        for (int i = 0; i < offeringTypes.Count; i++)
+        {
+            OfferingType type = (OfferingType)offeringTypes[i];
+            if (type == OfferingType.None) continue;
+
+            AudioClip clip = Resources.Load<AudioClip>("Audio/SFX/Offerings/" + type.ToString());
+            if (clip != null)
+            {
+                offeringCollectClips[type] = clip;
+            }
+        }
+    }
+
+    public void QueueOfferingCollect(OfferingType type, int countAfterCollect, Action onPlayed = null)
+    {
+        offeringCollectQueue.Enqueue(new OfferingCollectNote
+        {
+            Type = type,
+            CountAfterCollect = countAfterCollect,
+            OnPlayed = onPlayed
+        });
+    }
+
+    public void PreviewOfferingCollect(OfferingType type, int fromCount, int toCount)
+    {
+        offeringCollectQueue.Clear();
+        nextOfferingCollectTime = 0f;
+        if (offeringCollectSource != null)
+            offeringCollectSource.Stop();
+
+        int start = Mathf.Min(fromCount, toCount);
+        int end = Mathf.Max(fromCount, toCount);
+        for (int count = start; count <= end; count++)
+        {
+            QueueOfferingCollect(type, count);
+        }
+    }
+
+    private float GetOfferingBaseSemitones(OfferingType type)
+    {
+        switch (type)
+        {
+            case OfferingType.Gold: return GoldBaseSemitones;
+            case OfferingType.Blood: return BloodBaseSemitones;
+            case OfferingType.Bone: return BoneBaseSemitones;
+            case OfferingType.Crop: return CropBaseSemitones;
+            case OfferingType.Scroll: return ScrollBaseSemitones;
+            default: return 0f;
+        }
+    }
+
+    private float GetOfferingBaseVolume(OfferingType type)
+    {
+        switch (type)
+        {
+            case OfferingType.Gold: return GoldBaseVolume;
+            case OfferingType.Blood: return BloodBaseVolume;
+            case OfferingType.Bone: return BoneBaseVolume;
+            case OfferingType.Crop: return CropBaseVolume;
+            case OfferingType.Scroll: return ScrollBaseVolume;
+            default: return 1f;
+        }
+    }
+
+    private void LoadRitualFlameSounds()
+    {
+        flameStartClip = Resources.Load<AudioClip>("Audio/SFX/Rituals/FlameStart");
+        flameOngoingClip = Resources.Load<AudioClip>("Audio/SFX/Rituals/FlameOngoing");
+
+        if (flameOngoingSource == null)
+            flameOngoingSource = gameObject.AddComponent<AudioSource>();
+
+        flameOngoingSource.playOnAwake = false;
+        flameOngoingSource.spatialBlend = 0f;
+        flameOngoingSource.loop = true;
+    }
+
+    public void NotifyRitualReady(ViewRitual ritual)
+    {
+        if (ritual == null || !readyRituals.Add(ritual))
+            return;
+
+        if (flameStartClip != null && SoundEffectSource != null)
+            SoundEffectSource.PlayOneShot(flameStartClip, userSoundEffectVolume);
+
+        if (flameOngoingSource != null && flameOngoingSource.isPlaying)
+            return;
+
+        if (flameOngoingStartTime < 0f)
+            flameOngoingStartTime = Time.time + Mathf.Max(0f, FlameOngoingDelay);
+    }
+
+    public void NotifyRitualUnready(ViewRitual ritual)
+    {
+        if (ritual == null || !readyRituals.Remove(ritual))
+            return;
+
+        if (readyRituals.Count > 0)
+            return;
+
+        flameOngoingStartTime = -1f;
+        if (flameOngoingSource != null && flameOngoingSource.isPlaying)
+            flameOngoingSource.Stop();
+    }
+
+    private void LateUpdate()
+    {
+        UpdateRitualFlame();
+
+        if (offeringCollectQueue.Count == 0)
+            return;
+
+        if (Time.time < nextOfferingCollectTime)
+            return;
+
+        OfferingCollectNote note = offeringCollectQueue.Dequeue();
+        float wait = Mathf.Max(0.01f, MinOfferingCollectInterval);
+
+        if (offeringCollectClips.TryGetValue(note.Type, out AudioClip clip) && clip != null && offeringCollectSource != null)
+        {
+            float pitch = GetOfferingPitch(note.Type, note.CountAfterCollect);
+            offeringCollectSource.Stop();
+            offeringCollectSource.pitch = pitch;
+            offeringCollectSource.volume = GetOfferingBaseVolume(note.Type) * userSoundEffectVolume;
+            offeringCollectSource.clip = clip;
+            offeringCollectSource.Play();
+            wait = Mathf.Max(wait, clip.length / Mathf.Max(0.01f, Mathf.Abs(pitch)));
+        }
+
+        nextOfferingCollectTime = Time.time + wait;
+        note.OnPlayed?.Invoke();
+    }
+
+    private void UpdateRitualFlame()
+    {
+        if (flameOngoingStartTime < 0f || Time.time < flameOngoingStartTime)
+            return;
+
+        flameOngoingStartTime = -1f;
+        if (readyRituals.Count == 0 || flameOngoingClip == null || flameOngoingSource == null)
+            return;
+
+        flameOngoingSource.clip = flameOngoingClip;
+        flameOngoingSource.loop = true;
+        flameOngoingSource.volume = userSoundEffectVolume;
+        flameOngoingSource.Play();
+    }
+
+    private float GetOfferingPitch(OfferingType type, int countAfterCollect)
+    {
+        int stepsAboveBase = Mathf.Max(0, countAfterCollect - 1);
+        float semitones = GetOfferingBaseSemitones(type) + stepsAboveBase * SemitonesPerOffering;
+        return Mathf.Clamp(Mathf.Pow(2f, semitones / 12f), 0.5f, 3f);
     }
 
     public void PlayMusic(DeckName name)
@@ -147,6 +353,9 @@ public class AudioHandler : MonoBehaviour
     {
         userSoundEffectVolume = volume;
         PlayerPrefs.SetFloat("UserSoundEffectVolume", userSoundEffectVolume);
+
+        if (flameOngoingSource != null && flameOngoingSource.isPlaying)
+            flameOngoingSource.volume = userSoundEffectVolume;
     }
 
     public void PlayOther(OtherSoundType name)

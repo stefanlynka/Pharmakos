@@ -15,6 +15,22 @@ public class ViewRitual : ViewTarget
     public MeshHighlightEffect MeshHighlightEffect;
     [SerializeField] Transform altarRoot;
 
+    public Light Spotlight;
+
+    [Header("Spotlight")]
+    [SerializeField] float unusableInnerAngle = 40f;
+    [SerializeField] float unusableOuterAngle = 55f;
+    [SerializeField] float unusableIntensity = 150f;
+    [SerializeField] float flareInnerAngle = 50f;
+    [SerializeField] float flareOuterAngle = 70f;
+    [SerializeField] float flareIntensity = 500f;
+    [SerializeField] float usableInnerAngle = 40f;
+    [SerializeField] float usableOuterAngle = 55f;
+    [SerializeField] float usableIntensity = 250f;
+    [SerializeField] float flareUpDuration = 0.18f;
+    [SerializeField] float flareSettleDuration = 0.5f;
+    [SerializeField] float dimDuration = 0.35f;
+
     [Header("Hover")]
     [SerializeField] float hoverScaleMultiplier = 1.1f;
     [Tooltip("Which side of this ritual the hover summary popup appears on.")]
@@ -39,11 +55,49 @@ public class ViewRitual : ViewTarget
     float nextRattleAt = -1f;
     float rattleEndTime;
 
+    enum SpotlightPhase
+    {
+        Hold,
+        FlareUp,
+        Settle,
+        Dim,
+    }
+
+    struct SpotlightProfile
+    {
+        public float Inner;
+        public float Outer;
+        public float Intensity;
+
+        public static SpotlightProfile Lerp(SpotlightProfile a, SpotlightProfile b, float t)
+        {
+            return new SpotlightProfile
+            {
+                Inner = Mathf.Lerp(a.Inner, b.Inner, t),
+                Outer = Mathf.Lerp(a.Outer, b.Outer, t),
+                Intensity = Mathf.Lerp(a.Intensity, b.Intensity, t),
+            };
+        }
+    }
+
+    SpotlightPhase spotlightPhase = SpotlightPhase.Hold;
+    bool spotlightIsUsable;
+    SpotlightProfile spotlightFrom;
+    float spotlightElapsed;
+
     void Awake()
     {
         defaultLocalScale = transform.localScale;
         EnsureMeshHighlight();
         SetHighlight(false);
+        ApplySpotlight(UnusableSpotlight());
+    }
+
+    void OnEnable()
+    {
+        spotlightIsUsable = false;
+        spotlightPhase = SpotlightPhase.Hold;
+        ApplySpotlight(UnusableSpotlight());
     }
 
     void LateUpdate()
@@ -51,6 +105,7 @@ public class ViewRitual : ViewTarget
         UpdateHoverScale();
         UpdateHoverSummary();
         UpdateIdleRattle();
+        UpdateSpotlight();
     }
 
     void OnDisable()
@@ -60,6 +115,10 @@ public class ViewRitual : ViewTarget
 
         HideHoverSummary();
         StopIdleRattle(resetSchedule: true);
+        if (spotlightIsUsable)
+            NotifyRitualFlame(false);
+        spotlightIsUsable = false;
+        spotlightPhase = SpotlightPhase.Hold;
     }
 
     public void Init(Ritual ritual, bool clickable = true)
@@ -129,12 +188,170 @@ public class ViewRitual : ViewTarget
             if (View.Instance.SelectionHandler.SelectedRitual == this)
                 highlight = true;
         }
-        else if (Ritual != null && Ritual.Owner.IsHuman && Ritual.CanPlay() && View.Instance.IsInteractible)
+        else if (Ritual != null && Ritual.Owner.IsHuman && CanUseFromDisplayedOfferings() && View.Instance.IsInteractible)
         {
             highlight = true;
         }
 
         SetHighlight(highlight);
+    }
+
+    public void SyncOfferingReadyState()
+    {
+        UpdateSpotlight();
+    }
+
+    public bool HasDisplayedOfferings()
+    {
+        if (Ritual == null || Ritual.Owner == null)
+            return false;
+
+        if (View.Instance == null)
+            return Ritual.Owner.CanPayForRitual(Ritual);
+
+        ViewPlayer viewPlayer = View.Instance.GetViewPlayer(Ritual.Owner);
+        if (viewPlayer == null || viewPlayer.ViewResources == null)
+            return Ritual.Owner.CanPayForRitual(Ritual);
+
+        return viewPlayer.ViewResources.HasDisplayedOfferingsFor(Ritual);
+    }
+
+    bool CanUseFromDisplayedOfferings()
+    {
+        return HasDisplayedOfferings() && Ritual != null && Ritual.CanPlay();
+    }
+
+    bool IsAffordableByPlayer()
+    {
+        return Ritual != null
+            && Ritual.Owner != null
+            && Ritual.Owner.IsHuman
+            && HasDisplayedOfferings();
+    }
+
+    SpotlightProfile UnusableSpotlight()
+    {
+        return new SpotlightProfile
+        {
+            Inner = unusableInnerAngle,
+            Outer = unusableOuterAngle,
+            Intensity = unusableIntensity,
+        };
+    }
+
+    SpotlightProfile FlareSpotlight()
+    {
+        return new SpotlightProfile
+        {
+            Inner = flareInnerAngle,
+            Outer = flareOuterAngle,
+            Intensity = flareIntensity,
+        };
+    }
+
+    SpotlightProfile UsableSpotlight()
+    {
+        return new SpotlightProfile
+        {
+            Inner = usableInnerAngle,
+            Outer = usableOuterAngle,
+            Intensity = usableIntensity,
+        };
+    }
+
+    SpotlightProfile CurrentSpotlight()
+    {
+        if (Spotlight == null)
+            return UnusableSpotlight();
+
+        return new SpotlightProfile
+        {
+            Inner = Spotlight.innerSpotAngle,
+            Outer = Spotlight.spotAngle,
+            Intensity = Spotlight.intensity,
+        };
+    }
+
+    void ApplySpotlight(SpotlightProfile profile)
+    {
+        if (Spotlight == null)
+            return;
+
+        Spotlight.spotAngle = profile.Outer;
+        Spotlight.innerSpotAngle = Mathf.Min(profile.Inner, profile.Outer);
+        Spotlight.intensity = profile.Intensity;
+    }
+
+    void UpdateSpotlight()
+    {
+        if (Spotlight == null)
+            return;
+
+        bool usable = IsAffordableByPlayer();
+        if (usable != spotlightIsUsable)
+        {
+            spotlightIsUsable = usable;
+            spotlightFrom = CurrentSpotlight();
+            spotlightElapsed = 0f;
+            spotlightPhase = usable ? SpotlightPhase.FlareUp : SpotlightPhase.Dim;
+            NotifyRitualFlame(usable);
+        }
+
+        if (spotlightPhase == SpotlightPhase.Hold)
+            return;
+
+        float duration = dimDuration;
+        SpotlightProfile target = UnusableSpotlight();
+        if (spotlightPhase == SpotlightPhase.FlareUp)
+        {
+            duration = flareUpDuration;
+            target = FlareSpotlight();
+        }
+        else if (spotlightPhase == SpotlightPhase.Settle)
+        {
+            duration = flareSettleDuration;
+            target = UsableSpotlight();
+        }
+
+        spotlightElapsed += Time.deltaTime;
+        float t = duration <= 0f ? 1f : Mathf.Clamp01(spotlightElapsed / duration);
+        float eased = spotlightPhase == SpotlightPhase.FlareUp ? EaseOutQuad(t) : EaseOutSine(t);
+        ApplySpotlight(SpotlightProfile.Lerp(spotlightFrom, target, eased));
+
+        if (t < 1f)
+            return;
+
+        if (spotlightPhase == SpotlightPhase.FlareUp && spotlightIsUsable)
+        {
+            spotlightPhase = SpotlightPhase.Settle;
+            spotlightFrom = FlareSpotlight();
+            spotlightElapsed = 0f;
+            return;
+        }
+
+        spotlightPhase = SpotlightPhase.Hold;
+        ApplySpotlight(spotlightIsUsable ? UsableSpotlight() : UnusableSpotlight());
+    }
+
+    void NotifyRitualFlame(bool ready)
+    {
+        if (View.Instance == null || View.Instance.AudioHandler == null)
+            return;
+
+        if (ready)
+            View.Instance.AudioHandler.NotifyRitualReady(this);
+        else
+            View.Instance.AudioHandler.NotifyRitualUnready(this);
+    }
+
+    static float EaseOutQuad(float t)
+    {
+        return 1f - (1f - t) * (1f - t);
+    }
+
+    static float EaseOutSine(float t)
+    {
+        return Mathf.Sin(t * Mathf.PI * 0.5f);
     }
 
     void EnsureMeshHighlight()
@@ -176,7 +393,7 @@ public class ViewRitual : ViewTarget
         if (Ritual == null || View.Instance == null)
             return false;
 
-        if (Ritual.Owner == null || !Ritual.Owner.IsHuman || !Ritual.CanPlay() || !View.Instance.IsInteractible)
+        if (Ritual.Owner == null || !Ritual.Owner.IsHuman || !CanUseFromDisplayedOfferings() || !View.Instance.IsInteractible)
             return false;
 
         if (View.Instance.SelectionHandler.SelectedRitual != null)
@@ -209,7 +426,7 @@ public class ViewRitual : ViewTarget
 
         return Ritual.Owner != null
             && Ritual.Owner.IsHuman
-            && Ritual.CanPlay()
+            && CanUseFromDisplayedOfferings()
             && View.Instance.IsInteractible;
     }
 

@@ -29,6 +29,7 @@ public class ScreenHandler : MonoBehaviour
 
         RegisterUnlistedSceneScreens();
         EnsurePauseStyxUnlocksHandler();
+        EnsurePauseDebugMenuHandler();
         SetupAll();
         HideAll(true);
         EnablePersistentScreens(true);
@@ -59,6 +60,15 @@ public class ScreenHandler : MonoBehaviour
 
         if (pauseScreen.GetComponent<PauseStyxUnlocksHandler>() == null)
             pauseScreen.gameObject.AddComponent<PauseStyxUnlocksHandler>();
+    }
+
+    protected virtual void EnsurePauseDebugMenuHandler()
+    {
+        if (!TryGetScreen(ScreenName.Pause, out Screen pauseScreen))
+            return;
+
+        if (pauseScreen.GetComponent<PauseDebugMenuHandler>() == null)
+            pauseScreen.gameObject.AddComponent<PauseDebugMenuHandler>();
     }
 
     protected virtual void SetupAll()

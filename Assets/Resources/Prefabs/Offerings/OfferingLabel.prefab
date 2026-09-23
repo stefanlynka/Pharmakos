@@ -1256,11 +1256,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e0992de74968174486c451b8cbe5342, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SummaryObject: {fileID: 1321062364471170446}
-  SummaryText: {fileID: 6481596800212541795}
   OfferingName: {fileID: 7186436527201379240}
   OfferingAmount: {fileID: 6396398521787745821}
   Icon: {fileID: 5378407865826809301}
+  Spotlight: {fileID: 8796402525518860166}
+  SummaryPosition: 0
 --- !u!65 &5582909232330238453
 BoxCollider:
   m_ObjectHideFlags: 0

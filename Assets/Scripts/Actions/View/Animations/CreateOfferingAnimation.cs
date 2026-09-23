@@ -22,6 +22,8 @@ public class CreateOfferingAnimation : AnimationAction
 
     private float duration = 0.65f;
     private Vector3 middleOfScreen = new Vector3(0, 0, 30);
+    private int countBeforeCollect;
+    private int collectedSoFar;
 
     public CreateOfferingAnimation(GameAction gameAction, Player owner, OfferingType offeringType, int amount, int sourceID, int destinationID) : base(gameAction)
     {
@@ -36,6 +38,13 @@ public class CreateOfferingAnimation : AnimationAction
             this.amount = amount;
             this.sourceID = sourceID;
             this.destinationID = destinationID;
+
+            if (View.Instance != null)
+            {
+                ViewPlayer viewOwner = View.Instance.GetViewPlayer(owner);
+                if (viewOwner != null && viewOwner.ViewResources != null)
+                    viewOwner.ViewResources.QueuePendingCollect(offeringType, amount);
+            }
         }
     }
 
@@ -49,6 +58,13 @@ public class CreateOfferingAnimation : AnimationAction
         {
             CallCallback();
             return;
+        }
+
+        countBeforeCollect = 0;
+        collectedSoFar = 0;
+        if (owner != null && owner.Offerings != null && owner.Offerings.ContainsKey(offeringType))
+        {
+            countBeforeCollect = Mathf.Max(0, owner.Offerings[offeringType] - amount);
         }
 
         ViewTarget viewSource = View.Instance.GetViewTargetByID(sourceID);
@@ -99,6 +115,7 @@ public class CreateOfferingAnimation : AnimationAction
 			{
 				// Degenerate case: immediately complete this one
 				View.Instance.RemoveOffering(obj);
+				PlayCollectSound();
 				remaining--;
 				if (remaining == 0) Complete();
 				continue;
@@ -126,6 +143,7 @@ public class CreateOfferingAnimation : AnimationAction
 			seq.Add(new SequenceAction(() =>
 			{
 				View.Instance.RemoveOffering(obj);
+				PlayCollectSound();
 				remaining--;
 				if (remaining == 0) Complete();
 			}));
@@ -149,12 +167,23 @@ public class CreateOfferingAnimation : AnimationAction
 
     private void Complete()
     {
-        //offeringObject.transform.position = endPos;
-        //View.Instance.RemoveOffering(offeringObject);
-        //Debug.LogWarning(summonFollowerAction.Follower.Owner.GetName() + " played " + summonFollowerAction.Follower.GetName() + " " + summonFollowerAction.Follower.ID + " Animation end");
-        View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Bump);
         CallCallback();
     }
+
+    private void PlayCollectSound()
+    {
+        collectedSoFar++;
+        int countAfter = countBeforeCollect + collectedSoFar;
+        ViewPlayer viewOwner = owner != null ? View.Instance.GetViewPlayer(owner) : null;
+        ViewResources resources = viewOwner != null ? viewOwner.ViewResources : null;
+
+        View.Instance.AudioHandler.QueueOfferingCollect(offeringType, countAfter, () =>
+        {
+            if (resources != null)
+                resources.PlayCollectPulse(offeringType);
+        });
+    }
+
     private void PlaySoundEffect()
     {
         switch (offeringType)

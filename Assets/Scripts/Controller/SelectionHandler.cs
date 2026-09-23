@@ -259,7 +259,7 @@ public class SelectionHandler
         if (viewRitual == null || viewRitual.Ritual == null) return;
 
         if (SelectedRitual != null) return;
-        if (!viewRitual.Ritual.CanPlay()) return;
+        if (!viewRitual.HasDisplayedOfferings() || !viewRitual.Ritual.CanPlay()) return;
 
         SelectedRitual = viewRitual;
         PotentialRitualTargets = SelectedRitual.Ritual.GetTargets();
