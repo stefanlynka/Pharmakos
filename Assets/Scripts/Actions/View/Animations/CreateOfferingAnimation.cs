@@ -22,8 +22,6 @@ public class CreateOfferingAnimation : AnimationAction
 
     private float duration = 0.65f;
     private Vector3 middleOfScreen = new Vector3(0, 0, 30);
-    private int countBeforeCollect;
-    private int collectedSoFar;
 
     public CreateOfferingAnimation(GameAction gameAction, Player owner, OfferingType offeringType, int amount, int sourceID, int destinationID) : base(gameAction)
     {
@@ -58,13 +56,6 @@ public class CreateOfferingAnimation : AnimationAction
         {
             CallCallback();
             return;
-        }
-
-        countBeforeCollect = 0;
-        collectedSoFar = 0;
-        if (owner != null && owner.Offerings != null && owner.Offerings.ContainsKey(offeringType))
-        {
-            countBeforeCollect = Mathf.Max(0, owner.Offerings[offeringType] - amount);
         }
 
         ViewTarget viewSource = View.Instance.GetViewTargetByID(sourceID);
@@ -172,10 +163,15 @@ public class CreateOfferingAnimation : AnimationAction
 
     private void PlayCollectSound()
     {
-        collectedSoFar++;
-        int countAfter = countBeforeCollect + collectedSoFar;
         ViewPlayer viewOwner = owner != null ? View.Instance.GetViewPlayer(owner) : null;
         ViewResources resources = viewOwner != null ? viewOwner.ViewResources : null;
+
+        // Reveal the number when the sprite lands. For the AI, the next-turn banner can
+        // run before queued collect audio callbacks fire; delaying the count update until
+        // then left the label stuck at 0 even though pitch reserved correctly here.
+        int countAfter = resources != null
+            ? resources.RevealCollectedOffering(offeringType)
+            : 1;
 
         View.Instance.AudioHandler.QueueOfferingCollect(offeringType, countAfter, () =>
         {

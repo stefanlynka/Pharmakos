@@ -426,7 +426,7 @@ public class Player : ITarget
             DrawHand();
             Offerings[OfferingType.Gold] = GoldPerTurn;
         }
-        View.Instance.UpdateResources(this);
+        // Resource labels sync when the next turn banner appears (ShowBannerAnimation).
 
         DoEndOfTurnPlayerActions();
         DoEndOfEveryTurnPlayerActions();

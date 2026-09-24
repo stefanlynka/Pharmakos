@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -20,6 +19,17 @@ public class ViewResources : MonoBehaviour
 
     private Player player;
     private readonly Dictionary<OfferingType, int> pendingCollectReveals = new Dictionary<OfferingType, int>();
+    private readonly Dictionary<OfferingType, int> displayedAmounts = new Dictionary<OfferingType, int>();
+    private readonly Dictionary<OfferingType, int> reservedCollectCounts = new Dictionary<OfferingType, int>();
+
+    private static readonly OfferingType[] AllOfferingTypes =
+    {
+        OfferingType.Gold,
+        OfferingType.Blood,
+        OfferingType.Bone,
+        OfferingType.Crop,
+        OfferingType.Scroll
+    };
 
     public void Init(Player player)
     {
@@ -47,16 +57,65 @@ public class ViewResources : MonoBehaviour
         player.OnOfferingsChange += RefreshResources;
 
         pendingCollectReveals.Clear();
+        displayedAmounts.Clear();
+        reservedCollectCounts.Clear();
+        foreach (OfferingType type in AllOfferingTypes)
+            displayedAmounts[type] = GetActualAmount(type);
+
         RefreshResources();
+    }
+
+    /// <summary>
+    /// Called when an offering sprite arrives: advances the displayed count and returns
+    /// the pitch index for the collect sound. The spotlight pulse is separate (on audio play).
+    /// </summary>
+    public int RevealCollectedOffering(OfferingType type)
+    {
+        int displayed = GetDisplayedAmount(type);
+        if (!reservedCollectCounts.TryGetValue(type, out int reserved) || reserved < displayed)
+            reserved = displayed;
+
+        reserved++;
+        reservedCollectCounts[type] = reserved;
+
+        if (pendingCollectReveals.TryGetValue(type, out int pending) && pending > 0)
+            pendingCollectReveals[type] = pending - 1;
+
+        displayedAmounts[type] = displayed + 1;
+        ApplyDisplayedAmount(type);
+        SyncRitualReadyState();
+
+        return reserved;
     }
 
     public void RefreshResources()
     {
-        ApplyDisplayedAmount(OfferingType.Gold);
-        ApplyDisplayedAmount(OfferingType.Blood);
-        ApplyDisplayedAmount(OfferingType.Bone);
-        ApplyDisplayedAmount(OfferingType.Crop);
-        ApplyDisplayedAmount(OfferingType.Scroll);
+        foreach (OfferingType type in AllOfferingTypes)
+        {
+            // Don't clobber in-flight collect reveals.
+            if (GetPending(type) > 0)
+                continue;
+
+            displayedAmounts[type] = GetActualAmount(type);
+            reservedCollectCounts.Remove(type);
+        }
+
+        ApplyAllDisplayedAmounts();
+    }
+
+    /// <summary>
+    /// Snap labels to the player's current offerings and cancel any in-flight collect reveals.
+    /// Used when the next turn banner appears.
+    /// </summary>
+    public void SyncToPlayerState()
+    {
+        pendingCollectReveals.Clear();
+        reservedCollectCounts.Clear();
+        foreach (OfferingType type in AllOfferingTypes)
+            displayedAmounts[type] = GetActualAmount(type);
+
+        ApplyAllDisplayedAmounts();
+        SyncRitualReadyState();
     }
 
     public void QueuePendingCollect(OfferingType type, int amount)
@@ -64,7 +123,15 @@ public class ViewResources : MonoBehaviour
         if (amount <= 0) return;
 
         pendingCollectReveals.TryGetValue(type, out int pending);
-        pendingCollectReveals[type] = pending + amount;
+        pending += amount;
+        pendingCollectReveals[type] = pending;
+
+        // Hide newly gained amount until offerings arrive and reveal it.
+        // If live totals were already end-of-turn reset, keep the current displayed value.
+        int fromActual = GetActualAmount(type) - pending;
+        if (fromActual >= 0)
+            displayedAmounts[type] = fromActual;
+
         ApplyDisplayedAmount(type);
     }
 
@@ -83,31 +150,17 @@ public class ViewResources : MonoBehaviour
 
     public void PlayCollectPulse(OfferingType type)
     {
-        if (pendingCollectReveals.TryGetValue(type, out int pending) && pending > 0)
-            pendingCollectReveals[type] = pending - 1;
-
-        ApplyDisplayedAmount(type);
-
         OfferingLabel label = GetOfferingLabel(type);
         if (label != null)
             label.PlayCollectPulse();
-
-        SyncRitualReadyState();
     }
 
     public int GetDisplayedAmount(OfferingType type)
     {
-        if (player == null || player.Offerings == null || !player.Offerings.ContainsKey(type))
-            return 0;
+        if (displayedAmounts.TryGetValue(type, out int displayed))
+            return displayed;
 
-        int actual = player.Offerings[type];
-        pendingCollectReveals.TryGetValue(type, out int pending);
-        if (pending > actual)
-            pending = actual;
-        if (pending < 0)
-            pending = 0;
-
-        return actual - pending;
+        return GetActualAmount(type);
     }
 
     public bool HasDisplayedOfferingsFor(Ritual ritual)
@@ -139,28 +192,40 @@ public class ViewResources : MonoBehaviour
             viewPlayer.ViewMinorRitual.SyncOfferingReadyState();
     }
 
+    private void ApplyAllDisplayedAmounts()
+    {
+        ApplyDisplayedAmount(OfferingType.Gold);
+        ApplyDisplayedAmount(OfferingType.Blood);
+        ApplyDisplayedAmount(OfferingType.Bone);
+        ApplyDisplayedAmount(OfferingType.Crop);
+        ApplyDisplayedAmount(OfferingType.Scroll);
+    }
+
     private void ApplyDisplayedAmount(OfferingType type)
     {
-        if (player == null || player.Offerings == null || !player.Offerings.ContainsKey(type))
-            return;
-
         OfferingLabel label = GetOfferingLabel(type);
         if (label == null || label.OfferingAmount == null)
             return;
 
-        int actual = player.Offerings[type];
-        pendingCollectReveals.TryGetValue(type, out int pending);
-        if (pending > actual)
-        {
-            pending = actual;
-            pendingCollectReveals[type] = pending;
-        }
-
-        int shown = actual - pending;
+        int shown = GetDisplayedAmount(type);
         if (type == OfferingType.Gold)
-            label.OfferingAmount.text = shown + "/" + player.GoldPerTurn;
+            label.OfferingAmount.text = shown + "/" + (player != null ? player.GoldPerTurn : 0);
         else
             label.OfferingAmount.text = shown.ToString();
+    }
+
+    private int GetActualAmount(OfferingType type)
+    {
+        if (player == null || player.Offerings == null || !player.Offerings.ContainsKey(type))
+            return 0;
+
+        return player.Offerings[type];
+    }
+
+    private int GetPending(OfferingType type)
+    {
+        pendingCollectReveals.TryGetValue(type, out int pending);
+        return pending;
     }
 
     public Vector3 GetOfferingPosition(OfferingType type)

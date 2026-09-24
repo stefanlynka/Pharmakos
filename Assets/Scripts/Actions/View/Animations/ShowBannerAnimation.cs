@@ -26,6 +26,9 @@ public class ShowBannerAnimation : AnimationAction
 
         View.Instance.IsHumansTurn = playerBanner;
 
+        // End-of-turn offering resets apply to the view when the next turn banner appears.
+        SyncResourceLabels();
+
         Sequence moveBannerSequence = new Sequence();
         moveBannerSequence.Add(new Tween(MoveBanner, 0, 1, moveDuration));
         moveBannerSequence.Add(new Tween(Wait, 0, 1, pauseDuration));
@@ -33,8 +36,25 @@ public class ShowBannerAnimation : AnimationAction
         moveBannerSequence.Add(new SequenceAction(AnimationOver));
         moveBannerSequence.Add(new SequenceAction(CallCallback));
         moveBannerSequence.Start();
+    }
 
-        //Debug.LogError("Attack Animation");
+    private static void SyncResourceLabels()
+    {
+        if (View.Instance == null || Controller.Instance == null)
+            return;
+
+        SyncPlayerResources(Controller.Instance.Player1);
+        SyncPlayerResources(Controller.Instance.Player2);
+    }
+
+    private static void SyncPlayerResources(Player player)
+    {
+        if (player == null || View.Instance == null)
+            return;
+
+        ViewPlayer viewPlayer = View.Instance.GetViewPlayer(player);
+        if (viewPlayer?.ViewResources != null)
+            viewPlayer.ViewResources.SyncToPlayerState();
     }
 
     private void MoveBanner(float progress)
@@ -56,6 +76,5 @@ public class ShowBannerAnimation : AnimationAction
         View.Instance.TurnIsEnding = false;
         View.Instance.WaitingForTurnBanner = false;
         View.Instance.DoingEndOfTurnActions = false;
-        //Debug.LogWarning(attackerViewFollower.Follower.GetName() + " attacked " + attackAction.Target.GetName() + " Animation end");
     }
 }
