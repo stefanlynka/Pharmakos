@@ -7,7 +7,8 @@ public class LightingHandler : MonoBehaviour
     public Light EyeLight;
 
     public float maxEyeLightIntensity = 3000;
-    public float defaultLightIntensity = 5600;
+    public float defaultLightIntensity = 250;
+    public float dimLightIntensity = 0;
     private float ritualFadeDuration = 0.2f;
     private float ritualWaitDuration = 1f;
 
@@ -72,7 +73,7 @@ public class LightingHandler : MonoBehaviour
         SequenceHandler.Instance.TryStopSequence(LightDimmer);
 
         LightDimmer.Clear();
-        LightDimmer.Add(new Tween(SetMainLightIntensity, LeftLight.intensity, defaultLightIntensity/3, ritualFadeDuration*3));
+        LightDimmer.Add(new Tween(SetMainLightIntensity, LeftLight.intensity, dimLightIntensity, ritualFadeDuration*3));
         LightDimmer.Start();
         //mainLightSequence.Add(new SequenceAction(ShakeScreen));
         //mainLightSequence.Add(new Tween(Wait, 0, 0, ritualWaitDuration));

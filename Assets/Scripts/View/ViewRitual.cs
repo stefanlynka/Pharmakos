@@ -27,6 +27,10 @@ public class ViewRitual : ViewTarget
     [SerializeField] float usableInnerAngle = 40f;
     [SerializeField] float usableOuterAngle = 55f;
     [SerializeField] float usableIntensity = 250f;
+    [Tooltip("While usable and not selected, intensity oscillates between Usable Intensity and this value.")]
+    [SerializeField] float usablePulseIntensity = 350f;
+    [Tooltip("Full oscillation cycles per second while usable and not selected.")]
+    [SerializeField] float usablePulseSpeed = 0.5f;
     [SerializeField] float flareUpDuration = 0.18f;
     [SerializeField] float flareSettleDuration = 0.5f;
     [SerializeField] float dimDuration = 0.35f;
@@ -84,6 +88,9 @@ public class ViewRitual : ViewTarget
     bool spotlightIsUsable;
     SpotlightProfile spotlightFrom;
     float spotlightElapsed;
+    float pulseTime;
+    float pulseWeight;
+    const float PulseBlendDuration = 0.25f;
 
     void Awake()
     {
@@ -298,7 +305,11 @@ public class ViewRitual : ViewTarget
         }
 
         if (spotlightPhase == SpotlightPhase.Hold)
+        {
+            if (spotlightIsUsable)
+                UpdateUsablePulse();
             return;
+        }
 
         float duration = dimDuration;
         SpotlightProfile target = UnusableSpotlight();
@@ -331,6 +342,27 @@ public class ViewRitual : ViewTarget
 
         spotlightPhase = SpotlightPhase.Hold;
         ApplySpotlight(spotlightIsUsable ? UsableSpotlight() : UnusableSpotlight());
+
+        // Wave starts at 0 so the pulse begins exactly at usableIntensity with no pop.
+        pulseTime = 0f;
+        pulseWeight = IsSelected() ? 0f : 1f;
+    }
+
+    void UpdateUsablePulse()
+    {
+        float targetWeight = IsSelected() ? 0f : 1f;
+        pulseWeight = Mathf.MoveTowards(pulseWeight, targetWeight, Time.deltaTime / PulseBlendDuration);
+        pulseTime += Time.deltaTime * Mathf.Max(0f, usablePulseSpeed);
+
+        float wave = 0.5f - 0.5f * Mathf.Cos(pulseTime * Mathf.PI * 2f);
+        Spotlight.intensity = Mathf.Lerp(usableIntensity, usablePulseIntensity, wave * pulseWeight);
+    }
+
+    bool IsSelected()
+    {
+        return View.Instance != null
+            && View.Instance.SelectionHandler != null
+            && View.Instance.SelectionHandler.SelectedRitual == this;
     }
 
     void NotifyRitualFlame(bool ready)

@@ -60985,6 +60985,7 @@ RectTransform:
   - {fileID: 2150000601}
   - {fileID: 2150000651}
   - {fileID: 1779091236}
+  - {fileID: 1425546578}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -79892,8 +79893,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 478419970}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.61, y: -4.7, z: 7.24}
+  m_LocalRotation: {x: -0.17364816, y: -0, z: -0, w: 0.9848078}
+  m_LocalPosition: {x: -2.61, y: -10.483352, z: 33.474262}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -79902,7 +79903,7 @@ Transform:
   - {fileID: 136824353}
   - {fileID: 640868573}
   - {fileID: 452082329}
-  m_Father: {fileID: 2099432155}
+  m_Father: {fileID: 498093456}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &481822205
 PrefabInstance:
@@ -80823,8 +80824,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 498093455}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.17364816, y: 0, z: 0, w: 0.9848078}
-  m_LocalPosition: {x: 0, y: 16.6, z: 4.2}
+  m_LocalRotation: {x: 0.17364816, y: -0, z: -0, w: 0.9848078}
+  m_LocalPosition: {x: 0, y: 16.6, z: -20.63}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -80833,7 +80834,8 @@ Transform:
   - {fileID: 214480794}
   - {fileID: 1954866822}
   - {fileID: 490563225}
-  m_Father: {fileID: 0}
+  - {fileID: 478419971}
+  m_Father: {fileID: 2099432155}
   m_LocalEulerAnglesHint: {x: 20, y: 0, z: 0}
 --- !u!114 &498093457
 MonoBehaviour:
@@ -80851,7 +80853,8 @@ MonoBehaviour:
   RightLight: {fileID: 214480796}
   EyeLight: {fileID: 1954866824}
   maxEyeLightIntensity: 3000
-  defaultLightIntensity: 5600
+  defaultLightIntensity: 250
+  dimLightIntensity: 0
 --- !u!1 &498291960
 GameObject:
   m_ObjectHideFlags: 0
@@ -202199,6 +202202,10 @@ MonoBehaviour:
   CropBaseVolume: 1
   ScrollBaseVolume: 1.5
   MinOfferingCollectInterval: 0.12
+  FlameOngoingDelay: 2
+  RumbleVolume: 1
+  MusicFadeDuration: 1.5
+  MusicFadedVolume: 0.5
 --- !u!82 &1293055348
 AudioSource:
   m_ObjectHideFlags: 0
@@ -216800,7 +216807,7 @@ RectTransform:
   - {fileID: 391238392}
   - {fileID: 430532401}
   - {fileID: 202068952}
-  m_Father: {fileID: 1589095876}
+  m_Father: {fileID: 346157268}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -247453,7 +247460,6 @@ RectTransform:
   - {fileID: 678106699}
   - {fileID: 88258671}
   - {fileID: 35370930}
-  - {fileID: 1425546578}
   - {fileID: 553640402}
   - {fileID: 1752642473}
   m_Father: {fileID: 0}
@@ -297463,7 +297469,7 @@ Transform:
   - {fileID: 754715540}
   - {fileID: 1925343092}
   - {fileID: 1803463881}
-  - {fileID: 478419971}
+  - {fileID: 498093456}
   - {fileID: 1253211710}
   - {fileID: 520293227}
   - {fileID: 2089607682}
@@ -319634,7 +319640,6 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1036266455}
-  - {fileID: 498093456}
   - {fileID: 1293055345}
   - {fileID: 454993719}
   - {fileID: 346157268}

@@ -189,7 +189,9 @@ MonoBehaviour:
   flareIntensity: 600
   usableInnerAngle: 40
   usableOuterAngle: 55
-  usableIntensity: 350
+  usableIntensity: 250
+  usablePulseIntensity: 550
+  usablePulseSpeed: 0.35
   flareUpDuration: 0.5
   flareSettleDuration: 0.5
   dimDuration: 0.35

@@ -45,6 +45,8 @@ public class AudioHandler : MonoBehaviour
     [Header("Ritual Flames")]
     [Tooltip("Seconds after a ritual flare begins before the looping flame bed starts.")]
     public float FlameOngoingDelay = 2f;
+    [Tooltip("Volume of the rumble that plays while a ritual is selected. Still scaled by the SFX slider.")]
+    [Range(0f, 2f)] public float RumbleVolume = 0.8f;
 
     private float baseMusicVolume = 0.1f;
 
@@ -52,6 +54,14 @@ public class AudioHandler : MonoBehaviour
     private float userSoundEffectVolume = 0.5f;
 
     private float currentMusicMultiplier = 1.0f;
+
+    [Header("Music Fade")]
+    [Tooltip("Seconds for the music to fade down or back up (e.g. while a ritual is selected).")]
+    public float MusicFadeDuration = 1.5f;
+    [Tooltip("Fraction of normal music volume while faded down.")]
+    [Range(0f, 1f)] public float MusicFadedVolume = 0.2f;
+    private float musicFadeMultiplier = 1.0f;
+    private float musicFadeTarget = 1.0f;
 
     private readonly Queue<OfferingCollectNote> offeringCollectQueue = new Queue<OfferingCollectNote>();
     private float nextOfferingCollectTime;
@@ -237,8 +247,36 @@ public class AudioHandler : MonoBehaviour
             flameOngoingSource.Stop();
     }
 
+    public void FadeMusicOut()
+    {
+        musicFadeTarget = MusicFadedVolume;
+    }
+
+    public void FadeMusicIn()
+    {
+        musicFadeTarget = 1f;
+    }
+
+    private void UpdateMusicFade()
+    {
+        if (Mathf.Approximately(musicFadeMultiplier, musicFadeTarget))
+            return;
+
+        float fadeRange = Mathf.Max(0.01f, 1f - MusicFadedVolume);
+        float step = MusicFadeDuration > 0f ? Time.unscaledDeltaTime * fadeRange / MusicFadeDuration : 1f;
+        musicFadeMultiplier = Mathf.MoveTowards(musicFadeMultiplier, musicFadeTarget, step);
+        ApplyMusicVolume();
+    }
+
+    private void ApplyMusicVolume()
+    {
+        if (MusicSource != null)
+            MusicSource.volume = baseMusicVolume * userMusicVolume * currentMusicMultiplier * musicFadeMultiplier;
+    }
+
     private void LateUpdate()
     {
+        UpdateMusicFade();
         UpdateRitualFlame();
 
         if (offeringCollectQueue.Count == 0)
@@ -301,7 +339,7 @@ public class AudioHandler : MonoBehaviour
                     currentMusicMultiplier = MusicMultipliers[name];
                 }
 
-                MusicSource.volume = baseMusicVolume * userMusicVolume * currentMusicMultiplier;
+                ApplyMusicVolume();
 
                 MusicSource.Play();
             }
@@ -347,7 +385,7 @@ public class AudioHandler : MonoBehaviour
         userMusicVolume = volume;
         PlayerPrefs.SetFloat("UserMusicVolume", userMusicVolume);
 
-        MusicSource.volume = baseMusicVolume * userMusicVolume * currentMusicMultiplier;
+        ApplyMusicVolume();
     }
     public void SetSoundEffectVolume(float volume)
     {
@@ -356,6 +394,11 @@ public class AudioHandler : MonoBehaviour
 
         if (flameOngoingSource != null && flameOngoingSource.isPlaying)
             flameOngoingSource.volume = userSoundEffectVolume;
+
+        if (OtherSource != null && OtherSource.isPlaying
+            && OtherAudioByName.TryGetValue(OtherSoundType.Rumble, out AudioClip rumbleClip)
+            && OtherSource.clip == rumbleClip)
+            OtherSource.volume = userSoundEffectVolume * RumbleVolume;
     }
 
     public void PlayOther(OtherSoundType name)
@@ -367,7 +410,8 @@ public class AudioHandler : MonoBehaviour
             {
                 OtherSource.clip = audioClip;
 
-                //OtherSource.volume = baseMusicVolume * userMusicVolume * currentMusicMultiplier;
+                if (name == OtherSoundType.Rumble)
+                    OtherSource.volume = userSoundEffectVolume * RumbleVolume;
 
                 OtherSource.Play();
             }

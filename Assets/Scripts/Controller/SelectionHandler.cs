@@ -268,6 +268,7 @@ public class SelectionHandler
 
         Controller.Instance.LightingHandler.DimLights();
         View.Instance.AudioHandler.PlayOther(AudioHandler.OtherSoundType.Rumble);
+        View.Instance.AudioHandler.FadeMusicOut();
     }
 
     private void ClickedAway()
@@ -362,6 +363,7 @@ public class SelectionHandler
             Controller.Instance.LightingHandler.RestoreLights();
         }
         View.Instance.AudioHandler.StopOther();
+        View.Instance.AudioHandler.FadeMusicIn();
 
         SelectedRitual = null;
         PotentialRitualTargets.Clear();
