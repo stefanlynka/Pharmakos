@@ -166,17 +166,18 @@ public class CreateOfferingAnimation : AnimationAction
         ViewPlayer viewOwner = owner != null ? View.Instance.GetViewPlayer(owner) : null;
         ViewResources resources = viewOwner != null ? viewOwner.ViewResources : null;
 
-        // Reveal the number when the sprite lands. For the AI, the next-turn banner can
-        // run before queued collect audio callbacks fire; delaying the count update until
-        // then left the label stuck at 0 even though pitch reserved correctly here.
+        // Pitch is reserved when the sprite lands; the count ticks up with each queued pulse
+        // so simultaneous arrivals reveal one at a time. If the next-turn banner snaps the
+        // labels first, the epoch check stops stale pulses from changing the count.
         int countAfter = resources != null
-            ? resources.RevealCollectedOffering(offeringType)
+            ? resources.ReserveCollectedOffering(offeringType)
             : 1;
+        int epoch = resources != null ? resources.CollectEpoch : 0;
 
         View.Instance.AudioHandler.QueueOfferingCollect(offeringType, countAfter, () =>
         {
             if (resources != null)
-                resources.PlayCollectPulse(offeringType);
+                resources.RevealCollectedOffering(offeringType, epoch);
         });
     }
 

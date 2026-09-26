@@ -56,6 +56,7 @@ public class ViewResources : MonoBehaviour
         player.OnOfferingsChange -= RefreshResources;
         player.OnOfferingsChange += RefreshResources;
 
+        CollectEpoch++;
         pendingCollectReveals.Clear();
         displayedAmounts.Clear();
         reservedCollectCounts.Clear();
@@ -66,10 +67,16 @@ public class ViewResources : MonoBehaviour
     }
 
     /// <summary>
-    /// Called when an offering sprite arrives: advances the displayed count and returns
-    /// the pitch index for the collect sound. The spotlight pulse is separate (on audio play).
+    /// Incremented whenever labels are snapped to the player's state, so queued collect
+    /// reveals from before the snap don't advance the count past the synced value.
     /// </summary>
-    public int RevealCollectedOffering(OfferingType type)
+    public int CollectEpoch { get; private set; }
+
+    /// <summary>
+    /// Called when an offering sprite arrives: reserves and returns the pitch index for
+    /// the collect sound. The displayed count only advances when the queued note plays.
+    /// </summary>
+    public int ReserveCollectedOffering(OfferingType type)
     {
         int displayed = GetDisplayedAmount(type);
         if (!reservedCollectCounts.TryGetValue(type, out int reserved) || reserved < displayed)
@@ -77,15 +84,25 @@ public class ViewResources : MonoBehaviour
 
         reserved++;
         reservedCollectCounts[type] = reserved;
-
-        if (pendingCollectReveals.TryGetValue(type, out int pending) && pending > 0)
-            pendingCollectReveals[type] = pending - 1;
-
-        displayedAmounts[type] = displayed + 1;
-        ApplyDisplayedAmount(type);
-        SyncRitualReadyState();
-
         return reserved;
+    }
+
+    /// <summary>
+    /// Called when a queued collect note plays: advances the displayed count by one and pulses the label.
+    /// </summary>
+    public void RevealCollectedOffering(OfferingType type, int epoch)
+    {
+        if (epoch == CollectEpoch)
+        {
+            if (pendingCollectReveals.TryGetValue(type, out int pending) && pending > 0)
+                pendingCollectReveals[type] = pending - 1;
+
+            displayedAmounts[type] = GetDisplayedAmount(type) + 1;
+            ApplyDisplayedAmount(type);
+            SyncRitualReadyState();
+        }
+
+        PlayCollectPulse(type);
     }
 
     public void RefreshResources()
@@ -109,6 +126,7 @@ public class ViewResources : MonoBehaviour
     /// </summary>
     public void SyncToPlayerState()
     {
+        CollectEpoch++;
         pendingCollectReveals.Clear();
         reservedCollectCounts.Clear();
         foreach (OfferingType type in AllOfferingTypes)
