@@ -122,7 +122,13 @@ public class Controller : MonoBehaviour
         else
         {
             Destroy(this);
+            return;
         }
+
+        if (GetComponent<CursorHandler>() == null)
+            gameObject.AddComponent<CursorHandler>();
+        if (GetComponent<RitualCursorOfferings>() == null)
+            gameObject.AddComponent<RitualCursorOfferings>();
 
         starterSeed = GetRandomMetaSeed(); // UnityEngine.Random.Range(0, 1000);
         Debug.Log("MetaSeed: " + starterSeed);
