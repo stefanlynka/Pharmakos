@@ -123,7 +123,7 @@ public class RitualCursorOfferings : MonoBehaviour
             renderer.sortingOrder = TokenSortingOrder;
             renderer.color = new Color(1f, 1f, 1f, 0f);
 
-            Color color = ColorFor(type);
+            Color color = OfferingHandler.GetOfferingColor(type);
             tokens.Add(new Token
             {
                 Transform = tokenObject.transform,
@@ -490,24 +490,5 @@ public class RitualCursorOfferings : MonoBehaviour
         Color lifted = Color.HSVToRGB(h, s, Mathf.Clamp01(v));
         lifted.a = 1f;
         return lifted;
-    }
-
-    static Color ColorFor(OfferingType type)
-    {
-        switch (type)
-        {
-            case OfferingType.Gold:
-                return new Color(0.95f, 0.75f, 0.22f, 1f);
-            case OfferingType.Blood:
-                return new Color(0.72f, 0.05f, 0.08f, 1f);
-            case OfferingType.Bone:
-                return new Color(0.86f, 0.84f, 0.78f, 1f);
-            case OfferingType.Crop:
-                return new Color(0.28f, 0.58f, 0.2f, 1f);
-            case OfferingType.Scroll:
-                return new Color(0.32f, 0.52f, 0.75f, 1f);
-            default:
-                return Color.white;
-        }
     }
 }

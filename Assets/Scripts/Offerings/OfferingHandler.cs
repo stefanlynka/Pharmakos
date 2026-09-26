@@ -34,6 +34,25 @@ public class OfferingHandler : MonoBehaviour
         return sprite;
     }
 
+    public static Color GetOfferingColor(OfferingType type)
+    {
+        switch (type)
+        {
+            case OfferingType.Gold:
+                return new Color(0.95f, 0.75f, 0.22f, 1f);
+            case OfferingType.Blood:
+                return new Color(0.72f, 0.05f, 0.08f, 1f);
+            case OfferingType.Bone:
+                return new Color(0.86f, 0.84f, 0.78f, 1f);
+            case OfferingType.Crop:
+                return new Color(0.28f, 0.58f, 0.2f, 1f);
+            case OfferingType.Scroll:
+                return new Color(0.32f, 0.52f, 0.75f, 1f);
+            default:
+                return Color.white;
+        }
+    }
+
 }
 
 

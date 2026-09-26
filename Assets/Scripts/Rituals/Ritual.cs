@@ -72,6 +72,11 @@ public abstract class Ritual : ITarget
         // Each Ritual subclass should override this to define its effect
     }
 
+    public virtual VfxEffect GetPlayVfx(ITarget target)
+    {
+        return VfxLibrary.DefaultRitual(this);
+    }
+
     public Ritual MakeBaseCopy()
     {
         // Get the type of the calling class

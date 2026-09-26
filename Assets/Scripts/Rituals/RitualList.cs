@@ -1298,7 +1298,7 @@ public class HestiaMinor : Ritual
             {
                 {OfferingType.Blood, 0 },
                 {OfferingType.Bone, 0 },
-                {OfferingType.Crop, 3 },
+                {OfferingType.Crop, 1 },
                 {OfferingType.Scroll, 0 },
             };
         }
@@ -1750,5 +1750,10 @@ public class ZeusMajor : Ritual
     {
         DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
         Owner.GameState.ActionHandler.AddAction(damageAction, true, true);
+    }
+
+    public override VfxEffect GetPlayVfx(ITarget target)
+    {
+        return new ParallelVfx(VfxLibrary.DefaultRitual(this), VfxLibrary.LightningSparks());
     }
 }

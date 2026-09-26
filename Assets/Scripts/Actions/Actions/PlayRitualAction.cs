@@ -44,21 +44,9 @@ public class PlayRitualAction : GameAction
 
     public override List<AnimationAction> GetAnimationActions()
     {
-        //MoveCardAnimation moveCardAnimation = new MoveCardAnimation(this, Spell, Owner, GameZone.Hand, Owner, GameZone.PlayZone);
-        //moveCardAnimation.SetScale(1, 2);
-        //moveCardAnimation.ForceDescriptive(true);
-
-        //showSpellDuration = Owner.IsHuman ? 0.5f : 0.8f;
-        //WaitAnimation waitAnimation = new WaitAnimation(this, showSpellDuration);
-
-        //RemoveCardAnimation removeCardAnimation = new RemoveCardAnimation(this, Spell);
-
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new RitualAnimation(this, ritual, target),
-            //moveCardAnimation,
-            //waitAnimation,
-            //removeCardAnimation,
+            new PlayVfxAnimation(this, ritual.GetPlayVfx(target), ritual, target),
         };
 
         return animationActions;

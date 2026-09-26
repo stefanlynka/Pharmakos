@@ -7,7 +7,9 @@ using static ProgressionHandler;
 
 public class ProgressionHandler
 {
-    private const int ENEMY_HEALTH_OVERRIDE = 1; // -1 to disables
+    private const int ENEMY_HEALTH_OVERRIDE = 10; // -1 to disables
+    private const DeckName FORCED_FIRST_ENEMY = DeckName.None; // DeckName.None to disable
+    private const string FORCED_STARTER_BUNDLE_RITUAL = "HestiaMinor"; // e.g. nameof(HadesMinor); "" to disable
     public const int BossPoolNumber = 4;
     public const int HighestEnemyPoolNumber = 3;
 
@@ -1861,6 +1863,7 @@ public class ProgressionHandler
         CurrentFightNumber = 0;
         LastFoughtEnemyDeckName = DeckName.None;
         LastFoughtEnemyPoolNum = 0;
+        hasSetupFirstCombat = false;
     }
 
     public static string FormatDeckNameAsFightName(DeckName deckName)
@@ -2033,10 +2036,26 @@ public class ProgressionHandler
         }
     }
 
+    private bool hasSetupFirstCombat = false;
+
     public void SetupNextCombatEnemy(int floorFightNumber = -1)
     {
         CurrentLevel++;
         CurrentFightNumber = floorFightNumber >= 0 ? floorFightNumber : CurrentLevel;
+
+        bool isFirstCombat = !hasSetupFirstCombat;
+        hasSetupFirstCombat = true;
+        if (isFirstCombat && FORCED_FIRST_ENEMY != DeckName.None)
+        {
+            if (DetailsByDeckName.ContainsKey(FORCED_FIRST_ENEMY))
+            {
+                CurrentEnemy = FORCED_FIRST_ENEMY;
+                EnemyPool.Remove(FORCED_FIRST_ENEMY);
+                return;
+            }
+            Debug.LogError("FORCED_FIRST_ENEMY not found: " + FORCED_FIRST_ENEMY);
+        }
+
         RefillEnemyPoolIfDepleted();
         if (EnemyPool.Count == 0)
         {
@@ -2277,7 +2296,21 @@ public class ProgressionHandler
         
         List<StarterBundle> bundles = new List<StarterBundle>();
 
-        for (int i = 0; i < 3; i++)
+        if (!string.IsNullOrEmpty(FORCED_STARTER_BUNDLE_RITUAL))
+        {
+            StarterBundle forced = allBundles.Find(b => b.Ritual != null && b.Ritual.GetType().Name == FORCED_STARTER_BUNDLE_RITUAL);
+            if (forced != null)
+            {
+                bundles.Add(forced);
+                allBundles.Remove(forced);
+            }
+            else
+            {
+                Debug.LogError("FORCED_STARTER_BUNDLE_RITUAL not found: " + FORCED_STARTER_BUNDLE_RITUAL);
+            }
+        }
+
+        while (bundles.Count < 3 && allBundles.Count > 0)
         {
             int randIndex = Controller.Instance.MetaRNG.Next(0, allBundles.Count);
             StarterBundle starterBundle = allBundles[randIndex];
