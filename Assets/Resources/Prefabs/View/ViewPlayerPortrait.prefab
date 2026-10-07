@@ -558,6 +558,12 @@ MonoBehaviour:
   HealthText: {fileID: 4914813875038394437}
   DamageIcon: {fileID: 285937699284300135}
   DamageText: {fileID: 6576535088627354040}
+  damageStroke:
+    material: {fileID: 0}
+    paintInDuration: 0.4
+    wipeOutDuration: 0.4
+    strokeAngle: 45
+    textDelay: 0.5
   PortraitRenderer: {fileID: 6984841653628313624}
   HeartStringHolder: {fileID: 8297323067958311687}
   HeartStrings:
@@ -1472,12 +1478,24 @@ MonoBehaviour:
   coreFlameExtentMin: 0.003
   outerFlameExtent: 0.055
   outerFlameExtentMin: 0.008
+  edgeMode: 0
+  geomEdgeWidth: 0.08
+  geomEdgeStrength: 1
+  hybridBlend: 0.65
+  topFaceSuppress: 0
+  edgePower: 3.8
+  outerEdgePower: 2.6
+  edgeMin: 0.35
+  riseStrength: 1.1
+  coreTongueThreshold: 0.46
+  outerTongueThreshold: 0.58
+  tongueSharpness: 0.11
+  tipFalloff: 1.35
+  outerTipFalloff: 1.05
   noiseScale: 4.5
   noiseSpeed: 1.35
   coreNoiseStrength: 0.85
   outerNoiseStrength: 1.15
-  flameSoftness: 0.65
-  outerFlameSoftness: 0.95
   flowBias: 0.55
   intensity: 1.4
   coreIntensityMultiplier: 1

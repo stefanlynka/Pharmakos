@@ -132,6 +132,27 @@ public class AnimationHandler
         }
     }
 
+    /// <summary>
+    /// Removes and returns queued animations that satisfy <paramref name="match"/>, scanning from the front of the
+    /// queue and stopping at the first animation that satisfies <paramref name="stopAt"/>.
+    /// The caller becomes responsible for playing them.
+    /// </summary>
+    public List<AnimationAction> TakeQueuedAnimations(Predicate<AnimationAction> match, Predicate<AnimationAction> stopAt)
+    {
+        List<AnimationAction> taken = new List<AnimationAction>();
+        for (int i = 0; i < AnimationActionQueue.Count; i++)
+        {
+            AnimationAction animationAction = AnimationActionQueue[i];
+            if (stopAt(animationAction)) break;
+            if (!match(animationAction)) continue;
+
+            taken.Add(animationAction);
+            AnimationActionQueue.RemoveAt(i);
+            i--;
+        }
+        return taken;
+    }
+
     public bool AnimationsComplete()
     {
         return (!IsAnimating && AnimationActionQueue.Count == 0);

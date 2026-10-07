@@ -10,6 +10,7 @@ public class ViewPlayerPortrait : MonoBehaviour
     public TextMeshPro HealthText;
     public GameObject DamageIcon;
     public TextMeshPro DamageText;
+    [SerializeField] DamageIconStroke damageStroke = new DamageIconStroke();
     public SpriteRenderer PortraitRenderer;
     private int health = 0;
     public GameObject HeartStringHolder;
@@ -72,11 +73,10 @@ public class ViewPlayerPortrait : MonoBehaviour
 
     public void ShowDamage(int damage)
     {
-        DamageIcon.SetActive(true);
-        DamageText.text = damage.ToString();
+        damageStroke.Show(this, DamageIcon, DamageText, damage);
     }
     public void HideDamage()
     {
-        DamageIcon.SetActive(false);
+        damageStroke.Hide(this, DamageIcon, DamageText);
     }
 }

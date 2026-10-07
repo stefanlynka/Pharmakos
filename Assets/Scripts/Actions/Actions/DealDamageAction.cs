@@ -9,6 +9,8 @@ public class DealDamageAction : GameAction
     public ITarget Source;
     public ITarget Target;
     public int Damage;
+    /// <summary>Damage dealt by a follower attack itself; its animation plays at the attack's moment of impact.</summary>
+    public bool IsCombatDamage;
     private int damageDealt = 0;
     private int attackChange = 0;
     private bool resolveDamageImmediately = false;

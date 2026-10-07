@@ -17,6 +17,8 @@ public class AttackWithFollowerAnimation : AnimationAction
     private Vector3 endLocal;
     private Follower attacker;
     private ITarget target;
+    private bool hasReturned;
+    private int pendingImpactAnimations;
 
     public AttackWithFollowerAnimation(GameAction gameAction) : base(gameAction)
     {
@@ -78,7 +80,7 @@ public class AttackWithFollowerAnimation : AnimationAction
         attackSequence.Add(new SequenceAction(DoImpact));
         attackSequence.Add(new Tween(MoveAttacker, 1, 0, attackMoveDuration));
         //attackSequence.Add(new SequenceAction(AnimationOver));
-        attackSequence.Add(new SequenceAction(CallCallback));
+        attackSequence.Add(new SequenceAction(OnReturned));
         attackSequence.Start();
 
         //Debug.LogError("Attack Animation");
@@ -135,5 +137,49 @@ public class AttackWithFollowerAnimation : AnimationAction
             float shakeDuration = Mathf.Min(0.15f + higherAttack * 0.05f, 0.4f);
             ScreenShakeHandler.Shake(higherAttack * 0.15f, 0.15f + higherAttack * 0.05f);
         }
+
+        PlayImpactAnimations();
+    }
+
+    // Pulls this attack's combat damage animations out of the queue so they start at the moment of contact
+    // instead of waiting for the attacker to return. The attack only finishes once they have finished too,
+    // so later queued animations (deaths, triggers) keep their order.
+    private void PlayImpactAnimations()
+    {
+        List<AnimationAction> impactAnimations = View.Instance.AnimationHandler.TakeQueuedAnimations(
+            IsThisAttacksDamageAnimation,
+            animationAction => animationAction is AttackWithFollowerAnimation);
+
+        pendingImpactAnimations = impactAnimations.Count;
+        foreach (AnimationAction impactAnimation in impactAnimations)
+        {
+            impactAnimation.Play(OnImpactAnimationComplete);
+        }
+    }
+
+    private bool IsThisAttacksDamageAnimation(AnimationAction animationAction)
+    {
+        return animationAction is ChangeStatsAnimation
+            && animationAction.GameAction is DealDamageAction damageAction
+            && damageAction.IsCombatDamage
+            && (ReferenceEquals(damageAction.Source, attacker) || ReferenceEquals(damageAction.Target, attacker));
+    }
+
+    private void OnImpactAnimationComplete()
+    {
+        pendingImpactAnimations--;
+        TryFinish();
+    }
+
+    private void OnReturned()
+    {
+        hasReturned = true;
+        TryFinish();
+    }
+
+    private void TryFinish()
+    {
+        if (hasReturned && pendingImpactAnimations <= 0)
+            CallCallback();
     }
 }

@@ -47,6 +47,8 @@ public class ViewFollower : ViewCard
     public GameObject DamageIcon;
     public TextMeshPro DamageText;
 
+    [SerializeField] DamageIconStroke damageStroke = new DamageIconStroke();
+
     public GameObject StatDivider;
 
     private int attack = 0;
@@ -93,7 +95,7 @@ public class ViewFollower : ViewCard
             Follower = null;
         }
 
-        HideDamage();
+        damageStroke.HideImmediate(this, DamageIcon);
         if (FollowerText != null)
             FollowerText.text = string.Empty;
         Card = null;
@@ -208,11 +210,11 @@ public class ViewFollower : ViewCard
 
     public void ShowDamage(int damage)
     {
-        DamageIcon.SetActive(true);
-        DamageText.text = damage.ToString();
+        damageStroke.Show(this, DamageIcon, DamageText, damage);
     }
+
     public void HideDamage()
     {
-        DamageIcon.SetActive(false);
+        damageStroke.Hide(this, DamageIcon, DamageText);
     }
 }

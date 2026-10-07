@@ -73,7 +73,7 @@ public class ChangeStatsAnimation : AnimationAction
 
         if (isDamage)
         {
-            damageDuration = View.Instance.IsHumansTurn ? 0.6f : 0.9f;
+            damageDuration = View.Instance.IsHumansTurn ? 0.8f : 1.2f;
             Sequence moveSequence = new Sequence();
             moveSequence.Add(new Tween(TweenProgress, 0, 1, damageDuration));
             moveSequence.Add(new SequenceAction(Complete));

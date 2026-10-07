@@ -3538,6 +3538,12 @@ MonoBehaviour:
   SummaryRightArrow: {fileID: 5364818382843287735}
   DamageIcon: {fileID: 6373484097413627135}
   DamageText: {fileID: 54178468019930144}
+  damageStroke:
+    material: {fileID: 0}
+    paintInDuration: 0.4
+    wipeOutDuration: 0.4
+    strokeAngle: 45
+    textDelay: 0.5
   StatDivider: {fileID: 2590857818604127263}
 --- !u!65 &6499160316123061462
 BoxCollider:
@@ -4985,6 +4991,18 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1569283810336827417, guid: 26b4ea25af72ece4988311ed2dd87fc7, type: 3}
+      propertyPath: m_SortingLayer
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1569283810336827417, guid: 26b4ea25af72ece4988311ed2dd87fc7, type: 3}
+      propertyPath: m_SortingOrder
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1569283810336827417, guid: 26b4ea25af72ece4988311ed2dd87fc7, type: 3}
+      propertyPath: m_SortingLayerID
+      value: -1482999175
+      objectReference: {fileID: 0}
     - target: {fileID: 3127916628636954526, guid: 26b4ea25af72ece4988311ed2dd87fc7, type: 3}
       propertyPath: m_SortingLayer
       value: 1
@@ -4996,6 +5014,14 @@ PrefabInstance:
     - target: {fileID: 3127916628636954526, guid: 26b4ea25af72ece4988311ed2dd87fc7, type: 3}
       propertyPath: m_SortingLayerID
       value: -1482999175
+      objectReference: {fileID: 0}
+    - target: {fileID: 5185502768266246310, guid: 26b4ea25af72ece4988311ed2dd87fc7, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7236952327951222597, guid: 26b4ea25af72ece4988311ed2dd87fc7, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8606056047517357139, guid: 26b4ea25af72ece4988311ed2dd87fc7, type: 3}
       propertyPath: m_SortingLayer

@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7302518846190375501
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7302518846190375502}
+  - component: {fileID: 7302518846190375503}
+  m_Layer: 0
+  m_Name: BrushStrokeFlurry
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7302518846190375502
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7302518846190375501}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7302518846190375503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7302518846190375501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f7a3c6e8b2d4950a1d5e7b9c40f3a86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  strokePrefab: {fileID: 4618203957712046304, guid: e93b7a4c1f2d4e58b0c6a8d3f71e9b42, type: 3}
+  sprites: []
+  strokeCount: 40
+  duration: 1.5
+  localArea:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 1, y: 1, z: 0}
+  paintInRange: {x: 0.12, y: 0.25}
+  holdRange: {x: 0.05, y: 0.3}
+  wipeOutRange: {x: 0.15, y: 0.3}
+  scaleRange: {x: 0.6, y: 1.2}
+  strokeAngle: 0
+  angleJitter: 20
+  sortingOrderStart: 100
+  sortingOrderRange: 1000
+  testKey: 98
+  playOnEnable: 0

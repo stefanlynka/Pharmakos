@@ -558,6 +558,12 @@ public class Player : ITarget
             Graveyard.Clear();
         }
 
+        // If we still don't have any cards, return null
+        if (Deck.Count == 0)
+        {
+            return null;
+        }
+
         Card card = Deck[0];
         Deck.RemoveAt(0);
         Hand.Add(card);

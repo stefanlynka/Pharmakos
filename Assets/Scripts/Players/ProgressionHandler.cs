@@ -7,9 +7,9 @@ using static ProgressionHandler;
 
 public class ProgressionHandler
 {
-    private const int ENEMY_HEALTH_OVERRIDE = 10; // -1 to disables
+    private const int ENEMY_HEALTH_OVERRIDE = -1; // -1 to disables
     private const DeckName FORCED_FIRST_ENEMY = DeckName.None; // DeckName.None to disable
-    private const string FORCED_STARTER_BUNDLE_RITUAL = "HestiaMinor"; // e.g. nameof(HadesMinor); "" to disable
+    private const string FORCED_STARTER_BUNDLE_RITUAL = ""; // HestiaMinor // e.g. nameof(HadesMinor); "" to disable
     public const int BossPoolNumber = 4;
     public const int HighestEnemyPoolNumber = 3;
 

@@ -490,22 +490,22 @@ public class Follower : Card, ITarget
 
             if (leftOfTarget != null)
             {
-                DealDamageAction damageLeft = new DealDamageAction(this, leftOfTarget, attackerAttack);
+                DealDamageAction damageLeft = new DealDamageAction(this, leftOfTarget, attackerAttack) { IsCombatDamage = true };
                 defender.GameState.ActionHandler.AddAction(damageLeft);
             }
         }
 
         if (!HasStaticEffect(StaticEffect.RangedAttacker) && !HasStaticEffect(StaticEffect.ImmuneWhileAttacking))
         {
-            DealDamageAction damageAttackerAction = new DealDamageAction(defender, this, defenderAttack);
+            DealDamageAction damageAttackerAction = new DealDamageAction(defender, this, defenderAttack) { IsCombatDamage = true };
             defender.GameState.ActionHandler.AddAction(damageAttackerAction);
         }
-        DealDamageAction damageDefenderAction = new DealDamageAction(this, defender, attackerAttack);
+        DealDamageAction damageDefenderAction = new DealDamageAction(this, defender, attackerAttack) { IsCombatDamage = true };
         defender.GameState.ActionHandler.AddAction(damageDefenderAction);
 
         if (rightOfTarget != null)
         {
-            DealDamageAction damageRight = new DealDamageAction(this, rightOfTarget, attackerAttack);
+            DealDamageAction damageRight = new DealDamageAction(this, rightOfTarget, attackerAttack) { IsCombatDamage = true };
             defender.GameState.ActionHandler.AddAction(damageRight);
         }
 
@@ -518,7 +518,7 @@ public class Follower : Card, ITarget
 
     public void AttackPlayer(Player player)
     {
-        DealDamageAction damageAction = new DealDamageAction(this, player, GetCurrentAttack());
+        DealDamageAction damageAction = new DealDamageAction(this, player, GetCurrentAttack()) { IsCombatDamage = true };
         GameState.ActionHandler.AddAction(damageAction);
 
         //player.ChangeHealth(this, -GetCurrentAttack());
