@@ -124,7 +124,13 @@ public sealed class BrushStroke : MonoBehaviour
     {
         this.reveal = reveal;
         this.erase = erase;
-        SpriteRenderer.color = new Color(reveal, erase, noiseSeed, opacity);
+        SpriteRenderer.color = EncodeState(reveal, erase, noiseSeed, opacity);
+    }
+
+    /// <summary>The vertex color the BrushStrokeReveal shader reads its animation state from.</summary>
+    public static Color EncodeState(float reveal, float erase, float noiseSeed, float opacity)
+    {
+        return new Color(reveal, erase, noiseSeed, opacity);
     }
 
     IEnumerator PlayRoutine(float paintIn, float hold, float wipeOut, Action onDone)
@@ -184,7 +190,8 @@ public sealed class BrushStroke : MonoBehaviour
         SetProgress(1f, 1f);
     }
 
-    static float EaseOutCubic(float x)
+    /// <summary>The easing used for both edges of a stroke: fast start, slow finish, like a brush.</summary>
+    public static float EaseOutCubic(float x)
     {
         float inv = 1f - Mathf.Clamp01(x);
         return 1f - inv * inv * inv;

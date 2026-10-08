@@ -26,6 +26,8 @@ public class TempleHandler : MonoBehaviour
     public float CardMoveDuration = 0.55f;
     public float CardMoveStagger = 0.12f;
     public EaseType CardMoveEase = EaseType.EaseOutQuad;
+    [Tooltip("Seconds into the fire brushstroke flurry at which the sacrificed card vanishes; it should be fully covered by then.")]
+    public float SacrificeHideDelay = 1.1f;
 
     const int CardsPerBatch = 3;
     const int BatchCount = 3;
@@ -279,24 +281,18 @@ public class TempleHandler : MonoBehaviour
 
     IEnumerator PlaySacrificeRemovalAnimation(ViewCard viewCard)
     {
-        if (viewCard is ViewFollower viewFollower && viewFollower.SkullRenderer != null)
-        {
-            bool done = false;
-            Sequence skullSequence = new Sequence();
-            skullSequence.Add(new Tween(p => SetSkullAlpha(viewFollower, p), 0, 1, 0.2f));
-            skullSequence.Add(new Tween(p => SetSkullAlpha(viewFollower, p), 1, 0, 0.4f));
-            skullSequence.Add(new SequenceAction(() => done = true));
-            skullSequence.Start();
-            while (!done) yield return null;
-            yield break;
-        }
+        BrushStrokeFlurryVfx fire = VfxLibrary.FireBrushStrokes();
+        fire.QueueHold = fire.Duration + fire.StrokeLifetime;
+        VfxEffect burn = new ParallelVfx(fire, VfxLibrary.CharCard());
 
-        bool fadeDone = false;
-        Sequence fadeSequence = new Sequence();
-        // fadeSequence.Add(new Tween(p => SetCardAlpha(viewCard, 1f - p), 0, 1, 0.35f, EaseType.EaseInQuad));
-        fadeSequence.Add(new SequenceAction(() => fadeDone = true));
-        fadeSequence.Start();
-        while (!fadeDone) yield return null;
+        bool fireDone = false;
+        burn.Play(new VfxContext(null, viewCard), () => fireDone = true);
+
+        // The card burns away under the strokes, so it's gone once they clear
+        yield return new WaitForSeconds(SacrificeHideDelay);
+        SetCardContentVisible(viewCard, false);
+
+        while (!fireDone) yield return null;
     }
 
     IEnumerator AnimateCards(TempleCardPose[] fromPoses, TempleCardPose[] toPoses)
@@ -387,6 +383,7 @@ public class TempleHandler : MonoBehaviour
     void ReleaseViewCard(ViewCard viewCard)
     {
         if (viewCard == null) return;
+        SetCardContentVisible(viewCard, true);
         viewCard.SetHighlight(false);
         if (viewCard.CardCollider != null) viewCard.CardCollider.enabled = false;
         View.Instance.ReleaseCard(viewCard);
@@ -445,12 +442,10 @@ public class TempleHandler : MonoBehaviour
         gameObject.SetActive(active);
     }
 
-    static void SetSkullAlpha(ViewFollower viewFollower, float alpha)
+    static void SetCardContentVisible(ViewCard viewCard, bool visible)
     {
-        if (viewFollower?.SkullRenderer == null) return;
-        Color c = viewFollower.SkullRenderer.color;
-        c.a = alpha;
-        viewFollower.SkullRenderer.color = c;
+        if (viewCard != null && viewCard.CardHolder != null)
+            viewCard.CardHolder.SetActive(visible);
     }
 
     static void SetCardAlpha(ViewCard viewCard, float alpha)

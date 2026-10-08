@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class OverworldMapNode : MonoBehaviour
 {
+    /// <summary>DEV: when true, the player can move to any node on the overworld map, ignoring adjacency and cleared state.</summary>
+    public static bool DevMoveAnywhere = true;
+
     const string HexMeshResourcesPath = "Overworld/Hexes/Meshes/";
     const string HexMaterialResourcesPath = "Overworld/Hexes/Materials/";
     const string FallbackHexMaterialName = "OverworldHex";
@@ -231,6 +234,9 @@ public class OverworldMapNode : MonoBehaviour
             AssignEncountersOnFloor(kv.Value, kv.Key);
     }
 
+    /// 
+    /// Assigns encounters to the nodes on a given floor.
+    /// 
     static void AssignEncountersOnFloor(List<OverworldMapNode> floorNodes, int floor)
     {
         var pool = new List<OverworldMapNode>();
@@ -275,7 +281,7 @@ public class OverworldMapNode : MonoBehaviour
             //     ? Mathf.CeilToInt(nTotal / 3f)
             //     : Mathf.FloorToInt(nTotal / 3f);
         }
-        // templeTarget = 1;
+        templeTarget = 1;
         templeTarget = Mathf.Clamp(templeTarget, 0, pool.Count);
         ShuffleInPlace(pool);
         for (int i = 0; i < templeTarget; i++)

@@ -103,6 +103,45 @@ public static class VfxLibrary
         return result;
     }
 
+    // Flame brushstrokes flurry over the anchor (e.g. a CardView) until it is completely covered, then die down
+    public static BrushStrokeFlurryVfx FireBrushStrokes()
+    {
+        return new BrushStrokeFlurryVfx
+        {
+            SpriteFolder = "Images/Particles/Fire",
+            StartSoundPath = "Audio/SFX/Rituals/FlameStart",
+            Duration = 1.5f,       // how long new strokes keep being created
+            PeakRate = 90f,      // strokes per second when the curve is at 1
+            RateOverTime = new AnimationCurve(
+                new Keyframe(0f,   0.6f),   // starts at 20% of peak (9 per second)
+                new Keyframe(0.4f, 1f),     // full rate 0.8 seconds in
+                new Keyframe(0.85f, 1f),    // holds full rate until 1.7 seconds
+                new Keyframe(1f,   0f)),    // dies out by 2 seconds
+            PaintInDuration = 0.1f,
+            HoldDuration = 0.25f,
+            WipeOutDuration = 0.1f,
+            ScaleMin = 1.5f,
+            ScaleMax = 2.5f,
+            AngleJitter = 15f,
+            RiseSpeed = 2f,
+            WiggleAmplitude = 0.12f,
+            WiggleFrequency = 1.5f,
+            QueueHold = 2f,
+        };
+    }
+
+    // The card's body fades to black over its art, text, and icons
+    public static CharCardVfx CharCard()
+    {
+        return new CharCardVfx();
+    }
+
+    // The card burns: a fire brushstroke flurry over it while it chars black underneath
+    public static ParallelVfx FireSacrifice()
+    {
+        return new ParallelVfx(FireBrushStrokes(), CharCard());
+    }
+
     public static ParticleBurstVfx LightningSparks()
     {
         return new ParticleBurstVfx

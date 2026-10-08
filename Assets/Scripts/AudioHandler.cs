@@ -380,6 +380,12 @@ public class AudioHandler : MonoBehaviour
         }
     }
 
+    public void PlayOneShot(AudioClip clip, float volumeScale = 1f)
+    {
+        if (clip != null && SoundEffectSource != null)
+            SoundEffectSource.PlayOneShot(clip, userSoundEffectVolume * volumeScale);
+    }
+
     public void SetMusicVolume(float volume)
     {
         userMusicVolume = volume;

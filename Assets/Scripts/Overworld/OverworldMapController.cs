@@ -218,6 +218,7 @@ public class OverworldMapController : MonoBehaviour
     bool IsAccessibleNeighbor(OverworldMapNode target)
     {
         if (_currentNode == null) return false;
+        if (OverworldMapNode.DevMoveAnywhere) return target != _currentNode;
         if (target.Cleared) return false;
         if (target.IsStart && _clearedNodes.Count > 0) return false;
         return OverworldHexGrid.IsAheadAdjacent(_currentNode.Q, _currentNode.R, target.Q, target.R);
@@ -409,6 +410,7 @@ public class OverworldMapController : MonoBehaviour
 
     private bool CanMoveTo(OverworldMapNode target)
     {
+        if (OverworldMapNode.DevMoveAnywhere) return target != _currentNode;
         if (target.Cleared) return false;
         if (target.IsStart && _clearedNodes.Count > 0) return false;
         return OverworldHexGrid.IsAheadAdjacent(_currentNode.Q, _currentNode.R, target.Q, target.R);

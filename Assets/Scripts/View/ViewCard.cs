@@ -214,4 +214,18 @@ public class ViewCard : ViewTarget
         if (CardHighlightEffect == null)
             CardHighlightEffect = GetComponent<CardHighlightEffect>();
     }
+
+    [ContextMenu("Test VFX/Fire Brushstrokes")]
+    void TestFireBrushStrokes()
+    {
+        if (!Application.isPlaying) return;
+        VfxLibrary.FireBrushStrokes().Play(new VfxContext(null, this), null);
+    }
+
+    [ContextMenu("Test VFX/Fire Sacrifice (fire + char)")]
+    void TestFireSacrifice()
+    {
+        if (!Application.isPlaying) return;
+        VfxLibrary.FireSacrifice().Play(new VfxContext(null, this), null);
+    }
 }
