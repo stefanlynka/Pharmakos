@@ -20,6 +20,8 @@ public class ViewCardScroller : MonoBehaviour
 
     public float scrollIncrement = 5f;
     public float scrollSpeed = 5f;
+    // The mouse wheel only scrolls while the mouse is inside this region, in viewport space (0-1)
+    public Rect ScrollRegion = new Rect(0f, 0f, 1f, 1f);
     private float currentScrollOffset = 0f;
     private float desiredScrollOffset = 0f;
     private float maxScrollOffset = 0f;
@@ -27,6 +29,8 @@ public class ViewCardScroller : MonoBehaviour
     public void Load(List<Card> cards)
     {
         this.cards = cards;
+        currentScrollOffset = 0f;
+        desiredScrollOffset = 0f;
 
         CreateViewCards();
     }
@@ -47,7 +51,9 @@ public class ViewCardScroller : MonoBehaviour
 
             // Hide until layout and descriptive mode are applied (avoids one-frame flicker).
             viewCard.transform.localScale = Vector3.zero;
-            viewCard.transform.parent = this.transform;
+            viewCard.transform.SetParent(transform, false);
+            // Pooled cards keep whatever rotation they last had (e.g. fanned in a hand)
+            viewCard.transform.localRotation = Quaternion.identity;
             viewCard.SetHighlight(false);
             viewCard.SetDescriptiveMode(true);
             viewCards.Add(viewCard);
@@ -117,6 +123,7 @@ public class ViewCardScroller : MonoBehaviour
     {
         float scrollVector = Input.mouseScrollDelta.y;
         if (scrollVector == 0) return;
+        if (!IsMouseInScrollRegion()) return;
 
         if (scrollVector < 0)
         {
@@ -129,6 +136,15 @@ public class ViewCardScroller : MonoBehaviour
 
         desiredScrollOffset = Mathf.Clamp(desiredScrollOffset, 0, maxScrollOffset);
     }
+    private bool IsMouseInScrollRegion()
+    {
+        if (UnityEngine.Screen.width <= 0 || UnityEngine.Screen.height <= 0) return true;
+
+        Vector2 mouse = Input.mousePosition;
+        Vector2 viewport = new Vector2(mouse.x / UnityEngine.Screen.width, mouse.y / UnityEngine.Screen.height);
+        return ScrollRegion.Contains(viewport);
+    }
+
     private void RepositionCards()
     {
         if (CardWidth <= 0) return;

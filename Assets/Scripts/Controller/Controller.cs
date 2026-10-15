@@ -91,6 +91,7 @@ public class Controller : MonoBehaviour
     public ShopHandler ShopHandler;
 
     private StyxScreenHandler _styxScreenHandler;
+    private StyxHandler _styxHandler;
     private TrinketUnlockHandler _trinketUnlockHandler;
     private StyxTrinketSelectHandler _styxTrinketSelectHandler;
     private StatusScreenHandler _statusScreenHandler;
@@ -377,6 +378,10 @@ public class Controller : MonoBehaviour
         if (EventHandler != null)
             EventHandler.CleanupEventPresentation();
 
+        StyxHandler styxHandler = GetStyxHandler();
+        if (styxHandler != null && styxHandler.gameObject.activeInHierarchy)
+            styxHandler.EndStyx();
+
         ScreenHandler.Instance.HideScreen(ScreenName.Event, true);
         ScreenHandler.Instance.HideScreen(ScreenName.Styx, true);
         ScreenHandler.Instance.HideScreen(ScreenName.TrinketUnlock, true);
@@ -509,6 +514,9 @@ public class Controller : MonoBehaviour
             return;
         }
 
+        // Status stays unavailable for the whole crossing; returning to the overworld shows it again
+        HideStatusButton();
+
         ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
         {
             OverworldMapController.HideMap();
@@ -608,12 +616,29 @@ public class Controller : MonoBehaviour
         ScreenHandler.Instance.HideScreen(ScreenName.Blank, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.Start, true);
     }
+    // TESTING ONLY: starts the run with random rituals and trinkets already waiting at the Styx
+    void SeedStyxForTesting(int count)
+    {
+        List<Ritual> rituals = new List<Ritual>(ProgressionHandler.GetPossibleRitualRewards());
+        for (int i = 0; i < count && rituals.Count > 0; i++)
+        {
+            int index = MetaRNG.Next(0, rituals.Count);
+            StyxRunState.RecordRemovedRitual(rituals[index]);
+            rituals.RemoveAt(index);
+        }
+
+        foreach (Trinket trinket in ProgressionHandler.GetRandomShopTrinkets(count))
+            StyxRunState.RecordRemovedTrinket(trinket);
+    }
+
     public void StartGame()
     {
         RunHeartStrings = Player.StartingHeartStrings;
         StyxRunState.Reset();
         EncounteredEventsThisRun.Clear();
         FirstTimeSetup();
+        // TESTING ONLY: remove this line and SeedStyxForTesting above once the Styx encounter is done
+        SeedStyxForTesting(7);
 
         if (!IsTestChamber && OverworldMapController != null)
         {
@@ -1023,6 +1048,7 @@ public class Controller : MonoBehaviour
         HumanPlayerDetails.MinorRituals[0] = newMinor;
         StyxRunState.RecordRemovedRitual(oldMajor);
         StyxRunState.RecordRemovedRitual(oldMinor);
+        StyxRunState.HasCrossed = true;
 
         RefreshCanSacrificeForHeartstrings();
     }
@@ -1231,6 +1257,13 @@ public class Controller : MonoBehaviour
         if (_styxScreenHandler == null)
             _styxScreenHandler = FindObjectOfType<StyxScreenHandler>(true);
         return _styxScreenHandler;
+    }
+
+    private StyxHandler GetStyxHandler()
+    {
+        if (_styxHandler == null)
+            _styxHandler = FindObjectOfType<StyxHandler>(true);
+        return _styxHandler;
     }
 
     private TrinketUnlockHandler GetTrinketUnlockHandler()

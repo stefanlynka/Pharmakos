@@ -38,6 +38,14 @@ public class BrushStrokeFlurryVfx : VfxEffect
     public Vector2 AreaCenter = Vector2.zero;
     // Approximate size of one stroke's painted footprint; the area is split into cells of about this size for even coverage
     public Vector2 CoverageCellSize = new Vector2(1.3f, 1.9f);
+    // When non-zero, strokes only spawn in the part of the area a front sweeping in this direction (anchor's local XY)
+    // has opened; it crosses the whole area over SweepDuration. PeakRate is then the rate for the whole area, scaled
+    // down by the fraction that is open.
+    public Vector2 SweepDirection = Vector2.zero;
+    public float SweepDuration = 1f;
+    // Seconds after the start when a trailing front follows the first across the area (also over SweepDuration),
+    // closing it off behind so the area clears in the same direction. Negative keeps the area open once crossed.
+    public float SweepOutDelay = -1f;
     // Distance in front of the anchor's face (towards its local -Z)
     public float Lift = 0.5f;
 
@@ -177,6 +185,8 @@ public class BrushStrokeFlurryVfx : VfxEffect
         private readonly int columns;
         private readonly int rows;
         private readonly int[] strokesPerCell;
+        // 0 for cells on the sweep's starting edge up to 1 on the far edge; null when not sweeping
+        private readonly float[] cellSweepPosition;
         private readonly List<int> candidateCells = new List<int>();
 
         private readonly List<Stroke> activeStrokes = new List<Stroke>();
@@ -202,6 +212,29 @@ public class BrushStrokeFlurryVfx : VfxEffect
             rows = CellCount(areaSize.y, settings.CoverageCellSize.y);
             cellSize = new Vector2(areaSize.x / columns, areaSize.y / rows);
             strokesPerCell = new int[columns * rows];
+            cellSweepPosition = BuildSweepPositions(settings.SweepDirection);
+        }
+
+        private float[] BuildSweepPositions(Vector2 direction)
+        {
+            if (direction.sqrMagnitude <= 0f) return null;
+            direction.Normalize();
+
+            float[] positions = new float[strokesPerCell.Length];
+            float min = float.MaxValue;
+            float max = float.MinValue;
+            for (int i = 0; i < positions.Length; i++)
+            {
+                Vector2 cellCenter = new Vector2((i % columns + 0.5f) * cellSize.x, (i / columns + 0.5f) * cellSize.y);
+                positions[i] = Vector2.Dot(cellCenter, direction);
+                min = Mathf.Min(min, positions[i]);
+                max = Mathf.Max(max, positions[i]);
+            }
+
+            float range = max - min;
+            for (int i = 0; i < positions.Length; i++)
+                positions[i] = range > 0f ? (positions[i] - min) / range : 0f;
+            return positions;
         }
 
         private static int CellCount(float extent, float cell)
@@ -226,11 +259,14 @@ public class BrushStrokeFlurryVfx : VfxEffect
             if (elapsed < settings.Duration && settings.Duration > 0f)
             {
                 float rate = settings.PeakRate * Mathf.Max(0f, settings.RateOverTime.Evaluate(elapsed / settings.Duration));
+                if (cellSweepPosition != null)
+                    rate *= OpenCellCount(elapsed) / (float)strokesPerCell.Length;
+
                 spawnBudget += rate * deltaTime;
                 while (spawnBudget >= 1f)
                 {
                     spawnBudget -= 1f;
-                    Spawn(elapsed);
+                    if (!Spawn(elapsed)) spawnBudget = 0f;
                 }
             }
 
@@ -266,9 +302,10 @@ public class BrushStrokeFlurryVfx : VfxEffect
             return BrushStroke.EncodeState(reveal, erase, stroke.NoiseSeed, 1f);
         }
 
-        private void Spawn(float time)
+        private bool Spawn(float time)
         {
-            int cell = PickLeastCoveredCell();
+            int cell = PickLeastCoveredCell(time);
+            if (cell < 0) return false;
             strokesPerCell[cell]++;
 
             int column = cell % columns;
@@ -300,14 +337,36 @@ public class BrushStrokeFlurryVfx : VfxEffect
             };
             strokeRenderer.color = EvaluateStroke(stroke, 0f);
             activeStrokes.Add(stroke);
+            return true;
         }
 
-        private int PickLeastCoveredCell()
+        // Whether the sweep has opened this cell (and its trailing front hasn't closed it yet) at this time
+        private bool IsCellOpen(int cell, float time)
+        {
+            if (cellSweepPosition == null) return true;
+
+            float sweepDuration = Mathf.Max(0.0001f, settings.SweepDuration);
+            if (cellSweepPosition[cell] > time / sweepDuration) return false;
+            if (settings.SweepOutDelay >= 0f && cellSweepPosition[cell] < (time - settings.SweepOutDelay) / sweepDuration) return false;
+            return true;
+        }
+
+        private int OpenCellCount(float time)
+        {
+            int open = 0;
+            for (int i = 0; i < strokesPerCell.Length; i++)
+                if (IsCellOpen(i, time)) open++;
+            return open;
+        }
+
+        private int PickLeastCoveredCell(float time)
         {
             int fewest = int.MaxValue;
             candidateCells.Clear();
             for (int i = 0; i < strokesPerCell.Length; i++)
             {
+                if (!IsCellOpen(i, time)) continue;
+
                 if (strokesPerCell[i] < fewest)
                 {
                     fewest = strokesPerCell[i];
@@ -315,6 +374,7 @@ public class BrushStrokeFlurryVfx : VfxEffect
                 }
                 if (strokesPerCell[i] == fewest) candidateCells.Add(i);
             }
+            if (candidateCells.Count == 0) return -1;
             return candidateCells[UnityEngine.Random.Range(0, candidateCells.Count)];
         }
 

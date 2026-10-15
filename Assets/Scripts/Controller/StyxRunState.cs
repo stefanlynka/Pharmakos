@@ -7,17 +7,20 @@ using System.Collections.Generic;
 /// </summary>
 public class StyxRunState
 {
-    public const int StyxBaseDeckSize = 20;
+    public const int StyxBaseDeckSize = 30;
 
     public List<Card> RemovedCards = new List<Card>();
     public List<Ritual> RemovedRituals = new List<Ritual>();
     public List<Trinket> RemovedTrinkets = new List<Trinket>();
+    // Set once the player has crossed the Styx this run
+    public bool HasCrossed;
 
     public void Reset()
     {
         RemovedCards.Clear();
         RemovedRituals.Clear();
         RemovedTrinkets.Clear();
+        HasCrossed = false;
     }
 
     public void RecordRemovedCard(Card card)

@@ -1,180 +1,145 @@
-using System.Collections.Generic;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// The River Styx node screen. Replaces the player's deck with their Styx deck,
-/// replaces their trinkets with the trinkets removed during the run, and lets them
-/// choose up to two removed rituals (first pick = Major, second pick = Minor).
-/// The static layout is authored in the scene under the StyxScreen GameObject;
-/// ritual rows and trinket entries are cloned from inactive scene templates.
-/// The 3D card grid lives in the StyxArea.
+/// UI for the River Styx node: the instruction text at the top and the single button at the bottom, which crosses
+/// the Styx first and then continues back to the overworld. The 3D area and the exchange itself are run by StyxHandler.
+/// Built and wired by Pharmakos/Setup Styx Area.
 /// </summary>
 public class StyxScreenHandler : MonoBehaviour
 {
-    [Tooltip("Root of the 3D area that shows the Styx deck (activated while the screen is open).")]
-    public GameObject StyxArea;
-    [Tooltip("Card grid inside the StyxArea used to display the Styx deck.")]
-    public ViewCardScroller CardScroller;
+    public StyxHandler StyxHandler;
 
     [Header("Scene References")]
-    public RectTransform RitualListRoot;
-    public RectTransform TrinketListRoot;
+    public TextMeshProUGUI InstructionText;
+    public CanvasGroup InstructionGroup;
     public Button ContinueButton;
-    public TextMeshProUGUI EmptyRitualsText;
-    public TextMeshProUGUI EmptyTrinketsText;
+    public TextMeshProUGUI ContinueButtonLabel;
 
-    [Header("Templates (inactive in scene, cloned at runtime)")]
-    public StatusRowView RitualRowTemplate;
-    public StatusRowView TrinketEntryTemplate;
+    [Header("Text")]
+    [TextArea] public string OfferingText = "You must leave what you have taken,\nand take what you have left.";
+    [TextArea] public string ChoosingText = "This is what you will bring to the Final Boss.\nChoose up to two rituals to take with you.";
+    public string CrossButtonText = "Cross the Styx";
+    public string ContinueButtonText = "Continue";
 
-    [Header("Row Colors")]
-    public Color RowColor = new Color(0.14f, 0.16f, 0.22f, 0.9f);
-    public Color RowSelectedColor = new Color(0.62f, 0.5f, 0.16f, 1f);
+    public float TextFadeDuration = 0.4f;
 
-    const float RitualRowSpacing = 12f;
-
-    class RitualEntry
-    {
-        public Ritual Ritual;
-        public Image Background;
-        public TextMeshProUGUI SlotLabel;
-    }
-
-    readonly List<RitualEntry> ritualEntries = new List<RitualEntry>();
-    readonly List<Ritual> selectedRituals = new List<Ritual>();
+    Coroutine textFade;
 
     void Awake()
     {
-        ContinueButton.onClick.AddListener(Continue);
+        if (ContinueButton != null)
+            ContinueButton.onClick.AddListener(ButtonClicked);
     }
 
     public void BeginStyx()
     {
-        if (StyxArea != null) StyxArea.SetActive(true);
+        if (StyxHandler == null)
+            StyxHandler = FindObjectOfType<StyxHandler>(true);
 
-        selectedRituals.Clear();
-
-        if (CardScroller != null)
-            CardScroller.Load(Controller.Instance.StyxRunState.GetStyxDeck());
-
-        PopulateRituals();
-        PopulateTrinkets();
-    }
-
-    void PopulateRituals()
-    {
-        StyxUI.Clear(RitualListRoot);
-        ritualEntries.Clear();
-
-        List<Ritual> removedRituals = Controller.Instance.StyxRunState.RemovedRituals;
-        EmptyRitualsText.gameObject.SetActive(removedRituals.Count == 0);
-        if (removedRituals.Count == 0) return;
-
-        float rowHeight = ((RectTransform)RitualRowTemplate.transform).sizeDelta.y;
-        float y = -rowHeight * 0.5f;
-
-        foreach (Ritual ritual in removedRituals)
+        if (StyxHandler == null)
         {
-            StatusRowView row = CloneTemplate(RitualRowTemplate, RitualListRoot);
-            row.gameObject.name = "Ritual_" + ritual.Name;
-
-            RectTransform rowRect = (RectTransform)row.transform;
-            rowRect.anchoredPosition = new Vector2(rowRect.anchoredPosition.x, y);
-
-            row.NameText.text = ritual.Name;
-            row.DescriptionText.text = ritual.Description;
-
-            RitualEntry entry = new RitualEntry
-            {
-                Ritual = ritual,
-                Background = row.Background,
-                SlotLabel = row.TagText
-            };
-            row.RowButton.onClick.AddListener(() => RitualClicked(entry));
-
-            ritualEntries.Add(entry);
-            y -= rowHeight + RitualRowSpacing;
+            Debug.LogError("StyxScreenHandler: no StyxHandler found in the scene.");
+            Controller.Instance.StartNextLevel();
+            return;
         }
 
-        RefreshRitualVisuals();
+        StyxHandler.BeginStyx();
     }
 
-    void RitualClicked(RitualEntry entry)
+    public void ShowOffering()
     {
-        if (selectedRituals.Contains(entry.Ritual))
+        SetInstruction(OfferingText, instant: true);
+        SetButton(CrossButtonText, true);
+    }
+
+    public void ShowFlooding()
+    {
+        FadeInstruction(0f);
+        SetButton(null, false);
+    }
+
+    public void ShowChoosing()
+    {
+        SetInstruction(ChoosingText, instant: false);
+        SetButton(ContinueButtonText, true);
+    }
+
+    public void ShowLeaving()
+    {
+        if (ContinueButton != null) ContinueButton.interactable = false;
+    }
+
+    void ButtonClicked()
+    {
+        if (StyxHandler == null) return;
+
+        if (StyxHandler.Phase == StyxHandler.StyxPhase.Offering)
+            StyxHandler.CrossStyx();
+        else if (StyxHandler.Phase == StyxHandler.StyxPhase.Choosing)
+            StyxHandler.Continue();
+    }
+
+    void SetButton(string label, bool visible)
+    {
+        if (ContinueButton == null) return;
+
+        if (label != null && ContinueButtonLabel != null)
+            ContinueButtonLabel.text = label;
+
+        ContinueButton.interactable = visible;
+        ContinueButton.gameObject.SetActive(visible);
+    }
+
+    void SetInstruction(string text, bool instant)
+    {
+        if (InstructionText != null)
+            InstructionText.text = text;
+
+        if (instant)
         {
-            selectedRituals.Remove(entry.Ritual);
+            StopTextFade();
+            if (InstructionGroup != null) InstructionGroup.alpha = 1f;
         }
         else
         {
-            if (selectedRituals.Count >= 2)
-                selectedRituals.RemoveAt(0);
-            selectedRituals.Add(entry.Ritual);
+            FadeInstruction(1f);
         }
-
-        RefreshRitualVisuals();
     }
 
-    void RefreshRitualVisuals()
+    void FadeInstruction(float targetAlpha)
     {
-        foreach (RitualEntry entry in ritualEntries)
+        if (InstructionGroup == null) return;
+
+        StopTextFade();
+        if (!isActiveAndEnabled || TextFadeDuration <= 0f)
         {
-            int index = selectedRituals.IndexOf(entry.Ritual);
-            bool selected = index >= 0;
-            entry.Background.color = selected ? RowSelectedColor : RowColor;
-            entry.SlotLabel.text = index == 0 ? "Major" : index == 1 ? "Minor" : "";
+            InstructionGroup.alpha = targetAlpha;
+            return;
         }
+        textFade = StartCoroutine(FadeInstructionRoutine(targetAlpha));
     }
 
-    void PopulateTrinkets()
+    IEnumerator FadeInstructionRoutine(float targetAlpha)
     {
-        StyxUI.Clear(TrinketListRoot);
-
-        List<Trinket> removedTrinkets = Controller.Instance.StyxRunState.RemovedTrinkets;
-        EmptyTrinketsText.gameObject.SetActive(removedTrinkets.Count == 0);
-        if (removedTrinkets.Count == 0) return;
-
-        RectTransform templateRect = (RectTransform)TrinketEntryTemplate.transform;
-        float x = templateRect.anchoredPosition.x;
-        float step = templateRect.sizeDelta.x;
-
-        foreach (Trinket trinket in removedTrinkets)
+        float startAlpha = InstructionGroup.alpha;
+        float elapsed = 0f;
+        while (elapsed < TextFadeDuration)
         {
-            StatusRowView entry = CloneTemplate(TrinketEntryTemplate, TrinketListRoot);
-            entry.gameObject.name = "Trinket_" + trinket.Name;
-
-            RectTransform rect = (RectTransform)entry.transform;
-            rect.anchoredPosition = new Vector2(x, rect.anchoredPosition.y);
-
-            PlayerEffectDescriptionData descriptionData = trinket.GetDescriptionData();
-            Sprite icon = descriptionData != null ? descriptionData.Icon : null;
-            if (icon != null)
-                entry.Icon.sprite = icon;
-            else
-                entry.Icon.color = StyxUI.IconFallbackColor;
-
-            entry.NameText.text = trinket.Name;
-
-            x += step;
+            elapsed += Time.deltaTime;
+            InstructionGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, elapsed / TextFadeDuration);
+            yield return null;
         }
+        InstructionGroup.alpha = targetAlpha;
+        textFade = null;
     }
 
-    static StatusRowView CloneTemplate(StatusRowView template, RectTransform parent)
+    void StopTextFade()
     {
-        StatusRowView clone = Object.Instantiate(template, parent);
-        clone.gameObject.SetActive(true);
-        return clone;
-    }
-
-    public void Continue()
-    {
-        Controller.Instance.ApplyStyxExchange(new List<Ritual>(selectedRituals));
-
-        if (CardScroller != null) CardScroller.Exit();
-        if (StyxArea != null) StyxArea.SetActive(false);
-
-        Controller.Instance.StartNextLevel();
+        if (textFade == null) return;
+        StopCoroutine(textFade);
+        textFade = null;
     }
 }

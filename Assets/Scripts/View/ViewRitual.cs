@@ -34,6 +34,8 @@ public class ViewRitual : ViewTarget
     [SerializeField] float flareUpDuration = 0.18f;
     [SerializeField] float flareSettleDuration = 0.5f;
     [SerializeField] float dimDuration = 0.35f;
+    [Tooltip("Fixed intensity for rituals shown outside combat (rewards, Styx, play history).")]
+    [SerializeField] float displayIntensity = 50f;
 
     [Header("Hover")]
     [SerializeField] float hoverScaleMultiplier = 1.1f;
@@ -97,14 +99,14 @@ public class ViewRitual : ViewTarget
         defaultLocalScale = transform.localScale;
         EnsureMeshHighlight();
         SetHighlight(false);
-        ApplySpotlight(UnusableSpotlight());
+        ApplySpotlight(RestingSpotlight());
     }
 
     void OnEnable()
     {
         spotlightIsUsable = false;
         spotlightPhase = SpotlightPhase.Hold;
-        ApplySpotlight(UnusableSpotlight());
+        ApplySpotlight(RestingSpotlight());
     }
 
     void LateUpdate()
@@ -266,6 +268,30 @@ public class ViewRitual : ViewTarget
         };
     }
 
+    SpotlightProfile DisplaySpotlight()
+    {
+        SpotlightProfile profile = UnusableSpotlight();
+        profile.Intensity = displayIntensity;
+        return profile;
+    }
+
+    SpotlightProfile RestingSpotlight()
+    {
+        return IsCombatRitual() ? UnusableSpotlight() : DisplaySpotlight();
+    }
+
+    // Only the rituals on a player's board react to offerings; any other copy is just on display
+    bool IsCombatRitual()
+    {
+        View view = View.Instance;
+        return view != null && (IsRitualOf(view.Player1) || IsRitualOf(view.Player2));
+    }
+
+    bool IsRitualOf(ViewPlayer viewPlayer)
+    {
+        return viewPlayer != null && (viewPlayer.ViewMajorRitual == this || viewPlayer.ViewMinorRitual == this);
+    }
+
     SpotlightProfile CurrentSpotlight()
     {
         if (Spotlight == null)
@@ -293,6 +319,18 @@ public class ViewRitual : ViewTarget
     {
         if (Spotlight == null)
             return;
+
+        if (!IsCombatRitual())
+        {
+            if (spotlightIsUsable)
+            {
+                spotlightIsUsable = false;
+                NotifyRitualFlame(false);
+            }
+            spotlightPhase = SpotlightPhase.Hold;
+            ApplySpotlight(DisplaySpotlight());
+            return;
+        }
 
         bool usable = IsAffordableByPlayer();
         if (usable != spotlightIsUsable)

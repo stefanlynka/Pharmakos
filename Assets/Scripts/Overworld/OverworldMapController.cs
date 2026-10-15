@@ -242,7 +242,7 @@ public class OverworldMapController : MonoBehaviour
     {
         var cam = GetOverworldCamera();
         OverworldMapNode newHover = null;
-        if (cam != null)
+        if (cam != null && !ContentScrollView.BlocksGameInput)
         {
             var ray = cam.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out var hit, 1000f))
@@ -328,7 +328,7 @@ public class OverworldMapController : MonoBehaviour
 
         UpdateAccessibleHexHover();
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && !ContentScrollView.BlocksGameInput)
         {
             var cam = GetOverworldCamera();
             if (cam == null) return;

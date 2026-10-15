@@ -130,6 +130,34 @@ public static class VfxLibrary
         };
     }
 
+    // Water brushstrokes flood the anchor's area from right to left, then drain away the same way. Strokes are short-lived
+    // and keep being replaced; the flood moves because of where they're allowed to spawn. The whole area is covered from
+    // about SweepDuration + PaintInDuration until SweepOutDelay.
+    // Callers covering a large area should set AreaSize, CoverageCellSize, scale and PeakRate to match it.
+    public static BrushStrokeFlurryVfx WaterFlood()
+    {
+        BrushStrokeFlurryVfx flood = new BrushStrokeFlurryVfx
+        {
+            SpriteFolder = "Images/Particles/Water",
+            PeakRate = 280f,
+            SweepDirection = Vector2.left,
+            SweepDuration = 1.5f,
+            SweepOutDelay = 2f,
+            PaintInDuration = 0.15f,
+            HoldDuration = 0.35f,
+            WipeOutDuration = 0.2f,
+            ScaleMin = 0.6f,
+            ScaleMax = 1f,
+            // The water sprites are vertical: turned a quarter, they lie horizontally and paint/wipe right to left
+            StrokeAngle = 90f,
+            AngleJitter = 8f,
+            SortingOrder = 10000,
+        };
+        flood.Duration = flood.SweepOutDelay + flood.SweepDuration;
+        flood.QueueHold = flood.Duration + flood.StrokeLifetime;
+        return flood;
+    }
+
     // The card's body fades to black over its art, text, and icons
     public static CharCardVfx CharCard()
     {

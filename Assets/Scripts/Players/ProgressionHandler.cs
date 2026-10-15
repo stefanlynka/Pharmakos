@@ -238,6 +238,27 @@ public class ProgressionHandler
                     new Blessing(),
                     new ThrowStone(),
                     new Scry(),
+
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+                    new Scry(),
+
                 }
             }
         };
