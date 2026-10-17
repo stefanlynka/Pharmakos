@@ -74,7 +74,7 @@ public class StatusScreenHandler : MonoBehaviour
     // The screen stays active while hidden, so clicks only count while it's open
     void Update()
     {
-        if (!isOpen || !canSelectForSacrifice || !Input.GetMouseButtonDown(0))
+        if (!isOpen || !canSelectForSacrifice || !Input.GetMouseButtonDown(0) || TutorialPresenter.IsBlocking)
             return;
 
         Ritual ritual = ContentScrollView.GetRitualUnderMouse();

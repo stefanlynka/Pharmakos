@@ -127,7 +127,7 @@ public class View : MonoBehaviour
     }
     private void LoadMusic()
     {
-        AudioHandler.PlayMusic(Controller.Instance.ProgressionHandler.CurrentEnemy);
+        AudioHandler.PlayMusic(Controller.Instance.ProgressionHandler.GetPresentedDeck(Controller.Instance.ProgressionHandler.CurrentEnemy));
     }
 
 
@@ -150,6 +150,7 @@ public class View : MonoBehaviour
     public void PlayerUpdate()
     {
         bool useCombatSelection = !ContentScrollView.BlocksGameInput
+            && !TutorialPresenter.IsBlocking
             && (MenuSelectionHandler == null || !MenuSelectionHandler.IsActive);
         if (useCombatSelection)
             SelectionHandler.UpdateSelections();
@@ -165,7 +166,7 @@ public class View : MonoBehaviour
         if (Controller.Instance == null || !Controller.Instance.GameRunning)
             return;
 
-        if (ContentScrollView.BlocksGameInput)
+        if (ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking)
             return;
 
         if (MenuSelectionHandler != null && MenuSelectionHandler.IsActive)
@@ -183,7 +184,7 @@ public class View : MonoBehaviour
 
     private void LoadBackground()
     {
-        if (!backgroundNamesByDeckName.TryGetValue(Controller.Instance.ProgressionHandler.CurrentEnemy, out string materialBaseName))
+        if (!backgroundNamesByDeckName.TryGetValue(Controller.Instance.ProgressionHandler.GetPresentedDeck(Controller.Instance.ProgressionHandler.CurrentEnemy), out string materialBaseName))
         {
             Debug.LogError("No background found for current enemy: " + Controller.Instance.ProgressionHandler.CurrentEnemy);
             return;

@@ -83,6 +83,7 @@ public class OverworldMapController : MonoBehaviour
     /// </summary>
     public void SetupOverworldForNewRun()
     {
+        SetTutorialNodesActive(false);
         _allNodes = Grid != null ? Grid.GetAllNodes() : new OverworldMapNode[0];
         _currentNode = FindStartNode();
         _clearedNodes.Clear();
@@ -99,6 +100,54 @@ public class OverworldMapController : MonoBehaviour
             _currentNode.ApplyEncounter(EncounterType.None);
         else
             Debug.LogError("Overworld: No node with IsStart=true found.");
+
+        foreach (var node in _allNodes)
+        {
+            if (node == null) continue;
+            node.Cleared = false;
+        }
+
+        RefreshHexInteractionLayers();
+        ResetHexVisualScales();
+        RefreshPlayerLyre();
+    }
+
+    /// <summary>
+    /// Tutorial prologue: nodes below the hub are active, the player stands on the blank hex,
+    /// and the 0,0 hub is the tutorial market.
+    /// </summary>
+    public void SetupOverworldForTutorialRun()
+    {
+        RestoreAuthoredTutorialTypes();
+        SetTutorialNodesActive(true);
+        _allNodes = Grid != null ? Grid.GetAllNodes() : new OverworldMapNode[0];
+        _clearedNodes.Clear();
+
+        _currentNode = null;
+        foreach (var node in _allNodes)
+        {
+            if (node == null || node.R >= 0 || node.EncounterType != EncounterType.None)
+                continue;
+            if (_currentNode == null || node.R < _currentNode.R)
+                _currentNode = node;
+        }
+
+        if (_currentNode == null)
+            Debug.LogError("Overworld: No blank tutorial start node was found.");
+
+        foreach (var node in _allNodes)
+        {
+            if (node != null && node.Q == 0 && node.R == 0)
+                node.EncounterType = EncounterType.TutorialMarket;
+        }
+
+        var nodesToAssign = new List<OverworldMapNode>(_allNodes.Length);
+        foreach (var node in _allNodes)
+        {
+            if (node == null || node == _currentNode) continue;
+            nodesToAssign.Add(node);
+        }
+        OverworldMapNode.AssignEncountersByFloorRules(nodesToAssign.ToArray());
 
         foreach (var node in _allNodes)
         {
@@ -138,7 +187,7 @@ public class OverworldMapController : MonoBehaviour
             }
         }
 
-        if (_currentNode != null)
+        if (_currentNode != null && (_currentNode.Cleared || _currentNode.EncounterType == EncounterType.None))
             _currentNode.ApplyEncounter(EncounterType.None);
 
         UpdatePlayerMarker();
@@ -148,6 +197,7 @@ public class OverworldMapController : MonoBehaviour
         PositionSideLightsForCurrentRow();
         SetLights(true);
         RefreshPlayerLyre();
+        TutorialDirector.Raise(TutorialTrigger.OverworldShown);
     }
 
     public void HideMap()
@@ -218,7 +268,14 @@ public class OverworldMapController : MonoBehaviour
     bool IsAccessibleNeighbor(OverworldMapNode target)
     {
         if (_currentNode == null) return false;
-        if (OverworldMapNode.DevMoveAnywhere) return target != _currentNode;
+        if (Controller.Instance != null
+            && Controller.Instance.IsTutorialRun
+            && !_currentNode.Cleared
+            && _currentNode.EncounterType != EncounterType.None)
+            return false;
+        if (OverworldMapNode.DevMoveAnywhere
+            && (Controller.Instance == null || !Controller.Instance.IsTutorialRun))
+            return target != _currentNode;
         if (target.Cleared) return false;
         if (target.IsStart && _clearedNodes.Count > 0) return false;
         return OverworldHexGrid.IsAheadAdjacent(_currentNode.Q, _currentNode.R, target.Q, target.R);
@@ -242,7 +299,7 @@ public class OverworldMapController : MonoBehaviour
     {
         var cam = GetOverworldCamera();
         OverworldMapNode newHover = null;
-        if (cam != null && !ContentScrollView.BlocksGameInput)
+        if (cam != null && !ContentScrollView.BlocksGameInput && !TutorialPresenter.IsBlocking)
         {
             var ray = cam.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out var hit, 1000f))
@@ -321,6 +378,7 @@ public class OverworldMapController : MonoBehaviour
     private void Update()
     {
         if (!IsActive) return;
+        if (TutorialPresenter.IsBlocking) return;
 
         UpdateOverworldCamera();
 
@@ -328,20 +386,23 @@ public class OverworldMapController : MonoBehaviour
 
         UpdateAccessibleHexHover();
 
-        if (Input.GetMouseButtonDown(0) && !ContentScrollView.BlocksGameInput)
+        if (Input.GetMouseButtonDown(0) && !ContentScrollView.BlocksGameInput && !TutorialPresenter.IsBlocking)
         {
             var cam = GetOverworldCamera();
             if (cam == null) return;
 
             var ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out var hit, 1000f))
+            RaycastHit[] hits = Physics.RaycastAll(ray, 1000f);
+            OverworldMapNode node = null;
+            for (int i = 0; i < hits.Length; i++)
             {
-                var node = hit.collider.GetComponentInParent<OverworldMapNode>();
-                if (node != null && CanMoveTo(node))
-                {
-                    TryEnterNode(node);
-                }
+                node = hits[i].collider.GetComponentInParent<OverworldMapNode>();
+                if (node != null)
+                    break;
             }
+
+            if (node != null && CanMoveTo(node))
+                TryEnterNode(node);
         }
     }
 
@@ -408,9 +469,48 @@ public class OverworldMapController : MonoBehaviour
         t.localPosition = local;
     }
 
+    bool UseFreeMove()
+    {
+        return OverworldMapNode.DevMoveAnywhere
+            && (Controller.Instance == null || !Controller.Instance.IsTutorialRun);
+    }
+
+    void SetTutorialNodesActive(bool active)
+    {
+        if (Grid == null) return;
+
+        OverworldMapNode[] nodes = Grid.GetComponentsInChildren<OverworldMapNode>(true);
+        foreach (var node in nodes)
+        {
+            if (node == null || node.R >= 0) continue;
+            node.gameObject.SetActive(active);
+        }
+    }
+
+    void RestoreAuthoredTutorialTypes()
+    {
+        if (Grid == null) return;
+
+        OverworldMapNode[] nodes = Grid.GetComponentsInChildren<OverworldMapNode>(true);
+        foreach (var node in nodes)
+        {
+            if (node != null && OverworldEncounters.IsTutorial(node.AuthoredTutorialType))
+                node.EncounterType = node.AuthoredTutorialType;
+        }
+    }
+
     private bool CanMoveTo(OverworldMapNode target)
     {
-        if (OverworldMapNode.DevMoveAnywhere) return target != _currentNode;
+        if (target == null || _currentNode == null) return false;
+
+        if (Controller.Instance != null && Controller.Instance.IsTutorialRun)
+        {
+            bool standingOnEncounter = !_currentNode.Cleared && _currentNode.EncounterType != EncounterType.None;
+            if (standingOnEncounter)
+                return target == _currentNode;
+        }
+
+        if (UseFreeMove()) return target != _currentNode;
         if (target.Cleared) return false;
         if (target.IsStart && _clearedNodes.Count > 0) return false;
         return OverworldHexGrid.IsAheadAdjacent(_currentNode.Q, _currentNode.R, target.Q, target.R);
@@ -421,7 +521,7 @@ public class OverworldMapController : MonoBehaviour
         if (Controller.Instance == null) return;
         if (Controller.Instance.IsTestChamber) return;
 
-        if (node.IsStart && _clearedNodes.Count == 0)
+        if (node.IsStart && _clearedNodes.Count == 0 && node.EncounterType == EncounterType.None)
         {
             Debug.Log("Already at start.");
             return;

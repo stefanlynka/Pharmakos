@@ -29,6 +29,10 @@ public class OverworldMapNode : MonoBehaviour
         { EncounterType.BossGate, new List<string> { "OverworldHex", "Purple", "Purple" } },
         { EncounterType.BossThrone, new List<string> { "OverworldHex", "Black", "Black" } },
         { EncounterType.Styx, new List<string> { "OverworldHex", "Blue", "Blue" } },
+        { EncounterType.TutorialCombat1, new List<string> { "OverworldHex", "Red", "Red" } },
+        { EncounterType.TutorialCombat2, new List<string> { "OverworldHex", "Red", "Red" } },
+        { EncounterType.TutorialTemple, new List<string> { "OverworldHex", "White", "White" } },
+        { EncounterType.TutorialMarket, new List<string> { "OverworldHex", "Yellow", "Yellow" } },
     };
 
     [Tooltip("Axial hex coordinates. Use context menu to sync from position.")]
@@ -49,6 +53,9 @@ public class OverworldMapNode : MonoBehaviour
     private OverworldHexGrid _grid;
 
     public EncounterType EncounterType;
+
+    [HideInInspector]
+    public EncounterType AuthoredTutorialType;
 
     public OverworldHexGrid Grid
     {
@@ -110,6 +117,13 @@ public class OverworldMapNode : MonoBehaviour
             case EncounterType.BossGate:
             case EncounterType.BossThrone:
                 return "Boss";
+            case EncounterType.TutorialCombat1:
+            case EncounterType.TutorialCombat2:
+                return "Combat";
+            case EncounterType.TutorialTemple:
+                return "Temple";
+            case EncounterType.TutorialMarket:
+                return "Market";
             default:
                 return type.ToString();
         }
@@ -117,6 +131,11 @@ public class OverworldMapNode : MonoBehaviour
 
     public void ApplyEncounter(EncounterType type)
     {
+        if (OverworldEncounters.IsTutorial(type))
+            AuthoredTutorialType = type;
+        else if (OverworldEncounters.IsTutorial(EncounterType) && AuthoredTutorialType == EncounterType.None)
+            AuthoredTutorialType = EncounterType;
+
         EncounterType = type;
         string key = GetMeshKeyForEncounter(type);
 
@@ -327,10 +346,50 @@ public class OverworldMapNode : MonoBehaviour
         box.center = new Vector3(0, 0.5f, 0);
     }
 
+    [SerializeField, HideInInspector] int _validatedQ;
+    [SerializeField, HideInInspector] int _validatedR;
+    [SerializeField, HideInInspector] Vector3 _validatedLocalPosition;
+    [SerializeField, HideInInspector] bool _hasValidatedAxial;
+
     private void OnValidate()
     {
-        if (Grid != null)
+        if (Grid == null) return;
+
+        bool axialChanged = !_hasValidatedAxial || Q != _validatedQ || R != _validatedR;
+        bool positionChanged = _hasValidatedAxial && transform.localPosition != _validatedLocalPosition;
+
+        if (!axialChanged && !positionChanged)
+            return;
+
+        if (axialChanged)
             SnapPositionFromAxial();
+        else
+        {
+            CaptureAxialFromPosition();
+            SnapPositionFromAxial();
+        }
+
+        _validatedQ = Q;
+        _validatedR = R;
+        _validatedLocalPosition = transform.localPosition;
+        _hasValidatedAxial = true;
+    }
+}
+
+public static class OverworldEncounters
+{
+    public static bool IsTutorial(EncounterType type)
+    {
+        switch (type)
+        {
+            case EncounterType.TutorialCombat1:
+            case EncounterType.TutorialCombat2:
+            case EncounterType.TutorialTemple:
+            case EncounterType.TutorialMarket:
+                return true;
+            default:
+                return false;
+        }
     }
 }
 
@@ -345,4 +404,8 @@ public enum EncounterType
     BossGate,
     BossThrone,
     Styx,
+    TutorialCombat1,
+    TutorialCombat2,
+    TutorialTemple,
+    TutorialMarket,
 }

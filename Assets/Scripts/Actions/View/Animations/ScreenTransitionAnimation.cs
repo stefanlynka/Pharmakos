@@ -12,10 +12,12 @@ public class ScreenTransitionAnimation : AnimationAction
     public float FadeInDuration = -1f;
     private Action halfwayAction;
     private Action onFinishAction;
-    public ScreenTransitionAnimation(GameAction gameAction, Action halfwayAction = null, Action onFinishAction = null) : base(gameAction)
+    private Action onStartAction;
+    public ScreenTransitionAnimation(GameAction gameAction, Action halfwayAction = null, Action onFinishAction = null, Action onStartAction = null) : base(gameAction)
     {
         this.halfwayAction = halfwayAction;
         this.onFinishAction = onFinishAction;
+        this.onStartAction = onStartAction;
     }
 
     public override void Play(Action onFinish = null)
@@ -24,6 +26,8 @@ public class ScreenTransitionAnimation : AnimationAction
 
         if (FadeOutDuration < 0) FadeOutDuration = Screen.ScreenChangeDuration;
         if (FadeInDuration < 0) FadeInDuration = Screen.ScreenChangeDuration;
+
+        onStartAction?.Invoke();
 
         //Debug.LogWarning("Starting transition");
         ScreenHandler.Instance.ShowScreen(ScreenName.Blank, false, false);

@@ -1,0 +1,12 @@
+---
+description: Author Unity objects in the scene or a prefab, not at runtime
+alwaysApply: true
+---
+
+Screens, canvases, text, images, buttons, lights, cameras, and other editable Unity objects are created as scene objects or prefabs and wired through serialized fields.
+
+Do not build that hierarchy in Awake, Start, or a factory with new GameObject, AddComponent, or RectTransform setup. Runtime code fills in data, shows and hides objects, and spawns instances of an existing prefab.
+
+A large scene file is not a reason to generate the object in code. Create a prefab and place an instance.
+
+Spawn at runtime only for per-play instances of an authored prefab, such as a card or a combat effect.

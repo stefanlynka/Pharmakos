@@ -56,6 +56,12 @@ public class TempleScreenHandler : MonoBehaviour
         TempleHandler?.EndTemple();
 
         ScreenHandler.Instance.HideScreen(ScreenName.Temple, true);
-        Controller.Instance.GoToRitualRewardScreen();
+        if (Controller.Instance != null && Controller.Instance.IsTutorialRun)
+        {
+            var rewards = TutorialScript.TempleRitualRewards();
+            Controller.Instance.GoToRitualRewardScreen(rewards.top, rewards.bottom);
+        }
+        else
+            Controller.Instance.GoToRitualRewardScreen();
     }
 }

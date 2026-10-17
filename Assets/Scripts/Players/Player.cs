@@ -877,6 +877,10 @@ public class PlayerDetails
     public int CardsPerTurn = 5;
     public int GoldPerTurn = 3;
     public string PortraitName = "";
+    /// <summary>When set, portrait, background, music, and the fight title use this deck instead of <see cref="ProgressionHandler.DeckName"/>.</summary>
+    public ProgressionHandler.DeckName PresentationDeck = ProgressionHandler.DeckName.None;
+    /// <summary>Fight banner text. Empty uses the presented deck name.</summary>
+    public string FightDisplayName = "";
 
     // DeckBlueprint, Rituals, and more are Keyed on the enemy pool number so fights can scale in difficulty as the game progresses.
     public Dictionary<int, List<Card>> DeckBlueprint = new Dictionary<int, List<Card>>(); // Keyed on Pool

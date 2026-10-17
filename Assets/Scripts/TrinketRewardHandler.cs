@@ -1,70 +1,93 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class TrinketRewardHandler : MonoBehaviour
 {
     public List<ViewBuff> ViewBuffs = new List<ViewBuff>();
-    public ViewRitual MajorRitual;
-    public ViewRitual MinorRitual;
 
-    private List<Trinket> trinkets;
+    List<Trinket> trinkets = new List<Trinket>();
+    bool continuing;
 
     public void Load()
-    { 
-        // Load Trinkets
-        trinkets = Controller.Instance.ProgressionHandler.GetRandomTrinkets();
+    {
+        continuing = false;
+        trinkets = Controller.Instance.ProgressionHandler.GetRandomShopTrinkets(ViewBuffs.Count);
 
-        ViewBuffs[0].SetBuffData(trinkets[0].MyEffect, trinkets[0].GetDescriptionData());
-        ViewBuffs[1].SetBuffData(trinkets[1].MyEffect, trinkets[1].GetDescriptionData());
-        ViewBuffs[2].SetBuffData(trinkets[2].MyEffect, trinkets[2].GetDescriptionData());
-
-        foreach (ViewBuff viewBuff in ViewBuffs)
+        for (int i = 0; i < ViewBuffs.Count; i++)
         {
+            ViewBuff viewBuff = ViewBuffs[i];
+            if (viewBuff == null)
+                continue;
+
+            bool hasTrinket = i < trinkets.Count && trinkets[i] != null;
             viewBuff.SetHighlight(false);
+            viewBuff.SetVisible(hasTrinket);
+            if (!hasTrinket)
+            {
+                viewBuff.SetOnClick(null);
+                continue;
+            }
+
+            viewBuff.SetBuffData(trinkets[i].MyEffect, trinkets[i].GetDescriptionData());
             viewBuff.SetOnClick(ViewBuffClicked);
         }
 
-        ViewBuffs[0].SetHighlight(true);
-
-        // Load Rituals, just for reference
-        MajorRitual.Init(Controller.Instance.HumanPlayerDetails.MajorRituals[0]);
-        MinorRitual.Init(Controller.Instance.HumanPlayerDetails.MinorRituals[0]);
+        if (trinkets.Count > 0 && ViewBuffs.Count > 0 && ViewBuffs[0] != null)
+            ViewBuffs[0].SetHighlight(true);
     }
 
-    private Trinket GetSelectedTrinket()
+    Trinket GetSelectedTrinket()
     {
-        for (int i =0; i < 3; i++)
+        for (int i = 0; i < ViewBuffs.Count && i < trinkets.Count; i++)
         {
             ViewBuff viewBuff = ViewBuffs[i];
-            if (viewBuff.IsHighlighted()) return trinkets[i];
+            if (viewBuff != null && viewBuff.IsHighlighted())
+                return trinkets[i];
         }
 
-        return null;
+        return trinkets.Count > 0 ? trinkets[0] : null;
     }
 
     public void Continue()
     {
-        // Add trinket
-        Controller.Instance.AddTrinket(GetSelectedTrinket());
+        if (continuing)
+            return;
 
-        View.Instance.Clear();
+        continuing = true;
 
-        //Controller.Instance.StartNextLevel();
-        Controller.Instance.GoToCardGainRewardScreen();
+        Trinket selected = GetSelectedTrinket();
+        if (selected != null)
+            Controller.Instance.AddTrinket(selected.MakeBaseCopy());
+
+        Controller.Instance.ContinueFromTrinketReward();
+    }
+
+    public void Hide()
+    {
+        foreach (ViewBuff viewBuff in ViewBuffs)
+        {
+            if (viewBuff == null)
+                continue;
+
+            viewBuff.SetHighlight(false);
+            viewBuff.SetOnClick(null);
+            viewBuff.SetVisible(false);
+        }
+
         gameObject.SetActive(false);
     }
 
     public void ViewBuffClicked(ViewBuff clickedViewBuff)
     {
+        if (continuing || clickedViewBuff == null)
+            return;
+
         foreach (ViewBuff viewBuff in ViewBuffs)
         {
-            viewBuff.SetHighlight(false);
+            if (viewBuff == null)
+                continue;
 
-            if (viewBuff == clickedViewBuff)
-            {
-                viewBuff.SetHighlight(true);
-            }
+            viewBuff.SetHighlight(viewBuff == clickedViewBuff);
         }
     }
 }

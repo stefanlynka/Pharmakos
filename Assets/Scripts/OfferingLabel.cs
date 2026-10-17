@@ -105,7 +105,7 @@ public class OfferingLabel : MonoBehaviour
 
     void OnMouseEnter()
     {
-        if (ContentScrollView.BlocksGameInput)
+        if (ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking)
             return;
 
         ShowHoverSummary();
@@ -130,7 +130,7 @@ public class OfferingLabel : MonoBehaviour
 
     void ShowHoverSummary()
     {
-        if (ContentScrollView.BlocksGameInput)
+        if (ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking)
             return;
 
         if (string.IsNullOrEmpty(summaryDescription))

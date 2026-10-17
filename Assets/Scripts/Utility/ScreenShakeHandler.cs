@@ -5,7 +5,9 @@ public class ScreenShakeHandler : MonoBehaviour
 {
     private static ScreenShakeHandler instance;
     private Coroutine currentShakeCoroutine;
+    private Camera shakeCamera;
     private Vector3 originalCameraPosition;
+    private bool hasOriginalPosition;
 
     private void Awake()
     {
@@ -21,8 +23,8 @@ public class ScreenShakeHandler : MonoBehaviour
         }
     }
 
-    // Static function to shake the screen with intensity and duration
-    public static void Shake(float intensity, float duration)
+    // Static function to shake a specific camera with intensity and duration
+    public static void Shake(Camera camera, float intensity, float duration)
     {
         if (instance == null)
         {
@@ -30,13 +32,19 @@ public class ScreenShakeHandler : MonoBehaviour
             return;
         }
 
-        if (Camera.main == null)
+        if (camera == null)
         {
-            Debug.LogWarning("ScreenShakeHandler: Main camera not found!");
+            Debug.LogWarning("ScreenShakeHandler: No camera to shake.");
             return;
         }
 
-        instance.StartShake(intensity, duration);
+        instance.StartShake(camera, intensity, duration);
+    }
+
+    // Static function to shake the screen with intensity and duration
+    public static void Shake(float intensity, float duration)
+    {
+        Shake(Camera.main, intensity, duration);
     }
 
     // Overloaded function with default intensity
@@ -45,21 +53,17 @@ public class ScreenShakeHandler : MonoBehaviour
         Shake(1f, duration);
     }
 
-    private void StartShake(float intensity, float duration)
+    private void StartShake(Camera camera, float intensity, float duration)
     {
-        // Stop any existing shake
         if (currentShakeCoroutine != null)
         {
             StopCoroutine(currentShakeCoroutine);
+            RestoreCamera();
         }
 
-        // Store original camera position if not already stored
-        if (originalCameraPosition == Vector3.zero)
-        {
-            originalCameraPosition = Camera.main.transform.position;
-        }
-
-        // Start new shake
+        shakeCamera = camera;
+        originalCameraPosition = camera.transform.position;
+        hasOriginalPosition = true;
         currentShakeCoroutine = StartCoroutine(ShakeCoroutine(intensity, duration));
     }
 
@@ -69,42 +73,56 @@ public class ScreenShakeHandler : MonoBehaviour
 
         while (elapsedTime < duration)
         {
-            // Generate random offset within intensity range
+            if (shakeCamera == null)
+                break;
+
             float x = Random.Range(-intensity, intensity);
             float y = Random.Range(-intensity, intensity);
-
-            // Apply shake offset to camera position
-            Camera.main.transform.position = originalCameraPosition + new Vector3(x, y, 0);
+            shakeCamera.transform.position = originalCameraPosition + new Vector3(x, y, 0);
 
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
-        // Reset camera to original position
-        Camera.main.transform.position = originalCameraPosition;
+        RestoreCamera();
         currentShakeCoroutine = null;
+    }
+
+    void RestoreCamera()
+    {
+        if (!hasOriginalPosition || shakeCamera == null)
+        {
+            hasOriginalPosition = false;
+            return;
+        }
+
+        shakeCamera.transform.position = originalCameraPosition;
+        hasOriginalPosition = false;
     }
 
     // Function to stop current shake immediately
     public static void StopShake()
     {
-        if (instance != null && instance.currentShakeCoroutine != null)
+        if (instance == null)
+            return;
+
+        if (instance.currentShakeCoroutine != null)
         {
             instance.StopCoroutine(instance.currentShakeCoroutine);
-            if (Camera.main != null)
-            {
-                Camera.main.transform.position = instance.originalCameraPosition;
-            }
             instance.currentShakeCoroutine = null;
         }
+
+        instance.RestoreCamera();
     }
 
     // Function to update original camera position (useful if camera moves during gameplay)
     public static void UpdateOriginalPosition()
     {
-        if (Camera.main != null)
-        {
-            instance.originalCameraPosition = Camera.main.transform.position;
-        }
+        if (instance == null || Camera.main == null)
+            return;
+
+        instance.shakeCamera = Camera.main;
+        instance.originalCameraPosition = Camera.main.transform.position;
+        instance.hasOriginalPosition = true;
     }
 }

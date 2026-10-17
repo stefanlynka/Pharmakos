@@ -32,6 +32,7 @@ public class Controller : MonoBehaviour
 
     public bool GameRunning = false;
     public bool IsTestChamber = false;
+    public bool IsTutorialRun = false;
     private bool isGameSetup = false;
 
     public CustomRandom MetaRNG = new CustomRandom(2);
@@ -274,6 +275,8 @@ public class Controller : MonoBehaviour
         CardGainRewardHandler.gameObject.SetActive(false);
         RitualRewardHandler.gameObject.SetActive(false);
         CardRemovalRewardHandler.gameObject.SetActive(false);
+        if (TrinketRewardHandler != null)
+            TrinketRewardHandler.gameObject.SetActive(false);
         GameField.SetActive(true);
 
         Player1 = new HumanPlayer();
@@ -385,7 +388,10 @@ public class Controller : MonoBehaviour
         ScreenHandler.Instance.HideScreen(ScreenName.Event, true);
         ScreenHandler.Instance.HideScreen(ScreenName.Styx, true);
         ScreenHandler.Instance.HideScreen(ScreenName.TrinketUnlock, true);
+        ScreenHandler.Instance.HideScreen(ScreenName.TrinketRewardScreen, true);
         ScreenHandler.Instance.HideScreen(ScreenName.Game, true);
+        if (TrinketRewardHandler != null && TrinketRewardHandler.gameObject.activeInHierarchy)
+            TrinketRewardHandler.Hide();
         GameField.SetActive(false);
         SetMainCombatCameraActive(false);
     }
@@ -409,18 +415,19 @@ public class Controller : MonoBehaviour
 
         _lastOverworldNodeEntered = node;
 
-        // Temple = sacrifice three cards from deck, then ritual rewards (no combat).
-        if (node.EncounterType == EncounterType.Temple)
+        if (node.EncounterType == EncounterType.Temple || node.EncounterType == EncounterType.TutorialTemple)
         {
-            ProgressionHandler.RegisterTempleEncounter();
-            BeginTempleEncounter();
+            if (node.EncounterType == EncounterType.Temple)
+                ProgressionHandler.RegisterTempleEncounter();
+            BeginTempleEncounter(node.EncounterType == EncounterType.TutorialTemple);
             return;
         }
 
-        if (node.EncounterType == EncounterType.Market)
+        if (node.EncounterType == EncounterType.Market || node.EncounterType == EncounterType.TutorialMarket)
         {
-            ProgressionHandler.RegisterMarketEncounter();
-            BeginShopEncounter();
+            if (node.EncounterType == EncounterType.Market)
+                ProgressionHandler.RegisterMarketEncounter();
+            BeginShopEncounter(node.EncounterType == EncounterType.TutorialMarket);
             return;
         }
 
@@ -461,11 +468,16 @@ public class Controller : MonoBehaviour
         }
 
         int fightNumber = Mathf.Max(1, node.R);
-        if (ProgressionHandler.TryGetBossDeckName(node.EncounterType, out _))
+        if (node.EncounterType == EncounterType.TutorialCombat1)
+            ProgressionHandler.SetupScriptedEncounter(ProgressionHandler.DeckName.TutorialCombat1);
+        else if (node.EncounterType == EncounterType.TutorialCombat2)
+            ProgressionHandler.SetupScriptedEncounter(ProgressionHandler.DeckName.TutorialCombat2);
+        else if (ProgressionHandler.TryGetBossDeckName(node.EncounterType, out _))
             ProgressionHandler.SetupBossEncounter(node.EncounterType, fightNumber);
         else
             ProgressionHandler.SetupNextCombatEnemy(fightNumber);
 
+        EncounterType begunEncounter = node.EncounterType;
         ScreenTransitionAnimation combatTransitionAnimation = new ScreenTransitionAnimation(null, () =>
         {
             OverworldMapController.HideMap();
@@ -473,12 +485,13 @@ public class Controller : MonoBehaviour
             ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, true);
             // ScreenHandler.Instance.ShowScreen(ScreenName.DeckScreenButton, false, false);
             ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
+            TutorialDirector.Raise(TutorialTrigger.EncounterBegan, begunEncounter);
             LoadLevel();
         }, () => { });
         View.Instance.AnimationHandler.AddAnimationActionToQueue(combatTransitionAnimation);
     }
 
-    private void BeginTempleEncounter()
+    private void BeginTempleEncounter(bool scriptedTutorial = false)
     {
         if (TempleHandler == null)
             TempleHandler = FindObjectOfType<TempleHandler>();
@@ -499,7 +512,9 @@ public class Controller : MonoBehaviour
             ScreenHandler.Instance.ShowScreen(ScreenName.Temple, true, true);
             ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
             ShowStatusButton();
-            TempleHandler.BeginTempleSacrifice();
+            if (scriptedTutorial)
+                TutorialDirector.Raise(TutorialTrigger.EncounterBegan, EncounterType.TutorialTemple);
+            TempleHandler.BeginTempleSacrifice(scriptedTutorial ? TutorialScript.SacrificeBatches() : null);
         }, () => { });
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }
@@ -530,7 +545,7 @@ public class Controller : MonoBehaviour
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }
 
-    private void BeginShopEncounter()
+    private void BeginShopEncounter(bool scriptedTutorial = false)
     {
         if (ShopHandler == null)
             ShopHandler = FindObjectOfType<ShopHandler>();
@@ -551,7 +566,13 @@ public class Controller : MonoBehaviour
             ScreenHandler.Instance.ShowScreen(ScreenName.Shop, true, true);
             ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
             ShowStatusButton();
-            ShopHandler.BeginShop();
+            if (scriptedTutorial)
+            {
+                TutorialDirector.Raise(TutorialTrigger.EncounterBegan, EncounterType.TutorialMarket);
+                ShopHandler.BeginShop(TutorialScript.MarketCards(), TutorialScript.MarketTrinkets());
+            }
+            else
+                ShopHandler.BeginShop();
         }, () => { });
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }
@@ -633,6 +654,8 @@ public class Controller : MonoBehaviour
 
     public void StartGame()
     {
+        IsTutorialRun = false;
+        TutorialDirector.Reset();
         RunHeartStrings = Player.StartingHeartStrings;
         StyxRunState.Reset();
         EncounteredEventsThisRun.Clear();
@@ -661,15 +684,7 @@ public class Controller : MonoBehaviour
         }
         else if (OverworldMapController != null)
         {
-            ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
-            {
-                HideStarterBundles();
-                ScreenHandler.Instance.HideScreen(ScreenName.StyxTrinketSelect, true);
-                CurrentScreen = ScreenName.Overworld;
-                ScreenHandler.Instance.ShowScreen(ScreenName.Overworld, true, false);
-                ShowStatusButton();
-            });
-            View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+            ShowOverworldFromMenu();
         }
         else
         {
@@ -732,6 +747,7 @@ public class Controller : MonoBehaviour
         ScreenHandler.Instance.HideScreen(ScreenName.Event, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.RitualRewards);
         ShowStatusButton();
+        TutorialDirector.Raise(TutorialTrigger.RitualRewardsShown);
     }
     public void GoToCardGainRewardScreen()
     {
@@ -749,6 +765,7 @@ public class Controller : MonoBehaviour
 
     public void GoToStarterBundleScreen()
     {
+        IsTutorialRun = false;
         CurrentScreen = ScreenName.StarterBundle;
 
         FirstTimeSetup();
@@ -920,6 +937,13 @@ public class Controller : MonoBehaviour
         if (ProgressionHandler.IsCurrentEnemyBoss())
         {
             StartNextLevel(useScreenTransition);
+            return;
+        }
+
+        if (offerCardPackReward && ProgressionHandler.CurrentEnemy == ProgressionHandler.DeckName.Archiereus)
+        {
+            AddHeartstrings(1);
+            GoToTrinketScreen();
             return;
         }
 
@@ -1123,6 +1147,45 @@ public class Controller : MonoBehaviour
         ScreenHandler.Instance.ShowScreen(ScreenName.Tutorial);
         TutorialHandler.Load();
     }
+    public void LoadTutorialNew()
+    {
+        IsTutorialRun = true;
+        IsTestChamber = false;
+        TutorialDirector.Reset();
+        FirstTimeSetup();
+        BeginFreshPlayerDeck();
+
+        RunHeartStrings = Player.StartingHeartStrings;
+        StyxRunState.Reset();
+        EncounteredEventsThisRun.Clear();
+
+        if (OverworldMapController != null)
+            OverworldMapController.SetupOverworldForTutorialRun();
+
+        ShowOverworldFromMenu();
+    }
+
+    void BeginFreshPlayerDeck()
+    {
+        ProgressionHandler = new ProgressionHandler();
+        var temp = new HumanPlayer();
+        ProgressionHandler.LoadPlayer(temp, ProgressionHandler.DeckName.PlayerStarterDeck);
+        HumanPlayerDetails = temp.PlayerDetails;
+    }
+
+    void ShowOverworldFromMenu()
+    {
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
+        {
+            HideStarterBundles();
+            ScreenHandler.Instance.HideScreen(ScreenName.Start, true);
+            ScreenHandler.Instance.HideScreen(ScreenName.StyxTrinketSelect, true);
+            CurrentScreen = ScreenName.Overworld;
+            ScreenHandler.Instance.ShowScreen(ScreenName.Overworld, true, false);
+            ShowStatusButton();
+        });
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
     public void HideTutorial()
     {
         ScreenHandler.Instance.HideScreen(ScreenName.Tutorial);
@@ -1234,18 +1297,72 @@ public class Controller : MonoBehaviour
     }
     public void HidePlayHistory() => HideContentScrollView();
 
+    public void BeginArchiereusEncounter()
+    {
+        int fightNumber = 1;
+        if (_lastOverworldNodeEntered != null)
+            fightNumber = Mathf.Max(1, _lastOverworldNodeEntered.R);
+
+        ProgressionHandler.SetupArchiereusEncounter(fightNumber);
+
+        Camera shakeCamera = TempleHandler != null ? TempleHandler.TempleCamera : null;
+        if (shakeCamera == null
+            && ScreenHandler.Instance != null
+            && ScreenHandler.Instance.TryGetScreen(ScreenName.Temple, out Screen templeScreen))
+            shakeCamera = templeScreen.Camera;
+
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
+        {
+            ScreenShakeHandler.StopShake();
+
+            if (TempleHandler != null)
+                TempleHandler.EndTemple();
+            else
+                ScreenHandler.Instance.HideScreen(ScreenName.Temple, true);
+
+            if (OverworldMapController != null)
+                OverworldMapController.HideMap();
+
+            CurrentScreen = ScreenName.Game;
+            ScreenHandler.Instance.ShowScreen(ScreenName.Game, true, true);
+            ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
+            LoadLevel();
+        }, null, () =>
+        {
+            if (shakeCamera != null)
+                ScreenShakeHandler.Shake(shakeCamera, 0.28f, Screen.ScreenChangeDuration);
+        });
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
+
     public void GoToTrinketScreen()
     {
         CurrentScreen = ScreenName.TrinketRewardScreen;
 
         GameField.SetActive(false);
+        if (View.Instance != null)
+            View.Instance.Clear();
+
         TrinketRewardHandler.gameObject.SetActive(true);
         TrinketRewardHandler.Load();
 
-        //ScreenHandler.Instance.HideScreen(ScreenName.DeckScreenButton, true);
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.TrinketRewardScreen);
         ShowStatusButton();
+    }
+
+    public void ContinueFromTrinketReward()
+    {
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, () =>
+        {
+            if (TrinketRewardHandler != null)
+                TrinketRewardHandler.Hide();
+
+            ScreenHandler.Instance.HideScreen(ScreenName.TrinketRewardScreen, true);
+            GameField.SetActive(false);
+            GoToRitualRewardScreen();
+        });
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }
 
     // ---------------------------------------------------------------------

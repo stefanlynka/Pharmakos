@@ -8,6 +8,16 @@ public class HumanPlayer : Player
     {
         IsHuman = true;
     }
+
+    public override void StartTurn()
+    {
+        base.StartTurn();
+        if (Controller.Instance != null
+            && Controller.Instance.IsTutorialRun
+            && Controller.Instance.CanonGameState != null
+            && ReferenceEquals(Controller.Instance.CanonGameState.CurrentPlayer, this))
+            TutorialDirector.Raise(TutorialTrigger.CombatTurnStarted);
+    }
     // Start is called before the first frame update
     void Start()
     {

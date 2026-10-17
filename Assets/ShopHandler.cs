@@ -63,7 +63,7 @@ public class ShopHandler : MonoBehaviour
         UpdateShopHoverHighlights();
     }
 
-    public void BeginShop()
+    public void BeginShop(List<Card> forcedCards = null, List<Trinket> forcedTrinkets = null)
     {
         if (Controller.Instance == null || View.Instance == null)
         {
@@ -73,7 +73,10 @@ public class ShopHandler : MonoBehaviour
 
         _soldCardSlots.Clear();
         _soldTrinketSlots.Clear();
-        BuildShopStock();
+        if (forcedCards != null || forcedTrinkets != null)
+            BuildForcedShopStock(forcedCards, forcedTrinkets);
+        else
+            BuildShopStock();
 
         SetShopAreaActive(true);
         SetShopCameraActive(true);
@@ -90,6 +93,8 @@ public class ShopHandler : MonoBehaviour
             View.Instance.MenuSelectionHandler.Activate(ShopCamera, () => false);
 
         DisplayStock();
+        if (Controller.Instance != null && Controller.Instance.IsTutorialRun)
+            TutorialDirector.Raise(TutorialTrigger.ShopOpened);
     }
 
     public void EndShop()
@@ -122,6 +127,32 @@ public class ShopHandler : MonoBehaviour
         }
 
         _shopTrinkets.AddRange(Controller.Instance.ProgressionHandler.GetRandomShopTrinkets(TrinketSlotCount));
+    }
+
+    void BuildForcedShopStock(List<Card> forcedCards, List<Trinket> forcedTrinkets)
+    {
+        _shopCards.Clear();
+        _shopTrinkets.Clear();
+
+        if (forcedCards != null)
+        {
+            int cardCount = Mathf.Min(CardSlotCount, forcedCards.Count);
+            for (int i = 0; i < cardCount; i++)
+            {
+                if (forcedCards[i] != null)
+                    _shopCards.Add(forcedCards[i]);
+            }
+        }
+
+        if (forcedTrinkets != null)
+        {
+            int trinketCount = Mathf.Min(TrinketSlotCount, forcedTrinkets.Count);
+            for (int i = 0; i < trinketCount; i++)
+            {
+                if (forcedTrinkets[i] != null)
+                    _shopTrinkets.Add(forcedTrinkets[i]);
+            }
+        }
     }
 
     void DisplayStock()

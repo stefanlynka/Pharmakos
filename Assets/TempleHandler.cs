@@ -62,7 +62,7 @@ public class TempleHandler : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
-    public void BeginTempleSacrifice()
+    public void BeginTempleSacrifice(List<List<Type>> forcedBatches = null)
     {
         if (Controller.Instance == null || View.Instance == null)
         {
@@ -70,7 +70,10 @@ public class TempleHandler : MonoBehaviour
             return;
         }
 
-        BuildSacrificePool();
+        if (forcedBatches != null)
+            BuildForcedSacrificePool(forcedBatches);
+        else
+            BuildSacrificePool();
         if (_sacrificePool.Count == 0)
         {
             Debug.LogWarning("TempleHandler: deck has no cards to sacrifice.");
@@ -98,7 +101,12 @@ public class TempleHandler : MonoBehaviour
     public void RefuseSacrifice()
     {
         if (_busy) return;
-        Controller.Instance.StartNextLevel();
+
+        _busy = true;
+        if (TempleScreenHandler != null)
+            TempleScreenHandler.SetSacrificeButtonsInteractable(false);
+
+        Controller.Instance.BeginArchiereusEncounter();
     }
 
     public void AcceptSacrifice()
@@ -163,6 +171,44 @@ public class TempleHandler : MonoBehaviour
         }
     }
 
+    void BuildForcedSacrificePool(List<List<Type>> forcedBatches)
+    {
+        _sacrificePool.Clear();
+        _batches.Clear();
+
+        var deck = Controller.Instance.HumanPlayerDetails.DeckBlueprint[0];
+        if (deck == null || forcedBatches == null)
+            return;
+
+        var remaining = new List<Card>(deck);
+        for (int batchIndex = 0; batchIndex < forcedBatches.Count; batchIndex++)
+        {
+            List<Type> batchTypes = forcedBatches[batchIndex];
+            if (batchTypes == null)
+                continue;
+
+            var batchCards = new List<Card>();
+            for (int i = 0; i < batchTypes.Count; i++)
+            {
+                Type cardType = batchTypes[i];
+                int found = remaining.FindIndex(card => card != null && card.GetType() == cardType);
+                if (found < 0)
+                {
+                    Debug.LogError("TempleHandler: tutorial sacrifice card " + cardType?.Name + " is not in the deck.");
+                    continue;
+                }
+
+                Card card = remaining[found];
+                remaining.RemoveAt(found);
+                batchCards.Add(card);
+                _sacrificePool.Add(card);
+            }
+
+            if (batchCards.Count > 0)
+                _batches.Add(batchCards);
+        }
+    }
+
     void ShowCurrentBatch()
     {
         ClearActiveCards();
@@ -175,6 +221,9 @@ public class TempleHandler : MonoBehaviour
 
         if (TempleScreenHandler != null)
             TempleScreenHandler.SetInstructionIndex(_currentBatchIndex);
+
+        if (Controller.Instance != null && Controller.Instance.IsTutorialRun)
+            TutorialDirector.Raise(TutorialTrigger.TempleBatchShown, EncounterType.TutorialTemple, _currentBatchIndex);
 
         List<Card> batch = _batches[_currentBatchIndex];
         for (int i = 0; i < batch.Count; i++)
@@ -369,6 +418,11 @@ public class TempleHandler : MonoBehaviour
         EndTemple();
         if (TempleScreenHandler != null)
             TempleScreenHandler.ProgressToRitualScreen();
+        else if (Controller.Instance != null && Controller.Instance.IsTutorialRun)
+        {
+            var rewards = TutorialScript.TempleRitualRewards();
+            Controller.Instance.GoToRitualRewardScreen(rewards.top, rewards.bottom);
+        }
         else
             Controller.Instance.GoToRitualRewardScreen();
     }

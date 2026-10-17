@@ -327,6 +327,8 @@ public class AudioHandler : MonoBehaviour
 
     public void PlayMusic(DeckName name)
     {
+        if (Controller.Instance != null && Controller.Instance.ProgressionHandler != null)
+            name = Controller.Instance.ProgressionHandler.GetPresentedDeck(name);
         if (MusicByName.ContainsKey(name))
         {
             AudioClip audioClip = MusicByName[name];

@@ -46,6 +46,9 @@ public class ProgressionHandler
         Throne,
         Fates,
         TheGate,
+        TutorialCombat1,
+        TutorialCombat2,
+        Archiereus,
     }
 
     public int CurrentLevel = 0;
@@ -1675,6 +1678,9 @@ public class ProgressionHandler
             },
         };
 
+        AddTutorialDecks();
+        AddArchiereusDeck();
+
         // Add enemy decks to their respective pool
         foreach (KeyValuePair<DeckName, PlayerDetails> kvp in DetailsByDeckName)
         {
@@ -1692,6 +1698,167 @@ public class ProgressionHandler
 
         SetupTrinkets();
         SetupStarterBundles();
+    }
+
+    void AddTutorialDecks()
+    {
+        DetailsByDeckName[DeckName.TutorialCombat1] = new PlayerDetails
+        {
+            IsFightableEnemy = false,
+            BaseHealth = 10,
+            Pool = 1,
+            PortraitName = "Cyclops",
+            PresentationDeck = DeckName.Cyclops,
+            MinorRituals = new Dictionary<int, Ritual> { [1] = null },
+            MajorRituals = new Dictionary<int, Ritual> { [1] = null },
+            Trinkets = new Dictionary<int, List<Trinket>> { [1] = new List<Trinket>() },
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>> { [1] = new List<Trinket>() },
+            TwistOfFateIntervals = new Dictionary<int, int> { [1] = 10 },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [1] = new List<Card>
+                {
+                    new Sheep(),
+                    new Sheep(),
+                    new Cyclops(),
+                    new ThrowStone(),
+                    new ThrowStone(),
+                },
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [1] = new List<Follower> { new Sheep() },
+            },
+            Rewards = new List<Card> { new Sheep(), new ThrowStone(), new Blessing() },
+        };
+
+        DetailsByDeckName[DeckName.TutorialCombat2] = new PlayerDetails
+        {
+            IsFightableEnemy = false,
+            BaseHealth = 10,
+            Pool = 1,
+            PortraitName = "Bacchanalia",
+            PresentationDeck = DeckName.Bacchanalia,
+            MinorRituals = new Dictionary<int, Ritual> { [1] = null },
+            MajorRituals = new Dictionary<int, Ritual> { [1] = null },
+            Trinkets = new Dictionary<int, List<Trinket>> { [1] = new List<Trinket>() },
+            TwistOfFateBuffs = new Dictionary<int, List<Trinket>> { [1] = new List<Trinket>() },
+            TwistOfFateIntervals = new Dictionary<int, int> { [1] = 10 },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [1] = new List<Card>
+                {
+                    new Boar(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Maenad(),
+                    new Panic(),
+                    new Panic(),
+                },
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [1] = new List<Follower> { new Satyr() },
+            },
+            Rewards = new List<Card> { new Satyr(), new Panic(), new Boar() },
+        };
+    }
+
+    const int ArchiereusFillerCopies = 4;
+
+    void AddArchiereusDeck()
+    {
+        var emptyTrinkets = new Dictionary<int, List<Trinket>>
+        {
+            [1] = new List<Trinket>(),
+            [2] = new List<Trinket>(),
+            [3] = new List<Trinket>(),
+        };
+        var emptyTwists = new Dictionary<int, List<Trinket>>
+        {
+            [1] = new List<Trinket>(),
+            [2] = new List<Trinket>(),
+            [3] = new List<Trinket>(),
+        };
+
+        DetailsByDeckName[DeckName.Archiereus] = new PlayerDetails
+        {
+            IsFightableEnemy = false,
+            BaseHealth = 10,
+            Pool = 1,
+            GoldPerTurn = 5,
+            PortraitName = "Delphi",
+            PresentationDeck = DeckName.Delphi,
+            FightDisplayName = "Archiereus",
+            MinorRituals = new Dictionary<int, Ritual>(),
+            MajorRituals = new Dictionary<int, Ritual>(),
+            Trinkets = emptyTrinkets,
+            TwistOfFateBuffs = emptyTwists,
+            TwistOfFateIntervals = new Dictionary<int, int>
+            {
+                [1] = 10,
+                [2] = 10,
+                [3] = 10,
+            },
+            DeckBlueprint = new Dictionary<int, List<Card>>
+            {
+                [1] = BuildArchiereusDeck(),
+                [2] = BuildArchiereusDeck(),
+                [3] = BuildArchiereusDeck(),
+            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>(),
+            Rewards = new List<Card>(),
+        };
+    }
+
+    static List<Card> BuildArchiereusDeck()
+    {
+        var deck = new List<Card>();
+        AddCopies(deck, () => new Smite(), ArchiereusFillerCopies);
+        AddCopies(deck, () => new Scry(), ArchiereusFillerCopies);
+        AddCopies(deck, () => new Blessing(), ArchiereusFillerCopies);
+        AddCopies(deck, () => new Ekdromos(), ArchiereusFillerCopies);
+        AddCopies(deck, () => new Peltast(), ArchiereusFillerCopies);
+        deck.Add(new FirstFlame());
+        deck.Add(new Chariot());
+        deck.Add(new Asclepius());
+        deck.Add(new Melpomene());
+        deck.Add(new Cassandra());
+        return deck;
+    }
+
+    static void AddCopies(List<Card> deck, Func<Card> create, int count)
+    {
+        for (int i = 0; i < count; i++)
+            deck.Add(create());
+    }
+
+    void PrepareArchiereusDetails(int pool)
+    {
+        PlayerDetails details = DetailsByDeckName[DeckName.Archiereus];
+        if (!details.DeckBlueprint.ContainsKey(pool))
+            details.DeckBlueprint[pool] = BuildArchiereusDeck();
+
+        var rituals = new List<Ritual>();
+        foreach (StarterBundle bundle in starterBundles)
+        {
+            if (bundle?.Ritual != null)
+                rituals.Add(bundle.Ritual.MakeBaseCopy());
+        }
+
+        details.MajorRituals[pool] = TakeRandomRitual(rituals);
+        details.MinorRituals[pool] = TakeRandomRitual(rituals);
+    }
+
+    static Ritual TakeRandomRitual(List<Ritual> rituals)
+    {
+        if (rituals == null || rituals.Count == 0 || Controller.Instance == null)
+            return null;
+
+        int index = Controller.Instance.MetaRNG.Next(0, rituals.Count);
+        Ritual ritual = rituals[index];
+        rituals.RemoveAt(index);
+        return ritual;
     }
 
     private List<Trinket> alreadyDisplayedTrinkets = new List<Trinket>();
@@ -1905,7 +2072,25 @@ public class ProgressionHandler
         return formatted.ToString();
     }
 
-    public string GetCurrentFightDisplayName() => FormatDeckNameAsFightName(CurrentEnemy);
+    public string GetCurrentFightDisplayName()
+    {
+        if (CurrentEnemy != DeckName.None
+            && DetailsByDeckName.TryGetValue(CurrentEnemy, out PlayerDetails details)
+            && !string.IsNullOrEmpty(details.FightDisplayName))
+            return details.FightDisplayName;
+
+        return FormatDeckNameAsFightName(GetPresentedDeck(CurrentEnemy));
+    }
+
+    public DeckName GetPresentedDeck(DeckName deckName)
+    {
+        if (deckName != DeckName.None
+            && DetailsByDeckName.TryGetValue(deckName, out PlayerDetails details)
+            && details.PresentationDeck != DeckName.None)
+            return details.PresentationDeck;
+
+        return deckName;
+    }
 
     public void RecordLastFoughtEnemy()
     {
@@ -2089,6 +2274,35 @@ public class ProgressionHandler
         EnemyPool.RemoveAt(randomTarget);
     }
 
+    /// <summary>Fixed encounter for the tutorial. Does not advance the run level or consume the random enemy pool.</summary>
+    public void SetupScriptedEncounter(DeckName deckName)
+    {
+        if (!DetailsByDeckName.ContainsKey(deckName))
+        {
+            Debug.LogError("Scripted encounter deck was not found: " + deckName);
+            return;
+        }
+
+        CurrentEnemy = deckName;
+        CurrentFightNumber = 1;
+    }
+
+    /// <summary>
+    /// Punishment fight for refusing a temple sacrifice. Does not advance the run level;
+    /// the temple node already did.
+    /// </summary>
+    public void SetupArchiereusEncounter(int floorFightNumber = -1)
+    {
+        if (!DetailsByDeckName.ContainsKey(DeckName.Archiereus))
+        {
+            Debug.LogError("Archiereus deck was not found.");
+            return;
+        }
+
+        CurrentEnemy = DeckName.Archiereus;
+        CurrentFightNumber = floorFightNumber >= 0 ? floorFightNumber : Mathf.Max(1, CurrentLevel);
+    }
+
     public void SetupNextBossEnemy()
     {
         CurrentLevel++;
@@ -2160,6 +2374,10 @@ public class ProgressionHandler
         }
 
         PlayerDetails newDetails = DetailsByDeckName[deckName];
+        if (newDetails.PresentationDeck != DeckName.None
+            && DetailsByDeckName.TryGetValue(newDetails.PresentationDeck, out PlayerDetails presented)
+            && !string.IsNullOrEmpty(presented.PortraitName))
+            newDetails.PortraitName = presented.PortraitName;
 
         if (!UsesConfiguredBaseHealth(deckName))
         {
@@ -2175,6 +2393,9 @@ public class ProgressionHandler
             }
             else newDetails.BaseHealth = GetPlayerHealth();
         }
+
+        if (deckName == DeckName.Archiereus)
+            newDetails.GoldPerTurn = 5;
 
         int pool = GetDetailsPool(newDetails);
         player.LoadDetails(newDetails, pool);
@@ -2195,6 +2416,8 @@ public class ProgressionHandler
             PrepareFatesDetailsFromPlayer(CurrentPool);
         else if (CurrentEnemy == DeckName.TheGate)
             PrepareTheGateDetails(CurrentPool);
+        else if (CurrentEnemy == DeckName.Archiereus)
+            PrepareArchiereusDetails(CurrentPool);
 
         LoadPlayer(player, CurrentEnemy);
     }
