@@ -9,6 +9,10 @@ public class TutorialPresenter : MonoBehaviour
     public static TutorialPresenter Instance { get; private set; }
     public static bool IsBlocking { get; private set; }
 
+    const float ArrowBobHeight = 0.02f;
+    const float ArrowBobCyclesPerSecond = 0.5f;
+    const float FadeDuration = 0.25f;
+
     [SerializeField] CanvasGroup _group;
     [SerializeField] Image _catcher;
     [SerializeField] Image _background;
@@ -17,6 +21,7 @@ public class TutorialPresenter : MonoBehaviour
     [SerializeField] Image _coverLeft;
     [SerializeField] Image _coverRight;
     [SerializeField] TextMeshProUGUI _text;
+    [SerializeField] RectTransform _textFrame;
     [SerializeField] Image _spriteTemplate;
 
     readonly List<Image> _sprites = new List<Image>();
@@ -89,13 +94,16 @@ public class TutorialPresenter : MonoBehaviour
 
     IEnumerator Play(TutorialBeat beat)
     {
-        IsBlocking = beat.BlockInput;
+        IsBlocking = beat.BlockInput || beat.ShowBlackBlocker;
         if (_group != null)
-            _group.blocksRaycasts = beat.BlockInput;
+        {
+            _group.alpha = 0f;
+            _group.blocksRaycasts = IsBlocking;
+        }
         if (_catcher != null)
         {
-            _catcher.gameObject.SetActive(beat.BlockInput);
-            _catcher.raycastTarget = beat.BlockInput;
+            _catcher.gameObject.SetActive(IsBlocking);
+            _catcher.raycastTarget = IsBlocking;
         }
 
         ApplyCover(beat);
@@ -124,6 +132,17 @@ public class TutorialPresenter : MonoBehaviour
                 _text.maxVisibleCharacters = visible;
             }
 
+            if (_group != null)
+                _group.alpha = Mathf.MoveTowards(_group.alpha, 1f, Time.deltaTime / FadeDuration);
+
+            UpdateSprites(beat, elapsed);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        while (_group != null && _group.alpha > 0f)
+        {
+            _group.alpha = Mathf.MoveTowards(_group.alpha, 0f, Time.deltaTime / FadeDuration);
             UpdateSprites(beat, elapsed);
             elapsed += Time.deltaTime;
             yield return null;
@@ -142,8 +161,10 @@ public class TutorialPresenter : MonoBehaviour
 
         if (_background != null)
         {
+            bool showBlocker = beat.ShowBlackBlocker && !hasHole;
             _background.color = color;
-            _background.gameObject.SetActive(show && !hasHole);
+            _background.raycastTarget = showBlocker;
+            _background.gameObject.SetActive(showBlocker);
         }
 
         SetCoverActive(hasHole);
@@ -192,13 +213,15 @@ public class TutorialPresenter : MonoBehaviour
             return;
 
         bool show = !string.IsNullOrEmpty(beat.Text);
+        if (_textFrame != null)
+            _textFrame.gameObject.SetActive(show);
         _text.gameObject.SetActive(show);
         if (!show)
             return;
 
         _text.text = beat.Text;
         _text.maxVisibleCharacters = 0;
-        Place(_text.rectTransform, beat.TextAnchor);
+        Place(_textFrame != null ? _textFrame : _text.rectTransform, beat.TextAnchor);
     }
 
     void CreateSprites(TutorialBeat beat)
@@ -257,15 +280,18 @@ public class TutorialPresenter : MonoBehaviour
             }
 
             image.enabled = true;
-            float t = span <= 0.001f ? 1f : Mathf.Clamp01(elapsed / span);
-            Place(image.rectTransform, Vector2.Lerp(cue.From, cue.To, t));
+            float bob = Mathf.Sin(elapsed * ArrowBobCyclesPerSecond * Mathf.PI * 2f) * ArrowBobHeight;
+            Place(image.rectTransform, cue.From + new Vector2(0f, bob));
         }
     }
 
     void HideAll()
     {
         if (_group != null)
+        {
+            _group.alpha = 0f;
             _group.blocksRaycasts = false;
+        }
         if (_catcher != null)
         {
             _catcher.raycastTarget = false;
@@ -275,6 +301,8 @@ public class TutorialPresenter : MonoBehaviour
         if (_background != null)
             _background.gameObject.SetActive(false);
         SetCoverActive(false);
+        if (_textFrame != null)
+            _textFrame.gameObject.SetActive(false);
         if (_text != null)
             _text.gameObject.SetActive(false);
         if (_spriteTemplate != null)

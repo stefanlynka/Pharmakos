@@ -24,7 +24,7 @@ public class TutorialSpriteCue
 
 /// <summary>
 /// One timed tutorial prompt. <see cref="Hole"/> is a normalized screen rect (x, y, width, height).
-/// A non-positive width or height covers the whole screen.
+/// Set <see cref="ShowBlackBlocker"/> to cover the screen in black and block input.
 /// </summary>
 public class TutorialBeat
 {
@@ -37,6 +37,7 @@ public class TutorialBeat
     public Vector2 TextAnchor = new Vector2(0.5f, 0.78f);
     public float SecondsPerCharacter = 0.03f;
     public bool ShowCover = true;
+    public bool ShowBlackBlocker;
     public float CoverAlpha = 0.72f;
     public Rect Hole;
     public TutorialSpriteCue[] Sprites;
@@ -54,18 +55,18 @@ public static class TutorialScript
         {
             Trigger = TutorialTrigger.OverworldShown,
             Duration = 5f,
-            Text = "This is the road. Click the next hex to begin.",
-            TextAnchor = new Vector2(0.5f, 0.8f),
-            Hole = new Rect(0.38f, 0.28f, 0.24f, 0.28f),
-            Sprites = new[]
-            {
-                new TutorialSpriteCue
-                {
-                    From = new Vector2(0.5f, 0.62f),
-                    To = new Vector2(0.5f, 0.5f),
-                    Rotation = -90f,
-                },
-            },
+            Text = "Behold the road to the Underworld.\nClick the Combat Hex ahead of you to begin.",
+            TextAnchor = new Vector2(0.5f, 0.9f),
+            // Hole = new Rect(0.38f, 0.28f, 0.24f, 0.28f),
+            // Sprites = new[]
+            // {
+            //     new TutorialSpriteCue
+            //     {
+            //         From = new Vector2(0.5f, 0.62f),
+            //         To = new Vector2(0.5f, 0.5f),
+            //         Rotation = -90f,
+            //     },
+            // },
         },
         new TutorialBeat
         {
