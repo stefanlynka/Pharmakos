@@ -9,15 +9,16 @@ public class TutorialPresenter : MonoBehaviour
     public static TutorialPresenter Instance { get; private set; }
     public static bool IsBlocking { get; private set; }
 
-    const int CanvasSortOrder = 5000;
+    [SerializeField] CanvasGroup _group;
+    [SerializeField] Image _catcher;
+    [SerializeField] Image _background;
+    [SerializeField] Image _coverBottom;
+    [SerializeField] Image _coverTop;
+    [SerializeField] Image _coverLeft;
+    [SerializeField] Image _coverRight;
+    [SerializeField] TextMeshProUGUI _text;
+    [SerializeField] Image _spriteTemplate;
 
-    Canvas _canvas;
-    Image _catcher;
-    Image _coverBottom;
-    Image _coverTop;
-    Image _coverLeft;
-    Image _coverRight;
-    TextMeshProUGUI _text;
     readonly List<Image> _sprites = new List<Image>();
     readonly Queue<TutorialBeat> _queue = new Queue<TutorialBeat>();
     Coroutine _routine;
@@ -27,10 +28,10 @@ public class TutorialPresenter : MonoBehaviour
         if (Instance != null)
             return Instance;
 
-        var go = new GameObject("TutorialPresenter");
-        if (Controller.Instance != null)
-            go.transform.SetParent(Controller.Instance.transform, false);
-        return go.AddComponent<TutorialPresenter>();
+        Instance = FindObjectOfType<TutorialPresenter>(true);
+        if (Instance == null)
+            Debug.LogError("TutorialPresenter: TutorialScreen is missing from the scene.");
+        return Instance;
     }
 
     void Awake()
@@ -42,7 +43,8 @@ public class TutorialPresenter : MonoBehaviour
         }
 
         Instance = this;
-        BuildUi();
+        if (_spriteTemplate != null)
+            _spriteTemplate.gameObject.SetActive(false);
         HideAll();
     }
 
@@ -88,13 +90,19 @@ public class TutorialPresenter : MonoBehaviour
     IEnumerator Play(TutorialBeat beat)
     {
         IsBlocking = beat.BlockInput;
-        _catcher.gameObject.SetActive(beat.BlockInput);
-        _catcher.raycastTarget = beat.BlockInput;
+        if (_group != null)
+            _group.blocksRaycasts = beat.BlockInput;
+        if (_catcher != null)
+        {
+            _catcher.gameObject.SetActive(beat.BlockInput);
+            _catcher.raycastTarget = beat.BlockInput;
+        }
+
         ApplyCover(beat);
         ApplyText(beat);
         CreateSprites(beat);
 
-        bool typing = !string.IsNullOrEmpty(beat.Text);
+        bool typing = _text != null && !string.IsNullOrEmpty(beat.Text);
         int visible = 0;
         float typeTimer = 0f;
         float elapsed = 0f;
@@ -125,114 +133,64 @@ public class TutorialPresenter : MonoBehaviour
         IsBlocking = false;
     }
 
-    void BuildUi()
-    {
-        _canvas = gameObject.AddComponent<Canvas>();
-        _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        _canvas.sortingOrder = CanvasSortOrder;
-        _canvas.overrideSorting = true;
-
-        var scaler = gameObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 0.5f;
-        gameObject.AddComponent<GraphicRaycaster>();
-
-        _catcher = CreateImage("InputCatcher", new Color(0f, 0f, 0f, 0f));
-        Stretch(_catcher.rectTransform, Vector2.zero, Vector2.one);
-        _catcher.raycastTarget = true;
-
-        _coverBottom = CreateImage("CoverBottom", Color.black);
-        _coverTop = CreateImage("CoverTop", Color.black);
-        _coverLeft = CreateImage("CoverLeft", Color.black);
-        _coverRight = CreateImage("CoverRight", Color.black);
-
-        _text = CreateText();
-    }
-
-    Image CreateImage(string name, Color color)
-    {
-        var go = new GameObject(name, typeof(RectTransform));
-        go.transform.SetParent(transform, false);
-        var image = go.AddComponent<Image>();
-        image.color = color;
-        image.raycastTarget = false;
-        return image;
-    }
-
-    TextMeshProUGUI CreateText()
-    {
-        var go = new GameObject("TutorialText", typeof(RectTransform));
-        go.transform.SetParent(transform, false);
-        var text = go.AddComponent<TextMeshProUGUI>();
-        text.font = ResolveFont();
-        text.fontSize = 36f;
-        text.alignment = TextAlignmentOptions.Center;
-        text.color = Color.white;
-        text.enableWordWrapping = true;
-        text.raycastTarget = false;
-        var rt = text.rectTransform;
-        rt.sizeDelta = new Vector2(980f, 220f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        return text;
-    }
-
-    static TMP_FontAsset ResolveFont()
-    {
-        if (TMP_Settings.defaultFontAsset != null)
-            return TMP_Settings.defaultFontAsset;
-
-        return Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
-    }
-
     void ApplyCover(TutorialBeat beat)
     {
         bool show = beat.ShowCover;
-        SetCoverActive(show);
-        if (!show)
-            return;
-
-        Color color = new Color(0f, 0f, 0f, Mathf.Clamp01(beat.CoverAlpha));
-        _coverBottom.color = color;
-        _coverTop.color = color;
-        _coverLeft.color = color;
-        _coverRight.color = color;
-
         Rect hole = beat.Hole;
-        bool hasHole = hole.width > 0.001f && hole.height > 0.001f;
-        if (!hasHole)
+        bool hasHole = show && hole.width > 0.001f && hole.height > 0.001f;
+        Color color = new Color(0f, 0f, 0f, Mathf.Clamp01(beat.CoverAlpha));
+
+        if (_background != null)
         {
-            Stretch(_coverBottom.rectTransform, Vector2.zero, Vector2.one);
-            _coverTop.gameObject.SetActive(false);
-            _coverLeft.gameObject.SetActive(false);
-            _coverRight.gameObject.SetActive(false);
-            return;
+            _background.color = color;
+            _background.gameObject.SetActive(show && !hasHole);
         }
+
+        SetCoverActive(hasHole);
+        if (!hasHole)
+            return;
+
+        if (_coverBottom != null)
+            _coverBottom.color = color;
+        if (_coverTop != null)
+            _coverTop.color = color;
+        if (_coverLeft != null)
+            _coverLeft.color = color;
+        if (_coverRight != null)
+            _coverRight.color = color;
 
         float xMin = Mathf.Clamp01(hole.x);
         float yMin = Mathf.Clamp01(hole.y);
         float xMax = Mathf.Clamp01(hole.x + hole.width);
         float yMax = Mathf.Clamp01(hole.y + hole.height);
 
-        Stretch(_coverBottom.rectTransform, new Vector2(0f, 0f), new Vector2(1f, yMin));
-        Stretch(_coverTop.rectTransform, new Vector2(0f, yMax), new Vector2(1f, 1f));
-        Stretch(_coverLeft.rectTransform, new Vector2(0f, yMin), new Vector2(xMin, yMax));
-        Stretch(_coverRight.rectTransform, new Vector2(xMax, yMin), new Vector2(1f, yMax));
-        _coverTop.gameObject.SetActive(true);
-        _coverLeft.gameObject.SetActive(true);
-        _coverRight.gameObject.SetActive(true);
+        if (_coverBottom != null)
+            Stretch(_coverBottom.rectTransform, new Vector2(0f, 0f), new Vector2(1f, yMin));
+        if (_coverTop != null)
+            Stretch(_coverTop.rectTransform, new Vector2(0f, yMax), new Vector2(1f, 1f));
+        if (_coverLeft != null)
+            Stretch(_coverLeft.rectTransform, new Vector2(0f, yMin), new Vector2(xMin, yMax));
+        if (_coverRight != null)
+            Stretch(_coverRight.rectTransform, new Vector2(xMax, yMin), new Vector2(1f, yMax));
     }
 
     void SetCoverActive(bool active)
     {
-        _coverBottom.gameObject.SetActive(active);
-        _coverTop.gameObject.SetActive(active);
-        _coverLeft.gameObject.SetActive(active);
-        _coverRight.gameObject.SetActive(active);
+        if (_coverBottom != null)
+            _coverBottom.gameObject.SetActive(active);
+        if (_coverTop != null)
+            _coverTop.gameObject.SetActive(active);
+        if (_coverLeft != null)
+            _coverLeft.gameObject.SetActive(active);
+        if (_coverRight != null)
+            _coverRight.gameObject.SetActive(active);
     }
 
     void ApplyText(TutorialBeat beat)
     {
+        if (_text == null)
+            return;
+
         bool show = !string.IsNullOrEmpty(beat.Text);
         _text.gameObject.SetActive(show);
         if (!show)
@@ -246,7 +204,7 @@ public class TutorialPresenter : MonoBehaviour
     void CreateSprites(TutorialBeat beat)
     {
         ClearSprites();
-        if (beat.Sprites == null)
+        if (beat.Sprites == null || _spriteTemplate == null)
             return;
 
         for (int i = 0; i < beat.Sprites.Length; i++)
@@ -255,21 +213,21 @@ public class TutorialPresenter : MonoBehaviour
             if (cue == null)
                 continue;
 
-            string path = string.IsNullOrEmpty(cue.ResourcePath) ? "Images/Tutorial/Arrow" : cue.ResourcePath;
-            Sprite sprite = Resources.Load<Sprite>(path);
-            if (sprite == null)
+            Image image = Instantiate(_spriteTemplate, _spriteTemplate.transform.parent);
+            image.gameObject.SetActive(true);
+            image.name = "TutorialSprite";
+            if (!string.IsNullOrEmpty(cue.ResourcePath))
             {
-                Debug.LogError("TutorialPresenter: missing sprite at Resources/" + path);
-                _sprites.Add(null);
-                continue;
+                Sprite sprite = Resources.Load<Sprite>(cue.ResourcePath);
+                if (sprite == null)
+                    Debug.LogError("TutorialPresenter: missing sprite at Resources/" + cue.ResourcePath);
+                else
+                    image.sprite = sprite;
             }
 
-            Image image = CreateImage("TutorialSprite", Color.white);
-            image.sprite = sprite;
-            image.preserveAspect = true;
-            image.rectTransform.sizeDelta = new Vector2(140f, 140f);
             image.rectTransform.localEulerAngles = new Vector3(0f, 0f, cue.Rotation);
             Place(image.rectTransform, cue.From);
+            image.transform.SetAsLastSibling();
             _sprites.Add(image);
         }
     }
@@ -306,15 +264,21 @@ public class TutorialPresenter : MonoBehaviour
 
     void HideAll()
     {
+        if (_group != null)
+            _group.blocksRaycasts = false;
         if (_catcher != null)
         {
             _catcher.raycastTarget = false;
             _catcher.gameObject.SetActive(false);
         }
 
+        if (_background != null)
+            _background.gameObject.SetActive(false);
         SetCoverActive(false);
         if (_text != null)
             _text.gameObject.SetActive(false);
+        if (_spriteTemplate != null)
+            _spriteTemplate.gameObject.SetActive(false);
         ClearSprites();
     }
 

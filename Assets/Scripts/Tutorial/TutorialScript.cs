@@ -14,10 +14,11 @@ public enum TutorialTrigger
 
 public class TutorialSpriteCue
 {
-    public string ResourcePath = "Images/Tutorial/Arrow";
+    public string ResourcePath;
     public Vector2 From = new Vector2(0.5f, 0.55f);
     public Vector2 To = new Vector2(0.5f, 0.42f);
-    public float Rotation = 180f;
+    // Degrees from the authored arrow, which faces right. -90 points down.
+    public float Rotation = -90f;
     public float Duration;
 }
 
@@ -62,7 +63,7 @@ public static class TutorialScript
                 {
                     From = new Vector2(0.5f, 0.62f),
                     To = new Vector2(0.5f, 0.5f),
-                    Rotation = 180f,
+                    Rotation = -90f,
                 },
             },
         },

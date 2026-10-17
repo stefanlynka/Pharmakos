@@ -200,5 +200,6 @@ public enum ScreenName
     StatusButton,
     DeckViewerScreen,
     PlayHistoryScreen,
+    NewTutorialScreen,
 }
 

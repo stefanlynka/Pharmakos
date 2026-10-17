@@ -5,7 +5,9 @@ public static class TutorialDirector
     public static void Reset()
     {
         TutorialScript.Reset();
-        TutorialPresenter.Ensure().ResetRun();
+        TutorialPresenter presenter = TutorialPresenter.Ensure();
+        if (presenter != null)
+            presenter.ResetRun();
     }
 
     public static void Raise(TutorialTrigger trigger, EncounterType encounter = EncounterType.None, int arg = -1)
@@ -14,6 +16,9 @@ public static class TutorialDirector
             return;
 
         TutorialPresenter presenter = TutorialPresenter.Ensure();
+        if (presenter == null)
+            return;
+
         for (int i = 0; i < TutorialScript.Beats.Count; i++)
         {
             TutorialBeat beat = TutorialScript.Beats[i];

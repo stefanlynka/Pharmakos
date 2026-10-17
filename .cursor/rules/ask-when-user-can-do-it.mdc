@@ -1,0 +1,18 @@
+---
+description: Ask before a step the user can do more safely
+alwaysApply: true
+---
+
+# Ask when the user can do it better
+
+When a step is easy for the user and makes the result safer, faster, or easier to edit, ask them to do that step before doing it yourself.
+
+This includes creating or placing Unity objects, saving a selection as a connected prefab, and wiring a serialized reference in the Inspector.
+
+Keep going on the code and data that are safer for you to change. After they reply, use what they created instead of generating it.
+
+```text
+This button needs a scene object and a serialized reference on ShopScreen.
+Creating the button and assigning it in the Inspector keeps the file IDs valid.
+I can then read that reference from ShopScreen. Want to set that up before I change the script?
+```
