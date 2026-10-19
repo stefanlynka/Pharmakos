@@ -1107,9 +1107,7 @@ public class Controller : MonoBehaviour
             //follower.Owner.SummonFollower(follower, index, false);
             GameAction newAction = new SummonFollowerAction(follower, index, false);
             Player1.GameState.ActionHandler.AddAction(newAction);
-
-            GiveFollowerStaticEffectAction sprintAction = new GiveFollowerStaticEffectAction(follower, StaticEffect.Sprint);
-            Player1.GameState.ActionHandler.AddAction(sprintAction, true);
+            follower.PlayedThisTurn = false;
         }
 
         foreach (Follower follower in Player2.StartingBattleRow)
@@ -1119,9 +1117,7 @@ public class Controller : MonoBehaviour
             //follower.Owner.SummonFollower(follower, index, false);
             GameAction newAction = new SummonFollowerAction(follower, index, false);
             Player2.GameState.ActionHandler.AddAction(newAction);
-
-            GiveFollowerStaticEffectAction sprintAction = new GiveFollowerStaticEffectAction(follower, StaticEffect.Sprint);
-            Player2.GameState.ActionHandler.AddAction(sprintAction, true);
+            follower.PlayedThisTurn = false;
         }
     }
 

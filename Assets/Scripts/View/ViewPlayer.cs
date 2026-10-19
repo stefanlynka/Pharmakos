@@ -58,6 +58,7 @@ public class ViewPlayer : ViewTarget
     {
         HandHandler.UpdateHand();
         BattleRow.UpdateRow();
+        HandHandler.UpdateKeywordReminders();
         ViewMajorRitual.UpdateRitual();
         ViewMinorRitual.UpdateRitual();
     }

@@ -705,7 +705,7 @@ public class Toxotes : Follower
 
         SetBaseStats(1, 2);
 
-        Text = "Ranged attacker.\nImmune while attacking";
+        Text = "Ranged attacker.\nUnstoppable";
         Icon = IconType.Bow;
         inherentValue = 2;
 
@@ -1767,7 +1767,7 @@ public class Melpomene : Follower
     }
 }
 
-// Sprint + immune while attacking
+// Sprint + Unstoppable
 public class Achilles : Follower
 {
     public Achilles() : base()
@@ -1786,7 +1786,7 @@ public class Achilles : Follower
         SetBaseStats(3, 3);
         inherentValue = 5;
 
-        Text = "Sprint\nFrenzy\nImmune while attacking";
+        Text = "Sprint\nUnstoppable\nFrenzy";
         Icon = IconType.Bolt;
 
         SetupInnateEffects();
@@ -1798,7 +1798,7 @@ public class Achilles : Follower
 
         InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Sprint));
         InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Frenzy));
-        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.ImmuneWhileAttacking));
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Unstoppable));
     }
 }
 // Archer 3/2
@@ -1820,7 +1820,7 @@ public class Paris : Follower
         SetBaseStats(3, 2);
         inherentValue = 3;
 
-        Text = "Ranged attacker.\nImmune while attacking";
+        Text = "Ranged attacker.\nUnstoppable";
         Icon = IconType.Bow;
 
         SetupInnateEffects();

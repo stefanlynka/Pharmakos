@@ -22,6 +22,8 @@ public class ViewHandHandler : MonoBehaviour
 
     public static Vector3 HighlightScaleVector = new Vector3(2,2,2);
 
+    ViewCard raisedKeywordCard;
+
     public void UpdateHand()
     {
         //ScaleVector = Scale;
@@ -37,6 +39,8 @@ public class ViewHandHandler : MonoBehaviour
         }
 
         ViewCards.Clear();
+        raisedKeywordCard = null;
+        PopupScreenHandler.Instance?.HideHandKeywordReminders(GetPopupSlot());
     }
 
     public void MoveCardToHand(ViewCard viewCard)
@@ -81,6 +85,8 @@ public class ViewHandHandler : MonoBehaviour
     }
     private void RefreshPositions()
     {
+        raisedKeywordCard = null;
+
         int cardCount = ViewCards.Count;
         if (cardCount == 0) return;
 
@@ -98,6 +104,9 @@ public class ViewHandHandler : MonoBehaviour
             Vector3 newPos = new Vector3(CardWidth / 2 + CardWidth * i + spacing * i, CardY, CardZ - CardZOffset * i);
             if (View.Instance.SelectionHandler.IsHoveringOverThisCard(viewCard) && !selectingTarget)
             {
+                if (IsHighlightScale(viewCard.transform.localScale))
+                    raisedKeywordCard = viewCard;
+
                 viewCard.transform.localScale = HighlightScaleVector;
 
                 newPos.y = HighlightY;
@@ -146,5 +155,29 @@ public class ViewHandHandler : MonoBehaviour
             }
         }
         return null;
+    }
+
+    public void UpdateKeywordReminders()
+    {
+        PopupSlot slot = GetPopupSlot();
+        if (raisedKeywordCard != null && raisedKeywordCard.Card is Follower follower)
+        {
+            PopupScreenHandler.Instance?.ShowHandKeywordReminders(follower, raisedKeywordCard.transform, slot);
+            return;
+        }
+
+        PopupScreenHandler.Instance?.HideHandKeywordReminders(slot);
+    }
+
+    static bool IsHighlightScale(Vector3 scale)
+    {
+        return Mathf.Approximately(scale.x, HighlightScaleVector.x)
+            && Mathf.Approximately(scale.y, HighlightScaleVector.y)
+            && Mathf.Approximately(scale.z, HighlightScaleVector.z);
+    }
+
+    PopupSlot GetPopupSlot()
+    {
+        return IsHuman ? PopupSlot.One : PopupSlot.Two;
     }
 }

@@ -495,7 +495,7 @@ public class Follower : Card, ITarget
             }
         }
 
-        if (!HasStaticEffect(StaticEffect.RangedAttacker) && !HasStaticEffect(StaticEffect.ImmuneWhileAttacking))
+        if (!HasStaticEffect(StaticEffect.RangedAttacker) && !HasStaticEffect(StaticEffect.Unstoppable))
         {
             DealDamageAction damageAttackerAction = new DealDamageAction(defender, this, defenderAttack) { IsCombatDamage = true };
             defender.GameState.ActionHandler.AddAction(damageAttackerAction);

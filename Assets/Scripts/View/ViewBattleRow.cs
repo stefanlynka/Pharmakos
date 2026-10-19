@@ -22,6 +22,12 @@ public class ViewBattleRow : MonoBehaviour
     public float CardZ = 0;
     public float CardZOffset = 1;
 
+    [Tooltip("How far a follower hover popup sits below the card, in world units.")]
+    public float FollowerPopupLower = 2f;
+
+    [Tooltip("Extra space between the card and a hover popup shown to its left or right, in world units.")]
+    public float FollowerPopupSideGap = 2f;
+
 
     public void Setup(BattleRow battleRow)
     {
@@ -162,7 +168,10 @@ public class ViewBattleRow : MonoBehaviour
                     viewFollower.Follower,
                     viewFollower.transform,
                     PopupPosition.Right,
-                    GetPopupSlot());
+                    GetPopupSlot(),
+                    null,
+                    FollowerPopupLower,
+                    FollowerPopupSideGap);
             }
         }
         

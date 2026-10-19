@@ -1,0 +1,41 @@
+Below are all the tutorial beats.
+You'll want to force several aspects of the tutorial, including what cards are drawn when, what rituals are in the temple, etc. You'll need to add this tech.
+If anything is unclear, ask.
+
+First Combat:
+Once first hand is drawn: Point out gold and how you spend it on cards and how it refreshes each turn.
+Immediately after: Then show cards in hand: point out the cost of cards is on the top left of the card (you can play everything this turn)
+Once the player plays a follower: look at the follower and its attack and health. Followers can't attack the turn they're played
+Once the player plays the chariot: Some cards give abilities to your adjacent followers! Sprint lets them attack the turn they're played
+When a follower can attack: Your highlighted follower means it can attack. Click it, or click and drag to make it attack a target. You can attack the enemy player directly since they have no followers in the way
+After the attack: Get the enemy player's health to 0 to win.
+Start of next turn: enemy played followers. Mouse over your followers to see who they can attack.
+-Then show popup image detailing how attack targets work.
+
+On Overworld after first combat: the next location is a temple. There you will be asked to sacrifice some of the spells and followers and have them removed from your deck.
+In Temple: You must choose one of these three cards in your deck to sacrifice. If you refuse you will anger the gods and be in for a difficult fight. I do not recommend it in the tutorial....
+Rituals: As a reward for sacrificing to the Gods, you may adopt new Rituals. You may have up to two rituals at a time.
+
+Next Combat:
+Start of combat: Now that you have rituals, you just need something to sacrifice.
+(Several brief tutorials in a row where you highlight each offering holder in the bottom left)
+-Every action you take produces OFFERINGS
+-Summoning a Follower creates a Crop
+-Playing a Spell creates a Scroll
+-When a Follower dies on your turn (Yours or your opponent's) you gain a Bone
+-When a Player's life changes on your turn (Yours or your opponent's) you gain that much Blood
+-Generate at least one of each and you'll be able to call upon the might of Zeus.
+-Two seconds after the ritual becomes ready: point out the ready ritual: You've acquired enough Offerings! Click and drag the ritual to your target to spend the offerings and use its ability.
+-When the player hovers over the end turn button after having seen the above offering tutorial: Offerings disappear at the end of your turn. The more expensive a ritual, the more carefully you'll have to plan your turn.
+-Start of third turn: (Enemy has played ThrowStone on the player directly): Your enemy just damaged you! If your health ever drops to 0, you'll lose a heartstring and the enemy's turn will end. But if you run out of health and heartstrings, it'll be game over...
+
+Overworld:
+Up next is a shop. There you can spend your heartstrings on cards and trinkets. The main way you can get more heartstrings is from event nodes. 
+In Shop: Remember, heartstrings are rare and valuable. Spend them well.
+
+Overworld:
+Those are the basics. Near the end of this demo are two bosses. Each one will grant you a powerful ability once defeated that you can use on future runs. And even further past those bosses is the River Styx and the Final Boss...
+
+Overworld:
+You reach the River Styx: Congratulations on defeating a Boss! But to reach the Final Boss, you must now pass the river styx, which comes with a twist...
+-The River Styx replaces all of the cards in your deck with all of the cards you've sacrificed this run. Same for Trinkets and Rituals. You can track what you've sacrificed in the status screen

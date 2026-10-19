@@ -34,7 +34,7 @@ public enum StaticEffect
     None,
     Sprint, // Can attack immediately on entering
     Shield, // Reduce damage taken by 1
-    ImmuneWhileAttacking,
+    Unstoppable,
     Cleave, // Attack hits adjacent enemies
     Taunt, // Must be attacked first
     RangedAttacker, // Inverted attacking and takes no damage while attacking

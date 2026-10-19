@@ -250,6 +250,8 @@ MonoBehaviour:
   CardY: 0
   CardZ: -1
   CardZOffset: 0.1
+  FollowerPopupLower: 2
+  FollowerPopupSideGap: 2
 --- !u!65 &7067305765388286860
 BoxCollider:
   m_ObjectHideFlags: 0
