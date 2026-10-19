@@ -61,7 +61,10 @@ public class ViewResources : MonoBehaviour
         displayedAmounts.Clear();
         reservedCollectCounts.Clear();
         foreach (OfferingType type in AllOfferingTypes)
+        {
             displayedAmounts[type] = GetActualAmount(type);
+            GetOfferingLabel(type)?.SetHoverEnabled(player.IsHuman);
+        }
 
         RefreshResources();
     }

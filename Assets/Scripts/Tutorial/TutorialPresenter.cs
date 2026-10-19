@@ -25,15 +25,18 @@ public class TutorialPresenter : MonoBehaviour
     [SerializeField] Image _spriteTemplate;
 
     readonly List<Image> _sprites = new List<Image>();
+    readonly List<Image> _frames = new List<Image>();
     readonly Queue<TutorialBeat> _queue = new Queue<TutorialBeat>();
     TutorialSpriteCue[] _activeCues = System.Array.Empty<TutorialSpriteCue>();
     Coroutine _routine;
     bool _dismissRequested;
     float _maxTextWidth = -1f;
+    int _slide;
 
     public void DismissForOverworldTravel()
     {
-        _dismissRequested = true;
+        if (_routine != null)
+            _dismissRequested = true;
 
         if (_queue.Count == 0)
             return;
@@ -123,6 +126,7 @@ public class TutorialPresenter : MonoBehaviour
             yield return Play(_queue.Dequeue());
 
         _routine = null;
+        _dismissRequested = false;
     }
 
     IEnumerator Play(TutorialBeat beat)
@@ -165,17 +169,20 @@ public class TutorialPresenter : MonoBehaviour
         }
 
         ApplyCover(beat);
-        ApplyText(beat);
+        bool slideshow = SlideCount(beat) > 0;
+        _slide = 0;
+        string activeText = slideshow ? SlideText(beat, 0) : beat.Text;
+        ApplyText(beat, activeText);
         CreateSprites(beat);
 
-        bool typing = _text != null && !string.IsNullOrEmpty(beat.Text);
+        bool typing = _text != null && !string.IsNullOrEmpty(activeText);
         int visible = 0;
         float typeTimer = 0f;
         float elapsed = 0f;
         float shown = 0f;
         bool waitForClick = beat.Duration < 0f;
         float hold = waitForClick ? float.PositiveInfinity : Mathf.Max(0.05f, beat.Duration);
-        int textLength = typing ? beat.Text.Length : 0;
+        int textLength = typing ? activeText.Length : 0;
 
         while (true)
         {
@@ -201,7 +208,30 @@ public class TutorialPresenter : MonoBehaviour
             bool textShown = !typing || visible >= textLength;
             if (textShown)
                 shown += Time.deltaTime;
-            if (textShown && (Input.GetMouseButtonDown(0) || shown >= hold))
+
+            bool clicked = textShown && Input.GetMouseButtonDown(0);
+            if (slideshow)
+            {
+                if (clicked)
+                {
+                    if (_slide + 1 < SlideCount(beat))
+                    {
+                        _slide++;
+                        activeText = SlideText(beat, _slide);
+                        ApplyText(beat, activeText);
+                        visible = 0;
+                        typeTimer = 0f;
+                        shown = 0f;
+                        textLength = string.IsNullOrEmpty(activeText) ? 0 : activeText.Length;
+                        typing = textLength > 0;
+                        if (_text != null)
+                            _text.maxVisibleCharacters = 0;
+                    }
+                    else
+                        break;
+                }
+            }
+            else if (clicked || (textShown && shown >= hold))
                 break;
 
             if (_group != null)
@@ -279,22 +309,57 @@ public class TutorialPresenter : MonoBehaviour
             _coverRight.gameObject.SetActive(active);
     }
 
-    void ApplyText(TutorialBeat beat)
+    void ApplyText(TutorialBeat beat, string text)
     {
         if (_text == null)
             return;
 
-        bool show = !string.IsNullOrEmpty(beat.Text);
+        bool show = !string.IsNullOrEmpty(text);
         if (_textFrame != null)
             _textFrame.gameObject.SetActive(show);
         _text.gameObject.SetActive(show);
         if (!show)
             return;
 
-        _text.text = beat.Text;
+        _text.text = text;
         _text.maxVisibleCharacters = 0;
         FitTextFrame();
         Place(_textFrame != null ? _textFrame : _text.rectTransform, beat.TextAnchor);
+    }
+
+    static int SlideCount(TutorialBeat beat)
+    {
+        if (beat.Sprites == null)
+            return 0;
+
+        int count = 0;
+        for (int i = 0; i < beat.Sprites.Length; i++)
+        {
+            if (beat.Sprites[i] != null && !string.IsNullOrEmpty(beat.Sprites[i].Text))
+                count++;
+        }
+
+        return count;
+    }
+
+    static string SlideText(TutorialBeat beat, int slide)
+    {
+        if (beat.Sprites == null)
+            return "";
+
+        int seen = 0;
+        for (int i = 0; i < beat.Sprites.Length; i++)
+        {
+            TutorialSpriteCue cue = beat.Sprites[i];
+            if (cue == null || string.IsNullOrEmpty(cue.Text))
+                continue;
+
+            if (seen == slide)
+                return cue.Text;
+            seen++;
+        }
+
+        return "";
     }
 
     void FitTextFrame()
@@ -325,6 +390,11 @@ public class TutorialPresenter : MonoBehaviour
             if (cue == null)
                 continue;
 
+            Image frame = null;
+            if (cue.Frame)
+                frame = CreateFrame(cue);
+            _frames.Add(frame);
+
             Image image = Instantiate(_spriteTemplate, _spriteTemplate.transform.parent);
             image.gameObject.SetActive(true);
             image.name = "TutorialSprite";
@@ -346,6 +416,8 @@ public class TutorialPresenter : MonoBehaviour
                 Stretch(image.rectTransform, cue.From, cue.To);
             else
                 Place(image.rectTransform, cue.From);
+            if (frame != null)
+                InsetInsideFrame(image.rectTransform, frame);
 
             image.transform.SetAsLastSibling();
             _sprites.Add(image);
@@ -386,6 +458,7 @@ public class TutorialPresenter : MonoBehaviour
             return;
 
         int spriteIndex = 0;
+        int slideCursor = 0;
         for (int i = 0; i < _activeCues.Length && spriteIndex < _sprites.Count; i++)
         {
             TutorialSpriteCue cue = _activeCues[i];
@@ -397,8 +470,15 @@ public class TutorialPresenter : MonoBehaviour
             if (image == null)
                 continue;
 
-            bool showing = elapsed >= cue.Start && (cue.Duration <= 0f || elapsed <= cue.Start + cue.Duration);
+            bool isSlide = !string.IsNullOrEmpty(cue.Text);
+            bool showing = isSlide
+                ? slideCursor == _slide
+                : elapsed >= cue.Start && (cue.Duration <= 0f || elapsed <= cue.Start + cue.Duration);
+            if (isSlide)
+                slideCursor++;
             image.enabled = showing;
+            if (spriteIndex - 1 < _frames.Count && _frames[spriteIndex - 1] != null)
+                _frames[spriteIndex - 1].enabled = showing;
             if (!showing || cue.Fill)
                 continue;
 
@@ -441,7 +521,66 @@ public class TutorialPresenter : MonoBehaviour
         }
 
         _sprites.Clear();
+        for (int i = 0; i < _frames.Count; i++)
+        {
+            if (_frames[i] != null)
+                Destroy(_frames[i].gameObject);
+        }
+
+        _frames.Clear();
         _activeCues = System.Array.Empty<TutorialSpriteCue>();
+    }
+
+    Image CreateFrame(TutorialSpriteCue cue)
+    {
+        Image source = TextFrameImage();
+        if (source == null || source.sprite == null)
+        {
+            Debug.LogError("TutorialPresenter: the tutorial text frame has no BlackUIElement image to copy.");
+            return null;
+        }
+
+        Image frame = Instantiate(_spriteTemplate, _spriteTemplate.transform.parent);
+        frame.gameObject.SetActive(true);
+        frame.name = "TutorialFrame";
+        frame.raycastTarget = false;
+        frame.sprite = source.sprite;
+        frame.type = Image.Type.Tiled;
+        frame.preserveAspect = false;
+        frame.pixelsPerUnitMultiplier = source.pixelsPerUnitMultiplier;
+        frame.color = source.color;
+        Stretch(frame.rectTransform, cue.From, cue.To);
+        frame.transform.SetAsLastSibling();
+        return frame;
+    }
+
+    Image TextFrameImage()
+    {
+        if (_textFrame == null)
+            return null;
+
+        Image[] images = _textFrame.GetComponentsInChildren<Image>(true);
+        for (int i = 0; i < images.Length; i++)
+        {
+            if (images[i] != null && images[i].sprite != null)
+                return images[i];
+        }
+
+        return null;
+    }
+
+    static void InsetInsideFrame(RectTransform content, Image frame)
+    {
+        Sprite sprite = frame.sprite;
+        if (sprite == null)
+            return;
+
+        float referencePixelsPerUnit = frame.canvas != null ? frame.canvas.referencePixelsPerUnit : 100f;
+        float pixelsPerUnit = sprite.pixelsPerUnit / Mathf.Max(1f, referencePixelsPerUnit);
+        pixelsPerUnit *= Mathf.Max(0.01f, frame.pixelsPerUnitMultiplier);
+        Vector4 border = sprite.border;
+        content.offsetMin = new Vector2(border.x / pixelsPerUnit, border.y / pixelsPerUnit);
+        content.offsetMax = new Vector2(-border.z / pixelsPerUnit, -border.w / pixelsPerUnit);
     }
 
     static Vector2 ArrowRest(RectTransform arrow, Rect hole, float rotation)

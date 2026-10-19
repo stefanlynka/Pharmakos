@@ -10,10 +10,11 @@ public class AttackArrowPreview
 {
     const string ArrowResourcePath = "Prefabs/Misc/3DArrow";
     const float ArrowSpeed = 4.5f;
-    const float ArrowVisualScale = 1.5f;
+    const float ArrowVisualScale = 2f;
     const float ArrowSpacing = 2.8f * ArrowVisualScale;
     const float TargetArrowLength = 1.65f;
     const float ArcHeight = 2.4f;
+    const float SpellArcHeight = 6f;
     const float HideDepth = 1.75f;
     const float AppearBelowTop = 2f;
     const float MinPathLength = 0.8f;
@@ -39,7 +40,15 @@ public class AttackArrowPreview
     {
         public readonly List<Transform> Arrows = new List<Transform>();
         public readonly float[] ArcDistance = new float[ArcSamples + 1];
+        public readonly float[] SecondArcDistance = new float[ArcSamples + 1];
         public float Distance;
+    }
+
+    struct StreamAim
+    {
+        public Vector3 End;
+        public bool HasWaypoint;
+        public Vector3 Waypoint;
     }
 
     struct Flight
@@ -47,14 +56,24 @@ public class AttackArrowPreview
         public Vector3 LeadStart;
         public Vector3 Launch;
         public Vector3 Control;
+        public Vector3 FirstOut;
+        public Vector3 Waypoint;
+        public Vector3 SecondIn;
+        public Vector3 SecondOut;
         public Vector3 Middle;
         public Vector3 TailEnd;
         public Vector3 ExitDirection;
+        public bool HasWaypoint;
         public float LeadLength;
         public float ArcLength;
+        public float SecondArcLength;
         public float TailLength;
         public float TotalLength;
     }
+
+    readonly List<StreamAim> hoverAims = new List<StreamAim>();
+    readonly List<float> emptySlots = new List<float>();
+    readonly List<Vector3> emptySlotPoints = new List<Vector3>();
 
     public void Tick()
     {
@@ -162,16 +181,35 @@ public class AttackArrowPreview
         Camera camera = GetCamera();
         Vector3 boardNormal = BoardNormalTowardCamera(attacker.transform, camera);
 
-        SetStreamCount(targets.Count);
+        hoverAims.Clear();
         for (int i = 0; i < targets.Count; i++)
         {
             if (!TryGetTargetOccluder(targets[i], out Vector3 middle, out _, out _))
-            {
-                ClearStream(streams[i]);
                 continue;
-            }
 
-            AdvanceStream(streams[i], attacker, middle, boardNormal);
+            if (targets[i] is Player && HasFollowerAttackTarget(targets) && TryGetEmptyAttackSlots(attacker, emptySlotPoints))
+            {
+                for (int s = 0; s < emptySlotPoints.Count; s++)
+                {
+                    hoverAims.Add(new StreamAim
+                    {
+                        End = middle,
+                        HasWaypoint = true,
+                        Waypoint = emptySlotPoints[s]
+                    });
+                }
+            }
+            else
+            {
+                hoverAims.Add(new StreamAim { End = middle });
+            }
+        }
+
+        SetStreamCount(hoverAims.Count);
+        for (int i = 0; i < hoverAims.Count; i++)
+        {
+            StreamAim aim = hoverAims[i];
+            AdvanceStream(streams[i], attacker, aim.End, boardNormal, aim.HasWaypoint, aim.Waypoint, ArcHeight, false);
         }
     }
 
@@ -206,7 +244,7 @@ public class AttackArrowPreview
         }
 
         SetStreamCount(1);
-        AdvanceStream(streams[0], attacker, boardPoint, boardNormal);
+        AdvanceStream(streams[0], attacker, boardPoint, boardNormal, false, default, ArcHeight, false);
     }
 
     void ShowSpellAim(ViewSpell spell)
@@ -219,6 +257,12 @@ public class AttackArrowPreview
 
         Camera camera = GetCamera();
         if (camera == null)
+        {
+            Hide();
+            return;
+        }
+
+        if (View.Instance.SelectionHandler.IsHoveringOverThisCard(spell))
         {
             Hide();
             return;
@@ -244,12 +288,12 @@ public class AttackArrowPreview
         }
 
         SetStreamCount(1);
-        AdvanceStream(streams[0], spell, boardPoint, boardNormal);
+        AdvanceStream(streams[0], spell, boardPoint, boardNormal, false, default, SpellArcHeight, true);
     }
 
-    void AdvanceStream(ArrowStream stream, ViewCard source, Vector3 end, Vector3 boardNormal)
+    void AdvanceStream(ArrowStream stream, ViewCard source, Vector3 end, Vector3 boardNormal, bool hasWaypoint, Vector3 waypoint, float arcHeight, bool keepArcHeight)
     {
-        if (!TryBuildFlight(source, end, boardNormal, out Flight flight))
+        if (!TryBuildFlight(source, end, boardNormal, hasWaypoint, waypoint, arcHeight, keepArcHeight, out Flight flight))
         {
             ClearStream(stream);
             return;
@@ -260,7 +304,7 @@ public class AttackArrowPreview
         FillArcDistances(stream, ref flight);
         stream.Distance = Mathf.Repeat(stream.Distance + ArrowSpeed * Time.deltaTime, ArrowSpacing);
 
-        float reach = flight.ArcLength + flight.TailLength;
+        float reach = flight.ArcLength + flight.SecondArcLength + flight.TailLength;
         float phase = stream.Distance;
         int first = Mathf.FloorToInt((-flight.LeadLength - phase) / ArrowSpacing) + 1;
         int last = Mathf.FloorToInt((reach - phase) / ArrowSpacing);
@@ -283,7 +327,7 @@ public class AttackArrowPreview
         }
     }
 
-    bool TryBuildFlight(ViewCard source, Vector3 end, Vector3 boardNormal, out Flight flight)
+    bool TryBuildFlight(ViewCard source, Vector3 end, Vector3 boardNormal, bool hasWaypoint, Vector3 waypoint, float arcHeight, bool keepArcHeight, out Flight flight)
     {
         flight = default;
         Vector3 up = source.transform.up;
@@ -295,11 +339,14 @@ public class AttackArrowPreview
         // The exit direction is the arc's own initial tangent, so the arrow is
         // aimed at that target as soon as it appears.
         Vector3 launch = TopOf(source) - up * AppearBelowTop;
+        if (hasWaypoint)
+            return TryBuildWaypointFlight(launch, waypoint, end, boardNormal, out flight);
+
         Vector3 toTarget = end - launch;
         if (toTarget.sqrMagnitude < MinPathLength * MinPathLength)
             return false;
 
-        float bow = Mathf.Min(ArcHeight, toTarget.magnitude * 0.35f);
+        float bow = keepArcHeight ? arcHeight : Mathf.Min(arcHeight, toTarget.magnitude * 0.35f);
         Vector3 control = (launch + end) * 0.5f + boardNormal * bow;
         Vector3 exitDir = control - launch;
         if (exitDir.sqrMagnitude < 0.0001f)
@@ -337,20 +384,88 @@ public class AttackArrowPreview
         return flight.ArcLength > 0.05f;
     }
 
+    bool TryBuildWaypointFlight(Vector3 launch, Vector3 waypoint, Vector3 end, Vector3 boardNormal, out Flight flight)
+    {
+        flight = default;
+        Vector3 toSlot = waypoint - launch;
+        Vector3 toPlayer = end - waypoint;
+        if (toSlot.sqrMagnitude < 0.05f || toPlayer.sqrMagnitude < 0.05f)
+            return false;
+
+        Vector3 flatIn = Vector3.ProjectOnPlane(toSlot, boardNormal);
+        Vector3 flatOut = Vector3.ProjectOnPlane(toPlayer, boardNormal);
+        if (flatIn.sqrMagnitude < 0.0001f)
+            flatIn = toSlot;
+        if (flatOut.sqrMagnitude < 0.0001f)
+            flatOut = toPlayer;
+
+        Vector3 through = flatIn.normalized + flatOut.normalized;
+        if (through.sqrMagnitude < 0.04f)
+            through = flatOut;
+        through.Normalize();
+
+        float handleIn = Mathf.Clamp(toSlot.magnitude * 0.45f, 0.45f, 8f);
+        float handleOut = Mathf.Clamp(toPlayer.magnitude * 0.45f, 0.45f, 8f);
+        Vector3 exitDir = (flatIn.normalized + boardNormal * 0.35f).normalized;
+        Vector3 endTangent = (flatOut.normalized - boardNormal * 0.45f).normalized;
+
+        flight.HasWaypoint = true;
+        flight.Launch = launch;
+        flight.Waypoint = waypoint;
+        flight.Middle = end;
+        flight.ExitDirection = exitDir;
+        flight.Control = launch + exitDir * handleIn;
+        flight.FirstOut = waypoint - through * handleIn;
+        flight.SecondIn = waypoint + through * handleOut;
+        flight.SecondOut = end - endTangent * handleOut;
+        flight.TailEnd = end + endTangent * (arrowWorldLength + 0.2f);
+
+        float towardCamera = Vector3.Dot(exitDir, boardNormal);
+        float lead = arrowWorldLength + 0.45f;
+        if (towardCamera > 0.05f)
+            lead = Mathf.Max(lead, (HideDepth + arrowWorldLength * 0.35f) / towardCamera);
+        lead = Mathf.Max(lead, ArrowSpacing + arrowWorldLength * 0.5f);
+
+        flight.LeadStart = launch - exitDir * lead;
+        flight.LeadLength = lead;
+        flight.ArcLength = 1f;
+        flight.SecondArcLength = 1f;
+        flight.TailLength = Vector3.Distance(end, flight.TailEnd);
+        flight.TotalLength = flight.LeadLength + flight.ArcLength + flight.SecondArcLength + flight.TailLength;
+        return true;
+    }
+
     void FillArcDistances(ArrowStream stream, ref Flight flight)
     {
-        Vector3 previous = flight.Launch;
-        stream.ArcDistance[0] = 0f;
+        if (flight.HasWaypoint)
+        {
+            flight.ArcLength = FillCurve(stream.ArcDistance, flight.Launch, flight.Control, flight.FirstOut, flight.Waypoint, true);
+            flight.SecondArcLength = FillCurve(stream.SecondArcDistance, flight.Waypoint, flight.SecondIn, flight.SecondOut, flight.Middle, true);
+        }
+        else
+        {
+            flight.ArcLength = FillCurve(stream.ArcDistance, flight.Launch, flight.Control, default, flight.Middle, false);
+            flight.SecondArcLength = 0f;
+        }
+
+        flight.TotalLength = flight.LeadLength + flight.ArcLength + flight.SecondArcLength + flight.TailLength;
+    }
+
+    static float FillCurve(float[] distances, Vector3 start, Vector3 control, Vector3 secondControl, Vector3 end, bool cubic)
+    {
+        Vector3 previous = start;
+        distances[0] = 0f;
         for (int i = 1; i <= ArcSamples; i++)
         {
             float t = i / (float)ArcSamples;
-            Vector3 point = Quadratic(flight.Launch, flight.Control, flight.Middle, t);
-            stream.ArcDistance[i] = stream.ArcDistance[i - 1] + Vector3.Distance(previous, point);
+            Vector3 point = cubic
+                ? Cubic(start, control, secondControl, end, t)
+                : Quadratic(start, control, end, t);
+            distances[i] = distances[i - 1] + Vector3.Distance(previous, point);
             previous = point;
         }
 
-        flight.ArcLength = Mathf.Max(0.05f, stream.ArcDistance[ArcSamples]);
-        flight.TotalLength = flight.LeadLength + flight.ArcLength + flight.TailLength;
+        return Mathf.Max(0.05f, distances[ArcSamples]);
     }
 
     void PlaceArrow(Transform arrow, ArrowStream stream, Flight flight, float distance, Vector3 boardNormal, Vector3 cardUp)
@@ -383,11 +498,21 @@ public class AttackArrowPreview
         distance -= flight.LeadLength;
         if (distance < flight.ArcLength)
         {
-            float t = ArcParameter(stream, distance);
+            float t = ArcParameter(stream.ArcDistance, distance);
+            if (flight.HasWaypoint)
+                return Cubic(flight.Launch, flight.Control, flight.FirstOut, flight.Waypoint, t);
             return Quadratic(flight.Launch, flight.Control, flight.Middle, t);
         }
 
         distance -= flight.ArcLength;
+        if (flight.HasWaypoint && distance < flight.SecondArcLength)
+        {
+            float t = ArcParameter(stream.SecondArcDistance, distance);
+            return Cubic(flight.Waypoint, flight.SecondIn, flight.SecondOut, flight.Middle, t);
+        }
+
+        if (flight.HasWaypoint)
+            distance -= flight.SecondArcLength;
         float tail = flight.TailLength > 0.0001f ? Mathf.Clamp01(distance / flight.TailLength) : 1f;
         return Vector3.Lerp(flight.Middle, flight.TailEnd, tail);
     }
@@ -399,26 +524,38 @@ public class AttackArrowPreview
 
         distance -= flight.LeadLength;
         if (distance < flight.ArcLength)
-            return QuadraticTangent(flight.Launch, flight.Control, flight.Middle, ArcParameter(stream, distance));
+        {
+            float t = ArcParameter(stream.ArcDistance, distance);
+            if (flight.HasWaypoint)
+                return CubicTangent(flight.Launch, flight.Control, flight.FirstOut, flight.Waypoint, t);
+            return QuadraticTangent(flight.Launch, flight.Control, flight.Middle, t);
+        }
+
+        distance -= flight.ArcLength;
+        if (flight.HasWaypoint && distance < flight.SecondArcLength)
+        {
+            float t = ArcParameter(stream.SecondArcDistance, distance);
+            return CubicTangent(flight.Waypoint, flight.SecondIn, flight.SecondOut, flight.Middle, t);
+        }
 
         return flight.TailEnd - flight.Middle;
     }
 
-    static float ArcParameter(ArrowStream stream, float distance)
+    static float ArcParameter(float[] distances, float distance)
     {
         int lo = 0;
         int hi = ArcSamples - 1;
         while (lo < hi)
         {
             int mid = (lo + hi) >> 1;
-            if (stream.ArcDistance[mid + 1] < distance)
+            if (distances[mid + 1] < distance)
                 lo = mid + 1;
             else
                 hi = mid;
         }
 
-        float span = stream.ArcDistance[lo + 1] - stream.ArcDistance[lo];
-        float u = span > 0.0001f ? Mathf.Clamp01((distance - stream.ArcDistance[lo]) / span) : 0f;
+        float span = distances[lo + 1] - distances[lo];
+        float u = span > 0.0001f ? Mathf.Clamp01((distance - distances[lo]) / span) : 0f;
         return (lo + u) / ArcSamples;
     }
 
@@ -730,6 +867,130 @@ public class AttackArrowPreview
         if (size.y < size[axis]) axis = 1;
         if (size.z < size[axis]) axis = 2;
         return axis;
+    }
+
+    static Vector3 Cubic(Vector3 start, Vector3 controlIn, Vector3 controlOut, Vector3 end, float t)
+    {
+        float u = 1f - t;
+        return (u * u * u * start)
+            + (3f * u * u * t * controlIn)
+            + (3f * u * t * t * controlOut)
+            + (t * t * t * end);
+    }
+
+    static Vector3 CubicTangent(Vector3 start, Vector3 controlIn, Vector3 controlOut, Vector3 end, float t)
+    {
+        float u = 1f - t;
+        return (3f * u * u * (controlIn - start))
+            + (6f * u * t * (controlOut - controlIn))
+            + (3f * t * t * (end - controlOut));
+    }
+
+    bool TryGetEmptyAttackSlots(ViewFollower attacker, List<Vector3> points)
+    {
+        points.Clear();
+        Follower follower = attacker.Follower;
+        if (follower == null || follower.HasStaticEffect(StaticEffect.RangedAttacker))
+            return false;
+
+        Player enemy = follower.Owner != null ? follower.Owner.GetOtherPlayer() : null;
+        if (enemy == null || View.Instance == null)
+            return false;
+
+        ViewBattleRow row = enemy.IsHuman ? View.Instance.Player1.BattleRow : View.Instance.Player2.BattleRow;
+        if (row == null)
+            return false;
+
+        float position = follower.GetPositionInBattleRow();
+        if (follower.HasStaticEffect(StaticEffect.LowVision))
+            return false;
+
+        enemy.BattleRow.CollectUnoccupiedPositionsInRange(position, emptySlots);
+        bool evenAttacker = Mathf.Abs(position % 1f) == 0.5f;
+        bool evenDefender = enemy.BattleRow.Followers.Count % 2 == 0;
+        bool aligned = evenAttacker == evenDefender;
+        if (emptySlots.Count >= (aligned ? 3 : 2))
+            return false;
+
+        if (aligned)
+            KeepMiddleOfAdjacentGaps(position);
+
+        for (int i = 0; i < emptySlots.Count; i++)
+        {
+            if (TryGetSlotCenter(row, emptySlots[i], attacker, out Vector3 center))
+                points.Add(center);
+        }
+
+        return points.Count > 0;
+    }
+
+    void KeepMiddleOfAdjacentGaps(float middle)
+    {
+        bool hasMiddle = false;
+        bool hasLeft = false;
+        bool hasRight = false;
+        for (int i = 0; i < emptySlots.Count; i++)
+        {
+            if (Mathf.Abs(emptySlots[i] - middle) < 0.01f)
+                hasMiddle = true;
+            else if (Mathf.Abs(emptySlots[i] - (middle - 1f)) < 0.01f)
+                hasLeft = true;
+            else if (Mathf.Abs(emptySlots[i] - (middle + 1f)) < 0.01f)
+                hasRight = true;
+        }
+
+        if (!hasMiddle)
+            return;
+        if (hasLeft)
+            RemoveEmptySlot(middle - 1f);
+        if (hasRight)
+            RemoveEmptySlot(middle + 1f);
+    }
+
+    void RemoveEmptySlot(float position)
+    {
+        for (int i = emptySlots.Count - 1; i >= 0; i--)
+        {
+            if (Mathf.Abs(emptySlots[i] - position) < 0.01f)
+                emptySlots.RemoveAt(i);
+        }
+    }
+
+    static bool HasFollowerAttackTarget(List<ITarget> targets)
+    {
+        for (int i = 0; i < targets.Count; i++)
+        {
+            if (targets[i] is Follower)
+                return true;
+        }
+
+        return false;
+    }
+
+    static bool TryGetSlotCenter(ViewBattleRow row, float logicalPosition, ViewCard reference, out Vector3 center)
+    {
+        center = default;
+        Transform holder = row.UnitHolderTransform != null ? row.UnitHolderTransform : row.transform;
+        if (holder == null)
+            return false;
+
+        float step = row.CardWidth + row.MaxSpacing;
+        if (step < 0.01f)
+            step = 1f;
+
+        float index = row.Followers.Count > 0
+            ? logicalPosition + 0.5f * (row.Followers.Count - 1)
+            : 0f;
+        Vector3 local = new Vector3(logicalPosition * step, row.CardY, row.CardZ - row.CardZOffset * index);
+        Vector3 root = holder.TransformPoint(local);
+
+        Vector3 centerOffset = Vector3.zero;
+        ViewCard offsetSource = row.Followers.Count > 0 ? row.Followers[0] : reference;
+        if (offsetSource != null && offsetSource.CardCollider != null)
+            centerOffset = offsetSource.transform.TransformVector(offsetSource.CardCollider.center);
+
+        center = root + centerOffset;
+        return true;
     }
 
     static Vector3 Quadratic(Vector3 start, Vector3 control, Vector3 end, float t)

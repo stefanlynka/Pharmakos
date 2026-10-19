@@ -9,6 +9,7 @@ public enum TutorialTrigger
     CombatTurnStarted,
     TempleBatchShown,
     RitualRewardsShown,
+    CardRewardsShown,
     ShopOpened,
     HandDrawn,
     FollowerPlayed,
@@ -45,8 +46,12 @@ public class TutorialSpriteCue
     public float Rotation = -90f;
     public float Start;
     public float Duration;
+    // Shown with this image. A beat whose sprites have text waits for a click between images.
+    public string Text;
     // From/To are the normalized anchor min and max, and the arrow does not bob.
     public bool Fill;
+    // Draw the tutorial text frame around this image.
+    public bool Frame;
     // Rest position is pushed out so the bob stays outside the spotlight hole.
     public bool StayOutsideHole;
 }
@@ -127,7 +132,7 @@ public static class TutorialScript
             Delay = 0.55f,
             Duration = -1f,
             Text = "You played a Follower!\nThe number in the bottom left is it's attack.\nThe number in the bottom right is it's health.\nFollowers can't attack the turn they're played.",
-            TextAnchor = new Vector2(0.5f, 0.82f),
+            TextAnchor = new Vector2(0.5f, 0.88f),
             Focus = TutorialFocus.PlayerFollowers,
             PointAtHole = true,
             Hole = new Rect(0.3f, 0.28f, 0.4f, 0.2f),
@@ -177,7 +182,7 @@ public static class TutorialScript
             Arg = 2,
             Delay = 0.7f,
             Duration = -1f,
-            Text = "The enemy played followers. Mouse over yours to see who each one can attack.",
+            Text = "The enemy played followers. Time to learn about attacking!",
             TextAnchor = new Vector2(0.5f, 0.2f),
             Focus = TutorialFocus.PlayerFollowers,
             PointAtHole = true,
@@ -189,11 +194,21 @@ public static class TutorialScript
             Encounter = EncounterType.TutorialCombat1,
             Arg = 2,
             Duration = -1f,
-            Text = "A follower can only attack nearby enemies. Taunt has to be attacked first.",
-            TextAnchor = new Vector2(0.5f, 0.93f),
+            TextAnchor = new Vector2(0.5f, 0.9f),
             ShowCover = false,
             ShowBlackBlocker = true,
             Sprites = AttackRangeImages(),
+        },
+
+        // Card rewards after the first combat
+        new TutorialBeat
+        {
+            Trigger = TutorialTrigger.CardRewardsShown,
+            Encounter = EncounterType.TutorialCombat1,
+            Duration = -1f,
+            ShowCover = false,
+            Text = "When you win a combat you will get two sets of card rewards.\nYou can add up to one from each to your deck",
+            TextAnchor = new Vector2(0.5f, 0.9f),
         },
 
         // Temple
@@ -204,7 +219,7 @@ public static class TutorialScript
             Duration = -1f,
             ShowCover = false,
             Text = "The next location is a temple. There you will be asked to sacrifice some of your spells and followers, and have them removed from your deck.",
-            TextAnchor = new Vector2(0.5f, 0.82f),
+            TextAnchor = new Vector2(0.5f, 0.88f),
         },
         new TutorialBeat
         {
@@ -212,8 +227,8 @@ public static class TutorialScript
             Encounter = EncounterType.TutorialTemple,
             Duration = -1f,
             ShowCover = false,
-            Text = "You must choose one of these three cards to sacrifice. Refuse, and you will anger the gods and face a difficult fight. I do not recommend it in the tutorial.",
-            TextAnchor = new Vector2(0.5f, 0.84f),
+            Text = "You must choose one of these three cards to sacrifice. Refuse, and you will anger the gods and face a difficult fight.\n(I do not recommend it in the tutorial)",
+            TextAnchor = new Vector2(0.5f, 0.88f),
         },
         new TutorialBeat
         {
@@ -221,16 +236,14 @@ public static class TutorialScript
             Duration = -1f,
             ShowCover = false,
             Text = "As a reward for sacrificing to the gods, you may adopt new Rituals. You may have up to two rituals at a time.",
-            TextAnchor = new Vector2(0.5f, 0.84f),
+            TextAnchor = new Vector2(0.5f, 0.9f),
         },
 
         // Second combat
         new TutorialBeat
         {
-            Trigger = TutorialTrigger.CombatTurnStarted,
+            Trigger = TutorialTrigger.HandDrawn,
             Encounter = EncounterType.TutorialCombat2,
-            Arg = 1,
-            Delay = 1.6f,
             Duration = -1f,
             ShowCover = false,
             Text = "Now that you have rituals, you just need something to sacrifice.",
@@ -238,9 +251,8 @@ public static class TutorialScript
         },
         new TutorialBeat
         {
-            Trigger = TutorialTrigger.CombatTurnStarted,
+            Trigger = TutorialTrigger.HandDrawn,
             Encounter = EncounterType.TutorialCombat2,
-            Arg = 1,
             Duration = -1f,
             Text = "Every action you take produces Offerings.",
             TextAnchor = new Vector2(0.42f, 0.36f),
@@ -250,9 +262,8 @@ public static class TutorialScript
         },
         new TutorialBeat
         {
-            Trigger = TutorialTrigger.CombatTurnStarted,
+            Trigger = TutorialTrigger.HandDrawn,
             Encounter = EncounterType.TutorialCombat2,
-            Arg = 1,
             Duration = -1f,
             Text = "Summoning a Follower creates a Crop.",
             TextAnchor = new Vector2(0.42f, 0.32f),
@@ -262,9 +273,8 @@ public static class TutorialScript
         },
         new TutorialBeat
         {
-            Trigger = TutorialTrigger.CombatTurnStarted,
+            Trigger = TutorialTrigger.HandDrawn,
             Encounter = EncounterType.TutorialCombat2,
-            Arg = 1,
             Duration = -1f,
             Text = "Playing a Spell creates a Scroll.",
             TextAnchor = new Vector2(0.42f, 0.32f),
@@ -274,11 +284,10 @@ public static class TutorialScript
         },
         new TutorialBeat
         {
-            Trigger = TutorialTrigger.CombatTurnStarted,
+            Trigger = TutorialTrigger.HandDrawn,
             Encounter = EncounterType.TutorialCombat2,
-            Arg = 1,
             Duration = -1f,
-            Text = "When a Follower dies on your turn, yours or your opponent's, you gain a Bone.",
+            Text = "When a Follower dies on your turn, (yours or your opponent's), you gain a Bone.",
             TextAnchor = new Vector2(0.42f, 0.36f),
             Focus = TutorialFocus.Bone,
             PointAtHole = true,
@@ -286,11 +295,10 @@ public static class TutorialScript
         },
         new TutorialBeat
         {
-            Trigger = TutorialTrigger.CombatTurnStarted,
+            Trigger = TutorialTrigger.HandDrawn,
             Encounter = EncounterType.TutorialCombat2,
-            Arg = 1,
             Duration = -1f,
-            Text = "When a player's life changes on your turn, yours or your opponent's, you gain that much Blood.",
+            Text = "When a player's life changes on your turn, (yours or your opponent's), you gain that much Blood.",
             TextAnchor = new Vector2(0.42f, 0.36f),
             Focus = TutorialFocus.Blood,
             PointAtHole = true,
@@ -299,11 +307,10 @@ public static class TutorialScript
         new TutorialBeat
         {
             Id = OfferingsBeatId,
-            Trigger = TutorialTrigger.CombatTurnStarted,
+            Trigger = TutorialTrigger.HandDrawn,
             Encounter = EncounterType.TutorialCombat2,
-            Arg = 1,
             Duration = -1f,
-            Text = "Generate at least one of each and you'll be able to call upon the might of Zeus.",
+            Text = "Generate at least one of each in the same turn and you'll be able to call upon the might of Zeus!",
             TextAnchor = new Vector2(0.46f, 0.4f),
             Focus = TutorialFocus.Rituals,
             PointAtHole = true,
@@ -354,7 +361,7 @@ public static class TutorialScript
             Duration = -1f,
             ShowCover = false,
             Text = "Up next is a shop. There you can spend your heartstrings on cards and trinkets. The main way to get more heartstrings is from event nodes.",
-            TextAnchor = new Vector2(0.5f, 0.82f),
+            TextAnchor = new Vector2(0.5f, 0.88f),
         },
         new TutorialBeat
         {
@@ -362,7 +369,7 @@ public static class TutorialScript
             Duration = -1f,
             ShowCover = false,
             Text = "Heartstrings are rare and valuable. Spend them well.",
-            TextAnchor = new Vector2(0.5f, 0.84f),
+            TextAnchor = new Vector2(0.5f, 0.9f),
         },
         new TutorialBeat
         {
@@ -371,7 +378,7 @@ public static class TutorialScript
             Duration = -1f,
             ShowCover = false,
             Text = "Those are the basics. Near the end of this demo are two bosses. Each one grants a powerful ability once defeated, which you can use on future runs. Past those bosses is the River Styx, and the final boss.",
-            TextAnchor = new Vector2(0.5f, 0.82f),
+            TextAnchor = new Vector2(0.5f, 0.88f),
         },
         new TutorialBeat
         {
@@ -395,20 +402,27 @@ public static class TutorialScript
 
     static TutorialSpriteCue[] AttackRangeImages()
     {
-        string[] pages = { "7", "7_5", "9", "9_5", "10" };
-        const float page = 2.6f;
-        var cues = new TutorialSpriteCue[pages.Length];
-        for (int i = 0; i < pages.Length; i++)
+        string[] lines =
+        {
+            "When a Follower is ready to attack, mousing over it will show you who it can reach.",
+            "When your Follower is in line with the enemy, it can attack the enemy directly across from it, and one to either side.",
+            "When they're not aligned, your Follower can attack the two enemies in front of it.",
+            "When your Follower could attack an empty space, they can attack the enemy player directly!",
+            "Also, a Follower with Taunt must be attacked first.",
+        };
+
+        var cues = new TutorialSpriteCue[lines.Length];
+        for (int i = 0; i < lines.Length; i++)
         {
             cues[i] = new TutorialSpriteCue
             {
-                ResourcePath = "Images/Tutorial/" + pages[i],
-                From = new Vector2(0.18f, 0.08f),
-                To = new Vector2(0.82f, 0.88f),
+                ResourcePath = "Images/Tutorial/NewTutorial/" + (i + 1),
+                Text = lines[i],
+                From = new Vector2(0.18f, 0f),
+                To = new Vector2(0.82f, 0.76f),
                 Rotation = 0f,
-                Start = i * page,
-                Duration = page,
                 Fill = true,
+                Frame = true,
             };
         }
 
@@ -453,10 +467,14 @@ public static class TutorialScript
     {
         return new List<Card>
         {
-            new Sheep(),
+            new PriceOfKnowledge(),
+            new Drown(),
+            new Phalangite(),
+            new NemeanLion(),
+            new Ekdromos(),
             new ThrowStone(),
-            new Blessing(),
-            new Hoplite(),
+            new Scry(),
+            new Toxotes(),
         };
     }
 
@@ -466,6 +484,7 @@ public static class TutorialScript
         {
             new CyclopsEyeTrinket(),
             new HermesSandalsTrinket(),
+            new PeltastTrumpetTrinket(),
         };
     }
 }

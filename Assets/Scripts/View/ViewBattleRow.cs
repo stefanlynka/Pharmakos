@@ -160,8 +160,9 @@ public class ViewBattleRow : MonoBehaviour
 
             viewFollower.SetHighlight(highlighted);
 
-            // If we're not holding a card and we're hovering over a card, show a popup of that card
+            // Hover popups stay hidden while placing a follower or aiming a spell.
             if (!View.Instance.SelectionHandler.IsHoldingFollower() &&
+                !View.Instance.SelectionHandler.IsAimingSpell() &&
                 View.Instance.SelectionHandler.IsHoveringOverThisCard(viewFollower))
             {
                 PopupScreenHandler.Instance?.ShowCardPopup(

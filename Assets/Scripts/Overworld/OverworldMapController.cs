@@ -287,7 +287,7 @@ public class OverworldMapController : MonoBehaviour
             && (Controller.Instance == null || !Controller.Instance.IsTutorialRun))
             return target != _currentNode;
         if (target.Cleared) return false;
-        if (target.IsStart && _clearedNodes.Count > 0) return false;
+        if (target.IsStart && target.EncounterType == EncounterType.None && _clearedNodes.Count > 0) return false;
         return OverworldHexGrid.IsAheadAdjacent(_currentNode.Q, _currentNode.R, target.Q, target.R);
     }
 
@@ -522,7 +522,7 @@ public class OverworldMapController : MonoBehaviour
 
         if (UseFreeMove()) return target != _currentNode;
         if (target.Cleared) return false;
-        if (target.IsStart && _clearedNodes.Count > 0) return false;
+        if (target.IsStart && target.EncounterType == EncounterType.None && _clearedNodes.Count > 0) return false;
         return OverworldHexGrid.IsAheadAdjacent(_currentNode.Q, _currentNode.R, target.Q, target.R);
     }
 

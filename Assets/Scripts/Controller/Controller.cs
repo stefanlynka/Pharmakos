@@ -746,6 +746,7 @@ public class Controller : MonoBehaviour
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.CardGainRewards);
         ShowStatusButton();
+        TutorialDirector.Raise(TutorialTrigger.CardRewardsShown, TutorialCombatScript.ActiveEncounter);
     }
 
     public void GoToStarterBundleScreen()

@@ -144,7 +144,7 @@ public class ProgressionHandler
                     new Rat(),
                     new Rat(),
                     new Rat(),
-                    new Rat(),
+                    new Thureophoros(),
                     new Rat(),
                     //new Corridor(),
                     //new Peltast(),
@@ -195,9 +195,9 @@ public class ProgressionHandler
             {
                 [0] = new List<Follower>
                 {
-                    new Sheep(),
-                    new Sheep(),
-                    new Sheep(),
+                    // new Sheep(),
+                    // new Sheep(),
+                    // new Sheep(),
                     new Ekdromos(),
                     // new Ekdromos(),
                     //new Pytho(),

@@ -536,6 +536,10 @@ public class Player : ITarget
         {
             cardsToDraw = Mathf.Max(0, 6 - Hand.Count);
         }
+
+        int scriptedDrawCount = TutorialCombatScript.ScriptedDrawCount(this);
+        if (scriptedDrawCount > 0)
+            cardsToDraw = scriptedDrawCount;
         DrawCardAction action = new DrawCardAction(this, this, cardsToDraw);
         GameState.ActionHandler.AddAction(action);
 

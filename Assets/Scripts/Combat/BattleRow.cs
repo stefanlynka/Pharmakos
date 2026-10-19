@@ -157,6 +157,47 @@ public class BattleRow
 
         return targets;
     }
+
+    // Logical positions, in this row's spacing, that an attacker can reach and that have no follower.
+    public void CollectUnoccupiedPositionsInRange(float attackerPosition, List<float> positions)
+    {
+        positions.Clear();
+        bool evenAttackerCount = Mathf.Abs(attackerPosition % 1f) == 0.5f;
+        bool evenDefenderCount = Followers.Count % 2 == 0;
+        bool rowsAreAligned = evenAttackerCount == evenDefenderCount;
+
+        if (rowsAreAligned)
+        {
+            AddIfUnoccupied(attackerPosition - 1f, positions);
+            AddIfUnoccupied(attackerPosition, positions);
+            AddIfUnoccupied(attackerPosition + 1f, positions);
+        }
+        else
+        {
+            AddIfUnoccupied(attackerPosition - 0.5f, positions);
+            AddIfUnoccupied(attackerPosition + 0.5f, positions);
+        }
+    }
+
+    void AddIfUnoccupied(float position, List<float> positions)
+    {
+        if (!HasFollowerAtPosition(position))
+            positions.Add(position);
+    }
+
+    bool HasFollowerAtPosition(float position)
+    {
+        float currentPosition = -0.5f * (Followers.Count - 1);
+        for (int i = 0; i < Followers.Count; i++)
+        {
+            if (Mathf.Abs(currentPosition - position) < 0.01f)
+                return true;
+            currentPosition++;
+        }
+
+        return false;
+    }
+
     public List<ITarget> GetTargetsInRangeOfRangedAttack(float attackerPosition)
     {
         bool foundTargetWithTaunt = false;

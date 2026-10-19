@@ -23,6 +23,14 @@ public class OfferingLabel : MonoBehaviour
     float baseSpotlightIntensity;
     Vector3 baseScale;
     Coroutine collectPulseRoutine;
+    bool hoverEnabled = true;
+
+    public void SetHoverEnabled(bool enabled)
+    {
+        hoverEnabled = enabled;
+        if (!hoverEnabled)
+            HideHoverSummary();
+    }
 
     public void SetSummaryText(string text)
     {
@@ -105,7 +113,7 @@ public class OfferingLabel : MonoBehaviour
 
     void OnMouseEnter()
     {
-        if (ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking)
+        if (!hoverEnabled || ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking)
             return;
 
         ShowHoverSummary();
@@ -130,7 +138,7 @@ public class OfferingLabel : MonoBehaviour
 
     void ShowHoverSummary()
     {
-        if (ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking)
+        if (!hoverEnabled || ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking)
             return;
 
         if (string.IsNullOrEmpty(summaryDescription))

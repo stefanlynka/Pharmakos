@@ -33,14 +33,27 @@ public static class TutorialCombatScript
         if (deck == ProgressionHandler.DeckName.TutorialCombat1)
         {
             ActiveEncounter = EncounterType.TutorialCombat1;
-            QueueDraws(human, "Sheep", "Peltast", "Hoplite", "Chariot", "ThrowStone");
+            QueueOpeningHand(human);
             QueueDraws(enemy, "Sheep", "Cyclops", "Sheep", "ThrowStone", "ThrowStone");
         }
         else if (deck == ProgressionHandler.DeckName.TutorialCombat2)
         {
             ActiveEncounter = EncounterType.TutorialCombat2;
+            QueueOpeningHand(human);
             QueueDraws(enemy, "Satyr", "Boar", "Satyr", "Maenad", "Panic", "ThrowStone", "Panic");
         }
+    }
+
+    public static int ScriptedDrawCount(Player player)
+    {
+        if (player == null || !player.IsHuman || player.TurnNumber != 0)
+            return 0;
+        if (ActiveEncounter != EncounterType.TutorialCombat1 && ActiveEncounter != EncounterType.TutorialCombat2)
+            return 0;
+        if (!DrawsByPlayer.TryGetValue(player.PlayerID, out Queue<string> queue) || queue.Count == 0)
+            return 0;
+
+        return queue.Count;
     }
 
     public static Card TryTake(Player player, List<Card> deck)
@@ -69,7 +82,9 @@ public static class TutorialCombatScript
     {
         if (player == null || !player.IsHuman || player.TurnNumber != 0 || openingHandAnnounced)
             return;
-        if (ActiveEncounter != EncounterType.TutorialCombat1 || count <= 0)
+        if (ActiveEncounter != EncounterType.TutorialCombat1 && ActiveEncounter != EncounterType.TutorialCombat2)
+            return;
+        if (count <= 0)
             return;
 
         openingCardsLeft = count;
@@ -170,12 +185,63 @@ public static class TutorialCombatScript
         return false;
     }
 
+    static void QueueOpeningHand(Player player)
+    {
+        QueueDraws(player, "Peltast", "Sheep", "Hoplite", "Chariot", "Blessing", "Smite");
+    }
+
     static void QueueDraws(Player player, params string[] cardTypes)
     {
         var queue = new Queue<string>();
+        var needed = new Dictionary<string, int>();
         for (int i = 0; i < cardTypes.Length; i++)
+        {
             queue.Enqueue(cardTypes[i]);
+            if (!needed.ContainsKey(cardTypes[i]))
+                needed[cardTypes[i]] = 0;
+            needed[cardTypes[i]]++;
+        }
+
         DrawsByPlayer[player.PlayerID] = queue;
+        foreach (KeyValuePair<string, int> pair in needed)
+            EnsureDeckHas(player, pair.Key, pair.Value);
+    }
+
+    static void EnsureDeckHas(Player player, string cardType, int needed)
+    {
+        if (player == null || player.Deck == null || needed <= 0)
+            return;
+
+        int have = 0;
+        for (int i = 0; i < player.Deck.Count; i++)
+        {
+            if (player.Deck[i] != null && player.Deck[i].GetCardType() == cardType)
+                have++;
+        }
+
+        for (int i = have; i < needed; i++)
+        {
+            Card card = CreateScriptedCard(cardType);
+            if (card == null)
+                return;
+
+            card.Init(player);
+            player.Deck.Add(card);
+        }
+    }
+
+    static Card CreateScriptedCard(string cardType)
+    {
+        switch (cardType)
+        {
+            case "Peltast": return new Peltast();
+            case "Sheep": return new Sheep();
+            case "Hoplite": return new Hoplite();
+            case "Chariot": return new Chariot();
+            case "Blessing": return new Blessing();
+            case "Smite": return new Smite();
+            default: return null;
+        }
     }
 
     static bool RowHas<T>(Player player) where T : Follower
