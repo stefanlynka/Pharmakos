@@ -54,6 +54,9 @@ public class DrawCardAction : GameAction
                     cardsDrawn.Add(cardDrawn);
                 }
             }
+
+            if (!simulated)
+                TutorialCombatScript.ExpectOpeningHand(player, cardsDrawn.Count);
         }
 
         base.Execute(simulated);

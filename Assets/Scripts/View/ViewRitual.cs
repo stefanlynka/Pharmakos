@@ -409,7 +409,11 @@ public class ViewRitual : ViewTarget
             return;
 
         if (ready)
+        {
             View.Instance.AudioHandler.NotifyRitualReady(this);
+            if (Ritual != null && Ritual.Owner != null && Ritual.Owner.IsHuman)
+                TutorialDirector.Raise(TutorialTrigger.RitualReady, TutorialCombatScript.ActiveEncounter);
+        }
         else
             View.Instance.AudioHandler.NotifyRitualUnready(this);
     }

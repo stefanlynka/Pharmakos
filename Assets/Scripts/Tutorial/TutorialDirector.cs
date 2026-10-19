@@ -5,6 +5,7 @@ public static class TutorialDirector
     public static void Reset()
     {
         TutorialScript.Reset();
+        TutorialCombatScript.Reset();
         TutorialPresenter presenter = TutorialPresenter.Ensure();
         if (presenter != null)
             presenter.ResetRun();
@@ -27,6 +28,8 @@ public static class TutorialDirector
             if (beat.Encounter != EncounterType.None && beat.Encounter != encounter)
                 continue;
             if (beat.Arg >= 0 && beat.Arg != arg)
+                continue;
+            if (!TutorialScript.HasPlayed(beat.RequiresId))
                 continue;
 
             beat.Played = true;

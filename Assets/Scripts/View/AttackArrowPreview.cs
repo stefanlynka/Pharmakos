@@ -10,7 +10,8 @@ public class AttackArrowPreview
 {
     const string ArrowResourcePath = "Prefabs/Misc/3DArrow";
     const float ArrowSpeed = 4.5f;
-    const float ArrowSpacing = 2.8f;
+    const float ArrowVisualScale = 1.5f;
+    const float ArrowSpacing = 2.8f * ArrowVisualScale;
     const float TargetArrowLength = 1.65f;
     const float ArcHeight = 2.4f;
     const float HideDepth = 1.75f;
@@ -546,9 +547,9 @@ public class AttackArrowPreview
             Mathf.Abs(size.x * lossy.x),
             Mathf.Abs(size.y * lossy.y),
             Mathf.Abs(size.z * lossy.z));
-        arrowScale = renderedLength > 0.4f && renderedLength < 4f
+        arrowScale = (renderedLength > 0.4f && renderedLength < 4f
             ? 1f
-            : TargetArrowLength / Mathf.Max(0.001f, renderedLength);
+            : TargetArrowLength / Mathf.Max(0.001f, renderedLength)) * ArrowVisualScale;
         arrowWorldLength = Mathf.Max(0.2f, renderedLength * arrowScale);
         calibrated = true;
 

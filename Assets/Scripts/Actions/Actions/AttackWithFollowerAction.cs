@@ -55,7 +55,9 @@ public class AttackWithFollowerAction : GameAction
         }
 
         attackSuccessful = true;
-        
+
+        if (!simulated && Attacker != null && Attacker.Owner != null && Attacker.Owner.IsHuman)
+            TutorialCombatScript.OnHumanAttackResolved();
 
         base.Execute(simulated);
     }

@@ -258,6 +258,7 @@ public class MoveCardAnimation : AnimationAction
                     View.Instance.Player2.HandHandler.MoveCardToHand(viewCard);
                 }
                 View.ApplyCombatCardScale(viewCard.transform);
+                TutorialCombatScript.OnCardEnteredHand(newOwner);
                 break;
             case GameZone.Discard:
                 View.Instance.DiscardCard(viewCard.Card);

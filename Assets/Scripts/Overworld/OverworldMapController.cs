@@ -187,6 +187,14 @@ public class OverworldMapController : MonoBehaviour
             }
         }
 
+        EncounterType completed = _currentNode != null ? _currentNode.EncounterType : EncounterType.None;
+        bool styxAhead = false;
+        foreach (OverworldMapNode node in _allNodes)
+        {
+            if (node != null && node.EncounterType == EncounterType.Styx && IsAccessibleNeighbor(node))
+                styxAhead = true;
+        }
+
         if (_currentNode != null && (_currentNode.Cleared || _currentNode.EncounterType == EncounterType.None))
             _currentNode.ApplyEncounter(EncounterType.None);
 
@@ -197,7 +205,9 @@ public class OverworldMapController : MonoBehaviour
         PositionSideLightsForCurrentRow();
         SetLights(true);
         RefreshPlayerLyre();
-        TutorialDirector.Raise(TutorialTrigger.OverworldShown);
+        TutorialDirector.Raise(TutorialTrigger.OverworldShown, completed);
+        if (styxAhead)
+            TutorialDirector.Raise(TutorialTrigger.OverworldShown, EncounterType.Styx);
     }
 
     public void HideMap()
@@ -527,6 +537,7 @@ public class OverworldMapController : MonoBehaviour
             return;
         }
 
+        TutorialPresenter.Instance?.DismissForOverworldTravel();
         Controller.Instance.BeginEncounterFromOverworldNode(node);
     }
 

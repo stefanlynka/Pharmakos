@@ -60,6 +60,14 @@ public class AIPlayer : Player
         switch (TurnPhase)
         {
             case AITurnPhase.Setup:
+                if (TutorialCombatScript.TryScriptTurn(this, out List<PlayerDecision> scripted))
+                {
+                    playerDecisions = new DecisionSet(scripted, 0f);
+                    planningCompleted = true;
+                    TurnPhase = AITurnPhase.Preparing;
+                    break;
+                }
+
                 Debug.Log("Start Planning AI Turn");
                 TurnPhase = AITurnPhase.Preparing;
                 planningCompleted = false;

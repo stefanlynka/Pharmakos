@@ -141,6 +141,11 @@ public class ProgressionHandler
             {
                 [1] = new List<Follower>
                 {
+                    new Rat(),
+                    new Rat(),
+                    new Rat(),
+                    new Rat(),
+                    new Rat(),
                     //new Corridor(),
                     //new Peltast(),
                     //new Pytho(),
@@ -190,7 +195,10 @@ public class ProgressionHandler
             {
                 [0] = new List<Follower>
                 {
-                    // new Ekdromos(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Sheep(),
+                    new Ekdromos(),
                     // new Ekdromos(),
                     //new Pytho(),
                     //new Agamemnon(),
@@ -224,27 +232,27 @@ public class ProgressionHandler
             {
                 [0] = new List<Card>
                 {
-                    // new Peltast(),
-                    // new Sheep(),
-                    // new Ekdromos(),
-                    // new Hoplite(),
-                    // new Hoplite(),
-                    // new Thureophoros(),
-                    // new Chariot(),
-                    // new Hippeis(),
-                    // new Hippeis(),
-                    // new Myrmidon(),
-                    // new PriceOfProfit(),
-                    // new Blessing(),
-                    // new Blessing(),
-                    // new ThrowStone(),
-                    // new Scry(),
-
-                    new Hector(),
+                    new Peltast(),
+                    new Sheep(),
                     new Ekdromos(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Thureophoros(),
                     new Chariot(),
-                    new Achilles(),
-                    new Cerberus(),
+                    new Hippeis(),
+                    new Hippeis(),
+                    new Myrmidon(),
+                    new PriceOfProfit(),
+                    new Blessing(),
+                    new Blessing(),
+                    new ThrowStone(),
+                    new Scry(),
+
+                    // new Hector(),
+                    // new Ekdromos(),
+                    // new Chariot(),
+                    // new Achilles(),
+                    // new Cerberus(),
 
                     // new Scry(),
                     // new Scry(),
@@ -1729,10 +1737,7 @@ public class ProgressionHandler
                     new ThrowStone(),
                 },
             },
-            StartingBattleRow = new Dictionary<int, List<Follower>>
-            {
-                [1] = new List<Follower> { new Sheep() },
-            },
+            StartingBattleRow = new Dictionary<int, List<Follower>>(),
             Rewards = new List<Card> { new Sheep(), new ThrowStone(), new Blessing() },
         };
 
@@ -1758,6 +1763,7 @@ public class ProgressionHandler
                     new Maenad(),
                     new Panic(),
                     new Panic(),
+                    new ThrowStone(),
                 },
             },
             StartingBattleRow = new Dictionary<int, List<Follower>>

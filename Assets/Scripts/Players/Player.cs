@@ -564,8 +564,16 @@ public class Player : ITarget
             return null;
         }
 
-        Card card = Deck[0];
-        Deck.RemoveAt(0);
+        Card card = null;
+        if (GameState != null && !GameState.IsSimulated)
+            card = TutorialCombatScript.TryTake(this, Deck);
+
+        if (card == null)
+        {
+            card = Deck[0];
+            Deck.RemoveAt(0);
+        }
+
         Hand.Add(card);
         //if (!GameState.IsSimulated) View.Instance.DrawCard(card);
         return card;

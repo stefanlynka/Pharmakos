@@ -11,12 +11,17 @@ public class HumanPlayer : Player
 
     public override void StartTurn()
     {
+        TurnNumber++;
         base.StartTurn();
         if (Controller.Instance != null
             && Controller.Instance.IsTutorialRun
             && Controller.Instance.CanonGameState != null
             && ReferenceEquals(Controller.Instance.CanonGameState.CurrentPlayer, this))
-            TutorialDirector.Raise(TutorialTrigger.CombatTurnStarted);
+        {
+            EncounterType encounter = TutorialCombatScript.ActiveEncounter;
+            TutorialDirector.Raise(TutorialTrigger.CombatTurnStarted, encounter, TurnNumber);
+            TutorialCombatScript.OnBoardChanged();
+        }
     }
     // Start is called before the first frame update
     void Start()

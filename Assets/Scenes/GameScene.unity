@@ -19705,7 +19705,7 @@ MonoBehaviour:
   HandWidth: 45
   CardY: 0
   CardZ: 2.5
-  CardZOffset: 0.48
+  CardZOffset: 0.1
   Scale: {x: 1, y: 1, z: 1}
   HighlightY: 4.25
   HighlightZ: -5
@@ -69216,11 +69216,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3960794645293454765, guid: 792d8fcadfa0db846aa32d87cd0f63b0, type: 3}
       propertyPath: m_fontSize
-      value: 42
+      value: 41.85
       objectReference: {fileID: 0}
     - target: {fileID: 3960794645293454765, guid: 792d8fcadfa0db846aa32d87cd0f63b0, type: 3}
       propertyPath: m_fontSizeBase
       value: 42
+      objectReference: {fileID: 0}
+    - target: {fileID: 3960794645293454765, guid: 792d8fcadfa0db846aa32d87cd0f63b0, type: 3}
+      propertyPath: m_VerticalAlignment
+      value: 256
       objectReference: {fileID: 0}
     - target: {fileID: 4060317665384889584, guid: 792d8fcadfa0db846aa32d87cd0f63b0, type: 3}
       propertyPath: m_Pivot.x
@@ -69300,6 +69304,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4060317665384889584, guid: 792d8fcadfa0db846aa32d87cd0f63b0, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5597030086465505550, guid: 792d8fcadfa0db846aa32d87cd0f63b0, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 5597030086465505550, guid: 792d8fcadfa0db846aa32d87cd0f63b0, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 70
+      objectReference: {fileID: 0}
+    - target: {fileID: 5597030086465505550, guid: 792d8fcadfa0db846aa32d87cd0f63b0, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5597030086465505550, guid: 792d8fcadfa0db846aa32d87cd0f63b0, type: 3}
+      propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7682356930925535922, guid: 792d8fcadfa0db846aa32d87cd0f63b0, type: 3}

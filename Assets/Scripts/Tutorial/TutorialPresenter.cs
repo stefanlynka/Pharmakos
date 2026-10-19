@@ -26,7 +26,39 @@ public class TutorialPresenter : MonoBehaviour
 
     readonly List<Image> _sprites = new List<Image>();
     readonly Queue<TutorialBeat> _queue = new Queue<TutorialBeat>();
+    TutorialSpriteCue[] _activeCues = System.Array.Empty<TutorialSpriteCue>();
     Coroutine _routine;
+    bool _dismissRequested;
+    float _maxTextWidth = -1f;
+
+    public void DismissForOverworldTravel()
+    {
+        _dismissRequested = true;
+
+        if (_queue.Count == 0)
+            return;
+
+        var kept = new Queue<TutorialBeat>();
+        while (_queue.Count > 0)
+        {
+            TutorialBeat beat = _queue.Dequeue();
+            if (beat.Trigger != TutorialTrigger.OverworldShown)
+                kept.Enqueue(beat);
+        }
+
+        while (kept.Count > 0)
+            _queue.Enqueue(kept.Dequeue());
+    }
+
+    void Update()
+    {
+        if (_routine != null || IsBlocking)
+            return;
+        if (Controller.Instance == null || !Controller.Instance.IsTutorialRun)
+            return;
+        if (TutorialSpotlight.IsPointerOverEndTurn())
+            TutorialDirector.Raise(TutorialTrigger.EndTurnHovered);
+    }
 
     public static TutorialPresenter Ensure()
     {
@@ -71,6 +103,7 @@ public class TutorialPresenter : MonoBehaviour
         }
 
         IsBlocking = false;
+        _dismissRequested = false;
         HideAll();
     }
 
@@ -94,7 +127,32 @@ public class TutorialPresenter : MonoBehaviour
 
     IEnumerator Play(TutorialBeat beat)
     {
-        IsBlocking = beat.BlockInput || beat.ShowBlackBlocker;
+        if (beat.Delay > 0f)
+        {
+            float waited = 0f;
+            while (waited < beat.Delay)
+            {
+                if (_dismissRequested)
+                {
+                    _dismissRequested = false;
+                    yield break;
+                }
+
+                waited += Time.deltaTime;
+                yield return null;
+            }
+        }
+
+        if (_dismissRequested)
+        {
+            _dismissRequested = false;
+            yield break;
+        }
+
+        if (TutorialSpotlight.TryResolve(beat.Focus, out Rect focused))
+            beat.Hole = focused;
+
+        IsBlocking = beat.ShowBlackBlocker;
         if (_group != null)
         {
             _group.alpha = 0f;
@@ -114,11 +172,19 @@ public class TutorialPresenter : MonoBehaviour
         int visible = 0;
         float typeTimer = 0f;
         float elapsed = 0f;
-        float hold = Mathf.Max(0.05f, beat.Duration);
+        float shown = 0f;
+        bool waitForClick = beat.Duration < 0f;
+        float hold = waitForClick ? float.PositiveInfinity : Mathf.Max(0.05f, beat.Duration);
         int textLength = typing ? beat.Text.Length : 0;
 
-        while (elapsed < hold || (typing && visible < textLength))
+        while (true)
         {
+            if (_dismissRequested)
+            {
+                _dismissRequested = false;
+                break;
+            }
+
             if (typing && visible < textLength)
             {
                 typeTimer += Time.deltaTime;
@@ -131,6 +197,12 @@ public class TutorialPresenter : MonoBehaviour
 
                 _text.maxVisibleCharacters = visible;
             }
+
+            bool textShown = !typing || visible >= textLength;
+            if (textShown)
+                shown += Time.deltaTime;
+            if (textShown && (Input.GetMouseButtonDown(0) || shown >= hold))
+                break;
 
             if (_group != null)
                 _group.alpha = Mathf.MoveTowards(_group.alpha, 1f, Time.deltaTime / FadeDuration);
@@ -221,24 +293,42 @@ public class TutorialPresenter : MonoBehaviour
 
         _text.text = beat.Text;
         _text.maxVisibleCharacters = 0;
+        FitTextFrame();
         Place(_textFrame != null ? _textFrame : _text.rectTransform, beat.TextAnchor);
+    }
+
+    void FitTextFrame()
+    {
+        if (_textFrame == null)
+            return;
+
+        if (_maxTextWidth < 0f)
+            _maxTextWidth = Mathf.Max(1f, _textFrame.sizeDelta.x);
+
+        _text.enableAutoSizing = false;
+
+        float width = Mathf.Min(_text.GetPreferredValues(_text.text).x, _maxTextWidth);
+        float height = _text.GetPreferredValues(_text.text, width, 0f).y;
+        _textFrame.sizeDelta = new Vector2(Mathf.Ceil(width), Mathf.Ceil(height));
     }
 
     void CreateSprites(TutorialBeat beat)
     {
         ClearSprites();
-        if (beat.Sprites == null || _spriteTemplate == null)
+        _activeCues = BuildCues(beat);
+        if (_activeCues.Length == 0 || _spriteTemplate == null)
             return;
 
-        for (int i = 0; i < beat.Sprites.Length; i++)
+        for (int i = 0; i < _activeCues.Length; i++)
         {
-            TutorialSpriteCue cue = beat.Sprites[i];
+            TutorialSpriteCue cue = _activeCues[i];
             if (cue == null)
                 continue;
 
             Image image = Instantiate(_spriteTemplate, _spriteTemplate.transform.parent);
             image.gameObject.SetActive(true);
             image.name = "TutorialSprite";
+            image.raycastTarget = false;
             if (!string.IsNullOrEmpty(cue.ResourcePath))
             {
                 Sprite sprite = Resources.Load<Sprite>(cue.ResourcePath);
@@ -248,22 +338,57 @@ public class TutorialPresenter : MonoBehaviour
                     image.sprite = sprite;
             }
 
-            image.rectTransform.localEulerAngles = new Vector3(0f, 0f, cue.Rotation);
-            Place(image.rectTransform, cue.From);
+            image.preserveAspect = cue.Fill;
+            image.rectTransform.localEulerAngles = new Vector3(0f, 0f, cue.Fill ? 0f : cue.Rotation);
+            if (cue.StayOutsideHole)
+                cue.From = ArrowRest(image.rectTransform, beat.Hole, cue.Rotation);
+            if (cue.Fill)
+                Stretch(image.rectTransform, cue.From, cue.To);
+            else
+                Place(image.rectTransform, cue.From);
+
             image.transform.SetAsLastSibling();
             _sprites.Add(image);
         }
+
+        if (_textFrame != null)
+            _textFrame.SetAsLastSibling();
+    }
+
+    static TutorialSpriteCue[] BuildCues(TutorialBeat beat)
+    {
+        bool point = beat.PointAtHole && beat.Hole.width > 0.01f && beat.Hole.height > 0.01f;
+        int spriteCount = beat.Sprites != null ? beat.Sprites.Length : 0;
+        if (!point && spriteCount == 0)
+            return System.Array.Empty<TutorialSpriteCue>();
+
+        var cues = new TutorialSpriteCue[spriteCount + (point ? 1 : 0)];
+        int index = 0;
+        if (point)
+        {
+            bool pointUp = beat.Hole.yMax > 0.72f;
+            cues[index++] = new TutorialSpriteCue
+            {
+                Rotation = pointUp ? 90f : -90f,
+                StayOutsideHole = true,
+            };
+        }
+
+        for (int i = 0; i < spriteCount; i++)
+            cues[index++] = beat.Sprites[i];
+
+        return cues;
     }
 
     void UpdateSprites(TutorialBeat beat, float elapsed)
     {
-        if (beat.Sprites == null)
+        if (_activeCues == null)
             return;
 
         int spriteIndex = 0;
-        for (int i = 0; i < beat.Sprites.Length && spriteIndex < _sprites.Count; i++)
+        for (int i = 0; i < _activeCues.Length && spriteIndex < _sprites.Count; i++)
         {
-            TutorialSpriteCue cue = beat.Sprites[i];
+            TutorialSpriteCue cue = _activeCues[i];
             if (cue == null)
                 continue;
 
@@ -272,14 +397,11 @@ public class TutorialPresenter : MonoBehaviour
             if (image == null)
                 continue;
 
-            float span = cue.Duration > 0f ? cue.Duration : beat.Duration;
-            if (cue.Duration > 0f && elapsed > cue.Duration)
-            {
-                image.enabled = false;
+            bool showing = elapsed >= cue.Start && (cue.Duration <= 0f || elapsed <= cue.Start + cue.Duration);
+            image.enabled = showing;
+            if (!showing || cue.Fill)
                 continue;
-            }
 
-            image.enabled = true;
             float bob = Mathf.Sin(elapsed * ArrowBobCyclesPerSecond * Mathf.PI * 2f) * ArrowBobHeight;
             Place(image.rectTransform, cue.From + new Vector2(0f, bob));
         }
@@ -319,6 +441,23 @@ public class TutorialPresenter : MonoBehaviour
         }
 
         _sprites.Clear();
+        _activeCues = System.Array.Empty<TutorialSpriteCue>();
+    }
+
+    static Vector2 ArrowRest(RectTransform arrow, Rect hole, float rotation)
+    {
+        Vector3[] corners = new Vector3[4];
+        arrow.GetWorldCorners(corners);
+        float halfPixels = Mathf.Max(
+            Vector3.Distance(corners[0], corners[1]),
+            Vector3.Distance(corners[1], corners[2])) * 0.5f;
+        float half = halfPixels / Mathf.Max(1f, UnityEngine.Screen.height);
+        const float gap = 0.01f;
+        float offset = half + ArrowBobHeight + gap;
+        float x = hole.x + hole.width * 0.5f;
+        bool pointUp = rotation > 0f;
+        float y = pointUp ? hole.yMin - offset : hole.yMax + offset;
+        return new Vector2(x, y);
     }
 
     static void Stretch(RectTransform rt, Vector2 min, Vector2 max)

@@ -34,6 +34,9 @@ public class SummonFollowerAction : GameAction
     {
         bool success = Follower.Owner.SummonFollower(Follower, Index, CreateCrops);
 
+        if (!simulated && success)
+            TutorialCombatScript.OnBoardChanged();
+
         base.Execute(simulated, success);
     }
 

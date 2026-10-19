@@ -29,6 +29,9 @@ public class PlayFollowerAction : GameAction
         GameAction newAction = new SummonFollowerAction(Follower, Index);
         Follower.GameState.ActionHandler.AddAction(newAction);
 
+        if (!simulated)
+            TutorialCombatScript.OnHumanFollowerPlayed(Follower);
+
         base.Execute(simulated);
     }
 

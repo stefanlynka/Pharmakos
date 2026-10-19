@@ -303,6 +303,8 @@ public class Controller : MonoBehaviour
             CanonGameState.ActionHandler.AddAction(startFightAction);
         }
 
+        TutorialCombatScript.ArmForCurrentFight(Player1, Player2);
+
         // Load Starting BattleRow
         LoadStartingBattleRow();
 
