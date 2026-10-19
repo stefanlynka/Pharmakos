@@ -75,7 +75,6 @@ public class Controller : MonoBehaviour
     public GameObject GameField;
     public CardGainRewardHandler CardGainRewardHandler;
     public RitualRewardHandler RitualRewardHandler;
-    public CardRemovalRewardHandler CardRemovalRewardHandler;
     public StarterBundleHandler StarterBundleHandler;
     public TutorialHandler TutorialHandler;
     public ProgressionHandler ProgressionHandler;
@@ -274,7 +273,6 @@ public class Controller : MonoBehaviour
     {
         CardGainRewardHandler.gameObject.SetActive(false);
         RitualRewardHandler.gameObject.SetActive(false);
-        CardRemovalRewardHandler.gameObject.SetActive(false);
         if (TrinketRewardHandler != null)
             TrinketRewardHandler.gameObject.SetActive(false);
         GameField.SetActive(true);
@@ -499,7 +497,6 @@ public class Controller : MonoBehaviour
         if (TempleHandler == null)
         {
             Debug.LogError("Controller: TempleHandler is not assigned and none was found in the scene.");
-            GoToCardRemovalRewardScreen();
             return;
         }
 
@@ -712,20 +709,6 @@ public class Controller : MonoBehaviour
         CurrentScreen = ScreenName.GameOver;
 
         ScreenHandler.Instance.ShowScreen(ScreenName.GameOver);
-    }
-    private void GoToCardRemovalRewardScreen()
-    {
-        CurrentScreen = ScreenName.CardRemovalRewards;
-
-        GameField.SetActive(false);
-        CardRemovalRewardHandler.gameObject.SetActive(true);
-        CardRemovalRewardHandler.Load(HumanPlayerDetails.DeckBlueprint[0]);
-        //ScreenHandler.Instance.ShowScreen(ScreenName.Blank, true, false);
-
-        ScreenHandler.Instance.HideScreen(ScreenName.Overworld, true);
-        ScreenHandler.Instance.HideScreen(ScreenName.Game, true);
-        ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
-        ScreenHandler.Instance.ShowScreen(ScreenName.CardRemovalRewards, false, false);
     }
     public void GoToRitualRewardScreen()
     {

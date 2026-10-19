@@ -39,6 +39,7 @@ public class View : MonoBehaviour
     public ViewDiscard ViewDiscard;
 
     public SelectionHandler SelectionHandler;
+    AttackArrowPreview attackArrowPreview;
     public MenuSelectionHandler MenuSelectionHandler;
     public SequenceHandler SequenceHandler;
     //public TweenManager TweenManager;
@@ -99,6 +100,7 @@ public class View : MonoBehaviour
         OfferingPrefab = Resources.Load<GameObject>("Prefabs/Offerings/Offering");
 
         SelectionHandler = new SelectionHandler();
+        attackArrowPreview = new AttackArrowPreview();
 
         MenuSelectionHandler = GetComponent<MenuSelectionHandler>();
         if (MenuSelectionHandler == null)
@@ -137,6 +139,7 @@ public class View : MonoBehaviour
         Player2.Clear();
 
         SelectionHandler.Clear();
+        attackArrowPreview?.Clear();
         // TODO: Check if everything in CardMap is getting cleared up
         Dictionary<int, ViewCard> tempCardMap = new Dictionary<int, ViewCard>(CardMap);
 
@@ -157,6 +160,7 @@ public class View : MonoBehaviour
 
         Player1.UpdatePlayer();
         Player2.UpdatePlayer();
+        attackArrowPreview?.Tick();
 
         //TweenManager.Update();
     }

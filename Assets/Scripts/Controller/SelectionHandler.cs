@@ -165,7 +165,7 @@ public class SelectionHandler
 
     void ApplyHeldCardPosition()
     {
-        if (HeldCard == null) return;
+        if (HeldCard == null || IsAimingSpell()) return;
 
         Camera camera = GetSelectionCamera();
         if (camera == null) return;
@@ -211,9 +211,9 @@ public class SelectionHandler
             HeldCard = viewSpell;
             if (viewSpell.Spell.CanPlay() && viewSpell.Spell.HasPlayableTargets())
             {
-                viewSpell.EnterTargetMode();
                 CurrentTargets = viewSpell.Spell.GetTargets();
                 View.Instance.HighlightTargets(CurrentTargets);
+                return;
             }
             View.Instance.Player1.HandHandler.RemoveCard(HeldCard);
             View.ApplyCombatCardScale(HeldCard.transform);
@@ -328,7 +328,8 @@ public class SelectionHandler
                 }
             }
 
-            if (!foundTarget) View.Instance.Player1.HandHandler.MoveCardToHand(HeldCard);
+            if (!foundTarget && !View.Instance.Player1.HandHandler.ViewCards.Contains(HeldCard))
+                View.Instance.Player1.HandHandler.MoveCardToHand(HeldCard);
         }
 
         HeldCard.SetHighlight(false);
@@ -385,6 +386,11 @@ public class SelectionHandler
     public bool IsSelectingTarget()
     {
         return HeldCard != null || AttackingFollower != null || SelectedRitual != null;
+    }
+
+    public bool IsAimingSpell()
+    {
+        return HeldCard is ViewSpell && CurrentTargets.Count > 0;
     }
     public bool IsHoldingCard()
     {

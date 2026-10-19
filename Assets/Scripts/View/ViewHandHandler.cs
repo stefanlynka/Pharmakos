@@ -95,9 +95,6 @@ public class ViewHandHandler : MonoBehaviour
         for (int i = 0; i < ViewCards.Count; i++)
         {
             ViewCard viewCard = ViewCards[i];
-            if (View.Instance.SelectionHandler.HeldCard == viewCard)
-                continue;
-
             Vector3 newPos = new Vector3(CardWidth / 2 + CardWidth * i + spacing * i, CardY, CardZ - CardZOffset * i);
             if (View.Instance.SelectionHandler.IsHoveringOverThisCard(viewCard) && !selectingTarget)
             {

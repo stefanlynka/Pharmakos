@@ -34746,7 +34746,6 @@ MonoBehaviour:
   GameField: {fileID: 890512266}
   CardGainRewardHandler: {fileID: 504036829}
   RitualRewardHandler: {fileID: 2051613466}
-  CardRemovalRewardHandler: {fileID: 0}
   StarterBundleHandler: {fileID: 629979975}
   TutorialHandler: {fileID: 553640405}
   DeckViewer: {fileID: 1017592748}
@@ -68594,6 +68593,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: StyxArea
       objectReference: {fileID: 0}
+    - target: {fileID: 6654477850711041096, guid: 88e7297c7a2aa224483a518ae49f6c22, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8304458147426198424, guid: 88e7297c7a2aa224483a518ae49f6c22, type: 3}
       propertyPath: m_LocalPosition.x
       value: 700
@@ -68904,6 +68907,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1589095876}
     m_Modifications:
+    - target: {fileID: 1587949525855297520, guid: 3def01b7f6d5f9d4cbb9aa730b005846, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 205.00002
+      objectReference: {fileID: 0}
+    - target: {fileID: 2131458277674909446, guid: 3def01b7f6d5f9d4cbb9aa730b005846, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 205.00002
+      objectReference: {fileID: 0}
     - target: {fileID: 2188286945552846601, guid: 3def01b7f6d5f9d4cbb9aa730b005846, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -68915,6 +68926,10 @@ PrefabInstance:
     - target: {fileID: 4939389693100993913, guid: 3def01b7f6d5f9d4cbb9aa730b005846, type: 3}
       propertyPath: m_Name
       value: GameScreen
+      objectReference: {fileID: 0}
+    - target: {fileID: 5381513889133921858, guid: 3def01b7f6d5f9d4cbb9aa730b005846, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 205.00002
       objectReference: {fileID: 0}
     - target: {fileID: 5764867747427898992, guid: 3def01b7f6d5f9d4cbb9aa730b005846, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
