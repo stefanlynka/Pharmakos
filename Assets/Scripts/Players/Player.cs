@@ -768,7 +768,9 @@ public class Player : ITarget
 
         if (value != 0)
         {
-            GameAction newAction = new CreateOfferingAction(GameState.CurrentPlayer, OfferingType.Blood, Mathf.Abs(value), ITargetID, GameState.CurrentPlayer.ITargetID);
+            // The fight ends on a killing blow, so don't fly blood tokens out of the dying player.
+            bool animateBlood = value > 0 || Health > 0;
+            GameAction newAction = new CreateOfferingAction(GameState.CurrentPlayer, OfferingType.Blood, Mathf.Abs(value), ITargetID, GameState.CurrentPlayer.ITargetID, animateBlood);
             GameState.ActionHandler.AddAction(newAction);
         }
         //GameState.CurrentPlayer.ChangeOffering(OfferingType.Blood, Mathf.Abs(value));

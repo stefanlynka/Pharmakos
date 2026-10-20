@@ -2599,5 +2599,76 @@ public class ProgressionHandler
 
         return trinkets;
     }
+
+    public void WriteRunProgress(RunSaveData save)
+    {
+        if (save == null) return;
+
+        save.currentLevel = CurrentLevel;
+        save.currentFightNumber = CurrentFightNumber;
+        save.hasSetupFirstCombat = hasSetupFirstCombat;
+        save.lastFoughtEnemy = LastFoughtEnemyDeckName.ToString();
+        save.lastFoughtPool = LastFoughtEnemyPoolNum;
+        save.enemyPool = DeckNamesToStrings(EnemyPool);
+        save.bossPool = DeckNamesToStrings(BossPool);
+        save.trinketPool = new List<string>();
+        foreach (Trinket trinket in availableTrinkets)
+        {
+            if (trinket != null)
+                save.trinketPool.Add(trinket.GetType().Name);
+        }
+    }
+
+    public void ReadRunProgress(RunSaveData save)
+    {
+        if (save == null) return;
+
+        CurrentLevel = save.currentLevel;
+        CurrentFightNumber = save.currentFightNumber;
+        hasSetupFirstCombat = save.hasSetupFirstCombat;
+        LastFoughtEnemyDeckName = DeckName.None;
+        if (!string.IsNullOrEmpty(save.lastFoughtEnemy)
+            && !Enum.TryParse(save.lastFoughtEnemy, out LastFoughtEnemyDeckName))
+        {
+            Debug.LogWarning("Run save: unknown last enemy " + save.lastFoughtEnemy);
+            LastFoughtEnemyDeckName = DeckName.None;
+        }
+
+        LastFoughtEnemyPoolNum = save.lastFoughtPool;
+        EnemyPool = StringsToDeckNames(save.enemyPool);
+        BossPool = StringsToDeckNames(save.bossPool);
+        availableTrinkets = new List<Trinket>();
+        if (save.trinketPool == null) return;
+
+        foreach (string typeName in save.trinketPool)
+        {
+            Trinket trinket = RunContent.CreateTrinket(typeName);
+            if (trinket != null)
+                availableTrinkets.Add(trinket);
+        }
+    }
+
+    static List<string> DeckNamesToStrings(List<DeckName> names)
+    {
+        var result = new List<string>();
+        if (names == null) return result;
+        foreach (DeckName name in names)
+            result.Add(name.ToString());
+        return result;
+    }
+
+    static List<DeckName> StringsToDeckNames(List<string> names)
+    {
+        var result = new List<DeckName>();
+        if (names == null) return result;
+        foreach (string name in names)
+        {
+            if (Enum.TryParse(name, out DeckName deckName))
+                result.Add(deckName);
+            else
+                Debug.LogWarning("Run save: unknown enemy deck " + name);
+        }
+        return result;
+    }
 }
 

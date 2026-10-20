@@ -81,7 +81,7 @@ public class OverworldMapController : MonoBehaviour
     /// <summary>
     /// New run: floor-based encounters (hex visuals follow encounter), reset cleared/progress from <see cref="OverworldMapNode.IsStart"/>.
     /// </summary>
-    public void SetupOverworldForNewRun()
+    public void SetupOverworldForNewRun(CustomRandom mapRng)
     {
         SetTutorialNodesActive(false);
         _allNodes = Grid != null ? Grid.GetAllNodes() : new OverworldMapNode[0];
@@ -94,7 +94,9 @@ public class OverworldMapController : MonoBehaviour
             if (node == null || node == _currentNode) continue;
             nodesToAssign.Add(node);
         }
-        OverworldMapNode.AssignEncountersByFloorRules(nodesToAssign.ToArray());
+        if (mapRng == null)
+            mapRng = new CustomRandom(1);
+        OverworldMapNode.AssignEncountersByFloorRules(nodesToAssign.ToArray(), mapRng);
 
         if (_currentNode != null)
             _currentNode.ApplyEncounter(EncounterType.None);
@@ -147,7 +149,8 @@ public class OverworldMapController : MonoBehaviour
             if (node == null || node == _currentNode) continue;
             nodesToAssign.Add(node);
         }
-        OverworldMapNode.AssignEncountersByFloorRules(nodesToAssign.ToArray());
+        int tutorialMapSeed = Controller.Instance != null ? Controller.starterSeed : 1;
+        OverworldMapNode.AssignEncountersByFloorRules(nodesToAssign.ToArray(), new CustomRandom(tutorialMapSeed));
 
         foreach (var node in _allNodes)
         {
@@ -166,6 +169,78 @@ public class OverworldMapController : MonoBehaviour
         //     DynamicSmokeSystem.Emit(SmokePosition);
         // }
 
+    }
+
+    public void WriteMap(RunSaveData save)
+    {
+        if (save == null) return;
+
+        OverworldMapNode[] nodes = _allNodes;
+        if (nodes == null && Grid != null)
+            nodes = Grid.GetAllNodes();
+
+        save.nodes = new List<MapNodeSave>();
+        if (nodes != null)
+        {
+            foreach (OverworldMapNode node in nodes)
+            {
+                if (node == null) continue;
+                save.nodes.Add(new MapNodeSave
+                {
+                    q = node.Q,
+                    r = node.R,
+                    encounter = (int)node.EncounterType,
+                    cleared = node.Cleared,
+                });
+            }
+        }
+
+        save.currentQ = _currentNode != null ? _currentNode.Q : 0;
+        save.currentR = _currentNode != null ? _currentNode.R : 0;
+    }
+
+    public void ApplySavedMap(RunSaveData save)
+    {
+        SetTutorialNodesActive(false);
+        _allNodes = Grid != null ? Grid.GetAllNodes() : new OverworldMapNode[0];
+        _clearedNodes.Clear();
+
+        var byAxial = new Dictionary<Vector2Int, OverworldMapNode>();
+        foreach (OverworldMapNode node in _allNodes)
+        {
+            if (node == null) continue;
+            byAxial[node.Axial] = node;
+            node.Cleared = false;
+        }
+
+        if (save != null && save.nodes != null)
+        {
+            foreach (MapNodeSave saved in save.nodes)
+            {
+                if (saved == null) continue;
+                var key = new Vector2Int(saved.q, saved.r);
+                if (!byAxial.TryGetValue(key, out OverworldMapNode node))
+                {
+                    Debug.LogWarning("Run save: map has no node at " + saved.q + "," + saved.r);
+                    continue;
+                }
+
+                node.ApplyEncounter((EncounterType)saved.encounter);
+                node.Cleared = saved.cleared;
+                if (saved.cleared)
+                    _clearedNodes.Add(key);
+            }
+        }
+
+        _currentNode = null;
+        if (save != null && byAxial.TryGetValue(new Vector2Int(save.currentQ, save.currentR), out OverworldMapNode current))
+            _currentNode = current;
+        if (_currentNode == null)
+            _currentNode = FindStartNode();
+
+        RefreshHexInteractionLayers();
+        ResetHexVisualScales();
+        RefreshPlayerLyre();
     }
 
     public void ShowMap()

@@ -14,6 +14,7 @@ public class Controller : MonoBehaviour
     public static Controller Instance;
 
     public static int starterSeed = 1;
+    public int RunSeed = 1;
     public bool GamePaused = false;
 
     public static bool ActionDebugMode = false;
@@ -279,7 +280,8 @@ public class Controller : MonoBehaviour
 
         Player1 = new HumanPlayer();
         Player2 = new AIPlayer();
-        CanonGameState = new GameState(Player1, Player2);
+        int fightSeed = MetaRNG != null ? MetaRNG.Next(1, int.MaxValue) : GetRandomMetaSeed();
+        CanonGameState = new GameState(Player1, Player2, fightSeed);
         Player1.AttachToGameState(CanonGameState);
         Player2.AttachToGameState(CanonGameState);
 
@@ -356,6 +358,7 @@ public class Controller : MonoBehaviour
         CurrentScreen = ScreenName.Overworld;
         ScreenHandler.Instance.ShowScreen(ScreenName.Overworld);
         ShowStatusButton();
+        SaveCurrentRun();
     }
 
     /// <summary>
@@ -645,6 +648,7 @@ public class Controller : MonoBehaviour
 
         ScreenHandler.Instance.HideScreen(ScreenName.Blank, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.Start, true);
+        RefreshStartMenu();
     }
     // TESTING ONLY: starts the run with random rituals and trinkets already waiting at the Styx
     void SeedStyxForTesting(int count)
@@ -665,16 +669,21 @@ public class Controller : MonoBehaviour
     {
         IsTutorialRun = false;
         TutorialDirector.Reset();
+        RunSeed = UnityEngine.Random.Range(1, int.MaxValue);
+        starterSeed = RunSeed;
+        MetaRNG = new CustomRandom(RunSeed);
+        Debug.Log("MetaSeed: " + RunSeed);
         RunHeartStrings = Player.StartingHeartStrings;
         StyxRunState.Reset();
         EncounteredEventsThisRun.Clear();
+        SacrificedFollowers.Clear();
         FirstTimeSetup();
         // TESTING ONLY: remove this line and SeedStyxForTesting above once the Styx encounter is done
         SeedStyxForTesting(7);
 
         if (!IsTestChamber && OverworldMapController != null)
         {
-            OverworldMapController.SetupOverworldForNewRun();
+            OverworldMapController.SetupOverworldForNewRun(new CustomRandom(RunSeed));
         }
 
         CurrentScreen = ScreenName.Game;
@@ -718,6 +727,7 @@ public class Controller : MonoBehaviour
     }
     private void GoToGameOverScreen()
     {
+        DeleteRunSave();
         CurrentScreen = ScreenName.GameOver;
 
         ScreenHandler.Instance.ShowScreen(ScreenName.GameOver);
@@ -757,6 +767,11 @@ public class Controller : MonoBehaviour
         ScreenHandler.Instance.ShowScreen(ScreenName.CardGainRewards);
         ShowStatusButton();
         TutorialDirector.Raise(TutorialTrigger.CardRewardsShown, TutorialCombatScript.ActiveEncounter);
+    }
+
+    public void OnNewRun()
+    {
+        GoToStarterBundleScreen();
     }
 
     public void GoToStarterBundleScreen()
@@ -924,6 +939,7 @@ public class Controller : MonoBehaviour
         {
             GameField.SetActive(false);
             SetMainCombatCameraActive(false);
+            DeleteRunSave();
             CurrentScreen = ScreenName.Success;
             ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
             ScreenHandler.Instance.ShowScreen(ScreenName.Success);
@@ -1164,6 +1180,7 @@ public class Controller : MonoBehaviour
         RunHeartStrings = Player.StartingHeartStrings;
         StyxRunState.Reset();
         EncounteredEventsThisRun.Clear();
+        SacrificedFollowers.Clear();
 
         if (OverworldMapController != null)
             OverworldMapController.SetupOverworldForTutorialRun();
@@ -1189,13 +1206,70 @@ public class Controller : MonoBehaviour
             CurrentScreen = ScreenName.Overworld;
             ScreenHandler.Instance.ShowScreen(ScreenName.Overworld, true, false);
             ShowStatusButton();
+            SaveCurrentRun();
         });
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }
+
+    public void ContinueRun()
+    {
+        if (!RunSave.TryLoad(out RunSaveData save))
+        {
+            RefreshStartMenu();
+            return;
+        }
+
+        IsTutorialRun = false;
+        IsTestChamber = false;
+        TutorialDirector.Reset();
+        FirstTimeSetup();
+        BeginFreshPlayerDeck();
+        if (!RunSave.Apply(save))
+        {
+            RefreshStartMenu();
+            return;
+        }
+
+        ShowOverworldFromMenu();
+    }
+
+    public void AbandonRun()
+    {
+        DeleteRunSave();
+    }
+
+    public void RefreshLoadedRunFlags()
+    {
+        RefreshCanSacrificeForHeartstrings();
+    }
+
+    void SaveCurrentRun()
+    {
+        if (IsTutorialRun || IsTestChamber) return;
+        if (OverworldMapController == null) return;
+
+        RunSave.WriteFromCurrentRun();
+        SaveIcon.Show();
+    }
+
+    void DeleteRunSave()
+    {
+        if (IsTutorialRun || IsTestChamber) return;
+        RunSave.Delete();
+    }
+
+    void RefreshStartMenu()
+    {
+        StartMenuHandler menu = FindObjectOfType<StartMenuHandler>(true);
+        if (menu != null)
+            menu.Refresh();
+    }
+
     public void HideTutorial()
     {
         ScreenHandler.Instance.HideScreen(ScreenName.Tutorial);
         ScreenHandler.Instance.ShowScreen(ScreenName.Start);
+        RefreshStartMenu();
     }
     public void ToggleDeckViewer()
     {

@@ -11,14 +11,16 @@ public class CreateOfferingAction : GameAction
     public int Amount;
     public int SourceID;
     public int DestinationID;
+    public bool Animate;
 
-    public CreateOfferingAction(Player owner, OfferingType offering, int amount, int sourceID, int destinationID)
+    public CreateOfferingAction(Player owner, OfferingType offering, int amount, int sourceID, int destinationID, bool animate = true)
     {
         Owner = owner;
         Offering = offering;
         Amount = amount;
         SourceID = sourceID;
         DestinationID = destinationID;
+        Animate = animate;
     }
 
     public override GameAction DeepCopy(Player newOwner)
@@ -29,6 +31,7 @@ public class CreateOfferingAction : GameAction
         copy.Amount = Amount;
         copy.SourceID = SourceID;
         copy.DestinationID = DestinationID;
+        copy.Animate = Animate;
 
         return copy;
     }
@@ -46,7 +49,7 @@ public class CreateOfferingAction : GameAction
     public override List<AnimationAction> GetAnimationActions()
     {
         List<AnimationAction> animationActions = new List<AnimationAction>(){};
-        if (Amount > 0) animationActions.Add(new CreateOfferingAnimation(this, Owner, Offering, Amount, SourceID, DestinationID));
+        if (Animate && Amount > 0) animationActions.Add(new CreateOfferingAnimation(this, Owner, Offering, Amount, SourceID, DestinationID));
 
         return animationActions;
     }

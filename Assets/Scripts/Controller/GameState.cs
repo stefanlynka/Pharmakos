@@ -55,13 +55,17 @@ public class GameState
 
     }
 
-    public GameState(Player human, Player ai)
+    public GameState(Player human, Player ai) : this(human, ai, Controller.GetRandomMetaSeed())
+    {
+    }
+
+    public GameState(Player human, Player ai, int rngSeed)
     {
         Human = human;
         AI = ai;
         CurrentTeamID = 0;
 
-        starterSeed = Controller.GetRandomMetaSeed(); //UnityEngine.Random.Range(0, 1000);
+        starterSeed = rngSeed;
         Debug.Log("MetaSeed: " + starterSeed);
 
         RNG = new CustomRandom(starterSeed);

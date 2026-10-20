@@ -34972,6 +34972,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10e033d80e54cdb46a0c4dc9477b0b27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  RunSeed: 1
   GamePaused: 0
   View: {fileID: 1036266453}
   GameRunning: 0
@@ -68400,13 +68401,27 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1036266454}
+    - target: {fileID: 2382296900710661000, guid: d8de71c6f08111244a582d198c9b9c90, type: 3}
+      propertyPath: m_text
+      value: 'Tutorial
+
+'
+      objectReference: {fileID: 0}
+    - target: {fileID: 2382296900710661000, guid: d8de71c6f08111244a582d198c9b9c90, type: 3}
+      propertyPath: m_fontSize
+      value: 63.2
+      objectReference: {fileID: 0}
     - target: {fileID: 3706879241051961707, guid: d8de71c6f08111244a582d198c9b9c90, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1036266454}
+    - target: {fileID: 4185738517614051090, guid: d8de71c6f08111244a582d198c9b9c90, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 5495147271668743204, guid: d8de71c6f08111244a582d198c9b9c90, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5622304010062175980, guid: d8de71c6f08111244a582d198c9b9c90, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -68498,6 +68513,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7902367574890740754, guid: d8de71c6f08111244a582d198c9b9c90, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8100000000000000102, guid: d8de71c6f08111244a582d198c9b9c90, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8787423054553805667, guid: d8de71c6f08111244a582d198c9b9c90, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9050806394032558651, guid: d8de71c6f08111244a582d198c9b9c90, type: 3}
+      propertyPath: m_Alpha
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

@@ -233,12 +233,15 @@ public class OverworldMapNode : MonoBehaviour
     /// Shops on R=4 (1) and R=7 (3). From R≥2, temples = ⌈n/3⌉ on odd floors and ⌊n/3⌋ on even (n = nodes on that floor).
     /// Among remaining nodes per floor, ⌈remaining/4⌉ are events; the rest combat.
     /// </summary>
-    public static void AssignEncountersByFloorRules(OverworldMapNode[] nodes)
+    public static void AssignEncountersByFloorRules(OverworldMapNode[] nodes, CustomRandom rng)
     {
-        if (nodes == null) return;
+        if (nodes == null || rng == null) return;
+
+        var ordered = new List<OverworldMapNode>(nodes);
+        ordered.Sort(CompareByFloorThenColumn);
 
         var byFloor = new Dictionary<int, List<OverworldMapNode>>();
-        foreach (var node in nodes)
+        foreach (var node in ordered)
         {
             if (node == null) continue;
             if (!byFloor.TryGetValue(node.R, out var list))
@@ -249,14 +252,26 @@ public class OverworldMapNode : MonoBehaviour
             list.Add(node);
         }
 
-        foreach (var kv in byFloor)
-            AssignEncountersOnFloor(kv.Value, kv.Key);
+        var floors = new List<int>(byFloor.Keys);
+        floors.Sort();
+        foreach (int floor in floors)
+            AssignEncountersOnFloor(byFloor[floor], floor, rng);
+    }
+
+    static int CompareByFloorThenColumn(OverworldMapNode a, OverworldMapNode b)
+    {
+        if (a == null && b == null) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+        int floor = a.R.CompareTo(b.R);
+        if (floor != 0) return floor;
+        return a.Q.CompareTo(b.Q);
     }
 
     /// 
     /// Assigns encounters to the nodes on a given floor.
     /// 
-    static void AssignEncountersOnFloor(List<OverworldMapNode> floorNodes, int floor)
+    static void AssignEncountersOnFloor(List<OverworldMapNode> floorNodes, int floor, CustomRandom rng)
     {
         var pool = new List<OverworldMapNode>();
         foreach (var node in floorNodes)
@@ -273,7 +288,8 @@ public class OverworldMapNode : MonoBehaviour
         int nTotal = pool.Count;
         if (nTotal == 0) return;
 
-        ShuffleInPlace(pool);
+        pool.Sort(CompareByFloorThenColumn);
+        ShuffleInPlace(pool, rng);
 
         if (floor == 0 && pool.Count > 0)
         {
@@ -301,7 +317,7 @@ public class OverworldMapNode : MonoBehaviour
             //     : Mathf.FloorToInt(nTotal / 3f);
         }
         templeTarget = Mathf.Clamp(templeTarget, 0, pool.Count);
-        ShuffleInPlace(pool);
+        ShuffleInPlace(pool, rng);
         for (int i = 0; i < templeTarget; i++)
             pool[i].ApplyEncounter(EncounterType.Temple);
         pool.RemoveRange(0, templeTarget);
@@ -309,7 +325,7 @@ public class OverworldMapNode : MonoBehaviour
         int eventTarget = 1; //Mathf.CeilToInt(pool.Count / 4f);
         if (floor == 4 || floor == 4 || floor == 7) eventTarget = 0;
         eventTarget = Mathf.Min(eventTarget, pool.Count);
-        ShuffleInPlace(pool);
+        ShuffleInPlace(pool, rng);
         for (int i = 0; i < eventTarget; i++)
             pool[i].ApplyEncounter(EncounterType.Event);
         pool.RemoveRange(0, eventTarget);
@@ -318,11 +334,11 @@ public class OverworldMapNode : MonoBehaviour
             node.ApplyEncounter(EncounterType.Combat);
     }
 
-    static void ShuffleInPlace(List<OverworldMapNode> list)
+    static void ShuffleInPlace(List<OverworldMapNode> list, CustomRandom rng)
     {
         for (int i = list.Count - 1; i > 0; i--)
         {
-            int j = Random.Range(0, i + 1);
+            int j = rng.Next(0, i + 1);
             var tmp = list[i];
             list[i] = list[j];
             list[j] = tmp;

@@ -552,6 +552,9 @@ public class View : MonoBehaviour
         if (Player2.ViewMinorRitual.Ritual != null && Player2.ViewMinorRitual.Ritual.ID == targetID) return Player2.ViewMinorRitual;
         if (Player2.ViewMajorRitual.Ritual != null && Player2.ViewMajorRitual.Ritual.ID == targetID) return Player2.ViewMajorRitual;
 
+        // A card being dragged is removed from the hand list but still has a view
+        if (CardMap.TryGetValue(targetID, out viewCard)) return viewCard;
+
         return null;
     }
 
