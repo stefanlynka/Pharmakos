@@ -8,6 +8,9 @@ using static ProgressionHandler;
 public class ProgressionHandler
 {
     private const int ENEMY_HEALTH_OVERRIDE = -1; // -1 to disables
+
+    /// <summary>Pause debug toggle. Enemy players loaded into a combat start at 1 health.</summary>
+    public static bool ForceCombatEnemyHealthToOne;
     private const DeckName FORCED_FIRST_ENEMY = DeckName.None; // DeckName.None to disable
     private const string FORCED_STARTER_BUNDLE_RITUAL = ""; // HestiaMinor // e.g. nameof(HadesMinor); "" to disable
     public const int BossPoolNumber = 4;

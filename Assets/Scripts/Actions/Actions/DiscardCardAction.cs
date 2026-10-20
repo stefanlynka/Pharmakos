@@ -43,9 +43,15 @@ public class DiscardCardAction : GameAction
 
     public override List<AnimationAction> GetAnimationActions()
     {
-        List<AnimationAction> animationActions = new List<AnimationAction>()
+        List<AnimationAction> animationActions = new List<AnimationAction>();
+
+        if (IsStringsOfFateRemoval(cardToDiscard))
         {
-        };
+            BrushStrokeFlurryVfx fire = VfxLibrary.FireBrushStrokes();
+            fire.QueueHold = fire.Duration + fire.StrokeLifetime;
+            animationActions.Add(new PlayVfxAnimation(this, fire, null, cardToDiscard));
+        }
+
         MoveCardAnimation animation = new MoveCardAnimation(this, cardToDiscard, cardToDiscard.Owner, GameZone.Hand, cardToDiscard.Owner, GameZone.Discard, 0.25f);
         animation.Stackable = true;
         animationActions.Add(animation);
@@ -55,6 +61,19 @@ public class DiscardCardAction : GameAction
         animationActions.Add(waitAnimation);
 
         return animationActions;
+    }
+
+    static bool IsStringsOfFateRemoval(Card card)
+    {
+        if (card?.Owner == null) return false;
+
+        foreach (PlayerEffect effect in card.Owner.PlayerEffects)
+        {
+            if (effect is StringsOfFateTrinketEffectDef fate && fate.RemovedThisCard(card))
+                return true;
+        }
+
+        return false;
     }
 
 }

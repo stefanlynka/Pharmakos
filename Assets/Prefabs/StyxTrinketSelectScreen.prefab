@@ -955,11 +955,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f8e40719203a4b5c6d7e8f9001a2b3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TrinketListRoot: {fileID: 790223867019030257}
   ContinueButton: {fileID: 1292568459461469502}
-  TrinketRowTemplate: {fileID: 4178948307446525915}
-  RowColor: {r: 0.14, g: 0.16, b: 0.22, a: 0.9}
-  RowSelectedColor: {r: 0.62, g: 0.5, b: 0.16, a: 1}
+  Area: {fileID: 0}
 --- !u!1 &6454010081667820809
 GameObject:
   m_ObjectHideFlags: 0
@@ -1119,7 +1116,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &790223867019030257
 RectTransform:
   m_ObjectHideFlags: 0

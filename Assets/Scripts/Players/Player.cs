@@ -166,6 +166,11 @@ public class Player : ITarget
             playerDetails.BaseHealth = Controller.Instance.ProgressionHandler.GetPlayerHealth(true);
         StartingHealth = playerDetails.BaseHealth;
         Health = playerDetails.BaseHealth;
+        if (!IsHuman && ProgressionHandler.ForceCombatEnemyHealthToOne)
+        {
+            StartingHealth = 1;
+            Health = 1;
+        }
         CardsPerTurn = playerDetails.CardsPerTurn;
         GoldPerTurn = playerDetails.GoldPerTurn;
 

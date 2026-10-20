@@ -1781,6 +1781,7 @@ public class StringsOfFateTrinket : Trinket<StringsOfFateTrinketEffectDef>
 public class StringsOfFateTrinketEffectDef : TrinketPlayerEffect
 {
     private bool firstDiscardUsed = false;
+    private int removedCardId = -1;
 
     public StringsOfFateTrinketEffectDef(Player owner)
     {
@@ -1788,9 +1789,15 @@ public class StringsOfFateTrinketEffectDef : TrinketPlayerEffect
         TargetPlayer = owner;
     }
 
+    public bool RemovedThisCard(Card card)
+    {
+        return removedCardId >= 0 && card != null && card.GetID() == removedCardId;
+    }
+
     public override void Apply()
     {
         firstDiscardUsed = false;
+        removedCardId = -1;
         Owner.GameState.CardDiscarded += OnCardDiscarded;
     }
 
@@ -1805,6 +1812,7 @@ public class StringsOfFateTrinketEffectDef : TrinketPlayerEffect
             return;
 
         firstDiscardUsed = true;
+        removedCardId = card.GetID();
         RemoveOneCopyFromDeck(player, card);
         MarkTriggered();
     }

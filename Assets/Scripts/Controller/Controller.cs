@@ -1425,10 +1425,10 @@ public class Controller : MonoBehaviour
 
         GameField.SetActive(false);
         SetMainCombatCameraActive(false);
-        trinketUnlockHandler.Show(trinket, onContinue);
 
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.TrinketUnlock);
+        trinketUnlockHandler.Show(trinket, onContinue);
     }
 
     /// <summary>Fades out through the blank screen before running post-trinket-unlock progression.</summary>
