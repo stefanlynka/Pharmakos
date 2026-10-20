@@ -377,6 +377,11 @@ public class OverworldMapController : MonoBehaviour
         _cameraPanVelocityLocal = Vector2.zero;
     }
 
+    public void RefreshHeartstrings()
+    {
+        RefreshPlayerLyre();
+    }
+
     void RefreshPlayerLyre()
     {
         if (PlayerLyre == null || Controller.Instance == null)

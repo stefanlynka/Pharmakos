@@ -5,3 +5,4 @@ public class CardArtLayoutAsset : ScriptableObject
 {
     public CardArtClipRect Layout = CardArtClipRect.Full;
 }
+

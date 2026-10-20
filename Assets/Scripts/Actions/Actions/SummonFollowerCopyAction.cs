@@ -29,9 +29,13 @@ public class SummonFollowerCopyAction : GameAction
         followerCopy.Init(Player);
 
         GameAction newAction = new SummonFollowerAction(followerCopy);
+        newAction.SourceEffect = SourceEffect;
         Player.GameState.ActionHandler.AddAction(newAction);
 
+        StaticPlayerEffect source = SourceEffect;
+        SourceEffect = null;
         base.Execute(simulated);
+        SourceEffect = source;
     }
 
     public override List<AnimationAction> GetAnimationActions()

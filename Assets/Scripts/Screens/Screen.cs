@@ -21,7 +21,7 @@ public class Screen : MonoBehaviour
     private const float screenChangeDuration = 0.6f;
 
 
-    private void Update()
+    protected virtual void Update()
     {
         if (active && UIHolder.alpha < 1) UIHolder.alpha += Time.deltaTime / ScreenChangeDuration;
         else if (!active && UIHolder.alpha > 0) UIHolder.alpha -= Time.deltaTime / ScreenChangeDuration;

@@ -79,6 +79,27 @@ public class View : MonoBehaviour
 
 
 
+    void OnEnable()
+    {
+        StaticPlayerEffect.Triggered += OnPlayerEffectTriggered;
+    }
+
+    void OnDisable()
+    {
+        StaticPlayerEffect.Triggered -= OnPlayerEffectTriggered;
+    }
+
+    void OnPlayerEffectTriggered(StaticPlayerEffect effect)
+    {
+        if (effect == null)
+            return;
+
+        if (Player1 != null && effect.Owner == Player1.Player)
+            Player1.FlareBuff(effect);
+        else if (Player2 != null && effect.Owner == Player2.Player)
+            Player2.FlareBuff(effect);
+    }
+
     private void Awake()
     {
         if (Instance == null)

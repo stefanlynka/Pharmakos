@@ -11,6 +11,7 @@ public class ViewBuff : MonoBehaviour
     public TextMeshPro SummaryText;
     public SpriteRenderer Icon;
     public GameObject HighlightObject;
+    public CardHighlightEffect HighlightEffect;
 
     public GameObject MultiplierObject;
     public TextMeshPro MultiplierText;
@@ -124,11 +125,37 @@ public class ViewBuff : MonoBehaviour
         }
     }
 
+    void Awake()
+    {
+        EnsureHighlight();
+        SetHighlight(false);
+    }
+
     public void SetHighlight(bool value)
     {
         isHighlighted = value;
+        EnsureHighlight();
 
-        HighlightObject.SetActive(value);
+        if (HighlightEffect != null)
+            HighlightEffect.SetActive(value);
+        else if (HighlightObject != null)
+            HighlightObject.SetActive(value);
+    }
+
+    public void FlareHighlight()
+    {
+        EnsureHighlight();
+        if (HighlightEffect != null)
+            HighlightEffect.Flare();
+    }
+
+    void EnsureHighlight()
+    {
+        if (HighlightEffect == null)
+            HighlightEffect = GetComponent<CardHighlightEffect>();
+
+        if (HighlightObject != null && !HighlightObject.activeSelf)
+            HighlightObject.SetActive(true);
     }
     public bool IsHighlighted()
     {

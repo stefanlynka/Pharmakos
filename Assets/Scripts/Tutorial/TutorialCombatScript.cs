@@ -34,13 +34,13 @@ public static class TutorialCombatScript
         {
             ActiveEncounter = EncounterType.TutorialCombat1;
             QueueOpeningHand(human);
-            QueueDraws(enemy, "Sheep", "Cyclops", "Sheep", "ThrowStone", "ThrowStone");
+            QueueDraws(enemy, "Sheep", "Cyclops", "Sheep", "Cyclops", "Sheep");
         }
         else if (deck == ProgressionHandler.DeckName.TutorialCombat2)
         {
             ActiveEncounter = EncounterType.TutorialCombat2;
             QueueOpeningHand(human);
-            QueueDraws(enemy, "Satyr", "Boar", "Satyr", "Maenad", "Panic", "ThrowStone", "Panic");
+            QueueDraws(enemy, "Satyr", "Satyr", "Satyr", "Satyr", "Satyr", "ThrowStone", "ThrowStone");
         }
     }
 

@@ -16,8 +16,18 @@ public abstract class PlayerEffect
 
 public abstract class StaticPlayerEffect : PlayerEffect
 {
+    public static event Action<StaticPlayerEffect> Triggered;
+
     public Player Owner;
     public Player TargetPlayer;
+
+    public void MarkTriggered()
+    {
+        if (Owner?.GameState == null || Owner.GameState.IsSimulated)
+            return;
+
+        Triggered?.Invoke(this);
+    }
 
     public override PlayerEffectDescriptionData GetDescriptionData()
     {

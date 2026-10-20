@@ -15,6 +15,7 @@ public class ChangeStatsAnimation : AnimationAction
     private float damageDuration = 0.6f;
 
     private bool playerDied = false;
+    private bool playDeathFlames = false;
 
     public ChangeStatsAnimation(GameAction gameAction, ITarget target, int attackChange, int healthChange) : base(gameAction)
     {
@@ -52,6 +53,7 @@ public class ChangeStatsAnimation : AnimationAction
         else if (player != null)
         {
             viewPlayer = View.Instance.GetViewPlayer(player);
+            int previousHealth = viewPlayer.GetHealth();
             viewPlayer.ChangeHealth(healthChange);
 
             if (healthChange < 0)
@@ -61,11 +63,12 @@ public class ChangeStatsAnimation : AnimationAction
                 viewPlayer.ShowDamage(-healthChange);
                 isDamage = true;
 
-                if (viewPlayer.GetHealth() <= 0)
+                if (previousHealth > 0 && viewPlayer.GetHealth() <= 0)
                 {
                     playerDied = true;
                     //View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Defeat);
                     ScreenShakeHandler.Shake(1f, 0.2f);
+                    playDeathFlames = !player.IsHuman;
                 }
             }
         }
@@ -74,9 +77,22 @@ public class ChangeStatsAnimation : AnimationAction
         if (isDamage)
         {
             damageDuration = View.Instance.IsHumansTurn ? 0.8f : 1.2f;
+            int pending = 1;
+            Action finishOne = () =>
+            {
+                pending--;
+                if (pending == 0) Complete();
+            };
+
+            if (playDeathFlames)
+            {
+                pending++;
+                viewPlayer.PlayDeathFlames(finishOne);
+            }
+
             Sequence moveSequence = new Sequence();
             moveSequence.Add(new Tween(TweenProgress, 0, 1, damageDuration));
-            moveSequence.Add(new SequenceAction(Complete));
+            moveSequence.Add(new SequenceAction(finishOne));
             moveSequence.Start();
         }
         else

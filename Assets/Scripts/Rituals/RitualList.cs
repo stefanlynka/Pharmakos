@@ -465,10 +465,12 @@ public class AresMajorEffectDef : StaticPlayerEffect
     {
         ChangeStatsInstance gainStatsEffectInstance = new ChangeStatsInstance(effectDef, instanceTarget, 0, 0, EffectTrigger.OnKill);
         gainStatsEffectInstance.Init(attackGain, healthGain);
+        gainStatsEffectInstance.SourceEffect = this;
         effectDef.EffectInstances.Add(gainStatsEffectInstance);
 
         RefreshFollowerAttackInstance refreshAttackEffectInstance = new RefreshFollowerAttackInstance(effectDef, instanceTarget, offset, 1, EffectTrigger.OnKill);
         refreshAttackEffectInstance.Init(1);
+        refreshAttackEffectInstance.SourceEffect = this;
         effectDef.EffectInstances.Add(refreshAttackEffectInstance);
     }
     protected override string GetDescription()
@@ -1298,7 +1300,7 @@ public class HestiaMinor : Ritual
             {
                 {OfferingType.Blood, 0 },
                 {OfferingType.Bone, 0 },
-                {OfferingType.Crop, 1 },
+                {OfferingType.Crop, 2 },
                 {OfferingType.Scroll, 0 },
             };
         }

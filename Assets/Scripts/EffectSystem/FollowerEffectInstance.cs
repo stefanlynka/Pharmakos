@@ -337,6 +337,7 @@ public class ChangeStatsInstance : TriggeredFollowerEffectInstance
 {
     public int AttackChange = 0;
     public int HealthChange = 0;
+    public StaticPlayerEffect SourceEffect;
     public EffectTarget TargetType;
     public bool UseTargetInsteadOfType;
     public bool UseAmountForHealth;
@@ -372,6 +373,7 @@ public class ChangeStatsInstance : TriggeredFollowerEffectInstance
                 continue;
             }
             ChangeStatsAction action = new ChangeStatsAction(targetFollower, AttackChange, HealthChange);
+            action.SourceEffect = SourceEffect;
             AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
         }
     }
@@ -509,6 +511,7 @@ public class DrawCardsInstance : TriggeredFollowerEffectInstance
 public class AddCardCopyToHandInstance : TriggeredFollowerEffectInstance
 {
     public Card CardToCopy;
+    public StaticPlayerEffect SourceEffect;
     public AddCardCopyToHandInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
 
     // Pass in a card with all the properties you want
@@ -522,6 +525,7 @@ public class AddCardCopyToHandInstance : TriggeredFollowerEffectInstance
         Card newCard = (Card)CardToCopy.Clone();
         newCard.Init(AffectedFollower.Owner);
         AddCardCopyToHandAction action = new AddCardCopyToHandAction(newCard);
+        action.SourceEffect = SourceEffect;
         AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
     }
 }
@@ -620,6 +624,7 @@ public class GiveFollowerStaticEffectInstance : TriggeredFollowerEffectInstance
 public class RefreshFollowerAttackInstance : TriggeredFollowerEffectInstance
 {
     public int ConstantAmount = 1;
+    public StaticPlayerEffect SourceEffect;
     public RefreshFollowerAttackInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
 
     public void Init(int amount)
@@ -630,6 +635,7 @@ public class RefreshFollowerAttackInstance : TriggeredFollowerEffectInstance
     public override void Trigger(ITarget target = null, int triggerAmount = 0)
     {
         RefreshFollowerAttackAction action = new RefreshFollowerAttackAction(AffectedFollower, AffectedFollower, ConstantAmount);
+        action.SourceEffect = SourceEffect;
         AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
     }
 }

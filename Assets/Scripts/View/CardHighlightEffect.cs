@@ -33,6 +33,10 @@ public class CardHighlightEffect : MonoBehaviour
     [SerializeField] float glowFlickerStrength = 0.2f;
     [SerializeField] float glowDrift = 0.24f;
 
+    [Header("Flare")]
+    [SerializeField] float flareDuration = 0.5f;
+    [SerializeField] float flarePeakMultiplier = 2.1f;
+
     static Material sharedGlowMaterial;
     static bool attemptedToLoadGlowShader;
 
@@ -54,6 +58,8 @@ public class CardHighlightEffect : MonoBehaviour
     float outerSeed;
     bool isActive;
     bool isInitialized;
+    bool flarePlaying;
+    float flareElapsed;
 
     void Awake()
     {
@@ -63,11 +69,33 @@ public class CardHighlightEffect : MonoBehaviour
 
     void LateUpdate()
     {
-        if (!isActive)
+        if (!isActive && !flarePlaying)
             return;
 
-        float pulseT = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * glowPulseSpeed * Mathf.PI * 2f);
-        ApplyGlow(Mathf.Lerp(glowPulseMin, glowPulseMax, pulseT));
+        float resting = isActive ? RestingIntensity() : 0f;
+        float intensity = resting;
+        float emissionMultiplier = 1f;
+
+        if (flarePlaying)
+        {
+            flareElapsed += Time.unscaledDeltaTime;
+            float duration = Mathf.Max(0.01f, flareDuration);
+            float t = flareElapsed / duration;
+            if (t >= 1f)
+            {
+                flarePlaying = false;
+                RefreshRendererState();
+            }
+            else
+            {
+                float envelope = FlareEnvelope(t);
+                float peak = Mathf.Max(glowPulseMax * flarePeakMultiplier, glowPulseMax);
+                intensity = Mathf.Lerp(resting, peak, envelope);
+                emissionMultiplier = Mathf.Lerp(1f, 1.45f, envelope);
+            }
+        }
+
+        ApplyGlow(intensity, emissionMultiplier);
     }
 
 #if UNITY_EDITOR
@@ -76,8 +104,7 @@ public class CardHighlightEffect : MonoBehaviour
         if (!Application.isPlaying || !isActive)
             return;
 
-        float pulseT = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * glowPulseSpeed * Mathf.PI * 2f);
-        ApplyGlow(Mathf.Lerp(glowPulseMin, glowPulseMax, pulseT));
+        ApplyGlow(RestingIntensity());
     }
 #endif
 
@@ -86,18 +113,25 @@ public class CardHighlightEffect : MonoBehaviour
         EnsureInitialized();
 
         if (isActive == active)
+        {
+            RefreshRendererState();
             return;
+        }
 
         isActive = active;
+        RefreshRendererState();
 
-        if (coreHighlight != null)
-            coreHighlight.enabled = active;
+        if (active || flarePlaying)
+            ApplyGlow(isActive ? RestingIntensity() : 0f);
+    }
 
-        if (outerHighlight != null)
-            outerHighlight.enabled = active;
-
-        if (active)
-            ApplyGlow(Mathf.Lerp(glowPulseMin, glowPulseMax, 0.5f));
+    public void Flare()
+    {
+        EnsureInitialized();
+        flarePlaying = true;
+        flareElapsed = 0f;
+        RefreshRendererState();
+        ApplyGlow(isActive ? RestingIntensity() : 0f);
     }
 
     public void ApplySettings(MeshHighlightSettings newSettings)
@@ -108,8 +142,8 @@ public class CardHighlightEffect : MonoBehaviour
         settings = newSettings;
         CopySettingsToFields(newSettings);
 
-        if (isActive)
-            ApplyGlow(Mathf.Lerp(glowPulseMin, glowPulseMax, 0.5f));
+        if (isActive || flarePlaying)
+            ApplyGlow(isActive ? RestingIntensity() : 0f);
     }
 
     public void CopyFieldsToSettings(MeshHighlightSettings target)
@@ -189,17 +223,53 @@ public class CardHighlightEffect : MonoBehaviour
                 outerHighlight.sharedMaterial = glowMaterial;
         }
 
+        if (coreHighlight != null)
+            coreHighlight.gameObject.SetActive(true);
+
+        if (outerHighlight != null)
+            outerHighlight.gameObject.SetActive(true);
+
         coreSeed = GenerateStableSeed(0.137f);
         outerSeed = GenerateStableSeed(0.713f);
         isInitialized = true;
     }
 
-    void ApplyGlow(float glowIntensity)
+    float RestingIntensity()
     {
-        ApplyGlowToRenderer(coreHighlight, corePropertyBlock, glowCoreColor, glowIntensity * glowCoreIntensityMultiplier, glowCoreEmissionStrength, coreSeed);
+        float pulseT = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * glowPulseSpeed * Mathf.PI * 2f);
+        return Mathf.Lerp(glowPulseMin, glowPulseMax, pulseT);
+    }
+
+    static float FlareEnvelope(float t)
+    {
+        const float risePortion = 0.28f;
+        if (t < risePortion)
+        {
+            float rise = t / risePortion;
+            return 1f - (1f - rise) * (1f - rise);
+        }
+
+        float fall = (t - risePortion) / (1f - risePortion);
+        return 1f - fall * fall;
+    }
+
+    void RefreshRendererState()
+    {
+        bool show = isActive || flarePlaying;
+
+        if (coreHighlight != null)
+            coreHighlight.enabled = show;
 
         if (outerHighlight != null)
-            ApplyGlowToRenderer(outerHighlight, outerPropertyBlock, glowOuterColor, glowIntensity * glowOuterIntensityMultiplier, glowOuterEmissionStrength, outerSeed);
+            outerHighlight.enabled = show;
+    }
+
+    void ApplyGlow(float glowIntensity, float emissionMultiplier = 1f)
+    {
+        ApplyGlowToRenderer(coreHighlight, corePropertyBlock, glowCoreColor, glowIntensity * glowCoreIntensityMultiplier, glowCoreEmissionStrength * emissionMultiplier, coreSeed);
+
+        if (outerHighlight != null)
+            ApplyGlowToRenderer(outerHighlight, outerPropertyBlock, glowOuterColor, glowIntensity * glowOuterIntensityMultiplier, glowOuterEmissionStrength * emissionMultiplier, outerSeed);
     }
 
     void ApplyGlowToRenderer(

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -98,6 +99,24 @@ public class ViewPlayer : ViewTarget
     {
         return ViewPlayerPortrait.GetHealth();
     }
+    public void FlareBuff(StaticPlayerEffect effect)
+    {
+        if (effect == null)
+            return;
+
+        foreach (ViewBuff buff in Buffs)
+        {
+            if (buff == null || buff.PlayerEffect == null || !buff.ParentObject.activeSelf)
+                continue;
+
+            if (!buff.IsBuffCompatible(effect))
+                continue;
+
+            buff.FlareHighlight();
+            return;
+        }
+    }
+
     public void ClearBuffs()
     {
         foreach (ViewBuff buff in Buffs)
@@ -134,5 +153,29 @@ public class ViewPlayer : ViewTarget
     public void HideDamage()
     {
         ViewPlayerPortrait.HideDamage();
+    }
+
+    // Same fire brushstroke flurry (and FlameStart sound) used when a card is sacrificed at a temple.
+    // Holds until the strokes have finished so the caller can wait before leaving the fight.
+    // The portrait art is tilted, so the flurry is parented to that sprite and lifted along its facing.
+    public void PlayDeathFlames(Action onComplete)
+    {
+        BrushStrokeFlurryVfx fire = VfxLibrary.FireBrushStrokes();
+        fire.QueueHold = fire.Duration + fire.StrokeLifetime;
+
+        SpriteRenderer portrait = ViewPlayerPortrait != null ? ViewPlayerPortrait.PortraitRenderer : null;
+        if (portrait != null)
+        {
+            fire.AnchorOverride = portrait.transform;
+            fire.Lift = 0.2f;
+            if (portrait.sprite != null)
+            {
+                Bounds bounds = portrait.sprite.bounds;
+                fire.AreaCenter = bounds.center;
+                fire.AreaSize = new Vector2(bounds.size.x, bounds.size.y);
+            }
+        }
+
+        fire.Play(new VfxContext(null, this), onComplete);
     }
 }

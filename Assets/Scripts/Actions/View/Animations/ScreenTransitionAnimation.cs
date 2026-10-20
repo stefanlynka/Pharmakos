@@ -7,7 +7,7 @@ using UnityEngine;
 public class ScreenTransitionAnimation : AnimationAction
 {
     // private float fadeDuration = 0.8f;
-    private const float halfwayPauseDuration = 0.25f;
+    public const float HalfwayPauseDuration = 0.25f;
     public float FadeOutDuration = -1f;
     public float FadeInDuration = -1f;
     private Action halfwayAction;
@@ -35,7 +35,7 @@ public class ScreenTransitionAnimation : AnimationAction
         Sequence waitSequence = new Sequence();
         waitSequence.Add(new Tween(Wait, 0, 1, FadeOutDuration));
         waitSequence.Add(new SequenceAction(Halfway));
-        waitSequence.Add(new Tween(Wait, 0, 1, halfwayPauseDuration));
+        waitSequence.Add(new Tween(Wait, 0, 1, HalfwayPauseDuration));
         waitSequence.Add(new SequenceAction(HideBlankScreen));
         waitSequence.Add(new Tween(Wait, 0, 1, FadeInDuration));
         waitSequence.Add(new SequenceAction(AnimationOver));

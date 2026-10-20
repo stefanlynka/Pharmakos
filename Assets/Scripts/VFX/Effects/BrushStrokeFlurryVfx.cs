@@ -48,6 +48,8 @@ public class BrushStrokeFlurryVfx : VfxEffect
     public float SweepOutDelay = -1f;
     // Distance in front of the anchor's face (towards its local -Z)
     public float Lift = 0.5f;
+    // When set, the flurry is parented here instead of the ViewTarget, in this transform's local space.
+    public Transform AnchorOverride;
 
     public float ScaleMin = 0.9f;
     public float ScaleMax = 1.3f;
@@ -103,7 +105,7 @@ public class BrushStrokeFlurryVfx : VfxEffect
         areaCenter = AreaCenter;
         areaSize = AreaSize;
 
-        Transform anchor = context.GetAnchorTransform(Anchor);
+        Transform anchor = AnchorOverride != null ? AnchorOverride : context.GetAnchorTransform(Anchor);
         if (anchor == null)
         {
             return CreateEffectObject(context, "BrushStrokeFlurryVfx").transform;

@@ -5,12 +5,13 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Overworld status screen with two tabs:
-///  - Current: the player's current deck, rituals, and trinkets. With the Gates Beyond
-///    trinket, a ritual or trinket can be clicked and sacrificed to the Styx in exchange for a heartstring.
+///  - Current: the player's current deck, rituals, and trinkets. With Gates Beyond,
+///    a ritual or trinket can be selected and then sacrificed with the Hammer button.
 ///  - Styx: the Styx deck, removed rituals, and removed trinkets that await at the river.
-/// The static layout is authored in the scene under the StatusScreen GameObject. ContentScrollView renders the deck
-/// into the scene-authored DeckContent image, and the rituals and trinkets into images built in SideContent at
-/// runtime; each section only scrolls while the mouse is over it.
+/// Shears (Strings of Fate) and Hammer (Gates Beyond) in BottomInfo are shown when the
+/// player has that boon this run. The Hammer sacrifice button is only active on Current.
+/// The static layout is authored under the StatusScreen GameObject. ContentScrollView renders
+/// the deck into DeckContent, and the rituals and trinkets into images built in SideContent.
 /// </summary>
 public class StatusScreenHandler : MonoBehaviour
 {
@@ -24,10 +25,14 @@ public class StatusScreenHandler : MonoBehaviour
     public RawImage DeckContent;
     public RectTransform SideContentRoot;
 
+    [Header("Boss Boons")]
+    public GameObject ShearsSection;
+    public GameObject HammerSection;
+    public Button SacrificeButton;
+
     [Header("Templates (inactive in scene, cloned into SideContent)")]
     public TextMeshProUGUI SectionHeaderTemplate;
     public TextMeshProUGUI EmptyRowTemplate;
-    public TextMeshProUGUI SacrificeNoteTemplate;
 
     [Header("Side Sections")]
     [Tooltip("Height of the trinket section in SideContent; the ritual section gets the rest. Applied live while the screen is open.")]
@@ -41,23 +46,21 @@ public class StatusScreenHandler : MonoBehaviour
     const float HeaderSpacing = 12f;
     const float SectionSpacing = 10f;
     const float EmptyLabelPadding = 8f;
-    const float NoteTopPadding = 8f;
-    const float SacrificeButtonSpacing = 8f;
-    const float SacrificeButtonFontSize = 24f;
-    static readonly Vector2 SacrificeButtonSize = new Vector2(200f, 48f);
 
     bool isOpen;
     bool styxTabActive;
     bool canSelectForSacrifice;
     Ritual selectedRitual;
     Trinket selectedTrinket;
-    Button sacrificeButton;
 
     void Awake()
     {
+        ResolveBoonReferences();
         CurrentTabButton.onClick.AddListener(() => ShowTab(false));
         StyxTabButton.onClick.AddListener(() => ShowTab(true));
         CloseButton.onClick.AddListener(() => Controller.Instance.CloseStatusScreen());
+        if (SacrificeButton != null)
+            SacrificeButton.onClick.AddListener(SacrificeSelected);
 
         if (DeckContent == null)
             DeckContent = FindDeckContent();
@@ -99,6 +102,10 @@ public class StatusScreenHandler : MonoBehaviour
     public void Close()
     {
         isOpen = false;
+        selectedRitual = null;
+        selectedTrinket = null;
+        ContentScrollView.HighlightRitual(null);
+        ContentScrollView.HighlightTrinket(null);
         ContentScrollView.Hide();
     }
 
@@ -117,8 +124,7 @@ public class StatusScreenHandler : MonoBehaviour
 
         selectedRitual = null;
         selectedTrinket = null;
-        canSelectForSacrifice = false;
-        sacrificeButton = null;
+        canSelectForSacrifice = !styxTabActive && HasGatesBeyond();
 
         ContentScrollView.ShowCards(GetSortedDeck(styxTabActive
             ? Controller.Instance.StyxRunState.GetStyxDeck()
@@ -128,6 +134,9 @@ public class StatusScreenHandler : MonoBehaviour
         StyxUI.Clear(SideContentRoot);
         if (styxTabActive) PopulateStyxSide();
         else PopulateCurrentSide();
+
+        RefreshBoonSections();
+        RefreshSacrificeSelection();
     }
 
     static List<Card> GetSortedDeck(List<Card> source)
@@ -150,32 +159,12 @@ public class StatusScreenHandler : MonoBehaviour
     void PopulateCurrentSide()
     {
         PlayerDetails details = Controller.Instance.HumanPlayerDetails;
-        bool canSacrifice = details.CanSacrificeForHeartstrings;
-        bool heartstringsFull = Controller.Instance.RunHeartStrings >= Player.MaxHeartStrings;
 
         List<Ritual> rituals = new List<Ritual>();
         if (details.MajorRituals[0] != null) rituals.Add(details.MajorRituals[0]);
         if (details.MinorRituals[0] != null) rituals.Add(details.MinorRituals[0]);
 
-        float footerHeight = canSacrifice ? GetSacrificeFooterHeight() : 0f;
-        float y = PopulateSections("Rituals", rituals, "Trinkets", details.Trinkets[0], "None", footerHeight);
-
-        if (!canSacrifice) return;
-
-        TextMeshProUGUI note = CloneTemplate(SacrificeNoteTemplate);
-        note.text = heartstringsFull
-            ? "Your heartstrings are full. The Styx offers nothing more."
-            : "Gates Beyond: click a ritual or trinket, then sacrifice it to the Styx for a heartstring.";
-        y -= NoteTopPadding;
-        SetY(note.rectTransform, y);
-        y -= note.rectTransform.sizeDelta.y + SacrificeButtonSpacing;
-
-        if (heartstringsFull) return;
-
-        canSelectForSacrifice = true;
-        sacrificeButton = StyxUI.CreateButton(SideContentRoot, "SacrificeButton", "Sacrifice", SacrificeButtonFontSize, SacrificeSelected);
-        StyxUI.SetAnchored((RectTransform)sacrificeButton.transform, new Vector2(0.5f, 1f), new Vector2(0f, y), SacrificeButtonSize);
-        RefreshSacrificeSelection();
+        PopulateSections("Rituals", rituals, "Trinkets", details.Trinkets[0], "None", 0f);
     }
 
     void PopulateStyxSide()
@@ -184,7 +173,7 @@ public class StatusScreenHandler : MonoBehaviour
         PopulateSections("Removed Rituals", styxState.RemovedRituals, "Removed Trinkets", styxState.RemovedTrinkets, "None yet", 0f);
     }
 
-    // Splits the side panel (above the footer) into a header and scrolling section for the rituals, then the trinkets.
+    // Splits the side panel into a header and scrolling section for the rituals, then the trinkets.
     // Returns the y below the trinket section.
     float PopulateSections(string ritualLabel, List<Ritual> rituals, string trinketLabel, List<Trinket> trinkets,
         string emptyLabel, float footerHeight)
@@ -238,22 +227,24 @@ public class StatusScreenHandler : MonoBehaviour
         return y - height - SectionSpacing;
     }
 
-    float GetSacrificeFooterHeight()
-    {
-        return NoteTopPadding + SacrificeNoteTemplate.rectTransform.sizeDelta.y + SacrificeButtonSpacing + SacrificeButtonSize.y;
-    }
-
     void RefreshSacrificeSelection()
     {
         ContentScrollView.HighlightRitual(selectedRitual);
         ContentScrollView.HighlightTrinket(selectedTrinket);
 
-        if (sacrificeButton != null)
-            sacrificeButton.interactable = selectedRitual != null || selectedTrinket != null;
+        if (SacrificeButton == null)
+            return;
+
+        bool showButton = HasGatesBeyond() && !styxTabActive;
+        SacrificeButton.gameObject.SetActive(showButton);
+        SacrificeButton.interactable = showButton && (selectedRitual != null || selectedTrinket != null);
     }
 
     void SacrificeSelected()
     {
+        if (styxTabActive)
+            return;
+
         bool sacrificed = false;
         if (selectedRitual != null)
         {
@@ -267,6 +258,50 @@ public class StatusScreenHandler : MonoBehaviour
 
         if (sacrificed)
             Rebuild();
+    }
+
+    void ResolveBoonReferences()
+    {
+        if (ShearsSection == null)
+        {
+            Transform shears = transform.Find("StatusUI/BottomInfo/Shears");
+            if (shears != null)
+                ShearsSection = shears.gameObject;
+        }
+
+        if (HammerSection == null)
+        {
+            Transform hammer = transform.Find("StatusUI/BottomInfo/Hammer");
+            if (hammer != null)
+                HammerSection = hammer.gameObject;
+        }
+
+        if (SacrificeButton == null && HammerSection != null)
+            SacrificeButton = HammerSection.GetComponentInChildren<Button>(true);
+    }
+
+    void RefreshBoonSections()
+    {
+        if (ShearsSection != null)
+            ShearsSection.SetActive(HasStringsOfFate());
+        if (HammerSection != null)
+            HammerSection.SetActive(HasGatesBeyond());
+    }
+
+    static bool HasStringsOfFate()
+    {
+        return HasTrinket(trinket => trinket is StringsOfFateTrinket);
+    }
+
+    static bool HasGatesBeyond()
+    {
+        return HasTrinket(trinket => trinket is GatesBeyondTrinket);
+    }
+
+    static bool HasTrinket(System.Predicate<Trinket> match)
+    {
+        List<Trinket> trinkets = Controller.Instance.HumanPlayerDetails.Trinkets[0];
+        return trinkets != null && trinkets.Exists(match);
     }
 
     // The screen only covers part of the view, so an invisible full-screen image behind it stops clicks reaching UI below

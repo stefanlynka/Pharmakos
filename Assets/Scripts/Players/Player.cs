@@ -461,7 +461,7 @@ public class Player : ITarget
         List<DelayedGameAction> actions = new List<DelayedGameAction>();
         foreach (DelayedGameAction delayedGameAction in EndOfTurnActions)
         {
-            delayedGameAction.TryExecute();
+            delayedGameAction.TryExecute(GameState != null && GameState.IsSimulated);
             bool actionShouldPersist = delayedGameAction.HasUsesRemaining();
             if (actionShouldPersist) actions.Add(delayedGameAction);
         }
@@ -473,7 +473,7 @@ public class Player : ITarget
         List<DelayedGameAction> actions = new List<DelayedGameAction>();
         foreach (DelayedGameAction delayedGameAction in EndOfEveryTurnActions)
         {
-            delayedGameAction.TryExecute();
+            delayedGameAction.TryExecute(GameState != null && GameState.IsSimulated);
             bool actionShouldPersist = delayedGameAction.HasUsesRemaining();
             if (actionShouldPersist) actions.Add(delayedGameAction);
         }
@@ -486,7 +486,7 @@ public class Player : ITarget
         List<DelayedGameAction> actions = new List<DelayedGameAction>();
         foreach (DelayedGameAction delayedGameAction in StartOfTurnActions)
         {
-            delayedGameAction.TryExecute();
+            delayedGameAction.TryExecute(GameState != null && GameState.IsSimulated);
             bool actionShouldPersist = delayedGameAction.HasUsesRemaining();
             if (actionShouldPersist) actions.Add(delayedGameAction);
         }
@@ -498,7 +498,7 @@ public class Player : ITarget
         List<DelayedGameAction> actions = new List<DelayedGameAction>();
         foreach (DelayedGameAction delayedGameAction in StartOfEveryTurnActions)
         {
-            delayedGameAction.TryExecute();
+            delayedGameAction.TryExecute(GameState != null && GameState.IsSimulated);
             bool actionShouldPersist = delayedGameAction.HasUsesRemaining();
             if (actionShouldPersist) actions.Add(delayedGameAction);
         }

@@ -5,13 +5,18 @@ using UnityEngine;
 public abstract class GameAction
 {
     public ActionName ActionName;
+    public StaticPlayerEffect SourceEffect;
     //protected List<AnimationAction> AnimationActions = new List<AnimationAction>();
 
     public virtual void Execute(bool simulated = false, bool successful = true)
     {
         if (!simulated) 
         {
-            if (successful) View.Instance.AnimationHandler.AddGameActionToQueue(this);
+            if (successful)
+            {
+                View.Instance.AnimationHandler.AddGameActionToQueue(this);
+                SourceEffect?.MarkTriggered();
+            }
 
             if (Controller.ActionDebugMode)
             {

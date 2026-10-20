@@ -1719,6 +1719,7 @@ public class ProgressionHandler
             IsFightableEnemy = false,
             BaseHealth = 10,
             Pool = 1,
+            GoldPerTurn = 2,
             PortraitName = "Cyclops",
             PresentationDeck = DeckName.Cyclops,
             MinorRituals = new Dictionary<int, Ritual> { [1] = null },
@@ -1732,9 +1733,9 @@ public class ProgressionHandler
                 {
                     new Sheep(),
                     new Sheep(),
+                    new Sheep(),
                     new Cyclops(),
-                    new ThrowStone(),
-                    new ThrowStone(),
+                    new Cyclops(),
                 },
             },
             StartingBattleRow = new Dictionary<int, List<Follower>>(),
@@ -1746,6 +1747,7 @@ public class ProgressionHandler
             IsFightableEnemy = false,
             BaseHealth = 10,
             Pool = 1,
+            GoldPerTurn = 2,
             PortraitName = "Bacchanalia",
             PresentationDeck = DeckName.Bacchanalia,
             MinorRituals = new Dictionary<int, Ritual> { [1] = null },
@@ -1757,12 +1759,12 @@ public class ProgressionHandler
             {
                 [1] = new List<Card>
                 {
-                    new Boar(),
                     new Satyr(),
                     new Satyr(),
-                    new Maenad(),
-                    new Panic(),
-                    new Panic(),
+                    new Satyr(),
+                    new Satyr(),
+                    new Satyr(),
+                    new ThrowStone(),
                     new ThrowStone(),
                 },
             },
@@ -2406,6 +2408,8 @@ public class ProgressionHandler
 
         if (deckName == DeckName.Archiereus)
             newDetails.GoldPerTurn = 5;
+        if (deckName == DeckName.TutorialCombat1 || deckName == DeckName.TutorialCombat2)
+            newDetails.GoldPerTurn = 2;
 
         int pool = GetDetailsPool(newDetails);
         player.LoadDetails(newDetails, pool);

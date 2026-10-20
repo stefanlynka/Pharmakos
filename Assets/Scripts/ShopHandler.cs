@@ -385,6 +385,12 @@ public class ShopHandler : MonoBehaviour
         RefreshPlayerLyre(hoverHighlightCost);
     }
 
+    public void RefreshHeartstrings()
+    {
+        RefreshPlayerLyre();
+        ShopScreenHandler?.RefreshHeartstringsDisplay();
+    }
+
     void RefreshPlayerLyre(int highlightedCount = 0)
     {
         if (PlayerLyre == null || Controller.Instance == null)

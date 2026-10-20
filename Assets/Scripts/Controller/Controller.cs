@@ -409,6 +409,16 @@ public class Controller : MonoBehaviour
         overworldScreen.MainCamera.gameObject.SetActive(active);
     }
 
+    void FadeOverworldLegendOut()
+    {
+        if (ScreenHandler.Instance == null
+            || !ScreenHandler.Instance.TryGetScreen(ScreenName.Overworld, out Screen screen))
+            return;
+
+        if (screen is OverworldScreen overworld)
+            overworld.FadeLegendOut();
+    }
+
     public void BeginEncounterFromOverworldNode(OverworldMapNode node)
     {
         if (node == null || IsTestChamber) return;
@@ -458,7 +468,7 @@ public class Controller : MonoBehaviour
                     ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
                     ShowStatusButton();
                     EventHandler.BeginRandomEvent(() => StartNextLevel());
-                }, () => {});
+                }, () => {}, FadeOverworldLegendOut);
                 transitionAnimation.FadeInDuration = EventHandler.FadeInDuration;
                 View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
             }
@@ -487,7 +497,7 @@ public class Controller : MonoBehaviour
             ScreenHandler.Instance.ShowScreen(ScreenName.PlayHistoryButton, false, false);
             TutorialDirector.Raise(TutorialTrigger.EncounterBegan, begunEncounter);
             LoadLevel();
-        }, () => { });
+        }, () => { }, FadeOverworldLegendOut);
         View.Instance.AnimationHandler.AddAnimationActionToQueue(combatTransitionAnimation);
     }
 
@@ -514,7 +524,7 @@ public class Controller : MonoBehaviour
             if (scriptedTutorial)
                 TutorialDirector.Raise(TutorialTrigger.EncounterBegan, EncounterType.TutorialTemple);
             TempleHandler.BeginTempleSacrifice(scriptedTutorial ? TutorialScript.SacrificeBatches() : null);
-        }, () => { });
+        }, () => { }, FadeOverworldLegendOut);
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }
 
@@ -540,7 +550,7 @@ public class Controller : MonoBehaviour
             ScreenHandler.Instance.ShowScreen(ScreenName.Styx, true, true);
             ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
             styxScreenHandler.BeginStyx();
-        }, () => { });
+        }, () => { }, FadeOverworldLegendOut);
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }
 
@@ -572,7 +582,7 @@ public class Controller : MonoBehaviour
             }
             else
                 ShopHandler.BeginShop();
-        }, () => { });
+        }, () => { }, FadeOverworldLegendOut);
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }
 
@@ -1002,10 +1012,10 @@ public class Controller : MonoBehaviour
     public bool TrySacrificeTrinketForHeartstring(Trinket trinket)
     {
         if (!HumanPlayerDetails.CanSacrificeForHeartstrings) return false;
-        if (RunHeartStrings >= Player.MaxHeartStrings) return false;
         if (!RemoveTrinket(trinket)) return false;
 
         AddHeartstrings(1);
+        SyncHeartstringDisplays();
         return true;
     }
 
@@ -1013,7 +1023,6 @@ public class Controller : MonoBehaviour
     public bool TrySacrificeRitualForHeartstring(bool major)
     {
         if (!HumanPlayerDetails.CanSacrificeForHeartstrings) return false;
-        if (RunHeartStrings >= Player.MaxHeartStrings) return false;
 
         Dictionary<int, Ritual> slot = major ? HumanPlayerDetails.MajorRituals : HumanPlayerDetails.MinorRituals;
         Ritual ritual = slot[0];
@@ -1022,7 +1031,22 @@ public class Controller : MonoBehaviour
         slot[0] = null;
         StyxRunState.RecordRemovedRitual(ritual);
         AddHeartstrings(1);
+        SyncHeartstringDisplays();
         return true;
+    }
+
+    /// <summary>Keeps the run count, the combat player, and the heartstring readouts on the same number.</summary>
+    public void SyncHeartstringDisplays()
+    {
+        if (Player1 != null && Player1.IsHuman)
+        {
+            Player1.CurrentHeartStrings = RunHeartStrings;
+            if (View.Instance != null && View.Instance.Player1 != null)
+                View.Instance.Player1.SetHeartStrings(RunHeartStrings, Player.MaxHeartStrings);
+        }
+
+        OverworldMapController?.RefreshHeartstrings();
+        ShopHandler?.RefreshHeartstrings();
     }
 
     /// <summary>

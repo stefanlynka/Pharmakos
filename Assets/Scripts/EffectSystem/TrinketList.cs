@@ -208,6 +208,7 @@ public class PeltastTrumpetTrinketEffectDef : TrinketPlayerEffect
             Peltast peltast = new Peltast();
             peltast.Init(TargetPlayer);
             SummonFollowerAction summonAction = new SummonFollowerAction(peltast);
+            summonAction.SourceEffect = this;
             TargetPlayer.GameState.ActionHandler.AddAction(summonAction, true);
         }
     }
@@ -259,6 +260,7 @@ public class GoldenFleeceTuftTrinketEffectDef : TrinketPlayerEffect
         if (ritual.Owner == TargetPlayer)
         {
             TargetPlayer.ChangeOffering(OfferingType.Gold, 1);
+            MarkTriggered();
         }
     }
 
@@ -308,6 +310,7 @@ public class LyreOfApolloTrinketEffectDef : TrinketPlayerEffect
         if (ritual.Owner == TargetPlayer)
         {
             DrawCardAction drawAction = new DrawCardAction(TargetPlayer, TargetPlayer, 2);
+            drawAction.SourceEffect = this;
             TargetPlayer.GameState.ActionHandler.AddAction(drawAction, true);
         }
     }
@@ -358,6 +361,7 @@ public class VialOfAmbrosiaTrinketEffectDef : TrinketPlayerEffect
         if (ritual.Owner == TargetPlayer)
         {
             ChangePlayerHealthAction healthAction = new ChangePlayerHealthAction(TargetPlayer, null, 3);
+            healthAction.SourceEffect = this;
             TargetPlayer.GameState.ActionHandler.AddAction(healthAction, true);
         }
     }
@@ -435,6 +439,7 @@ public class CyclopsEyeTrinketEffectDef : TrinketPlayerEffect
     private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
         CyclopsEyeAttackInstance attackInstance = new CyclopsEyeAttackInstance(effectDef, instanceTarget, offset, 0);
+        attackInstance.SourceEffect = this;
         instanceTarget.OnAttackEffects.Add(attackInstance);
     }
 
@@ -454,6 +459,8 @@ public class CyclopsEyeTrinketEffectDef : TrinketPlayerEffect
 // Custom effect instance for CyclopsEye trinket
 public class CyclopsEyeAttackInstance : TriggeredFollowerEffectInstance
 {
+    public StaticPlayerEffect SourceEffect;
+
     public CyclopsEyeAttackInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0)
         : base(def, affectedFollower, offsetFromOwner, effectNum, EffectTrigger.OnAttack) { }
 
@@ -467,6 +474,7 @@ public class CyclopsEyeAttackInstance : TriggeredFollowerEffectInstance
             if (targetsInFront.Contains(targetFollower))
             {
                 ChangeStatsAction statsAction = new ChangeStatsAction(AffectedFollower, 1, 0);
+                statsAction.SourceEffect = SourceEffect;
                 AffectedFollower.Owner.GameState.ActionHandler.AddAction(statsAction, true, true);
             }
         }
@@ -512,6 +520,7 @@ public class PansFluteTrinketEffectDef : TrinketPlayerEffect
             frenzyEffect.Apply(follower);
             
             ChangeStatsAction statsAction = new ChangeStatsAction(follower, 1, 0);
+            statsAction.SourceEffect = this;
             TargetPlayer.GameState.ActionHandler.AddAction(statsAction, true, true);
 
             ChangeStatsAction reduceStatsAction = new ChangeStatsAction(follower, -1, 0);
@@ -584,6 +593,7 @@ public class HermesSandalsTrinketEffectDef : TrinketPlayerEffect
             StaticEffectDef sprintEffect = new StaticEffectDef(EffectTarget.Self, StaticEffect.Sprint);
             follower.InnateEffects.Add(sprintEffect);
             sprintEffect.Apply(follower);
+            MarkTriggered();
         }
     }
 
@@ -693,7 +703,7 @@ public class TheAegisTrinketEffectDef : TrinketPlayerEffect
             StaticEffectDef shieldEffect2 = new StaticEffectDef(EffectTarget.Self, StaticEffect.Shield);
             follower.InnateEffects.Add(shieldEffect2);
             shieldEffect2.Apply(follower);
-
+            MarkTriggered();
         }
     }
 
@@ -761,6 +771,7 @@ public class RodOfAsclepiusTrinketEffectDef : TrinketPlayerEffect
             revived.SetBaseStats(revived.BaseAttack, 1);
             revived.CurrentHealth = 1;
             SummonFollowerAction summonAction = new SummonFollowerAction(revived);
+            summonAction.SourceEffect = this;
             TargetPlayer.GameState.ActionHandler.AddAction(summonAction);
         }
     }
@@ -863,6 +874,7 @@ public class HydrasScaleTrinketEffectDef : TrinketPlayerEffect
                 copy.IsClone = true;
                 int index = TargetPlayer.BattleRow.GetIndexOfFollower(follower) + 1;
                 SummonFollowerAction summonAction = new SummonFollowerAction(copy, index);
+                summonAction.SourceEffect = this;
                 TargetPlayer.GameState.ActionHandler.AddAction(summonAction, true, true);
             }
         }
@@ -922,6 +934,7 @@ public class TunicOfNessusTrinketEffectDef : TrinketPlayerEffect
 
             ITarget randomEnemy = possibleTargets[TargetPlayer.GameState.RNG.Next(0, possibleTargets.Count)];
             DealDamageAction damageAction = new DealDamageAction(Owner, randomEnemy, 2);
+            damageAction.SourceEffect = this;
             TargetPlayer.GameState.ActionHandler.AddAction(damageAction);
         }
     }
@@ -975,6 +988,7 @@ public class MedeasPotionTrinketEffectDef : TrinketPlayerEffect
             Card copy = follower.MakeBaseCopy();
             copy.Init(TargetPlayer);
             AddCardCopyToHandAction addAction = new AddCardCopyToHandAction(copy);
+            addAction.SourceEffect = this;
             TargetPlayer.GameState.ActionHandler.AddAction(addAction);
         }
     }
@@ -1055,6 +1069,7 @@ public class WingsOfIcarusTrinketEffectDef : TrinketPlayerEffect
         {
             appliedFollowers[follower] = 1;
             ChangeStatsAction statsAction = new ChangeStatsAction(follower, 1, 0);
+            statsAction.SourceEffect = this;
             TargetPlayer.GameState.ActionHandler.AddAction(statsAction, true, true);
         }
         else if (!isDamaged && hasBonus)
@@ -1099,7 +1114,9 @@ public class PandorasBoxTrinketEffectDef : TrinketPlayerEffect
 
     public override void Apply()
     {
-        TargetPlayer.StartOfTurnActions.Add(new DelayedGameAction(new PlayRandomSpellAction(Owner), false));
+        PlayRandomSpellAction spellAction = new PlayRandomSpellAction(Owner);
+        spellAction.SourceEffect = this;
+        TargetPlayer.StartOfTurnActions.Add(new DelayedGameAction(spellAction, false));
     }
 
     public override void Unapply()
@@ -1171,6 +1188,7 @@ public class PandorasHopeTrinketEffectDef : TrinketPlayerEffect
         lastHeartstringCount = TargetPlayer.CurrentHeartStrings;
 
         ChangeHeartStringsAction gainAction = new ChangeHeartStringsAction(TargetPlayer, 1, Owner);
+        gainAction.SourceEffect = this;
         TargetPlayer.GameState.ActionHandler.AddAction(gainAction);
     }
 
@@ -1233,6 +1251,7 @@ public class TwistingCorridorsTrinketEffectDef : TrinketPlayerEffect
     public override void Apply()
     {
         summonAction = new SummonFollowerCopyAction(TargetPlayer, new Corridor());
+        summonAction.SourceEffect = this;
         delayedAction = new DelayedGameAction(summonAction, false);
         TargetPlayer.EndOfTurnActions.Add(delayedAction);
     }
@@ -1329,10 +1348,12 @@ public class TheGreatHuntTrinketEffectDef : TrinketPlayerEffect
     {
         Player otherPlayer = TargetPlayer.GetOtherPlayer();
         summonAction = new SummonFollowerCopyAction(TargetPlayer, new Prey2());
+        summonAction.SourceEffect = this;
         delayedAction = new DelayedGameAction(summonAction, false);
         TargetPlayer.StartOfTurnActions.Add(delayedAction);
 
         summonAction2 = new SummonFollowerCopyAction(otherPlayer, new Prey2());
+        summonAction2.SourceEffect = this;
         delayedAction2 = new DelayedGameAction(summonAction2, false);
         TargetPlayer.StartOfTurnActions.Add(delayedAction2);
     }
@@ -1423,6 +1444,7 @@ public class TheEndlessWallTrinketEffectDef : TrinketPlayerEffect
     public override void Apply()
     {
         summonAction = new SummonFollowerCopyAction(TargetPlayer, new WallOfTroy());
+        summonAction.SourceEffect = this;
         delayedAction = new DelayedGameAction(summonAction, false);
         TargetPlayer.EndOfTurnActions.Add(delayedAction);
     }
@@ -1509,6 +1531,7 @@ public class CallOfTheSeaTrinketEffectDef : TrinketPlayerEffect
     private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)
     {
         AddCardCopyToHandInstance newEffectInstance = new AddCardCopyToHandInstance(effectDef, instanceTarget, offset, 0, EffectTrigger.OnKill);
+        newEffectInstance.SourceEffect = this;
         Drown newCard = new Drown();
         newCard.Costs[OfferingType.Gold] = 0;
         newEffectInstance.Init(newCard);
@@ -1544,6 +1567,7 @@ public class TheLostReturnTrinketEffectDef : TrinketPlayerEffect
     public override void Apply()
     {
         summonAction = new SummonSacrificedFollowerAction(TargetPlayer);
+        summonAction.SourceEffect = this;
         delayedAction = new DelayedGameAction(summonAction, false);
         TargetPlayer.StartOfTurnActions.Add(delayedAction);
     }
@@ -1649,6 +1673,7 @@ public class OdysseyTrinketEffectDef : TrinketPlayerEffect
         Odysseus odysseus = new Odysseus();
         odysseus.Init(TargetPlayer);
         SummonFollowerAction summonAction = new SummonFollowerAction(odysseus);
+        summonAction.SourceEffect = this;
         TargetPlayer.GameState.ActionHandler.AddAction(summonAction, true, true);
     }
 
@@ -1781,6 +1806,7 @@ public class StringsOfFateTrinketEffectDef : TrinketPlayerEffect
 
         firstDiscardUsed = true;
         RemoveOneCopyFromDeck(player, card);
+        MarkTriggered();
     }
 
     private void RemoveOneCopyFromDeck(Player player, Card discardedCard)

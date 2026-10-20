@@ -21,15 +21,15 @@ public class DelayedGameAction
         UsesRemaining = usesRemaining;
     }
 
-    public virtual void TryExecute()
+    public virtual void TryExecute(bool simulated = false)
     {
         if (!LimitedUses)
         {
-            GameAction.Execute();
+            GameAction.Execute(simulated);
         }
         else if (UsesRemaining > 0)
         {
-            GameAction.Execute();
+            GameAction.Execute(simulated);
             UsesRemaining--;
         }
     }
