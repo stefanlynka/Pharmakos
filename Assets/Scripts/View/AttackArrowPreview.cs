@@ -1174,4 +1174,119 @@ public class AttackArrowPreview
         Quaternion to = Quaternion.LookRotation(toThird, toSecondary);
         return to * Quaternion.Inverse(from);
     }
+
+    /// <summary>
+    /// One shot from a card to a target, using the same arc as the attack preview.
+    /// Lead and tail stay zero until the caller knows the arrow's length.
+    /// </summary>
+    public struct DirectArc
+    {
+        public Vector3 LeadStart;
+        public Vector3 Launch;
+        public Vector3 Control;
+        public Vector3 End;
+        public Vector3 TailEnd;
+        public Vector3 ExitDirection;
+        public Vector3 ArriveDirection;
+        public Vector3 BoardNormal;
+        public float LeadLength;
+        public float ArcLength;
+        public float TailLength;
+        public bool HasTargetBounds;
+        public Bounds TargetBounds;
+        public float[] distances;
+
+        public float TotalLength => LeadLength + ArcLength + TailLength;
+
+        public bool Sample(float distance, out Vector3 position, out Vector3 tangent)
+        {
+            position = Launch;
+            tangent = ExitDirection.sqrMagnitude > 0.0001f ? ExitDirection : Vector3.forward;
+            if (distances == null)
+                return false;
+
+            if (distance < LeadLength)
+            {
+                float t = LeadLength > 0.0001f ? distance / LeadLength : 1f;
+                position = Vector3.Lerp(LeadStart, Launch, t);
+                return true;
+            }
+
+            distance -= LeadLength;
+            if (distance < ArcLength)
+            {
+                float t = ArcParameter(distances, distance);
+                position = Quadratic(Launch, Control, End, t);
+                tangent = QuadraticTangent(Launch, Control, End, t);
+                return tangent.sqrMagnitude > 0.0001f;
+            }
+
+            distance -= ArcLength;
+            float tail = TailLength > 0.0001f ? Mathf.Clamp01(distance / TailLength) : 1f;
+            position = Vector3.Lerp(End, TailEnd, tail);
+            tangent = ArriveDirection.sqrMagnitude > 0.0001f ? ArriveDirection : tangent;
+            return true;
+        }
+    }
+
+    public static bool TryBuildShot(ViewCard source, ITarget target, out DirectArc arc)
+    {
+        arc = default;
+        if (source == null || target == null)
+            return false;
+
+        Camera camera = GetCamera();
+        Vector3 boardNormal = camera != null
+            ? BoardNormalTowardCamera(source.transform, camera)
+            : source.transform.forward;
+        if (boardNormal.sqrMagnitude < 0.0001f)
+            boardNormal = Vector3.forward;
+        else
+            boardNormal.Normalize();
+
+        if (!TryGetCardLaunch(source, out Vector3 launch, out _))
+            return false;
+        if (!TryGetTargetOccluder(target, out Vector3 end, out Bounds bounds, out bool hasBounds))
+            return false;
+
+        Vector3 toTarget = end - launch;
+        if (toTarget.sqrMagnitude < MinPathLength * MinPathLength)
+            return false;
+
+        float bow = Mathf.Min(ArcHeight, toTarget.magnitude * 0.35f);
+        Vector3 control = (launch + end) * 0.5f + boardNormal * bow;
+        Vector3 exitDir = control - launch;
+        if (exitDir.sqrMagnitude < 0.0001f)
+            return false;
+        exitDir.Normalize();
+
+        Vector3 arriveDir = end - control;
+        if (arriveDir.sqrMagnitude < 0.0001f)
+            arriveDir = toTarget;
+        arriveDir.Normalize();
+
+        float[] distances = new float[ArcSamples + 1];
+        float arcLength = FillCurve(distances, launch, control, default, end, false);
+        if (arcLength <= 0.05f)
+            return false;
+
+        arc.LeadStart = launch;
+        arc.Launch = launch;
+        arc.Control = control;
+        arc.End = end;
+        arc.TailEnd = end;
+        arc.ExitDirection = exitDir;
+        arc.ArriveDirection = arriveDir;
+        arc.BoardNormal = boardNormal;
+        arc.ArcLength = arcLength;
+        arc.HasTargetBounds = hasBounds;
+        arc.TargetBounds = bounds;
+        arc.distances = distances;
+        return true;
+    }
+
+    public static Quaternion AlignArrow(Vector3 tipLocal, Vector3 tangent, Vector3 faceLocal, Vector3 face)
+    {
+        return AlignRotation(tipLocal, tangent, faceLocal, face);
+    }
 }

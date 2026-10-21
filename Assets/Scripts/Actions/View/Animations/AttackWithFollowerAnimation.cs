@@ -20,6 +20,27 @@ public class AttackWithFollowerAnimation : AnimationAction
     private bool hasReturned;
     private int pendingImpactAnimations;
 
+    const string ArrowPrefabPath = "Prefabs/Misc/Arrow";
+    const string ArrowShotSoundPath = "Audio/SFX/Arrow";
+    const float RangedShotSpeed = 60f;
+    const float MinRangedShotDuration = 0.22f;
+    const float MaxRangedShotDuration = 1.35f;
+    const float ShotBuryDistance = 0.35f;
+    const float ShotClearMargin = 0.6f;
+
+    static GameObject arrowPrefab;
+    static AudioClip arrowShotClip;
+    static bool loggedMissingArrowPrefab;
+    static bool lookedForArrowShot;
+
+    GameObject shotArrow;
+    AttackArrowPreview.DirectArc shotArc;
+    float shotImpactDistance;
+    float shotArrowLength;
+    bool shotImpactPlayed;
+    Vector3 shotTipLocal = Vector3.left;
+    Vector3 shotFaceLocal = Vector3.up;
+
     public AttackWithFollowerAnimation(GameAction gameAction) : base(gameAction)
     {
         if (gameAction is AttackWithFollowerAction attackWithFollowerAction)
@@ -44,6 +65,13 @@ public class AttackWithFollowerAnimation : AnimationAction
             CallCallback();
             return;
         }
+
+        if (attacker.HasStaticEffect(StaticEffect.RangedAttacker))
+        {
+            PlayRangedShot();
+            return;
+        }
+
         ViewBattleRow attackerBattleRow = attacker.Owner.IsHuman
             ? View.Instance.Player1.BattleRow
             : View.Instance.Player2.BattleRow;
@@ -111,6 +139,165 @@ public class AttackWithFollowerAnimation : AnimationAction
     private void MoveAttacker(float progress)
     {
         SetAttackerPosition(progress, applyLift: false);
+    }
+
+    // The card stays put. The arrow comes out of the same point as the preview,
+    // follows that arc, and keeps going until it has cleared the far side of the target.
+    private void PlayRangedShot()
+    {
+        if (!AttackArrowPreview.TryBuildShot(attackerViewFollower, target, out shotArc)
+            || !TrySpawnShotArrow())
+        {
+            DoImpact();
+            OnReturned();
+            return;
+        }
+
+        ApplyShotClearance();
+        MoveShot(0f);
+        PlayArrowShotSound();
+
+        float speed = View.Instance.IsHumansTurn ? RangedShotSpeed : RangedShotSpeed * 0.75f;
+        float duration = Mathf.Clamp(shotArc.TotalLength / speed, MinRangedShotDuration, MaxRangedShotDuration);
+        Sequence shot = new Sequence();
+        shot.Add(new Tween(MoveShot, 0f, shotArc.TotalLength, duration));
+        shot.Add(new SequenceAction(FinishShot));
+        shot.Start();
+    }
+
+    private bool TrySpawnShotArrow()
+    {
+        if (arrowPrefab == null)
+            arrowPrefab = Resources.Load<GameObject>(ArrowPrefabPath);
+        if (arrowPrefab == null)
+        {
+            if (!loggedMissingArrowPrefab)
+            {
+                loggedMissingArrowPrefab = true;
+                Debug.LogError("Missing shot arrow prefab at Resources/" + ArrowPrefabPath);
+            }
+            return false;
+        }
+
+        shotArrow = UnityEngine.Object.Instantiate(arrowPrefab);
+        shotArrow.name = "ShotArrow";
+        CalibrateShotArrow(shotArrow.transform);
+        return true;
+    }
+
+    private void CalibrateShotArrow(Transform arrow)
+    {
+        Quaternion rotation = arrow.rotation;
+        arrow.rotation = Quaternion.identity;
+
+        Renderer renderer = arrow.GetComponentInChildren<Renderer>();
+        Vector3 size = renderer != null ? renderer.localBounds.size : Vector3.zero;
+        if (renderer != null && size.sqrMagnitude > 0.0001f)
+        {
+            int longAxis = 0;
+            if (size.y > size[longAxis]) longAxis = 1;
+            if (size.z > size[longAxis]) longAxis = 2;
+            int thinAxis = 0;
+            if (size.y < size[thinAxis]) thinAxis = 1;
+            if (size.z < size[thinAxis]) thinAxis = 2;
+            if (longAxis == thinAxis)
+                thinAxis = (longAxis + 1) % 3;
+
+            // This mesh comes to a point on the negative end of its long axis.
+            Vector3 meshTip = Vector3.zero;
+            meshTip[longAxis] = -1f;
+            Vector3 meshFace = Vector3.zero;
+            meshFace[thinAxis] = 1f;
+
+            shotTipLocal = arrow.InverseTransformDirection(renderer.transform.TransformDirection(meshTip)).normalized;
+            shotFaceLocal = arrow.InverseTransformDirection(renderer.transform.TransformDirection(meshFace)).normalized;
+
+            Vector3 lossy = renderer.transform.lossyScale;
+            shotArrowLength = Mathf.Max(
+                Mathf.Abs(size.x * lossy.x),
+                Mathf.Abs(size.y * lossy.y),
+                Mathf.Abs(size.z * lossy.z));
+        }
+
+        arrow.rotation = rotation;
+        if (shotArrowLength < 0.05f)
+            shotArrowLength = 1.5f;
+    }
+
+    private void ApplyShotClearance()
+    {
+        float half = shotArrowLength * 0.5f;
+        shotArc.LeadLength = half + ShotBuryDistance;
+        shotArc.LeadStart = shotArc.Launch - shotArc.ExitDirection * shotArc.LeadLength;
+
+        float halfDepth = 0.75f;
+        if (shotArc.HasTargetBounds)
+        {
+            Vector3 extents = shotArc.TargetBounds.extents;
+            Vector3 arrive = shotArc.ArriveDirection;
+            halfDepth = Mathf.Abs(extents.x * arrive.x)
+                + Mathf.Abs(extents.y * arrive.y)
+                + Mathf.Abs(extents.z * arrive.z);
+        }
+
+        shotArc.TailLength = halfDepth + half + ShotClearMargin;
+        shotArc.TailEnd = shotArc.End + shotArc.ArriveDirection * shotArc.TailLength;
+        shotImpactDistance = shotArc.LeadLength + shotArc.ArcLength - half;
+    }
+
+    private void MoveShot(float distance)
+    {
+        if (shotArrow == null)
+            return;
+
+        if (!shotImpactPlayed && distance >= shotImpactDistance)
+        {
+            shotImpactPlayed = true;
+            DoImpact();
+        }
+
+        if (!shotArc.Sample(distance, out Vector3 position, out Vector3 tangent))
+            return;
+
+        Vector3 face = Vector3.ProjectOnPlane(shotArc.BoardNormal, tangent);
+        if (face.sqrMagnitude < 0.04f)
+            face = Vector3.ProjectOnPlane(attackerViewFollower.transform.up, tangent);
+        if (face.sqrMagnitude < 0.0001f)
+            return;
+
+        shotArrow.transform.position = position;
+        shotArrow.transform.rotation = AttackArrowPreview.AlignArrow(shotTipLocal, tangent, shotFaceLocal, face);
+    }
+
+    private void FinishShot()
+    {
+        if (!shotImpactPlayed)
+        {
+            shotImpactPlayed = true;
+            DoImpact();
+        }
+
+        if (shotArrow != null)
+        {
+            UnityEngine.Object.Destroy(shotArrow);
+            shotArrow = null;
+        }
+
+        OnReturned();
+    }
+
+    private void PlayArrowShotSound()
+    {
+        if (!lookedForArrowShot)
+        {
+            lookedForArrowShot = true;
+            arrowShotClip = Resources.Load<AudioClip>(ArrowShotSoundPath);
+            if (arrowShotClip == null)
+                Debug.LogError("Missing arrow shot at Resources/" + ArrowShotSoundPath);
+        }
+
+        if (arrowShotClip != null && View.Instance.AudioHandler != null)
+            View.Instance.AudioHandler.PlayOneShot(arrowShotClip);
     }
 
     protected override void Log()
