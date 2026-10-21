@@ -164,8 +164,8 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4231983074110188558}
-  - {fileID: 36250100466206138}
   - {fileID: 4041078559460205057}
+  - {fileID: 36250100466206138}
   - {fileID: 7745889229468670765}
   m_Father: {fileID: 5953712520060193615}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -401,7 +401,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1089266841097526706, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_text
-      value: Restart
+      value: Main Menu
       objectReference: {fileID: 0}
     - target: {fileID: 1089266841097526706, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_fontSize

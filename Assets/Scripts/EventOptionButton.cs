@@ -45,7 +45,16 @@ namespace Pharmakos.Events.UI
         public void SetInteractable(bool isInteractable)
         {
             if (Button != null)
-                Button.interactable = isInteractable;
+                Button.interactable = isInteractable && CanAfford();
+        }
+
+        bool CanAfford()
+        {
+            if (_outcome == null || _outcome.HeartstringCost <= 0)
+                return true;
+
+            return Controller.Instance != null
+                && Controller.Instance.RunHeartStrings >= _outcome.HeartstringCost;
         }
 
         /// <summary>Clears the click handler and hides the row. Does not remove the persistent UI listener on <see cref="Button"/>.</summary>

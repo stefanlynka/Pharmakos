@@ -1311,6 +1311,38 @@ public class Controller : MonoBehaviour
             DeckViewer.Load(playerDeck);
         }
     }
+    public void BeginCopyCardFromDeck(System.Action<Card> onChosen)
+    {
+        if (ScreenHandler.Instance == null
+            || !ScreenHandler.Instance.TryGetScreen(ScreenName.SelectableDeckViewerScreen, out Screen screen))
+        {
+            Debug.LogError("Controller: SelectableDeckViewerScreen is not in the scene.");
+            onChosen?.Invoke(null);
+            return;
+        }
+
+        SelectableDeckViewerScreenHandler picker = screen.GetComponent<SelectableDeckViewerScreenHandler>();
+        if (picker == null)
+            picker = screen.gameObject.AddComponent<SelectableDeckViewerScreenHandler>();
+
+        List<Card> playerDeck = new List<Card>(HumanPlayerDetails.DeckBlueprint[0]);
+        playerDeck.Sort((a, b) =>
+        {
+            int costCompare = a.Costs[OfferingType.Gold].CompareTo(b.Costs[OfferingType.Gold]);
+            if (costCompare != 0)
+                return costCompare;
+
+            bool aIsFollower = a is Follower;
+            bool bIsFollower = b is Follower;
+            if (aIsFollower && !bIsFollower) return -1;
+            if (!aIsFollower && bIsFollower) return 1;
+            return 0;
+        });
+
+        ScreenHandler.Instance.ShowScreen(ScreenName.SelectableDeckViewerScreen, true, true);
+        picker.Show(playerDeck, onChosen);
+    }
+
     public void HideDeckViewer() => HideContentScrollView();
     public void HideContentScrollView()
     {
@@ -1385,7 +1417,11 @@ public class Controller : MonoBehaviour
 
         ProgressionHandler.SetupArchiereusEncounter(fightNumber);
 
-        Camera shakeCamera = TempleHandler != null ? TempleHandler.TempleCamera : null;
+        Camera shakeCamera = null;
+        if (CurrentScreen == ScreenName.Event && EventHandler != null)
+            shakeCamera = EventHandler.EventCamera;
+        if (shakeCamera == null && TempleHandler != null)
+            shakeCamera = TempleHandler.TempleCamera;
         if (shakeCamera == null
             && ScreenHandler.Instance != null
             && ScreenHandler.Instance.TryGetScreen(ScreenName.Temple, out Screen templeScreen))
@@ -1399,6 +1435,10 @@ public class Controller : MonoBehaviour
                 TempleHandler.EndTemple();
             else
                 ScreenHandler.Instance.HideScreen(ScreenName.Temple, true);
+
+            if (EventHandler != null)
+                EventHandler.CleanupEventPresentation();
+            ScreenHandler.Instance.HideScreen(ScreenName.Event, true);
 
             if (OverworldMapController != null)
                 OverworldMapController.HideMap();

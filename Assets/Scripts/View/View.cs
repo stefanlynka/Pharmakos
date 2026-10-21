@@ -191,13 +191,13 @@ public class View : MonoBehaviour
         if (Controller.Instance == null || !Controller.Instance.GameRunning)
             return;
 
-        if (ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking)
-            return;
+        bool combatInput = !ContentScrollView.BlocksGameInput
+            && !TutorialPresenter.IsBlocking
+            && (MenuSelectionHandler == null || !MenuSelectionHandler.IsActive);
+        if (combatInput)
+            SelectionHandler.UpdateHeldCardAfterHandLayout();
 
-        if (MenuSelectionHandler != null && MenuSelectionHandler.IsActive)
-            return;
-
-        SelectionHandler.UpdateHeldCardAfterHandLayout();
+        SelectionHandler.UpdateLegalTargetHoverFeedback();
     }
     public void AnimationUpdate()
     {

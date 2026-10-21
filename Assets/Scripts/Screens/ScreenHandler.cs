@@ -201,5 +201,6 @@ public enum ScreenName
     DeckViewerScreen,
     PlayHistoryScreen,
     NewTutorialScreen,
+    SelectableDeckViewerScreen,
 }
 

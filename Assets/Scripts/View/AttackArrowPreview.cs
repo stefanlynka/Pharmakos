@@ -5,6 +5,7 @@ using UnityEngine;
 /// Streams of 3D arrows for attacks, spell targeting, and ritual targeting.
 /// Hovering an attacker shows one arc to each legal target.
 /// Selecting an attacker, a spell, or a ritual aims one arc at the board point under the cursor.
+/// Aphrodite Minor also arcs from a hovered legal follower to the enemy it would take with it.
 /// </summary>
 public class AttackArrowPreview
 {
@@ -360,8 +361,14 @@ public class AttackArrowPreview
             shownTargetSignature = 0;
         }
 
-        SetStreamCount(1);
+        bool showElopement = TryGetAphroditeElopement(out ViewFollower eloper, out Vector3 elopeLaunch, out Vector3 partnerMiddle);
+        SetStreamCount(showElopement ? 2 : 1);
         AdvanceStream(streams[0], ritual.transform, launch, boardPoint, boardNormal, false, default, SpellArcHeight, true);
+        if (showElopement)
+        {
+            Vector3 elopeNormal = BoardNormalTowardCamera(eloper.transform, camera);
+            AdvanceStream(streams[1], eloper.transform, elopeLaunch, partnerMiddle, elopeNormal, false, default, ArcHeight, false);
+        }
     }
 
     void AdvanceStream(ArrowStream stream, Transform facing, Vector3 launch, Vector3 end, Vector3 boardNormal, bool hasWaypoint, Vector3 waypoint, float arcHeight, bool keepArcHeight)
@@ -759,6 +766,36 @@ public class AttackArrowPreview
 
         arrow.rotation = rotation;
         arrow.localScale = scale;
+    }
+
+    static bool TryGetAphroditeElopement(out ViewFollower source, out Vector3 launch, out Vector3 partnerMiddle)
+    {
+        source = null;
+        launch = default;
+        partnerMiddle = default;
+
+        SelectionHandler selection = View.Instance.SelectionHandler;
+        if (selection.SelectedRitual == null || selection.SelectedRitual.Ritual is not AphroditeMinor)
+            return false;
+
+        ViewFollower hovered = FindHoveredFollower(View.Instance.Player1.BattleRow, selection);
+        if (hovered == null)
+            hovered = FindHoveredFollower(View.Instance.Player2.BattleRow, selection);
+        if (hovered == null || hovered.Follower == null)
+            return false;
+        if (!selection.PotentialRitualTargets.Contains(hovered.Follower))
+            return false;
+
+        Follower partner = hovered.Follower.GetClosestEnemy();
+        if (partner == null)
+            return false;
+        if (!TryGetCardLaunch(hovered, out launch, out _))
+            return false;
+        if (!TryGetTargetOccluder(partner, out partnerMiddle, out _, out _))
+            return false;
+
+        source = hovered;
+        return true;
     }
 
     static ViewFollower GetHoveredHumanAttacker(SelectionHandler selection)

@@ -34,6 +34,8 @@ public class SelectionHandler
 
     public void Clear()
     {
+        RestoreLegalTargetHoverScale();
+
         ViewEventHandler.Instance.ViewTargetInHandClicked -= ViewTargetInHandClicked;
         ViewEventHandler.Instance.ViewTargetInPlayClicked -= ViewTargetInPlayClicked;
         ViewEventHandler.Instance.RitualClicked -= ViewRitualClicked;
@@ -418,5 +420,116 @@ public class SelectionHandler
             return proxy.ActiveCard == card;
 
         return CurrentHover == card;
+    }
+
+    const float LegalTargetHoverScale = 1.1f;
+    const string LegalTargetHoverSoundPath = "Audio/SFX/Bump";
+    static AudioClip legalTargetHoverClip;
+    Transform hoveredLegalTargetTransform;
+    Vector3 hoveredLegalTargetBaseScale;
+
+    public void UpdateLegalTargetHoverFeedback()
+    {
+        ViewTarget hovered = null;
+        if (CanShowLegalTargetHover())
+            TryGetHoveredLegalTarget(out hovered);
+
+        Transform targetTransform = hovered != null ? hovered.transform : null;
+        if (hoveredLegalTargetTransform != targetTransform)
+        {
+            RestoreLegalTargetHoverScale();
+            if (targetTransform == null)
+                return;
+
+            hoveredLegalTargetBaseScale = targetTransform.localScale;
+            hoveredLegalTargetTransform = targetTransform;
+            PlayLegalTargetHoverSound();
+        }
+
+        if (hoveredLegalTargetTransform != null)
+            hoveredLegalTargetTransform.localScale = hoveredLegalTargetBaseScale * LegalTargetHoverScale;
+    }
+
+    public bool IsHoveredLegalTarget(ViewTarget viewTarget)
+    {
+        if (!CanShowLegalTargetHover())
+            return false;
+
+        return TryGetHoveredLegalTarget(out ViewTarget hovered) && hovered == viewTarget;
+    }
+
+    bool CanShowLegalTargetHover()
+    {
+        if (Controller.Instance == null || !Controller.Instance.GameRunning || Controller.Instance.GamePaused)
+            return false;
+        if (ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking)
+            return false;
+        if (View.Instance != null && View.Instance.MenuSelectionHandler != null && View.Instance.MenuSelectionHandler.IsActive)
+            return false;
+        if (View.Instance == null || !View.Instance.IsInteractible)
+            return false;
+
+        return true;
+    }
+
+    bool TryGetHoveredLegalTarget(out ViewTarget viewTarget)
+    {
+        viewTarget = null;
+        if (CurrentHover == null || CurrentHover.Target == null)
+            return false;
+        if (!TryGetActiveLegalTargets(out List<ITarget> targets) || !targets.Contains(CurrentHover.Target))
+            return false;
+
+        if (CurrentHover is CardViewRaycastTarget proxy)
+        {
+            viewTarget = proxy.ActiveCard;
+            return viewTarget != null;
+        }
+
+        viewTarget = CurrentHover;
+        return true;
+    }
+
+    bool TryGetActiveLegalTargets(out List<ITarget> targets)
+    {
+        if (IsAimingSpell())
+        {
+            targets = CurrentTargets;
+            return true;
+        }
+
+        if (AttackingFollower != null)
+        {
+            targets = AttackableTargets;
+            return true;
+        }
+
+        if (SelectedRitual != null)
+        {
+            targets = PotentialRitualTargets;
+            return true;
+        }
+
+        targets = null;
+        return false;
+    }
+
+    void RestoreLegalTargetHoverScale()
+    {
+        if (hoveredLegalTargetTransform != null)
+            hoveredLegalTargetTransform.localScale = hoveredLegalTargetBaseScale;
+
+        hoveredLegalTargetTransform = null;
+    }
+
+    void PlayLegalTargetHoverSound()
+    {
+        if (View.Instance == null || View.Instance.AudioHandler == null)
+            return;
+
+        if (legalTargetHoverClip == null)
+            legalTargetHoverClip = Resources.Load<AudioClip>(LegalTargetHoverSoundPath);
+
+        View.Instance.AudioHandler.PlayOneShot(legalTargetHoverClip);
     }
 }

@@ -160,9 +160,10 @@ public class ViewBattleRow : MonoBehaviour
 
             viewFollower.SetHighlight(highlighted);
 
-            // Hover popups stay hidden while placing a follower, choosing an attack target, or aiming a spell.
+            // Hover popups stay hidden while placing a follower, choosing an attack or ritual target, or aiming a spell.
             if (!View.Instance.SelectionHandler.IsHoldingFollower() &&
                 View.Instance.SelectionHandler.AttackingFollower == null &&
+                View.Instance.SelectionHandler.SelectedRitual == null &&
                 !View.Instance.SelectionHandler.IsAimingSpell() &&
                 View.Instance.SelectionHandler.IsHoveringOverThisCard(viewFollower))
             {

@@ -433,6 +433,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: eb91c4f8a3d24567b8c9de0f1a2b3c4d, type: 2}
   - {fileID: 11400000, guid: 760383ff264af274f9f05161cde986d1, type: 2}
   - {fileID: 11400000, guid: 5c434b57b73970245a71dff4182f9725, type: 2}
+  - {fileID: 11400000, guid: 12652f815c7574e4eaadc324da4091c2, type: 2}
+  - {fileID: 11400000, guid: 9328c085d4bf0ba42abcdd3d9fc1dd0d, type: 2}
+  - {fileID: 11400000, guid: 825a8f36ce69fe94cb0b5ebcd53423ad, type: 2}
   FadeInDuration: 1
   ZoomedInOrthographicSize: 1.6
   ZoomFocusPoint: {fileID: 0}

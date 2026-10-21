@@ -1,15 +1,21 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Pool;
 using UnityEngine.UI;
 
 public class ContentScrollView : MonoBehaviour
 {
     public static ContentScrollView Instance { get; private set; }
-    public static bool IsActive => Instance != null && Instance._isActive;
+    static ContentScrollView _selectable;
+    public static bool IsActive =>
+        (Instance != null && Instance._isActive) || (_selectable != null && _selectable._isActive);
     public static bool CapturesScrollWheel => IsActive;
     public static bool BlocksGameInput => IsActive;
+
+    [Tooltip("Second copy used to pick a card. It does not replace the deck viewer.")]
+    public bool IsSelectableCopy;
 
     const string ContentLayerName = "DeckViewer";
     const string RitualPrefabPath = "Prefabs/View/ViewRitual3";
@@ -136,16 +142,14 @@ public class ContentScrollView : MonoBehaviour
     static GameObject _ritualPrefab;
     static GameObject _trinketPrefab;
     int _contentLayer = -1;
+    bool _selectionEnabled;
+    Card _selectedCard;
+    readonly List<RaycastResult> _uiHits = new List<RaycastResult>();
+
+    public Card SelectedCard => _selectedCard;
 
     void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
         AutoResolveReferences();
 
         _mainSection.Camera = ScrollCamera;
@@ -154,6 +158,22 @@ public class ContentScrollView : MonoBehaviour
             _mainSection.CameraBaseZ = ScrollCamera.transform.localPosition.z;
 
         _contentLayer = LayerMask.NameToLayer(ContentLayerName);
+
+        if (IsSelectableCopy)
+        {
+            _selectable = this;
+            gameObject.SetActive(true);
+            SetCaptureActive(false);
+            return;
+        }
+
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
         gameObject.SetActive(true);
         SetCaptureActive(false);
     }
@@ -162,6 +182,8 @@ public class ContentScrollView : MonoBehaviour
     {
         if (Instance == this)
             Instance = null;
+        if (_selectable == this)
+            _selectable = null;
 
         ReleaseTexture(_ritualSection);
         ReleaseTexture(_trinketSection);
@@ -175,6 +197,24 @@ public class ContentScrollView : MonoBehaviour
         UpdateSection(_mainSection);
         UpdateSection(_ritualSection);
         UpdateSection(_trinketSection);
+
+        if (_selectionEnabled && Input.GetMouseButtonDown(0) && !IsPointerOverButton())
+            ToggleCardUnderMouse();
+    }
+
+    /// <summary>Shows the deck so one card can be selected. Clicking the selected card clears it.</summary>
+    public void ShowSelectableCards(List<Card> cards, RectTransform scrollRegion)
+    {
+        _selectionEnabled = true;
+        _selectedCard = null;
+        ShowCardsInternal(cards, scrollRegion);
+    }
+
+    public void HideView()
+    {
+        _selectionEnabled = false;
+        _selectedCard = null;
+        HideInternal();
     }
 
     /// <param name="scrollRegion">If set, the mouse wheel only scrolls the cards while the mouse is over it.</param>
@@ -384,6 +424,7 @@ public class ContentScrollView : MonoBehaviour
 
         BindScreenRenderTexture(ScreenName.DeckViewerScreen);
         BindScreenRenderTexture(ScreenName.PlayHistoryScreen);
+        BindScreenRenderTexture(ScreenName.SelectableDeckViewerScreen);
     }
 
     static void BindScreenRenderTexture(ScreenName screenName)
@@ -934,6 +975,36 @@ public class ContentScrollView : MonoBehaviour
         }
 
         return -1;
+    }
+
+    void ToggleCardUnderMouse()
+    {
+        int index = GetItemIndexUnderMouse(_mainSection);
+        if (index < 0 || index >= _viewCards.Count)
+            return;
+
+        Card card = _viewCards[index].Card;
+        _selectedCard = _selectedCard == card ? null : card;
+
+        foreach (ViewCard viewCard in _viewCards)
+        {
+            if (viewCard != null)
+                viewCard.SetHighlight(viewCard.Card == _selectedCard);
+        }
+    }
+
+    bool IsPointerOverButton()
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        _uiHits.Clear();
+        var pointer = new PointerEventData(EventSystem.current) { position = Input.mousePosition };
+        EventSystem.current.RaycastAll(pointer, _uiHits);
+        if (_uiHits.Count == 0)
+            return false;
+
+        return _uiHits[0].gameObject.GetComponentInParent<Button>() != null;
     }
 
     void HighlightRitualInternal(Ritual ritual)

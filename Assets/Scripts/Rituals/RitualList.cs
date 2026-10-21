@@ -69,7 +69,7 @@ public class AphroditeMinor : Ritual
             // BlitzMode costs - reduced non-gold costs since they reset each turn
             Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 2 },
+                {OfferingType.Blood, 0 },
                 {OfferingType.Bone, 0 },
                 {OfferingType.Crop, 0 },
                 {OfferingType.Scroll, 0 },

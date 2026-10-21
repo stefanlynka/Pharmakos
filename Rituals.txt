@@ -1,0 +1,96 @@
+Rituals
+=======
+
+Blitz costs are Blood, Bone, Crop, and Scroll. Zero-cost offerings are omitted.
+
+Aphrodite Major
+  Blitz cost: Blood 7
+  Effect: Target Follower switches sides
+
+Aphrodite Minor
+  Blitz cost: Blood 2
+  Effect: Target Follower runs away with its closest enemy
+
+Apollo Minor
+  Blitz cost: Crop 2, Scroll 2
+  Effect: Next Turn: Gain 2 Gold, Draw 2 Cards
+
+Apollo Major
+  Blitz cost: Crop 3, Scroll 3
+  Effect: When you play a Spell, your next Follower costs 1 less (stacks)
+
+Ares Minor
+  Blitz cost: Blood 2, Bone 2
+  Effect: Your Followers have Sprint
+
+Ares Major
+  Blitz cost: Blood 3, Bone 3
+  Effect: When one of your Followers kills an enemy, it gains +1/+1 and can attack again
+
+Athena Major
+  Blitz cost: Blood 3, Scroll 3
+  Effect: When one of your Followers draws blood, get a free spell with cost equal to the damage dealt
+
+Demeter Major
+  Blitz cost: Bone 4, Crop 4
+  Effect: When a Follower enters Target Player's BattleRow, gain 1 life and draw a card
+
+Demeter Minor
+  Blitz cost: Bone 4, Crop 4
+  Effect: When one of Target Player's Followers dies, one of your Followers gains its attack
+
+Dionysus Minor
+  Blitz cost: Blood 4, Crop 3
+  Effect: Sacrifice a Follower: Gain 1 Gold, Draw 2 Cards, Gain 3 Life
+
+Hades Minor
+  Blitz cost: Bone 3
+  Effect: Summon a copy of the last Follower that died
+
+Hades Major
+  Blitz cost: Bone 5
+  Effect: At the end of each of target Player's turns, they summon a copy of the last Follower that died
+
+Hephaestus Major
+  Blitz cost: Bone 3, Scroll 3
+  Effect: When one of target Player's Followers dies, get a copy of every spell that Player cast on on it. The copies costs 1 less.
+
+Hermes Major
+  Blitz cost: Scroll 5
+  Effect: Whenever a follower attacks the turn it entered, gain a Herald spell
+
+Hermes Minor
+  Blitz cost: Scroll 2
+  Effect: Steal a card from your opponent's deck. It costs 1 less.
+
+Muse Minor
+  Blitz cost: Scroll 2
+  Effect: Draw a card
+
+Hestia Minor
+  Blitz cost: Crop 2
+  Effect: Give a Follower +1/+1
+
+Hera Major
+  Blitz cost: Blood 4, Crop 3, Scroll 1
+  Effect: When your life total changes, deal 2 damage to a random enemy
+
+Old Ones
+  Blitz cost: Blood 3, Bone 3, Crop 3, Scroll 3
+  Effect: Summon Typhon and Echidna
+
+Poseidon Major
+  Blitz cost: Blood 2, Bone 3, Scroll 3
+  Effect: Whenever you sacrifice a follower, gain a free Drown spell
+
+Poseidon Minor
+  Blitz cost: Blood 1, Bone 1, Scroll 1
+  Effect: Destroy all Followers with the least attack
+
+Zeus Minor
+  Blitz cost: Blood 1, Bone 1, Crop 1, Scroll 1
+  Effect: Summon a 1/1 copy of a Follower
+
+Zeus Major
+  Blitz cost: none (Blood 0, Bone 0, Crop 0, Scroll 0)
+  Effect: Deal 4 damage to a target

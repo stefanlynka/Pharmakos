@@ -3129,7 +3129,7 @@ public class FirstFlame : Spell
     {
         Costs = new Dictionary<OfferingType, int>()
         {
-            { OfferingType.Gold, 1},
+            { OfferingType.Gold, 0},
             { OfferingType.Blood, 0},
             { OfferingType.Bone, 0},
             { OfferingType.Crop, 0},

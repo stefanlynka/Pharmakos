@@ -193,13 +193,46 @@ public class EventHandler : MonoBehaviour
             return;
         }
 
-        ApplyOutcome(options[optionIndex].Outcome);
+        EventOutcomeData outcome = options[optionIndex].Outcome;
+        if (outcome != null && outcome.OutcomeType == EventOutcomeType.CopyCardInDeck)
+        {
+            BeginCopyCardSelection();
+            return;
+        }
+
+        ApplyOutcome(outcome);
+        CompleteAndReturn();
+    }
+
+    void BeginCopyCardSelection()
+    {
+        StopEventCoroutines();
+        if (EventScreenHandler != null)
+            EventScreenHandler.CancelEventBodyTyping();
+
+        Controller.Instance.BeginCopyCardFromDeck(OnCopyCardChosen);
+    }
+
+    void OnCopyCardChosen(Card selected)
+    {
+        if (selected != null)
+            Controller.Instance.AddCardsToPlayerDeck(new List<Card> { selected.MakeBaseCopy() });
+
+        if (ScreenHandler.Instance != null)
+            ScreenHandler.Instance.HideScreen(ScreenName.SelectableDeckViewerScreen, true);
+
         CompleteAndReturn();
     }
 
     void ApplyOutcome(EventOutcomeData outcome)
     {
         if (outcome == null) return;
+
+        if (outcome.HeartstringCost > 0 && !Controller.Instance.TrySpendHeartstrings(outcome.HeartstringCost))
+        {
+            Debug.LogWarning("EventHandler: not enough heartstrings to pay for this option.");
+            return;
+        }
 
         switch (outcome.OutcomeType)
         {
@@ -225,6 +258,9 @@ public class EventHandler : MonoBehaviour
                 break;
             case EventOutcomeType.GainRituals:
                 ApplyGainRituals(outcome);
+                break;
+            case EventOutcomeType.RebukeTheGods:
+                _onEventComplete = () => Controller.Instance.BeginArchiereusEncounter();
                 break;
             case EventOutcomeType.RemoveAllSmallFollowers:
                 RemoveAllSmallFollowers();

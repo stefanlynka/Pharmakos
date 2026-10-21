@@ -16,6 +16,7 @@ namespace Pharmakos.Events
     {
         public EventOutcomeType OutcomeType = EventOutcomeType.None;
         public List<string> RewardInfo = new();
+        public int HeartstringCost;
     }
 
 

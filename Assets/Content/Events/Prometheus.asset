@@ -23,17 +23,19 @@ MonoBehaviour:
   Options:
   - OptionText: 'Fight off the eagle to give him a day of rest
 
-      (Combat)'
-    Outcome:
-      OutcomeType: 4
-      RewardInfo: []
-  - OptionText: 'Listen to his tale of the first flame
-
-      (Gain Card)'
+      (Lose 1 Heartstring, Gain Card)'
     Outcome:
       OutcomeType: 1
       RewardInfo:
       - FirstFlame
+      HeartstringCost: 1
+  - OptionText: 'Listen to his tales until morning
+
+      (Gain 2 Heartstrings)'
+    Outcome:
+      OutcomeType: 8
+      RewardInfo:
+      - 2
   - OptionText: 'Leave
 
       (Nothing)'

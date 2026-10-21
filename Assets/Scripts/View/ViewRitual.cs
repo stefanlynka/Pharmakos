@@ -458,6 +458,11 @@ public class ViewRitual : ViewTarget
 
     void UpdateHoverScale()
     {
+        if (View.Instance != null
+            && View.Instance.SelectionHandler != null
+            && View.Instance.SelectionHandler.IsHoveredLegalTarget(this))
+            return;
+
         float scaleFactor = IsHoveredAndUsable() ? hoverScaleMultiplier : 1f;
         transform.localScale = defaultLocalScale * scaleFactor;
     }

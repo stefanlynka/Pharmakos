@@ -172,7 +172,7 @@ public class ProgressionHandler
             },
             MajorRituals = new Dictionary<int, Ritual>
             {
-                [0] = new MuseMinor(),
+                [0] = new AphroditeMinor(),
             },
             Trinkets = new Dictionary<int, List<Trinket>>
             {
