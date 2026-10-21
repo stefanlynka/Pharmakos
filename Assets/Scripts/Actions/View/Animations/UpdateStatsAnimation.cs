@@ -38,13 +38,13 @@ public class UpdateStatsAnimation : AnimationAction
                 CallCallback();
                 return;
             }
+            int attackDelta = newAttack - viewFollower.DisplayedAttack;
+            int healthDelta = newHealth - viewFollower.DisplayedHealth;
             viewFollower.SetStats(newAttack, newHealth);
 
-            //if (newHealth < 0)
-            //{
-            //    viewFollower.ShowDamage(-newHealth);
-            //    isDamage = true;
-            //}
+            if (!viewFollower.PlayStatChangeFeedback(attackDelta, healthDelta, CallCallback))
+                CallCallback();
+            return;
         }
         else if (player != null)
         {

@@ -54,6 +54,17 @@ public class ViewFollower : ViewCard
     private int attack = 0;
     private int health = 0;
 
+    public int DisplayedAttack => attack;
+    public int DisplayedHealth => health;
+
+    const string PowerUpSoundPath = "Audio/SFX/PowerUp";
+    const string PowerDownSoundPath = "Audio/SFX/PowerDown";
+    const float StatChangeSoundOverlapWindow = 0.25f;
+
+    static readonly Dictionary<string, AudioClip> statChangeClips = new Dictionary<string, AudioClip>();
+    static float nextPowerUpSoundTime;
+    static float nextPowerDownSoundTime;
+
     public void ApplyCardMode(bool isFollower)
     {
         if (FollowerOnlyRoot != null)
@@ -177,6 +188,54 @@ public class ViewFollower : ViewCard
     {
         health += change;
         HealthText.text = health.ToString();
+    }
+
+    // Green and PowerUp when the stats rise overall, red and PowerDown when they fall.
+    // A wave of changes shares one sting. onComplete runs once the tint has faded, matching the sting.
+    public bool PlayStatChangeFeedback(int attackChange, int healthChange, Action onComplete)
+    {
+        if (attackChange == 0 && healthChange == 0)
+            return false;
+
+        bool buff = attackChange + healthChange > 0;
+        AudioClip clip = LoadStatChangeClip(buff ? PowerUpSoundPath : PowerDownSoundPath);
+        PlayStatChangeSound(buff, clip);
+
+        float duration = clip != null && clip.length > 0f ? clip.length/2f : 1f;
+        VfxLibrary.StatChangeTint(buff, duration).Play(new VfxContext(null, this), onComplete);
+        return true;
+    }
+
+    static void PlayStatChangeSound(bool buff, AudioClip clip)
+    {
+        if (clip == null || View.Instance == null || View.Instance.AudioHandler == null)
+            return;
+
+        float now = Time.unscaledTime;
+        if (buff)
+        {
+            if (now < nextPowerUpSoundTime) return;
+            nextPowerUpSoundTime = now + StatChangeSoundOverlapWindow;
+        }
+        else
+        {
+            if (now < nextPowerDownSoundTime) return;
+            nextPowerDownSoundTime = now + StatChangeSoundOverlapWindow;
+        }
+
+        View.Instance.AudioHandler.PlayOneShot(clip, 2.0f);
+    }
+
+    static AudioClip LoadStatChangeClip(string path)
+    {
+        if (!statChangeClips.TryGetValue(path, out AudioClip clip))
+        {
+            clip = Resources.Load<AudioClip>(path);
+            if (clip == null)
+                Debug.LogWarning("ViewFollower: missing sound Resources/" + path);
+            statChangeClips[path] = clip;
+        }
+        return clip;
     }
 
     protected override CardArtLayoutAsset GetArtLayoutAsset(bool descriptiveMode)

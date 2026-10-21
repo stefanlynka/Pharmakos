@@ -168,7 +168,7 @@ public class ProgressionHandler
             PortraitName = "Player",
             MinorRituals = new Dictionary<int, Ritual>
             {
-                [0] = new AthenaMajor(),
+                [0] = new ZeusMajor(),
             },
             MajorRituals = new Dictionary<int, Ritual>
             {
@@ -184,11 +184,19 @@ public class ProgressionHandler
                 {
                     //new DevKill(),
                     //new ThrowStone(),
-                    new Pegasus(),
+                    // new Pegasus(),
+                    // new Blessing(),
+                    // new Smite(),
+                    // new ThrowStone(),
+                    // new Peltast(),
+
+                    new Lightning(),
                     new Blessing(),
-                    new Smite(),
-                    new ThrowStone(),
-                    new Peltast(),
+                    new Blessing(),
+                    new Blessing(),
+                    new Blessing(),
+                    new Blessing(),
+
                     //new PriceOfProfit(),
                     //new Pan(),
                     //new Endymion(),

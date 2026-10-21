@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Streams of 3D arrows for attacks and spell targeting.
+/// Streams of 3D arrows for attacks, spell targeting, and ritual targeting.
 /// Hovering an attacker shows one arc to each legal target.
-/// Selecting an attacker, or a spell with targets, aims one arc at the board point under the cursor.
+/// Selecting an attacker, a spell, or a ritual aims one arc at the board point under the cursor.
 /// </summary>
 public class AttackArrowPreview
 {
@@ -102,6 +102,12 @@ public class AttackArrowPreview
             return;
         }
 
+        if (selection.SelectedRitual != null && selection.PotentialRitualTargets.Count > 0)
+        {
+            ShowRitualAim(selection.SelectedRitual);
+            return;
+        }
+
         if (selection.IsSelectingTarget())
         {
             Hide();
@@ -180,6 +186,11 @@ public class AttackArrowPreview
 
         Camera camera = GetCamera();
         Vector3 boardNormal = BoardNormalTowardCamera(attacker.transform, camera);
+        if (!TryGetCardLaunch(attacker, out Vector3 launch, out _))
+        {
+            Hide();
+            return;
+        }
 
         hoverAims.Clear();
         for (int i = 0; i < targets.Count; i++)
@@ -209,7 +220,7 @@ public class AttackArrowPreview
         for (int i = 0; i < hoverAims.Count; i++)
         {
             StreamAim aim = hoverAims[i];
-            AdvanceStream(streams[i], attacker, aim.End, boardNormal, aim.HasWaypoint, aim.Waypoint, ArcHeight, false);
+            AdvanceStream(streams[i], attacker.transform, launch, aim.End, boardNormal, aim.HasWaypoint, aim.Waypoint, ArcHeight, false);
         }
     }
 
@@ -243,8 +254,14 @@ public class AttackArrowPreview
             shownTargetSignature = 0;
         }
 
+        if (!TryGetCardLaunch(attacker, out Vector3 launch, out _))
+        {
+            Hide();
+            return;
+        }
+
         SetStreamCount(1);
-        AdvanceStream(streams[0], attacker, boardPoint, boardNormal, false, default, ArcHeight, false);
+        AdvanceStream(streams[0], attacker.transform, launch, boardPoint, boardNormal, false, default, ArcHeight, false);
     }
 
     void ShowSpellAim(ViewSpell spell)
@@ -287,13 +304,69 @@ public class AttackArrowPreview
             shownTargetSignature = 0;
         }
 
+        if (!TryGetCardLaunch(spell, out Vector3 launch, out _))
+        {
+            Hide();
+            return;
+        }
+
         SetStreamCount(1);
-        AdvanceStream(streams[0], spell, boardPoint, boardNormal, false, default, SpellArcHeight, true);
+        AdvanceStream(streams[0], spell.transform, launch, boardPoint, boardNormal, false, default, SpellArcHeight, true);
     }
 
-    void AdvanceStream(ArrowStream stream, ViewCard source, Vector3 end, Vector3 boardNormal, bool hasWaypoint, Vector3 waypoint, float arcHeight, bool keepArcHeight)
+    void ShowRitualAim(ViewRitual ritual)
     {
-        if (!TryBuildFlight(source, end, boardNormal, hasWaypoint, waypoint, arcHeight, keepArcHeight, out Flight flight))
+        if (ritual == null)
+        {
+            Hide();
+            return;
+        }
+
+        Camera camera = GetCamera();
+        if (camera == null)
+        {
+            Hide();
+            return;
+        }
+
+        if (View.Instance.SelectionHandler.CurrentHover == ritual)
+        {
+            Hide();
+            return;
+        }
+
+        Vector3 boardNormal = BoardNormalTowardCamera(ritual.transform, camera);
+        Vector3 planePoint = View.Instance.Player1.BattleRow != null
+            ? View.Instance.Player1.BattleRow.transform.position
+            : ritual.transform.position;
+        if (!TryGetCursorOnBoard(camera, planePoint, boardNormal, out Vector3 boardPoint))
+        {
+            Hide();
+            return;
+        }
+
+        if (!TryGetRitualLaunch(ritual, out Vector3 launch, out _))
+        {
+            Hide();
+            return;
+        }
+
+        int ritualId = ritual.Ritual != null ? ritual.Ritual.ID : ritual.GetInstanceID();
+        if (!showingAim || shownSourceId != ritualId)
+        {
+            Hide();
+            showingAim = true;
+            shownSourceId = ritualId;
+            shownTargetSignature = 0;
+        }
+
+        SetStreamCount(1);
+        AdvanceStream(streams[0], ritual.transform, launch, boardPoint, boardNormal, false, default, SpellArcHeight, true);
+    }
+
+    void AdvanceStream(ArrowStream stream, Transform facing, Vector3 launch, Vector3 end, Vector3 boardNormal, bool hasWaypoint, Vector3 waypoint, float arcHeight, bool keepArcHeight)
+    {
+        if (!TryBuildFlight(launch, end, boardNormal, hasWaypoint, waypoint, arcHeight, keepArcHeight, out Flight flight))
         {
             ClearStream(stream);
             return;
@@ -319,7 +392,7 @@ public class AttackArrowPreview
 
         int count = last - first + 1;
         EnsureArrowCount(stream, count);
-        Vector3 cardUp = source.transform.up;
+        Vector3 cardUp = facing != null && facing.up.sqrMagnitude > 0.0001f ? facing.up : Vector3.up;
         for (int n = 0; n < count; n++)
         {
             float fromLaunch = phase + (first + n) * ArrowSpacing;
@@ -327,21 +400,15 @@ public class AttackArrowPreview
         }
     }
 
-    bool TryBuildFlight(ViewCard source, Vector3 end, Vector3 boardNormal, bool hasWaypoint, Vector3 waypoint, float arcHeight, bool keepArcHeight, out Flight flight)
+    bool TryBuildFlight(Vector3 launch, Vector3 end, Vector3 boardNormal, bool hasWaypoint, Vector3 waypoint, float arcHeight, bool keepArcHeight, out Flight flight)
     {
         flight = default;
-        Vector3 up = source.transform.up;
-        if (up.sqrMagnitude < 0.0001f)
-            up = Vector3.up;
-        up.Normalize();
-
-        // One arc from a fixed point on the card to the target center.
-        // The exit direction is the arc's own initial tangent, so the arrow is
-        // aimed at that target as soon as it appears.
-        Vector3 launch = TopOf(source) - up * AppearBelowTop;
         if (hasWaypoint)
             return TryBuildWaypointFlight(launch, waypoint, end, boardNormal, out flight);
 
+        // One arc from a fixed point on the source to the target.
+        // The exit direction is the arc's own initial tangent, so the arrow is
+        // aimed at that target as soon as it appears.
         Vector3 toTarget = end - launch;
         if (toTarget.sqrMagnitude < MinPathLength * MinPathLength)
             return false;
@@ -763,6 +830,69 @@ public class AttackArrowPreview
         }
 
         middle = view.transform.position;
+        return true;
+    }
+
+    static bool TryGetCardLaunch(ViewCard card, out Vector3 launch, out Vector3 up)
+    {
+        launch = default;
+        up = Vector3.up;
+        if (card == null)
+            return false;
+
+        up = card.transform.up;
+        if (up.sqrMagnitude < 0.0001f)
+            up = Vector3.up;
+        up.Normalize();
+        launch = TopOf(card) - up * AppearBelowTop;
+        return true;
+    }
+
+    static bool TryGetRitualLaunch(ViewRitual ritual, out Vector3 launch, out Vector3 up)
+    {
+        launch = default;
+        up = Vector3.up;
+        if (ritual == null)
+            return false;
+
+        up = ritual.transform.up;
+        if (up.sqrMagnitude < 0.0001f)
+            up = Vector3.up;
+        up.Normalize();
+
+        bool found = false;
+        Bounds bounds = default;
+        Renderer[] renderers = ritual.GetComponentsInChildren<Renderer>();
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+            if (renderer == null || !renderer.enabled)
+                continue;
+            if (renderer.GetComponent<TMPro.TMP_Text>() != null)
+                continue;
+            if (renderer.bounds.size.sqrMagnitude <= 0.0001f)
+                continue;
+
+            if (!found)
+            {
+                bounds = renderer.bounds;
+                found = true;
+            }
+            else
+            {
+                bounds.Encapsulate(renderer.bounds);
+            }
+        }
+
+        if (!found)
+        {
+            launch = ritual.transform.position;
+            return true;
+        }
+
+        Vector3 extents = bounds.extents;
+        float half = Mathf.Abs(extents.x * up.x) + Mathf.Abs(extents.y * up.y) + Mathf.Abs(extents.z * up.z);
+        launch = bounds.center + up * half - up * AppearBelowTop;
         return true;
     }
 

@@ -35,6 +35,7 @@ public enum TutorialFocus
     Rituals,
     ReadyRitual,
     EndTurn,
+    Discard,
 }
 
 public class TutorialSpriteCue
@@ -338,6 +339,42 @@ public static class TutorialScript
             Focus = TutorialFocus.EndTurn,
             PointAtHole = true,
             Hole = new Rect(0.82f, 0.02f, 0.16f, 0.1f),
+        },
+        new TutorialBeat
+        {
+            Trigger = TutorialTrigger.EndTurnHovered,
+            Encounter = EncounterType.TutorialCombat2,
+            Arg = 3,
+            Duration = -1f,
+            Text = "At the end of each turn, you draw back up to 6 cards.",
+            TextAnchor = new Vector2(0.5f, 0.52f),
+            Focus = TutorialFocus.Hand,
+            PointAtHole = true,
+            Hole = new Rect(0.2f, 0.02f, 0.58f, 0.24f),
+        },
+        new TutorialBeat
+        {
+            Trigger = TutorialTrigger.EndTurnHovered,
+            Encounter = EncounterType.TutorialCombat2,
+            Arg = 3,
+            Duration = -1f,
+            Text = "During your turn, you can discard cards you don't want by dragging them to the discard zone over here or by clicking the discard all button.",
+            TextAnchor = new Vector2(0.36f, 0.55f),
+            Focus = TutorialFocus.Discard,
+            PointAtHole = true,
+            Hole = new Rect(0.7f, 0.02f, 0.28f, 0.4f),
+        },
+        new TutorialBeat
+        {
+            Trigger = TutorialTrigger.EndTurnHovered,
+            Encounter = EncounterType.TutorialCombat2,
+            Arg = 3,
+            Duration = -1f,
+            Text = "Some rituals have Powerful Effects but need lots of Offerings.\nSometimes it's smart to use Discarding to curate your hand as you prepare for an explosive turn!",
+            TextAnchor = new Vector2(0.52f, 0.62f),
+            Focus = TutorialFocus.Rituals,
+            PointAtHole = true,
+            Hole = new Rect(0.02f, 0.25f, 0.14f, 0.4f),
         },
         new TutorialBeat
         {

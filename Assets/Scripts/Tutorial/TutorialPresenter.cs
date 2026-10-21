@@ -59,8 +59,15 @@ public class TutorialPresenter : MonoBehaviour
             return;
         if (Controller.Instance == null || !Controller.Instance.IsTutorialRun)
             return;
-        if (TutorialSpotlight.IsPointerOverEndTurn())
-            TutorialDirector.Raise(TutorialTrigger.EndTurnHovered);
+        if (!TutorialSpotlight.IsPointerOverEndTurn())
+            return;
+
+        int turn = -1;
+        GameState state = Controller.Instance.CanonGameState;
+        if (state != null && state.CurrentPlayer != null && state.CurrentPlayer.IsHuman)
+            turn = state.CurrentPlayer.TurnNumber;
+
+        TutorialDirector.Raise(TutorialTrigger.EndTurnHovered, TutorialCombatScript.ActiveEncounter, turn);
     }
 
     public static TutorialPresenter Ensure()

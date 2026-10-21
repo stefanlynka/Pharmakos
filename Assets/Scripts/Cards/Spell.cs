@@ -32,6 +32,11 @@ public class Spell : Card, ITarget
 
     }
 
+    public virtual VfxEffect GetPlayVfx(ITarget target)
+    {
+        return null;
+    }
+
     public bool HasPlayableTargets()
     {
         return !HasTargets || GetTargets().Count > 0;

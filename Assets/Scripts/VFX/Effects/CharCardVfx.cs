@@ -18,6 +18,8 @@ public class CharCardVfx : VfxEffect
     public Color CharColor = Color.black;
     public float Delay = 0f;
     public float FadeDuration = 0.9f;
+    // When set, the overlay fades back out and is gone at Lifetime. Left at 0, it stays at full strength until removed.
+    public float FadeOutDuration = 0f;
     // Seconds from the start of the effect until the overlay is removed
     public float Lifetime = 3f;
     public string SortingLayerName = "CardLayer";
@@ -50,10 +52,36 @@ public class CharCardVfx : VfxEffect
             return;
         }
 
-        float progress = FadeDuration > 0f
-            ? Mathf.Clamp01((elapsed - Delay) / FadeDuration)
-            : (elapsed >= Delay ? 1f : 0f);
-        SetAlpha(overlay, block, progress * progress);
+        SetAlpha(overlay, block, EvaluateAlpha(elapsed));
+    }
+
+    private float EvaluateAlpha(float elapsed)
+    {
+        if (FadeOutDuration <= 0f)
+        {
+            float progress = FadeDuration > 0f
+                ? Mathf.Clamp01((elapsed - Delay) / FadeDuration)
+                : (elapsed >= Delay ? 1f : 0f);
+            return progress * progress;
+        }
+
+        if (elapsed < Delay) return 0f;
+
+        float fadeIn = FadeDuration > 0f
+            ? EaseOutQuad(Mathf.Clamp01((elapsed - Delay) / FadeDuration))
+            : 1f;
+
+        float fadeOutStart = Lifetime - FadeOutDuration;
+        if (elapsed <= fadeOutStart) return fadeIn;
+
+        float fadeOut = 1f - EaseOutQuad(Mathf.Clamp01((elapsed - fadeOutStart) / FadeOutDuration));
+        return fadeIn * fadeOut;
+    }
+
+    private static float EaseOutQuad(float t)
+    {
+        float remaining = 1f - Mathf.Clamp01(t);
+        return 1f - remaining * remaining;
     }
 
     private void SetAlpha(MeshRenderer overlay, MaterialPropertyBlock block, float alpha)

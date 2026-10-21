@@ -3174,6 +3174,17 @@ public class Lightning : Spell
         HasTargets = true;
     }
 
+    public override VfxEffect GetPlayVfx(ITarget target)
+    {
+        LightningStrikeVfx vfx = new LightningStrikeVfx();
+        Player enemy = Owner.GetOtherPlayer();
+        List<Follower> followers = enemy.BattleRow.Followers;
+        for (int i = 0; i < followers.Count; i++)
+            vfx.TargetIDs.Add(followers[i].GetID());
+        vfx.TargetIDs.Add(enemy.GetID());
+        return vfx;
+    }
+
     public override List<ITarget> GetTargets()
     {
         List<ITarget> targets = new List<ITarget>();

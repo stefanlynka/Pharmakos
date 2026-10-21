@@ -65,6 +65,19 @@ public class TorchFlickerLight : MonoBehaviour
     private float _smoothedMultiplier = 1f;
     private float _smoothedRangeMultiplier = 1f;
     private Vector3 _smoothedPositionOffset;
+    private float _flashExtra;
+    private float _flashFadeDuration;
+    private float _flashElapsed;
+
+    /// <summary>
+    /// Adds extraIntensity on top of the flickering baseline, then fades that extra back to zero.
+    /// </summary>
+    public void Flash(float extraIntensity, float fadeDuration)
+    {
+        _flashExtra = extraIntensity;
+        _flashFadeDuration = Mathf.Max(fadeDuration, 0.01f);
+        _flashElapsed = 0f;
+    }
 
     private void OnEnable()
     {
@@ -131,7 +144,7 @@ public class TorchFlickerLight : MonoBehaviour
         _smoothedMultiplier = Mathf.Lerp(_smoothedMultiplier, targetMultiplier, lerpT);
 
         float intensity = _baseIntensity * _smoothedMultiplier;
-        targetLight.intensity = intensity;
+        targetLight.intensity = intensity + CurrentFlash();
 
         if (enableRangeWobble)
         {
@@ -158,6 +171,19 @@ public class TorchFlickerLight : MonoBehaviour
             _smoothedPositionOffset = Vector3.Lerp(_smoothedPositionOffset, targetOffset, lerpT);
             targetLight.transform.localPosition = _baseLocalPosition + _smoothedPositionOffset;
         }
+    }
+
+    float CurrentFlash()
+    {
+        if (_flashFadeDuration <= 0f)
+            return 0f;
+
+        float t = Mathf.Clamp01(_flashElapsed / _flashFadeDuration);
+        _flashElapsed += Time.deltaTime;
+        if (_flashElapsed >= _flashFadeDuration)
+            _flashFadeDuration = 0f;
+
+        return Mathf.Lerp(_flashExtra, 0f, t);
     }
 
     private void OnDisable()

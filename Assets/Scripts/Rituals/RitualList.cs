@@ -1721,10 +1721,10 @@ public class ZeusMajor : Ritual
             // BlitzMode costs - reduced non-gold costs since they reset each turn
             Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 1 },
-                {OfferingType.Bone, 1 },
-                {OfferingType.Crop, 1 },
-                {OfferingType.Scroll, 1 },
+                {OfferingType.Blood, 0 }, // 1
+                {OfferingType.Bone, 0 }, // 1
+                {OfferingType.Crop, 0 }, // 1
+                {OfferingType.Scroll, 0 }, // 1
             };
         }
         else
@@ -1756,6 +1756,6 @@ public class ZeusMajor : Ritual
 
     public override VfxEffect GetPlayVfx(ITarget target)
     {
-        return new ParallelVfx(VfxLibrary.DefaultRitual(this), VfxLibrary.LightningSparks());
+        return new ParallelVfx(VfxLibrary.DefaultRitual(this), new LightningStrikeVfx());
     }
 }

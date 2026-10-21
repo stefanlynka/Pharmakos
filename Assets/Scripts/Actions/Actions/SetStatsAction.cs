@@ -45,11 +45,10 @@ public class SetStatsAction : GameAction
 
     public override List<AnimationAction> GetAnimationActions()
     {
-        List<AnimationAction> animationActions = new List<AnimationAction>()
-        {
-            //new DamageAnimation(this)
-        };
-        //if (LastStep) animationActions.Add(new IdleAnimation(this));
+        List<AnimationAction> animationActions = new List<AnimationAction>();
+        Follower follower = Target as Follower;
+        if (follower != null)
+            animationActions.Add(new UpdateStatsAnimation(this, Target, follower.GetCurrentAttack(), follower.CurrentHealth));
         return animationActions;
     }
 

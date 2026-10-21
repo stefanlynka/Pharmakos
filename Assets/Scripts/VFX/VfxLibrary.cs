@@ -164,6 +164,23 @@ public static class VfxLibrary
         return new CharCardVfx();
     }
 
+    // A green or red wash over the card. It fades in quickly, holds, and is gone when duration elapses.
+    public static CharCardVfx StatChangeTint(bool buff, float duration)
+    {
+        duration = Mathf.Max(duration, 0.05f);
+        return new CharCardVfx
+        {
+            CharColor = buff
+                ? new Color(0.25f, 0.95f, 0.3f, 0.3f)
+                : new Color(0.95f, 0.2f, 0.15f, 0.3f),
+            Delay = 0f,
+            FadeDuration = duration * 0.5f,
+            FadeOutDuration = duration * 0.5f,
+            Lifetime = duration,
+            QueueHold = duration,
+        };
+    }
+
     // The card burns: a fire brushstroke flurry over it while it chars black underneath
     public static ParallelVfx FireSacrifice()
     {

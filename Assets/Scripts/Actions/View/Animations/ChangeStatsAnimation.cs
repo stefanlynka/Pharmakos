@@ -34,6 +34,7 @@ public class ChangeStatsAnimation : AnimationAction
         Player player = target as Player;
 
         bool isDamage = false;
+        bool waitingOnStatChange = false;
 
         if (follower != null)
         {
@@ -44,10 +45,14 @@ public class ChangeStatsAnimation : AnimationAction
             }
             viewFollower.ChangeStats(attackChange, healthChange);
 
-            if (healthChange < 0)
+            if (healthChange < 0 && GameAction is DealDamageAction)
             {
                 viewFollower.ShowDamage(-healthChange);
                 isDamage = true;
+            }
+            else
+            {
+                waitingOnStatChange = viewFollower.PlayStatChangeFeedback(attackChange, healthChange, CallCallback);
             }
         }
         else if (player != null)
@@ -95,7 +100,7 @@ public class ChangeStatsAnimation : AnimationAction
             moveSequence.Add(new SequenceAction(finishOne));
             moveSequence.Start();
         }
-        else
+        else if (!waitingOnStatChange)
         {
             CallCallback();
         }

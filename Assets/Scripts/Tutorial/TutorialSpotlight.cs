@@ -10,6 +10,7 @@ public static class TutorialSpotlight
 {
     const float Pad = 0.012f;
     static RectTransform endTurn;
+    static RectTransform discardAll;
 
     public static bool TryResolve(TutorialFocus focus, out Rect hole)
     {
@@ -18,7 +19,10 @@ public static class TutorialSpotlight
             return false;
 
         if (focus == TutorialFocus.EndTurn)
-            return TryEndTurnRect(out hole);
+            return TryLabeledButtonRect(ref endTurn, "End Turn", out hole);
+
+        if (focus == TutorialFocus.Discard)
+            return TryDiscardRect(out hole);
 
         if (!TryWorldRect(focus, out Rect screen))
             return false;
@@ -29,7 +33,7 @@ public static class TutorialSpotlight
 
     public static bool IsPointerOverEndTurn()
     {
-        if (EventSystem.current == null || !TryGetEndTurn(out RectTransform rect))
+        if (EventSystem.current == null || !TryGetLabeledButton(ref endTurn, "End Turn", out RectTransform rect))
             return false;
 
         Camera camera = null;
@@ -121,6 +125,9 @@ public static class TutorialSpotlight
                     Add(targets, player.ViewMinorRitual);
                     Add(targets, player.ViewMajorRitual);
                 }
+                break;
+            case TutorialFocus.Discard:
+                Add(targets, View.Instance.ViewDiscard);
                 break;
         }
     }
@@ -237,12 +244,55 @@ public static class TutorialSpotlight
         return Rect.MinMaxRect(xMin, yMin, xMax, yMax);
     }
 
-    static bool TryEndTurnRect(out Rect hole)
+    static bool TryDiscardRect(out Rect hole)
     {
         hole = default;
-        if (!TryGetEndTurn(out RectTransform rect))
+        bool any = false;
+        float minX = 1f, minY = 1f, maxX = 0f, maxY = 0f;
+
+        if (TryWorldRect(TutorialFocus.Discard, out Rect zone))
+        {
+            Include(zone, ref minX, ref minY, ref maxX, ref maxY);
+            any = true;
+        }
+
+        if (TryGetLabeledButton(ref discardAll, "Discard All", out RectTransform button)
+            && TryScreenRect(button, out Rect buttonRect))
+        {
+            Include(buttonRect, ref minX, ref minY, ref maxX, ref maxY);
+            any = true;
+        }
+
+        if (!any)
             return false;
 
+        hole = PadRect(Rect.MinMaxRect(minX, minY, maxX, maxY));
+        return hole.width > 0.005f && hole.height > 0.005f;
+    }
+
+    static void Include(Rect rect, ref float minX, ref float minY, ref float maxX, ref float maxY)
+    {
+        minX = Mathf.Min(minX, rect.xMin);
+        minY = Mathf.Min(minY, rect.yMin);
+        maxX = Mathf.Max(maxX, rect.xMax);
+        maxY = Mathf.Max(maxY, rect.yMax);
+    }
+
+    static bool TryLabeledButtonRect(ref RectTransform cached, string label, out Rect hole)
+    {
+        hole = default;
+        if (!TryGetLabeledButton(ref cached, label, out RectTransform rect))
+            return false;
+        if (!TryScreenRect(rect, out Rect screen))
+            return false;
+
+        hole = PadRect(screen);
+        return hole.width > 0.005f && hole.height > 0.005f;
+    }
+
+    static bool TryScreenRect(RectTransform rect, out Rect hole)
+    {
+        hole = default;
         Camera camera = null;
         Canvas canvas = rect.GetComponentInParent<Canvas>();
         if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
@@ -251,39 +301,47 @@ public static class TutorialSpotlight
         Vector3[] corners = new Vector3[4];
         rect.GetWorldCorners(corners);
         float minX = 1f, minY = 1f, maxX = 0f, maxY = 0f;
+        bool any = false;
         for (int i = 0; i < corners.Length; i++)
         {
             Vector3 screen = camera != null ? camera.WorldToScreenPoint(corners[i]) : corners[i];
+            if (camera != null && screen.z < 0f)
+                continue;
+
             float nx = screen.x / Mathf.Max(1f, UnityEngine.Screen.width);
             float ny = screen.y / Mathf.Max(1f, UnityEngine.Screen.height);
             minX = Mathf.Min(minX, nx);
             minY = Mathf.Min(minY, ny);
             maxX = Mathf.Max(maxX, nx);
             maxY = Mathf.Max(maxY, ny);
+            any = true;
         }
 
-        hole = PadRect(Rect.MinMaxRect(minX, minY, maxX, maxY));
+        if (!any)
+            return false;
+
+        hole = Rect.MinMaxRect(minX, minY, maxX, maxY);
         return true;
     }
 
-    static bool TryGetEndTurn(out RectTransform rect)
+    static bool TryGetLabeledButton(ref RectTransform cached, string label, out RectTransform rect)
     {
-        if (endTurn != null && endTurn.gameObject.activeInHierarchy)
+        if (cached != null && cached.gameObject.activeInHierarchy)
         {
-            rect = endTurn;
+            rect = cached;
             return true;
         }
 
-        endTurn = null;
+        cached = null;
         TMP_Text[] labels = Object.FindObjectsOfType<TMP_Text>(true);
         for (int i = 0; i < labels.Length; i++)
         {
-            if (labels[i] == null || !labels[i].gameObject.activeInHierarchy || labels[i].text != "End Turn")
+            if (labels[i] == null || !labels[i].gameObject.activeInHierarchy || labels[i].text != label)
                 continue;
 
             RectTransform parent = labels[i].transform.parent as RectTransform;
-            endTurn = parent != null ? parent : labels[i].rectTransform;
-            rect = endTurn;
+            cached = parent != null ? parent : labels[i].rectTransform;
+            rect = cached;
             return true;
         }
 

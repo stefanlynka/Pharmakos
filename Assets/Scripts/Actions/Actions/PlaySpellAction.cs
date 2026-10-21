@@ -55,6 +55,10 @@ public class PlaySpellAction : GameAction
             removeCardAnimation,
         };
 
+        VfxEffect playVfx = Spell.GetPlayVfx(Target);
+        if (playVfx != null)
+            animationActions.Insert(1, new PlayVfxAnimation(this, playVfx, Spell, Target));
+
         return animationActions;
     }
     public override void LogAction()
