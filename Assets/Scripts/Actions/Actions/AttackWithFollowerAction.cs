@@ -40,6 +40,8 @@ public class AttackWithFollowerAction : GameAction
                 return;
             }
 
+            if (!simulated)
+                View.Instance.AnimationHandler.AddAnimationActionToQueue(new AttackWithFollowerAnimation(this));
             Attacker.AttackFollower(targetFollower);
         }
         else if (Target is Player targetPlayer)
@@ -51,6 +53,8 @@ public class AttackWithFollowerAction : GameAction
                 return;
             }
 
+            if (!simulated)
+                View.Instance.AnimationHandler.AddAnimationActionToQueue(new AttackWithFollowerAnimation(this));
             Attacker.AttackPlayer(targetPlayer);
         }
 

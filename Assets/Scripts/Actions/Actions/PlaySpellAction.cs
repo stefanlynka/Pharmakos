@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -58,6 +59,19 @@ public class PlaySpellAction : GameAction
         VfxEffect playVfx = Spell.GetPlayVfx(Target);
         if (playVfx != null)
             animationActions.Insert(1, new PlayVfxAnimation(this, playVfx, Spell, Target));
+
+        ArcProjectileStyle throwStyle = Spell.GetThrowStyle();
+        if (throwStyle != null && Target != null)
+        {
+            ArcProjectileAnimation throwAnimation = new ArcProjectileAnimation(this, throwStyle, Owner, Target, pullDamageOnImpact: true);
+            throwAnimation.MatchDamage(animationAction =>
+                animationAction is ChangeStatsAnimation
+                && animationAction.GameAction is DealDamageAction damage
+                && ReferenceEquals(damage.Source, Owner)
+                && ReferenceEquals(damage.Target, Target)
+                && damage.ProjectileStyle == throwStyle);
+            animationActions.Insert(1, throwAnimation);
+        }
 
         return animationActions;
     }

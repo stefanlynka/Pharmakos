@@ -3052,6 +3052,11 @@ public class ThrowStone : Spell
         HasTargets = true;
     }
 
+    public override ArcProjectileStyle GetThrowStyle()
+    {
+        return ArcProjectileStyle.Stone;
+    }
+
     public override List<ITarget> GetTargets()
     {
         List<ITarget> targets = new List<ITarget>();
@@ -3067,6 +3072,8 @@ public class ThrowStone : Spell
         base.Play(target);
 
         DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
+        damageAction.ProjectileStyle = ArcProjectileStyle.Stone;
+        damageAction.PlayProjectileWithDamage = false;
         Owner.GameState.ActionHandler.AddAction(damageAction);
     }
 }

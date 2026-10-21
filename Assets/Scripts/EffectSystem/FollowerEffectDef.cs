@@ -239,7 +239,7 @@ public class DealAttackDamageOnAttackEffectDef : FollowerEffect
         base.ApplyInstance(instanceTarget, 0);
 
         DamageTargetInstance newEffectInstance = new DamageTargetInstance(this, instanceTarget, 0, 0, EffectTrigger.OnAttack);
-        newEffectInstance.Init(0, true);
+        newEffectInstance.Init(0, true, true);
 
         EffectInstances.Add(newEffectInstance);
     }
@@ -255,7 +255,7 @@ public class DealAttackDamageOnAttackedEffectDef : FollowerEffect
         base.ApplyInstance(instanceTarget, 0);
 
         DamageTargetInstance newEffectInstance = new DamageTargetInstance(this, instanceTarget, 0, 0, EffectTrigger.OnAttacked);
-        newEffectInstance.Init(0, true);
+        newEffectInstance.Init(0, true, true);
 
         EffectInstances.Add(newEffectInstance);
     }
@@ -275,7 +275,7 @@ public class DamageOnAttackedEffectDef : FollowerEffect
         base.ApplyInstance(instanceTarget, 0);
 
         DamageTargetInstance newEffectInstance = new DamageTargetInstance(this, instanceTarget, 0, 0, EffectTrigger.OnAttacked);
-        newEffectInstance.Init(damage);
+        newEffectInstance.Init(damage, false, true);
 
         EffectInstances.Add(newEffectInstance);
     }

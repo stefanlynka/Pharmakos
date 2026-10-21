@@ -13,8 +13,8 @@ public class AttackArrowPreview
     const float ArrowVisualScale = 2f;
     const float ArrowSpacing = 2.8f * ArrowVisualScale;
     const float TargetArrowLength = 1.65f;
-    const float ArcHeight = 2.4f;
-    const float SpellArcHeight = 6f;
+    public const float ArcHeight = 2.4f;
+    public const float SpellArcHeight = 6f;
     const float HideDepth = 1.75f;
     const float AppearBelowTop = 2f;
     const float MinPathLength = 0.8f;
@@ -1229,31 +1229,30 @@ public class AttackArrowPreview
         }
     }
 
-    public static bool TryBuildShot(ViewCard source, ITarget target, out DirectArc arc)
+    public static bool TryBuildShot(ITarget source, ITarget target, float arcHeight, bool keepArcHeight, out DirectArc arc)
     {
         arc = default;
         if (source == null || target == null)
             return false;
+        if (!TryGetShotLaunch(source, out Vector3 launch, out Transform facing))
+            return false;
+        if (!TryGetTargetOccluder(target, out Vector3 end, out Bounds bounds, out bool hasBounds))
+            return false;
 
         Camera camera = GetCamera();
         Vector3 boardNormal = camera != null
-            ? BoardNormalTowardCamera(source.transform, camera)
-            : source.transform.forward;
+            ? BoardNormalTowardCamera(facing, camera)
+            : facing.forward;
         if (boardNormal.sqrMagnitude < 0.0001f)
             boardNormal = Vector3.forward;
         else
             boardNormal.Normalize();
 
-        if (!TryGetCardLaunch(source, out Vector3 launch, out _))
-            return false;
-        if (!TryGetTargetOccluder(target, out Vector3 end, out Bounds bounds, out bool hasBounds))
-            return false;
-
         Vector3 toTarget = end - launch;
         if (toTarget.sqrMagnitude < MinPathLength * MinPathLength)
             return false;
 
-        float bow = Mathf.Min(ArcHeight, toTarget.magnitude * 0.35f);
+        float bow = keepArcHeight ? arcHeight : Mathf.Min(arcHeight, toTarget.magnitude * 0.35f);
         Vector3 control = (launch + end) * 0.5f + boardNormal * bow;
         Vector3 exitDir = control - launch;
         if (exitDir.sqrMagnitude < 0.0001f)
@@ -1282,6 +1281,44 @@ public class AttackArrowPreview
         arc.HasTargetBounds = hasBounds;
         arc.TargetBounds = bounds;
         arc.distances = distances;
+        return true;
+    }
+
+    static bool TryGetShotLaunch(ITarget source, out Vector3 launch, out Transform facing)
+    {
+        launch = default;
+        facing = null;
+        if (source == null || View.Instance == null)
+            return false;
+
+        ViewTarget view = View.Instance.GetViewTargetByID(source.GetID());
+        if (view == null)
+            return false;
+
+        facing = view.transform;
+        if (view is ViewCard card && TryGetCardLaunch(card, out launch, out _))
+            return true;
+
+        if (view is ViewPlayer player && player.ViewPlayerPortrait != null)
+        {
+            facing = player.ViewPlayerPortrait.transform;
+            if (player.ViewPlayerPortrait.PortraitRenderer != null)
+            {
+                launch = player.ViewPlayerPortrait.PortraitRenderer.bounds.center;
+                return true;
+            }
+
+            if (TryGetRendererBounds(facing, out Bounds bounds))
+            {
+                launch = bounds.center;
+                return true;
+            }
+
+            launch = facing.position;
+            return true;
+        }
+
+        launch = view.transform.position;
         return true;
     }
 

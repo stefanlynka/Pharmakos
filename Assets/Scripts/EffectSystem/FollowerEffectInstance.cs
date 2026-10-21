@@ -233,16 +233,20 @@ public class DamageTargetInstance : TriggeredFollowerEffectInstance
 {
     private int damage = 0;
     private bool useAttackForDamage = false;
+    private bool throwStone = false;
     public DamageTargetInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
-    public void Init(int damage, bool useAttackForDamage = false)
+    public void Init(int damage, bool useAttackForDamage = false, bool throwStone = false)
     {
         this.damage = damage;
         this.useAttackForDamage = useAttackForDamage;
+        this.throwStone = throwStone;
     }
     public override void Trigger(ITarget target = null, int amount = 0)
     {
         int damageToDeal = useAttackForDamage ? AffectedFollower.GetCurrentAttack() : damage;
         DealDamageAction damageAction = new DealDamageAction(AffectedFollower, target, damageToDeal, true);
+        if (throwStone)
+            damageAction.ProjectileStyle = ArcProjectileStyle.Stone;
         AffectedFollower.Owner.GameState.ActionHandler.AddAction(damageAction);
     }
 }

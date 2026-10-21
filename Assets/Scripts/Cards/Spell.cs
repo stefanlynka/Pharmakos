@@ -37,6 +37,12 @@ public class Spell : Card, ITarget
         return null;
     }
 
+    // Thrown from this spell's owner to the target while the spell is shown.
+    public virtual ArcProjectileStyle GetThrowStyle()
+    {
+        return null;
+    }
+
     public bool HasPlayableTargets()
     {
         return !HasTargets || GetTargets().Count > 0;

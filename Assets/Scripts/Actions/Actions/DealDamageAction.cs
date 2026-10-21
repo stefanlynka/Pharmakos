@@ -11,6 +11,10 @@ public class DealDamageAction : GameAction
     public int Damage;
     /// <summary>Damage dealt by a follower attack itself; its animation plays at the attack's moment of impact.</summary>
     public bool IsCombatDamage;
+    /// <summary>When set, this damage is shown as that object flying from the source into the target.</summary>
+    public ArcProjectileStyle ProjectileStyle;
+    /// <summary>False when a spell animation already throws <see cref="ProjectileStyle"/>.</summary>
+    public bool PlayProjectileWithDamage = true;
     private int damageDealt = 0;
     private int attackChange = 0;
     private bool resolveDamageImmediately = false;
@@ -62,11 +66,10 @@ public class DealDamageAction : GameAction
 
     public override List<AnimationAction> GetAnimationActions()
     {
-        List<AnimationAction> animationActions = new List<AnimationAction>()
-        {
-            new ChangeStatsAnimation(this, Target, attackChange, -damageDealt)
-            //new DamageAnimation(this)
-        };
+        List<AnimationAction> animationActions = new List<AnimationAction>();
+        if (ProjectileStyle != null && PlayProjectileWithDamage)
+            animationActions.Add(new ArcProjectileAnimation(this, ProjectileStyle, Source, Target, pullDamageOnImpact: true));
+        animationActions.Add(new ChangeStatsAnimation(this, Target, attackChange, -damageDealt));
         //if (LastStep) animationActions.Add(new IdleAnimation(this));
         return animationActions;
     }
