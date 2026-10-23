@@ -256,8 +256,13 @@ public class StatusScreenHandler : MonoBehaviour
             sacrificed = Controller.Instance.TrySacrificeTrinketForHeartstring(selectedTrinket);
         }
 
-        if (sacrificed)
-            Rebuild();
+        if (!sacrificed)
+            return;
+
+        if (View.Instance != null && View.Instance.AudioHandler != null)
+            View.Instance.AudioHandler.PlayHeartstringStrum();
+
+        Rebuild();
     }
 
     void ResolveBoonReferences()

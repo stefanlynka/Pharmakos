@@ -10,11 +10,13 @@ public class ApplyTrinketAction : GameAction
 {
     private Trinket trinket;
     private Player target;
+    private bool revealWithAnimation;
 
-    public ApplyTrinketAction(Trinket trinket, Player target)
+    public ApplyTrinketAction(Trinket trinket, Player target, bool revealWithAnimation = false)
     {
         this.trinket = trinket;
         this.target = target;
+        this.revealWithAnimation = revealWithAnimation;
     }
 
     public override void LogAction()
@@ -32,6 +34,11 @@ public class ApplyTrinketAction : GameAction
 
     public override void Execute(bool simulated = false, bool success = true)
     {
+        // The AI resolves the whole turn before its animations play. Hide the icon
+        // until Twist of Fate's play animation reveals it.
+        if (revealWithAnimation && !simulated && trinket.MyEffect != null && View.Instance != null)
+            View.Instance.HideBuffUntilRevealed(trinket.MyEffect);
+
         // Apply the effect to the owner
         trinket.Owner.AddPlayerEffect(trinket.MyEffect);
 
@@ -40,6 +47,14 @@ public class ApplyTrinketAction : GameAction
 
     public override List<AnimationAction> GetAnimationActions()
     {
+        if (revealWithAnimation)
+        {
+            return new List<AnimationAction>()
+            {
+                new RevealTrinketAnimation(this, trinket.MyEffect),
+            };
+        }
+
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
             new UpdateViewAnimation(this, trinket.Owner),

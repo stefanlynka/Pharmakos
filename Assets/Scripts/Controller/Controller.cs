@@ -651,10 +651,13 @@ public class Controller : MonoBehaviour
     public void GoToStartScreen()
     {
         CurrentScreen = ScreenName.Blank;
+        HideStatusButton();
 
         ScreenHandler.Instance.HideScreen(ScreenName.Blank, true);
         ScreenHandler.Instance.ShowScreen(ScreenName.Start, true);
         RefreshStartMenu();
+        if (View.Instance != null && View.Instance.AudioHandler != null)
+            View.Instance.AudioHandler.PlayMenuMusic();
     }
     public void StartGame()
     {
@@ -932,6 +935,11 @@ public class Controller : MonoBehaviour
             CurrentScreen = ScreenName.Success;
             ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryButton, true);
             ScreenHandler.Instance.ShowScreen(ScreenName.Success);
+            if (View.Instance != null && View.Instance.AudioHandler != null)
+            {
+                View.Instance.AudioHandler.StopMusic();
+                View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.VictoryFanfare);
+            }
             return;
         }
 
@@ -1258,6 +1266,7 @@ public class Controller : MonoBehaviour
     {
         ScreenHandler.Instance.HideScreen(ScreenName.Tutorial);
         ScreenHandler.Instance.ShowScreen(ScreenName.Start);
+        HideStatusButton();
         RefreshStartMenu();
     }
     public void ToggleDeckViewer()

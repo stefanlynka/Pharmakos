@@ -36,6 +36,13 @@ public class ViewBattleRow : MonoBehaviour
 
     public void Clear()
     {
+        if (PopupScreenHandler.Instance != null)
+        {
+            Transform referenceAnchor = PopupScreenHandler.Instance.FollowerReferenceAnchor;
+            if (referenceAnchor != null && IsOwnPopupAnchor(referenceAnchor))
+                PopupScreenHandler.Instance.HideFollowerReferencedCard(referenceAnchor);
+        }
+
         List<ViewFollower> followersCopy = new List<ViewFollower>(Followers);
         foreach (ViewFollower viewFollower in followersCopy)
         {
@@ -175,6 +182,10 @@ public class ViewBattleRow : MonoBehaviour
                     null,
                     FollowerPopupLower,
                     FollowerPopupSideGap);
+                PopupScreenHandler.Instance?.ShowFollowerReferencedCard(
+                    viewFollower.Follower,
+                    viewFollower.transform,
+                    GetPopupSlot());
             }
         }
         
@@ -239,10 +250,12 @@ public class ViewBattleRow : MonoBehaviour
 
         PopupSlot slot = GetPopupSlot();
         Transform anchor = PopupScreenHandler.Instance.GetImageAnchor(slot);
-        if (anchor == null || !IsOwnPopupAnchor(anchor))
-            return;
+        if (anchor != null && IsOwnPopupAnchor(anchor))
+            PopupScreenHandler.Instance.HideImagePopup(slot);
 
-        PopupScreenHandler.Instance.HideImagePopup(slot);
+        Transform referenceAnchor = PopupScreenHandler.Instance.FollowerReferenceAnchor;
+        if (referenceAnchor != null && IsOwnPopupAnchor(referenceAnchor))
+            PopupScreenHandler.Instance.HideFollowerReferencedCard(referenceAnchor);
     }
 
     bool IsOwnPopupAnchor(Transform anchor)

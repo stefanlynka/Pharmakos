@@ -7,6 +7,14 @@ public class TrinketRewardHandler : MonoBehaviour
 
     List<Trinket> trinkets = new List<Trinket>();
     bool continuing;
+    bool menuSelectionActive;
+    Camera rewardCamera;
+
+    void OnDisable()
+    {
+        SetRewardCameraActive(false);
+        DeactivateMenuSelection();
+    }
 
     public void Load()
     {
@@ -34,6 +42,47 @@ public class TrinketRewardHandler : MonoBehaviour
 
         if (trinkets.Count > 0 && ViewBuffs.Count > 0 && ViewBuffs[0] != null)
             ViewBuffs[0].SetHighlight(true);
+
+        ActivateMenuSelection();
+    }
+
+    void ActivateMenuSelection()
+    {
+        Camera selectionCamera = GetRewardCamera();
+        SetRewardCameraActive(true);
+
+        if (View.Instance == null || View.Instance.MenuSelectionHandler == null)
+            return;
+
+        View.Instance.MenuSelectionHandler.Activate(selectionCamera, () => continuing);
+        menuSelectionActive = true;
+    }
+
+    void DeactivateMenuSelection()
+    {
+        if (!menuSelectionActive)
+            return;
+
+        menuSelectionActive = false;
+        if (View.Instance != null && View.Instance.MenuSelectionHandler != null)
+            View.Instance.MenuSelectionHandler.Deactivate();
+    }
+
+    Camera GetRewardCamera()
+    {
+        if (rewardCamera == null)
+            rewardCamera = GetComponentInChildren<Camera>(true);
+        return rewardCamera;
+    }
+
+    void SetRewardCameraActive(bool active)
+    {
+        Camera camera = GetRewardCamera();
+        if (camera == null)
+            return;
+
+        camera.gameObject.SetActive(true);
+        camera.enabled = active;
     }
 
     Trinket GetSelectedTrinket()

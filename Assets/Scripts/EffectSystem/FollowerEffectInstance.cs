@@ -5,6 +5,9 @@ using static UnityEngine.UI.GridLayoutGroup;
 
 public class FollowerEffectInstance : IComparable<FollowerEffectInstance>
 {
+    // Set while building a card preview. Constructors still record their data, but they do not subscribe the dummy follower.
+    public static bool SuppressRegistration;
+
     public FollowerEffect EffectDef;
     public Follower AffectedFollower; // The follower this EffectInstance is applied to
     public int OffsetFromOwner = 0; // -1: Affected Follower is one space left of EffectDef Owner. 0: Affected Follower is EffectDef Owner. Etc...
@@ -45,6 +48,9 @@ public class StaticFollowerEffectInstance : FollowerEffectInstance
 
     protected override void Apply()
     {
+        if (SuppressRegistration)
+            return;
+
         base.Apply();
 
         if (AffectedFollower != null)
@@ -79,6 +85,9 @@ public class TriggeredFollowerEffectInstance: FollowerEffectInstance
 
     protected override void Apply()
     {
+        if (SuppressRegistration)
+            return;
+
         base.Apply();
 
         if (AffectedFollower == null) return;
@@ -205,6 +214,7 @@ public class SummonFollowerInstance : TriggeredFollowerEffectInstance
 {
     private int summonPositionOffset = 0;
     private Type followerType = null;
+    public Type SummonedFollowerType => followerType;
     public SummonFollowerInstance(FollowerEffect def, Follower owner, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, owner, offsetFromOwner, effectNum, effectTrigger) { }
 
     public void Init(Type followerType, int summonPositionOffset = 0)

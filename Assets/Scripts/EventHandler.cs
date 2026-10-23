@@ -230,6 +230,7 @@ public class EventHandler : MonoBehaviour
     {
         if (outcome == null) return;
 
+        int heartstringsBefore = Controller.Instance.RunHeartStrings;
         if (outcome.HeartstringCost > 0 && !Controller.Instance.TrySpendHeartstrings(outcome.HeartstringCost))
         {
             Debug.LogWarning("EventHandler: not enough heartstrings to pay for this option.");
@@ -270,6 +271,17 @@ public class EventHandler : MonoBehaviour
             default:
                 break;
         }
+
+        if (Controller.Instance.RunHeartStrings != heartstringsBefore)
+            PlayHeartstringStrum();
+    }
+
+    void PlayHeartstringStrum()
+    {
+        if (View.Instance == null || View.Instance.AudioHandler == null)
+            return;
+
+        View.Instance.AudioHandler.PlayHeartstringStrum();
     }
 
     void ApplyGainRituals(EventOutcomeData outcome)

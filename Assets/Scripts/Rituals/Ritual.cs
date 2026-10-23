@@ -23,9 +23,11 @@ public abstract class Ritual : ITarget
         if (cards == null || Controller.Instance == null || !Controller.Instance.GameRunning)
             return;
 
+        // The play-history button is shown on top of combat and becomes ScreenHandler.CurrentScreen.
+        // The board is still up as long as the game screen itself has not been exited.
         if (ScreenHandler.Instance == null
-            || ScreenHandler.Instance.CurrentScreen == null
-            || ScreenHandler.Instance.CurrentScreen.Name != ScreenName.Game)
+            || !ScreenHandler.Instance.TryGetScreen(ScreenName.Game, out Screen gameScreen)
+            || !IsGameBoardVisible(gameScreen))
             return;
 
         Follower last = Controller.Instance.CanonGameState != null
@@ -36,6 +38,17 @@ public abstract class Ritual : ITarget
 
         if (last.MakeBaseCopy() is Follower copy)
             cards.Add(copy);
+    }
+
+    static bool IsGameBoardVisible(Screen gameScreen)
+    {
+        if (gameScreen == null)
+            return false;
+
+        if (gameScreen.Camera != null)
+            return gameScreen.Camera.isActiveAndEnabled;
+
+        return gameScreen.UIHolder != null && gameScreen.UIHolder.interactable;
     }
 
     //public Ritual(){ }

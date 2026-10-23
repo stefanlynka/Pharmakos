@@ -42,7 +42,12 @@ public class AphroditeMajor : Ritual
     public override List<ITarget> GetTargets()
     {
         var targets = new List<ITarget>();
-        targets.AddRange(ITarget.GetAllFollowers(Owner));
+        foreach (Follower follower in ITarget.GetAllFollowers(Owner))
+        {
+            Player destination = follower.Owner.GetOtherPlayer();
+            if (destination.BattleRow.Followers.Count >= Player.MaxFollowerCount) continue;
+            targets.Add(follower);
+        }
         return targets;
     }
 
@@ -180,8 +185,8 @@ public class ApolloMajor : Ritual
             {
                 {OfferingType.Blood, 0 },
                 {OfferingType.Bone, 0 },
-                {OfferingType.Crop, 0 }, // 3
-                {OfferingType.Scroll, 0 }, // 3
+                {OfferingType.Crop, 3 }, // 3
+                {OfferingType.Scroll, 3 }, // 3
             };
         }
         else
@@ -248,8 +253,7 @@ public class ApolloMajorEffectDef : StaticPlayerEffect
     protected override string GetDescription()
     {
         string myTarget = TargetPlayer.IsHuman ? "you play" : "your opponent plays";
-        string owner = Owner.IsHuman ? "your" : "their";
-        return "When " + myTarget + " a Spell, " + owner + " next Follower costs 1 less";
+        return "When " + myTarget + " a Spell, your next Follower costs 1 less";
     }
 }
 
@@ -288,7 +292,7 @@ public class AresMinor : Ritual
     public override List<ITarget> GetTargets()
     {
         var targets = new List<ITarget>();
-        targets.AddRange(ITarget.GetAllPlayers(Owner));
+        targets.Add(Owner);
         return targets;
     }
 
@@ -585,8 +589,7 @@ public class AthenaMajorEffectDef : StaticPlayerEffect
     protected override string GetDescription()
     {
         string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
-        string myOwner = Owner.IsHuman ? "you" : "they";
-        return "When one of " + myTarget + " Followers draws blood, " + myOwner + " get a free spell with cost equal to the damage dealt";
+        return "When one of " + myTarget + " Followers draws blood, you get a free spell with cost equal to the damage dealt";
     }
 }
 
@@ -684,8 +687,7 @@ public class DemeterMajorEffectDef : StaticPlayerEffect
     protected override string GetDescription()
     {
         string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
-        string myOwner = Owner.IsHuman ? "you gain 1 life and draw 1 card" : "your opponent gains 1 life and draws 1 card";
-        return "When a Follower enters " + myTarget + " BattleRow, " + myOwner;
+        return "When a Follower enters " + myTarget + " BattleRow, you gain 1 life and draw 1 card";
     }
 }
 
@@ -785,8 +787,7 @@ public class DemeterMinorEffectDef : StaticPlayerEffect
     protected override string GetDescription()
     {
         string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
-        string myOwner = Owner.IsHuman ? "one of your" : "one of your opponent's";
-        return "When one of " + myTarget + " Followers dies, " + myOwner + " Followers gains its attack";
+        return "When one of " + myTarget + " Followers dies, one of your Followers gains its attack";
     }
 }
 // Sacrifice a Follower: Gain 1 Gold, Draw 2 Cards, Gain 3 Life
@@ -1096,9 +1097,8 @@ public class HephaestusMajorEffectDef : StaticPlayerEffect
     protected override string GetDescription()
     {
         string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
-        string myOwner = Owner.IsHuman ? "you get" : "they get";
         string singularTarget = TargetPlayer.IsHuman ? "you" : "they";
-        return "When one of " + myTarget + " Followers dies, " + myOwner + " a copy of every spell " + singularTarget + " cast on on it. The copies costs 1 less.";
+        return "When one of " + myTarget + " Followers dies, you get a copy of every spell " + singularTarget + " cast on on it. The copies costs 1 less.";
     }
 }
 
@@ -1459,8 +1459,7 @@ public class HeraMajorEffectDef : StaticPlayerEffect
     }
     protected override string GetDescription()
     {
-        string owner = Owner.IsHuman ? "your" : "your opponent's";
-        return "When " + owner + " life total changes, deal 2 damage to a random enemy";
+        return "When your life total changes, deal 2 damage to a random enemy";
     }
 }
 
@@ -1499,7 +1498,7 @@ public class OldOnesMinor : Ritual
     public override List<ITarget> GetTargets()
     {
         var targets = new List<ITarget>();
-        targets.AddRange(ITarget.GetAllPlayers(Owner));
+        targets.Add(Owner);
         return targets;
     }
 

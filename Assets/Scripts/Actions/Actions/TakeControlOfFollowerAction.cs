@@ -28,6 +28,7 @@ public class TakeControlOfFollowerAction : GameAction
     public override void Execute(bool simulated = false, bool success = true)
     {
         if (Follower.Owner == NewOwner) return;
+        if (NewOwner.BattleRow.Followers.Count >= Player.MaxFollowerCount) return;
 
         // Remove Follower from current owner
         Follower.Owner.BattleRow.RemoveFollower(Follower);

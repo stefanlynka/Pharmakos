@@ -19,6 +19,7 @@ public class View : MonoBehaviour
     }
 
     public AnimationHandler AnimationHandler = new AnimationHandler();
+    readonly HashSet<StaticPlayerEffect> buffsHiddenUntilAnimation = new HashSet<StaticPlayerEffect>();
 
     public static GameObject CardViewPrefab;
     private static ObjectPool<GameObject> cardPool = new ObjectPool<GameObject>(CreateCardView, OnCardGet, OnCardRelease, null, false);
@@ -134,6 +135,7 @@ public class View : MonoBehaviour
 
     public void Setup()
     {
+        buffsHiddenUntilAnimation.Clear();
         SelectionHandler.Setup();
 
         Player1.Load(Controller.Instance.Player1);
@@ -157,6 +159,7 @@ public class View : MonoBehaviour
 
     public void Clear()
     {
+        buffsHiddenUntilAnimation.Clear();
         Player1.Clear();
         Player2.Clear();
 
@@ -597,6 +600,28 @@ public class View : MonoBehaviour
         //CardMap[follower.ID] = viewFollower;
     }
 
+    public void HideBuffUntilRevealed(StaticPlayerEffect effect)
+    {
+        if (effect != null)
+            buffsHiddenUntilAnimation.Add(effect);
+    }
+
+    public void RevealBuff(StaticPlayerEffect effect)
+    {
+        if (effect != null)
+            buffsHiddenUntilAnimation.Remove(effect);
+
+        UpdatePlayerBuffs();
+
+        if (effect == null)
+            return;
+
+        if (Player1 != null && effect.Owner == Player1.Player)
+            Player1.FlareBuff(effect);
+        else if (Player2 != null && effect.Owner == Player2.Player)
+            Player2.FlareBuff(effect);
+    }
+
     public void UpdatePlayerBuffs()
     {
         Player1.ClearBuffs();
@@ -606,7 +631,7 @@ public class View : MonoBehaviour
         {
             ViewPlayer effectTarget = Player1;
             StaticPlayerEffect staticPlayerEffect = playerEffect as StaticPlayerEffect;
-            if (staticPlayerEffect == null) continue;
+            if (staticPlayerEffect == null || buffsHiddenUntilAnimation.Contains(staticPlayerEffect)) continue;
             //if (playerEffect is StaticPlayerEffect ritualPlayerEffect)
             //{
             //    effectTarget = ritualPlayerEffect.TargetPlayer == Player1.Player ? Player1 : Player2;
@@ -618,7 +643,7 @@ public class View : MonoBehaviour
         {
             ViewPlayer effectTarget = Player2;
             StaticPlayerEffect staticPlayerEffect = playerEffect as StaticPlayerEffect;
-            if (staticPlayerEffect == null) continue;
+            if (staticPlayerEffect == null || buffsHiddenUntilAnimation.Contains(staticPlayerEffect)) continue;
             //if (playerEffect is StaticPlayerEffect ritualPlayerEffect)
             //{
             //    effectTarget = ritualPlayerEffect.TargetPlayer == Player1.Player ? Player1 : Player2;

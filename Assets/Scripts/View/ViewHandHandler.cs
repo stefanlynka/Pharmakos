@@ -32,6 +32,8 @@ public class ViewHandHandler : MonoBehaviour
 
     public void Clear()
     {
+        PopupScreenHandler.Instance?.HideFollowerReferencedCardUnder(transform);
+
         List<ViewCard> viewCardsCopy = new List<ViewCard>(ViewCards);
         foreach (ViewCard viewCard in viewCardsCopy)
         {
@@ -163,10 +165,12 @@ public class ViewHandHandler : MonoBehaviour
         if (raisedKeywordCard != null && raisedKeywordCard.Card is Follower follower)
         {
             PopupScreenHandler.Instance?.ShowHandKeywordReminders(follower, raisedKeywordCard.transform, slot);
+            PopupScreenHandler.Instance?.ShowFollowerReferencedCard(follower, raisedKeywordCard.transform, slot);
             return;
         }
 
         PopupScreenHandler.Instance?.HideHandKeywordReminders(slot);
+        PopupScreenHandler.Instance?.HideFollowerReferencedCardUnder(transform);
     }
 
     static bool IsHighlightScale(Vector3 scale)

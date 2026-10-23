@@ -26,6 +26,7 @@ public class Follower : Card, ITarget
     public Action OnDeath;
 
     public List<FollowerEffect> InnateEffects = new List<FollowerEffect>();
+    List<Card> _referencedPreviewCards;
     public Dictionary<StaticEffect, List<FollowerEffectInstance>> StaticEffects = new Dictionary<StaticEffect, List<FollowerEffectInstance>>();
     public SortedSet<TriggeredFollowerEffectInstance> OnEnterEffects = new SortedSet<TriggeredFollowerEffectInstance>();
     public SortedSet<TriggeredFollowerEffectInstance> OnDeathEffects = new SortedSet<TriggeredFollowerEffectInstance>();
@@ -203,6 +204,7 @@ public class Follower : Card, ITarget
         OnTargetedEffects = new SortedSet<TriggeredFollowerEffectInstance>();
 
         InnateEffects = new List<FollowerEffect>();
+        _referencedPreviewCards = null;
 
         // When cloning a Follower, we clone each EffectDef and apply them all later once all Followers have been cloned
         if (original is Follower followerOriginal)
@@ -227,6 +229,137 @@ public class Follower : Card, ITarget
     public virtual void SetupInnateEffects()
     {
         //InnateEffects.Clear(); // Let's try not cleaning up InnateEffects for cloning purposes.
+    }
+
+    // Cards this follower names, such as the Sheep Endymion summons. Shown beside the hover popup.
+    public void CollectReferencedCards(List<Card> cards)
+    {
+        if (cards == null)
+            return;
+
+        if (_referencedPreviewCards == null)
+        {
+            List<Card> built = new List<Card>();
+            BuildReferencedPreviewCards(built);
+            _referencedPreviewCards = built;
+        }
+
+        for (int i = 0; i < _referencedPreviewCards.Count; i++)
+            cards.Add(_referencedPreviewCards[i]);
+    }
+
+    void BuildReferencedPreviewCards(List<Card> cards)
+    {
+        if (InnateEffects == null)
+            return;
+
+        for (int i = 0; i < InnateEffects.Count; i++)
+            CollectReferencedInstances(InnateEffects[i] != null ? InnateEffects[i].EffectInstances : null, cards);
+
+        if (cards.Count > 0)
+            return;
+
+        Follower dummy = null;
+        FollowerEffectInstance.SuppressRegistration = true;
+        try
+        {
+            for (int i = 0; i < InnateEffects.Count; i++)
+            {
+                if (InnateEffects[i] is not CustomEffectDef custom || custom.ApplyInstanceAction == null)
+                    continue;
+
+                if (custom.Clone() is not CustomEffectDef cloned || cloned.ApplyInstanceAction == null)
+                    continue;
+
+                if (dummy == null)
+                    dummy = new Follower();
+
+                try
+                {
+                    cloned.ApplyInstanceAction(cloned, dummy, 0);
+                    CollectReferencedInstances(cloned.EffectInstances, cards);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogException(exception);
+                }
+            }
+        }
+        finally
+        {
+            FollowerEffectInstance.SuppressRegistration = false;
+        }
+    }
+
+    static void CollectReferencedInstances(List<FollowerEffectInstance> instances, List<Card> cards)
+    {
+        if (instances == null)
+            return;
+
+        for (int i = 0; i < instances.Count; i++)
+        {
+            switch (instances[i])
+            {
+                case SummonFollowerInstance summon:
+                    AddPreviewType(cards, summon.SummonedFollowerType);
+                    break;
+                case SummonPeltastInstance:
+                    AddPreviewType(cards, typeof(Peltast));
+                    break;
+                case AddCardCopyToHandInstance addCard:
+                    AddPreview(cards, addCard.CardToCopy);
+                    break;
+            }
+        }
+    }
+
+    static void AddPreviewType(List<Card> cards, Type type)
+    {
+        if (type == null || type.IsAbstract || !typeof(Card).IsAssignableFrom(type))
+            return;
+
+        try
+        {
+            AddPreview(cards, Activator.CreateInstance(type) as Card);
+        }
+        catch (Exception exception)
+        {
+            Debug.LogException(exception);
+        }
+    }
+
+    static void AddPreview(List<Card> cards, Card card)
+    {
+        if (card == null)
+            return;
+
+        for (int i = 0; i < cards.Count; i++)
+        {
+            if (cards[i] != null && cards[i].GetType() == card.GetType() && SamePreviewCosts(cards[i], card))
+                return;
+        }
+
+        Card preview = (Card)card.Clone();
+        if (card.Costs != null)
+            preview.Costs = new Dictionary<OfferingType, int>(card.Costs);
+        cards.Add(preview);
+    }
+
+    static bool SamePreviewCosts(Card a, Card b)
+    {
+        if (a.Costs == null || b.Costs == null)
+            return a.Costs == b.Costs;
+
+        if (a.Costs.Count != b.Costs.Count)
+            return false;
+
+        foreach (KeyValuePair<OfferingType, int> cost in a.Costs)
+        {
+            if (!b.Costs.TryGetValue(cost.Key, out int amount) || amount != cost.Value)
+                return false;
+        }
+
+        return true;
     }
 
     // Should be called only once when a follower is summoned (Or when re-applying effects)

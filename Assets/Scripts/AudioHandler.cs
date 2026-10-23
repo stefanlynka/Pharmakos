@@ -68,6 +68,7 @@ public class AudioHandler : MonoBehaviour
     [Range(0f, 1f)] public float MusicFadedVolume = 0.2f;
     private float musicFadeMultiplier = 1.0f;
     private float musicFadeTarget = 1.0f;
+    AudioClip menuMusicClip;
 
     bool rumbleFadeActive;
     float rumbleFadeFrom = 1f;
@@ -94,6 +95,12 @@ public class AudioHandler : MonoBehaviour
         public OfferingType Type;
         public int CountAfterCollect;
         public Action OnPlayed;
+    }
+
+    void Awake()
+    {
+        if (MusicSource != null)
+            menuMusicClip = MusicSource.clip;
     }
 
     // Start is called before the first frame update
@@ -343,6 +350,32 @@ public class AudioHandler : MonoBehaviour
         return Mathf.Clamp(Mathf.Pow(2f, semitones / 12f), 0.5f, 3f);
     }
 
+    public void StopMusic()
+    {
+        if (MusicSource != null)
+            MusicSource.Stop();
+    }
+
+    /// <summary>
+    /// Plays the menu track. Leaves it alone when that track is already playing, so startup does not restart it.
+    /// </summary>
+    public void PlayMenuMusic()
+    {
+        if (MusicSource == null || menuMusicClip == null)
+            return;
+
+        if (MusicSource.isPlaying && MusicSource.clip == menuMusicClip)
+            return;
+
+        currentMusicMultiplier = 1f;
+        musicFadeMultiplier = 1f;
+        musicFadeTarget = 1f;
+        MusicSource.clip = menuMusicClip;
+        MusicSource.loop = true;
+        ApplyMusicVolume();
+        MusicSource.Play();
+    }
+
     public void PlayMusic(DeckName name)
     {
         if (Controller.Instance != null && Controller.Instance.ProgressionHandler != null)
@@ -578,6 +611,7 @@ public class AudioHandler : MonoBehaviour
         Bump,
         Defeat,
         Whoosh,
+        VictoryFanfare,
     }
     public enum OtherSoundType
     {

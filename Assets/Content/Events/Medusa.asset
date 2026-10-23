@@ -23,10 +23,12 @@ MonoBehaviour:
   - OptionText: 'He accepted his fate and wished to see what few others had
 
       (Gain
-      Heartstring)'
+      2 Heartstrings)'
     Outcome:
       OutcomeType: 8
-      RewardInfo: []
+      RewardInfo:
+      - 2
+      HeartstringCost: 0
   - OptionText: 'His resolve failed him. Not all are ready for such a quest
 
       (Remove
@@ -34,3 +36,4 @@ MonoBehaviour:
     Outcome:
       OutcomeType: 12
       RewardInfo: []
+      HeartstringCost: 0

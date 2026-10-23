@@ -27,12 +27,15 @@ MonoBehaviour:
   Options:
   - OptionText: 'Remember who all the sacrifice is for
 
-      (Gain Heartstring)'
+      (Gain 2 Heartstrings)'
     Outcome:
       OutcomeType: 8
-      RewardInfo: []
+      RewardInfo:
+      - 2
+      HeartstringCost: 0
   - OptionText: "Reflect on the beauty you\u2019ve encountered\n(Become enemy from
       previous combat)"
     Outcome:
       OutcomeType: 9
       RewardInfo: []
+      HeartstringCost: 0

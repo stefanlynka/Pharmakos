@@ -14,8 +14,10 @@ public abstract class GameAction
         {
             if (successful)
             {
+                // An opponent's turn resolves every action before its animations play.
+                // The source effect flares when that animation plays, so a trinket flashes
+                // with the effect instead of at the start of the turn.
                 View.Instance.AnimationHandler.AddGameActionToQueue(this);
-                SourceEffect?.MarkTriggered();
             }
 
             if (Controller.ActionDebugMode)

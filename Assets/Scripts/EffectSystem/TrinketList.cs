@@ -836,6 +836,7 @@ public class HydrasScaleTrinket : Trinket<HydrasScaleTrinketEffectDef>
     {
         Name = "Hydra's Scale";
         Description = "When you summon a follower that costs 5 or more, summon a copy of it.";
+        AvailableAsStartingTrinket = false;
     }
 }
 public class HydrasScaleTrinketEffectDef : TrinketPlayerEffect
@@ -1550,7 +1551,7 @@ public class TheLostReturnTrinket : Trinket<TheLostReturnTrinketEffectDef>
     public TheLostReturnTrinket()
     {
         Name = "The Lost Return";
-        Description = "At the start of your turn, summon a Follower that's been Offered to the Gods";
+        Description = "At the start of your turn, summon a Follower that you sacrificed this run";
     }
 }
 public class TheLostReturnTrinketEffectDef : TrinketPlayerEffect
@@ -1587,7 +1588,7 @@ public class TheLostReturnTrinketEffectDef : TrinketPlayerEffect
 
     protected override string GetDescription()
     {
-        return "At the start of your turn, summon a Follower that's been Offered to the Gods";
+        return "At the start of your turn, summon a Follower that you sacrificed this run";
     }
 }
 

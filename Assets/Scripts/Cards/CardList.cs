@@ -3464,7 +3464,7 @@ public class EyesInTheDark : Spell
         };
 
         OverrideName = "Eyes in the Dark";
-        Text = "Randomly summon one of: 5 Rats, a Hydra, an Echidna, a Typhon, a Cerberus, a Minotaur, 2 Pytho, or a Nemean Lion";
+        Text = "Summon one or more monsters";
         HasTargets = true;
     }
 
@@ -4811,10 +4811,10 @@ public class TwistOfFate : Spell
             int randomIndex = Owner.GameState.RNG.Next(0, aiPlayer.TwistOfFateBuffs.Count);
             Trinket randomBuff = aiPlayer.TwistOfFateBuffs[randomIndex];
             
-            // Create a copy and apply it
+            // Create a copy and apply it. The icon waits for this card's play animation.
             Trinket buffCopy = randomBuff.MakeBaseCopy();
             buffCopy.Owner = aiPlayer;
-            buffCopy.ApplyEffect(aiPlayer);
+            buffCopy.ApplyEffect(aiPlayer, revealWithAnimation: true);
         }
     }
 }

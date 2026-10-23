@@ -25,10 +25,12 @@ MonoBehaviour:
   Options:
   - OptionText: 'Find courage in her words
 
-      (Gain Heartstring)'
+      (Gain 2 Heartstrings)'
     Outcome:
       OutcomeType: 8
-      RewardInfo: []
+      RewardInfo:
+      - 2
+      HeartstringCost: 0
   - OptionText: 'Hear more of her trials
 
       (Gain Rituals)'
@@ -37,3 +39,4 @@ MonoBehaviour:
       RewardInfo:
       - HermesMinor
       - HermesMajor
+      HeartstringCost: 0

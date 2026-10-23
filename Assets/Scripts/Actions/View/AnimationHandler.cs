@@ -103,21 +103,40 @@ public class AnimationHandler
         List<AnimationAction> animationActions = gameAction.GetAnimationActions();
         if (!backOfQueue) animationActions.Reverse();
 
+        AnimationAction playsFirst = null;
         foreach (AnimationAction animationAction in animationActions)
         {
             if (animationAction == null) continue;
 
             if (backOfQueue)
             {
+                if (playsFirst == null)
+                    playsFirst = animationAction;
                 AnimationActionQueue.Add(animationAction);
             }
             else
             {
+                playsFirst = animationAction;
                 AnimationActionQueue.Insert(0, animationAction);
             }
             //AnimationActionQueue.Insert(index, animationStackItem);
         }
 
+        if (playsFirst != null)
+        {
+            if (gameAction.SourceEffect != null)
+                playsFirst.MarkSourceTriggered = true;
+            return;
+        }
+
+        if (gameAction.SourceEffect == null)
+            return;
+
+        AnimationAction marker = new MarkSourceTriggeredAnimation(gameAction);
+        if (backOfQueue)
+            AnimationActionQueue.Add(marker);
+        else
+            AnimationActionQueue.Insert(0, marker);
     }
 
     public void AddAnimationActionToQueue(AnimationAction animationAction, bool immediate = false)

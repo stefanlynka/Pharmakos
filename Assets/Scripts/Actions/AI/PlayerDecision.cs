@@ -125,6 +125,7 @@ public class AttackWithFollowerDecision : PlayerDecision
         if (!Controller.Instance.CanonGameState.TargetsByID.ContainsKey(FollowerID) || !Controller.Instance.CanonGameState.TargetsByID.ContainsKey(TargetID))
         {
             if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+            return "Follower or target not found";
         }
         else
         {

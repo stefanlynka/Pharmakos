@@ -73,6 +73,10 @@ public class PlaySpellAction : GameAction
             animationActions.Insert(1, throwAnimation);
         }
 
+        // Show the granted trinket once this card is on screen, as the result of the play.
+        if (Spell is TwistOfFate)
+            animationActions.Insert(1, new RevealPlayedTrinketAnimation(this, Owner));
+
         return animationActions;
     }
     public override void LogAction()

@@ -6,6 +6,7 @@ using UnityEngine;
 public abstract class AnimationAction
 {
     public bool Stackable = false;
+    public bool MarkSourceTriggered = false;
     public GameAction GameAction;
     public Action OnFinish;
 
@@ -13,6 +14,11 @@ public abstract class AnimationAction
     {
         OnFinish = onFinish;
         if (Controller.AnimationDebugMode) Log();
+        if (MarkSourceTriggered)
+        {
+            MarkSourceTriggered = false;
+            GameAction?.SourceEffect?.MarkTriggered();
+        }
     }
 
     public AnimationAction(GameAction gameAction)
@@ -30,5 +36,20 @@ public abstract class AnimationAction
     protected virtual void Log()
     {
 
+    }
+}
+
+// Holds a trinket flare in the animation queue when the triggering action has no animation of its own.
+public class MarkSourceTriggeredAnimation : AnimationAction
+{
+    public MarkSourceTriggeredAnimation(GameAction gameAction) : base(gameAction)
+    {
+        MarkSourceTriggered = true;
+    }
+
+    public override void Play(Action onFinish = null)
+    {
+        base.Play(onFinish);
+        CallCallback();
     }
 }

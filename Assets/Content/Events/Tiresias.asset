@@ -24,10 +24,12 @@ MonoBehaviour:
   Options:
   - OptionText: 'Look upon the past
 
-      (Gain Heartstring)'
+      (Gain 2 Heartstrings)'
     Outcome:
       OutcomeType: 8
-      RewardInfo: []
+      RewardInfo:
+      - 2
+      HeartstringCost: 0
   - OptionText: 'Look upon the future
 
       (Gain Rituals)'
@@ -36,3 +38,4 @@ MonoBehaviour:
       RewardInfo:
       - ApolloMajor
       - HeraMajor
+      HeartstringCost: 0
