@@ -7,7 +7,7 @@ using System.Collections.Generic;
 /// </summary>
 public class StyxRunState
 {
-    public const int StyxBaseDeckSize = 30;
+    public const int StyxBaseDeckSize = 20;
 
     public List<Card> RemovedCards = new List<Card>();
     public List<Ritual> RemovedRituals = new List<Ritual>();

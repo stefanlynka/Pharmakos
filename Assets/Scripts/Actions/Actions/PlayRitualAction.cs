@@ -44,11 +44,12 @@ public class PlayRitualAction : GameAction
 
     public override List<AnimationAction> GetAnimationActions()
     {
-        List<AnimationAction> animationActions = new List<AnimationAction>()
-        {
-            new PlayVfxAnimation(this, ritual.GetPlayVfx(target), ritual, target),
-        };
+        List<AnimationAction> animationActions = new List<AnimationAction>();
 
+        if (ritual.Owner != null && !ritual.Owner.IsHuman)
+            animationActions.Add(new RitualUsePulseAnimation(this, ritual));
+
+        animationActions.Add(new PlayVfxAnimation(this, ritual.GetPlayVfx(target), ritual, target));
         return animationActions;
     }
     public override PlayHistoryItem MakePlayHistoryItem()

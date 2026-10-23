@@ -25,15 +25,17 @@ public class LoseHeartStringAnimation : AnimationAction
 
         viewPlayer.SetHeartStrings(player.CurrentHeartStrings, Player.MaxHeartStrings);
         ScreenShakeHandler.Shake(0.5f, 0.25f);
+        PlayStrum();
 
-        Sequence moveSequence = new Sequence();
-        moveSequence.Add(new Tween(TweenProgress, 0, 1, duration));
-        moveSequence.Add(new SequenceAction(Complete));
-        moveSequence.Start();
+        VfxLibrary.PortraitHeartstringFlash(duration).Play(new VfxContext(null, viewPlayer), Complete);
     }
 
-    private void TweenProgress(float progress)
+    void PlayStrum()
     {
+        if (View.Instance == null || View.Instance.AudioHandler == null)
+            return;
+
+        View.Instance.AudioHandler.PlayHeartstringStrum();
     }
 
     private void Complete()

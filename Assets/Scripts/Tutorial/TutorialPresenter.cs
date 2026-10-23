@@ -8,6 +8,7 @@ public class TutorialPresenter : MonoBehaviour
 {
     public static TutorialPresenter Instance { get; private set; }
     public static bool IsBlocking { get; private set; }
+    public static bool BlocksGameInput => IsBlocking || (Instance != null && Instance.PointerOverBlockingCover());
 
     const float ArrowBobHeight = 0.02f;
     const float ArrowBobCyclesPerSecond = 0.5f;
@@ -276,7 +277,12 @@ public class TutorialPresenter : MonoBehaviour
             _background.gameObject.SetActive(showBlocker);
         }
 
+        bool blockCover = hasHole && beat.BlockInput;
+        if (_group != null)
+            _group.blocksRaycasts = IsBlocking || blockCover;
+
         SetCoverActive(hasHole);
+        SetCoverBlocksInput(blockCover);
         if (!hasHole)
             return;
 
@@ -314,6 +320,40 @@ public class TutorialPresenter : MonoBehaviour
             _coverLeft.gameObject.SetActive(active);
         if (_coverRight != null)
             _coverRight.gameObject.SetActive(active);
+    }
+
+    void SetCoverBlocksInput(bool block)
+    {
+        if (_coverBottom != null)
+            _coverBottom.raycastTarget = block;
+        if (_coverTop != null)
+            _coverTop.raycastTarget = block;
+        if (_coverLeft != null)
+            _coverLeft.raycastTarget = block;
+        if (_coverRight != null)
+            _coverRight.raycastTarget = block;
+    }
+
+    bool PointerOverBlockingCover()
+    {
+        Vector2 pointer = Input.mousePosition;
+        return CoverContains(_coverBottom, pointer)
+            || CoverContains(_coverTop, pointer)
+            || CoverContains(_coverLeft, pointer)
+            || CoverContains(_coverRight, pointer);
+    }
+
+    static bool CoverContains(Image cover, Vector2 pointer)
+    {
+        if (cover == null || !cover.gameObject.activeInHierarchy || !cover.raycastTarget)
+            return false;
+
+        Camera camera = null;
+        Canvas canvas = cover.canvas;
+        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            camera = canvas.worldCamera;
+
+        return RectTransformUtility.RectangleContainsScreenPoint(cover.rectTransform, pointer, camera);
     }
 
     void ApplyText(TutorialBeat beat, string text)
@@ -509,6 +549,7 @@ public class TutorialPresenter : MonoBehaviour
 
         if (_background != null)
             _background.gameObject.SetActive(false);
+        SetCoverBlocksInput(false);
         SetCoverActive(false);
         if (_textFrame != null)
             _textFrame.gameObject.SetActive(false);

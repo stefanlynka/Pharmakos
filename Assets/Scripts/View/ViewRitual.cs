@@ -37,6 +37,14 @@ public class ViewRitual : ViewTarget
     [Tooltip("Fixed intensity for rituals shown outside combat (rewards, Styx, play history).")]
     [SerializeField] float displayIntensity = 50f;
 
+    [Header("Use Pulse")]
+    [SerializeField] float usePulseScale = 1.2f;
+    [SerializeField] float usePulseDuration = 0.5f;
+    [Tooltip("Spotlight intensity at the peak of an enemy use pulse.")]
+    [SerializeField] float usePulseIntensity = 600f;
+    [Tooltip("Portion of the pulse spent rising. The rest eases back to rest.")]
+    [SerializeField] float usePulseRisePortion = 0.28f;
+
     [Header("Hover")]
     [SerializeField] float hoverScaleMultiplier = 1.1f;
     [Tooltip("Which side of this ritual the hover summary popup appears on.")]
@@ -94,6 +102,11 @@ public class ViewRitual : ViewTarget
     float pulseWeight;
     const float PulseBlendDuration = 0.25f;
 
+    float usePulseTime = -1f;
+    float usePulseWeight;
+    float usePulseBaseIntensity;
+    bool restoreUsePulseIntensity;
+
     void Awake()
     {
         defaultLocalScale = transform.localScale;
@@ -111,10 +124,12 @@ public class ViewRitual : ViewTarget
 
     void LateUpdate()
     {
+        AdvanceUsePulse();
         UpdateHoverScale();
         UpdateHoverSummary();
         UpdateIdleRattle();
         UpdateSpotlight();
+        ApplyUsePulseSpotlight();
     }
 
     void OnDisable()
@@ -128,6 +143,7 @@ public class ViewRitual : ViewTarget
             NotifyRitualFlame(false);
         spotlightIsUsable = false;
         spotlightPhase = SpotlightPhase.Hold;
+        CancelUsePulse();
     }
 
     public void Init(Ritual ritual, bool clickable = true)
@@ -208,6 +224,16 @@ public class ViewRitual : ViewTarget
     public void SyncOfferingReadyState()
     {
         UpdateSpotlight();
+        ApplyUsePulseSpotlight();
+    }
+
+    public void PlayUsePulse()
+    {
+        if (usePulseTime < 0f && Spotlight != null)
+            usePulseBaseIntensity = Spotlight.intensity;
+
+        usePulseTime = 0f;
+        restoreUsePulseIntensity = Spotlight != null;
     }
 
     public bool HasDisplayedOfferings()
@@ -418,6 +444,70 @@ public class ViewRitual : ViewTarget
             View.Instance.AudioHandler.NotifyRitualUnready(this);
     }
 
+    void AdvanceUsePulse()
+    {
+        if (usePulseTime < 0f)
+        {
+            usePulseWeight = 0f;
+            return;
+        }
+
+        if (usePulseDuration <= 0f)
+        {
+            usePulseTime = -1f;
+            usePulseWeight = 0f;
+            return;
+        }
+
+        usePulseTime += Time.deltaTime;
+        if (usePulseTime >= usePulseDuration)
+        {
+            usePulseTime = -1f;
+            usePulseWeight = 0f;
+            return;
+        }
+
+        float t = usePulseTime / usePulseDuration;
+        float risePortion = Mathf.Clamp(usePulseRisePortion, 0.05f, 0.95f);
+        usePulseWeight = t < risePortion
+            ? EaseOutQuad(t / risePortion)
+            : 1f - EaseOutSine((t - risePortion) / (1f - risePortion));
+    }
+
+    void ApplyUsePulseSpotlight()
+    {
+        if (Spotlight == null)
+            return;
+
+        if (usePulseWeight > 0f)
+        {
+            float peak = Mathf.Max(usePulseBaseIntensity, usePulseIntensity);
+            Spotlight.intensity = Mathf.Lerp(usePulseBaseIntensity, peak, usePulseWeight);
+            return;
+        }
+
+        if (!restoreUsePulseIntensity)
+            return;
+
+        Spotlight.intensity = usePulseBaseIntensity;
+        restoreUsePulseIntensity = false;
+    }
+
+    void CancelUsePulse()
+    {
+        bool wasPulsing = usePulseTime >= 0f || usePulseWeight > 0f;
+        usePulseTime = -1f;
+        usePulseWeight = 0f;
+
+        if (wasPulsing)
+            transform.localScale = defaultLocalScale;
+
+        if (restoreUsePulseIntensity && Spotlight != null)
+            Spotlight.intensity = usePulseBaseIntensity;
+
+        restoreUsePulseIntensity = false;
+    }
+
     static float EaseOutQuad(float t)
     {
         return 1f - (1f - t) * (1f - t);
@@ -464,6 +554,7 @@ public class ViewRitual : ViewTarget
             return;
 
         float scaleFactor = IsHoveredAndUsable() ? hoverScaleMultiplier : 1f;
+        scaleFactor *= Mathf.Lerp(1f, usePulseScale, usePulseWeight);
         transform.localScale = defaultLocalScale * scaleFactor;
     }
 
@@ -616,39 +707,31 @@ public class ViewRitual : ViewTarget
             HideHoverSummary();
     }
 
-    string BuildSummaryText()
-    {
-        if (Ritual == null)
-            return string.Empty;
-
-        string name = Ritual.Name ?? string.Empty;
-        if (string.IsNullOrEmpty(Ritual.ReminderText))
-            return name;
-
-        string reminder = Controller.Instance != null && Controller.Instance.TextHandler != null
-            ? Controller.Instance.TextHandler.ProcessText(Ritual.ReminderText)
-            : Ritual.ReminderText;
-
-        return string.IsNullOrEmpty(reminder) ? name : name + "\n" + reminder;
-    }
-
     void ShowHoverSummary()
     {
-        string summary = BuildSummaryText();
-        if (string.IsNullOrEmpty(summary))
+        if (Ritual == null)
         {
             if (isHoverSummaryShown)
                 HideHoverSummary();
             return;
         }
 
-        PopupScreenHandler.Instance?.ShowTextPopup(summary, transform, SummaryPosition);
+        PopupScreenHandler.Instance?.ShowRitualHoverPopup(Ritual, transform, HoverSummaryPosition());
         isHoverSummaryShown = true;
+    }
+
+    // Enemy altars sit at the top of the board, so the summary opens underneath them.
+    PopupPosition HoverSummaryPosition()
+    {
+        if (Ritual != null && Ritual.Owner != null && !Ritual.Owner.IsHuman)
+            return PopupPosition.Below;
+
+        return SummaryPosition;
     }
 
     void HideHoverSummary()
     {
-        PopupScreenHandler.Instance?.HideTextPopup(transform);
+        PopupScreenHandler.Instance?.HideRitualHoverPopup(transform);
         isHoverSummaryShown = false;
     }
 }

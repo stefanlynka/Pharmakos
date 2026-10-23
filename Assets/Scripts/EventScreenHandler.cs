@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using Pharmakos.Events;
 using Pharmakos.Events.UI;
 using TMPro;
@@ -183,26 +182,38 @@ public class EventScreenHandler : MonoBehaviour
             yield break;
         }
 
-        _eventText.text = string.Empty;
         if (string.IsNullOrEmpty(fullText))
         {
+            _eventText.maxVisibleCharacters = int.MaxValue;
+            _eventText.text = string.Empty;
             Debug.LogWarning("EventScreenHandler: event body text is empty. Set Event Text on the Event Definition asset.");
             yield break;
         }
 
-        var sb = new StringBuilder(fullText.Length);
+        // Lay out the finished paragraph first so auto-size and wrapping stay put while characters appear.
+        _eventText.maxVisibleCharacters = int.MaxValue;
+        _eventText.text = fullText;
+        _eventText.ForceMeshUpdate();
+
+        int count = _eventText.textInfo.characterCount;
+        _eventText.maxVisibleCharacters = 0;
+
         float delay = Mathf.Max(0.001f, CharacterRevealDelay);
-        for (int i = 0; i < fullText.Length; i++)
+        for (int visible = 1; visible <= count; visible++)
         {
-            sb.Append(fullText[i]);
-            _eventText.text = sb.ToString();
+            _eventText.maxVisibleCharacters = visible;
             yield return new WaitForSecondsRealtime(delay);
         }
+
+        _eventText.maxVisibleCharacters = int.MaxValue;
     }
 
     public void ClearEventText()
     {
-        if (_eventText != null)
-            _eventText.text = string.Empty;
+        if (_eventText == null)
+            return;
+
+        _eventText.maxVisibleCharacters = int.MaxValue;
+        _eventText.text = string.Empty;
     }
 }

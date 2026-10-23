@@ -13,15 +13,18 @@ public class OverworldMapController : MonoBehaviour
     public Vector3 SmokePosition;
     
     [Header("Overworld camera")]
-    [Tooltip("Parent-local X/Z: max units per second when WASD is held.")]
+    [Tooltip("Parent-local X/Z: max units per second while WASD is held or the cursor sits in the screen-edge strip.")]
     [FormerlySerializedAs("CameraPanSpeed")]
     public float CameraPanMaxSpeed = 20f;
 
     [Tooltip("How quickly pan speed ramps up toward max (local X/Z per second²).")]
     public float CameraPanAcceleration = 45f;
 
-    [Tooltip("How quickly pan speed ramps down when WASD is released.")]
+    [Tooltip("How quickly pan speed ramps down when pan input stops.")]
     public float CameraPanDeceleration = 55f;
+
+    [Tooltip("Pixels in from each screen edge where the cursor pans the camera the same way WASD does. 0 disables edge panning.")]
+    public float CameraEdgePanMargin = 36f;
 
     [Tooltip("Multiplier for mouse wheel movement on local Y (per scroll unit).")]
     public float CameraScrollZoomSpeed = 30f;
@@ -384,7 +387,7 @@ public class OverworldMapController : MonoBehaviour
     {
         var cam = GetOverworldCamera();
         OverworldMapNode newHover = null;
-        if (cam != null && !ContentScrollView.BlocksGameInput && !TutorialPresenter.IsBlocking)
+        if (cam != null && !ContentScrollView.BlocksGameInput && !TutorialPresenter.BlocksGameInput)
         {
             var ray = cam.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out var hit, 1000f))
@@ -476,7 +479,7 @@ public class OverworldMapController : MonoBehaviour
 
         UpdateAccessibleHexHover();
 
-        if (Input.GetMouseButtonDown(0) && !ContentScrollView.BlocksGameInput && !TutorialPresenter.IsBlocking)
+        if (Input.GetMouseButtonDown(0) && !ContentScrollView.BlocksGameInput && !TutorialPresenter.BlocksGameInput)
         {
             var cam = GetOverworldCamera();
             if (cam == null) return;
@@ -511,7 +514,7 @@ public class OverworldMapController : MonoBehaviour
 
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
-        var input = new Vector2(h, v);
+        var input = new Vector2(h, v) + ReadScreenEdgePan();
         if (input.sqrMagnitude > 1f)
             input.Normalize();
 
@@ -557,6 +560,37 @@ public class OverworldMapController : MonoBehaviour
             _cameraPanVelocityLocal.y = 0f;
 
         t.localPosition = local;
+    }
+
+    /// <summary>
+    /// Unit pan in parent-local X/Z when the cursor is inside the screen and within <see cref="CameraEdgePanMargin"/> of an edge.
+    /// Top of the screen matches W; bottom matches S.
+    /// </summary>
+    Vector2 ReadScreenEdgePan()
+    {
+        if (CameraEdgePanMargin <= 0f || !Application.isFocused)
+            return Vector2.zero;
+
+        Vector3 mouse = Input.mousePosition;
+        float screenWidth = UnityEngine.Screen.width;
+        float screenHeight = UnityEngine.Screen.height;
+        if (mouse.x < 0f || mouse.y < 0f || mouse.x > screenWidth || mouse.y > screenHeight)
+            return Vector2.zero;
+
+        float margin = CameraEdgePanMargin;
+        float x = 0f;
+        float z = 0f;
+        if (mouse.x <= margin)
+            x = -1f;
+        else if (mouse.x >= screenWidth - margin)
+            x = 1f;
+
+        if (mouse.y <= margin)
+            z = -1f;
+        else if (mouse.y >= screenHeight - margin)
+            z = 1f;
+
+        return new Vector2(x, z);
     }
 
     bool UseFreeMove()

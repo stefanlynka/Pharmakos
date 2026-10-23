@@ -34,7 +34,7 @@ public static class TutorialCombatScript
         {
             ActiveEncounter = EncounterType.TutorialCombat1;
             QueueOpeningHand(human);
-            QueueDraws(enemy, "Sheep", "Cyclops", "Sheep", "Cyclops", "Sheep");
+            QueueDraws(enemy, "Cyclops", "Cyclops", "Cyclops", "Cyclops", "Cyclops");
         }
         else if (deck == ProgressionHandler.DeckName.TutorialCombat2)
         {
@@ -111,7 +111,10 @@ public static class TutorialCombatScript
             return;
 
         if (follower is Chariot)
+        {
+            TutorialDirector.Raise(TutorialTrigger.FollowerPlayed, ActiveEncounter, 0);
             TutorialDirector.Raise(TutorialTrigger.FollowerPlayed, ActiveEncounter, 1);
+        }
         else if (!RowHas<Chariot>(follower.Owner))
             TutorialDirector.Raise(TutorialTrigger.FollowerPlayed, ActiveEncounter, 0);
     }
@@ -240,6 +243,7 @@ public static class TutorialCombatScript
             case "Chariot": return new Chariot();
             case "Blessing": return new Blessing();
             case "Smite": return new Smite();
+            case "Cyclops": return new Cyclops();
             default: return null;
         }
     }
@@ -258,18 +262,47 @@ public static class TutorialCombatScript
     static List<PlayerDecision> PlayableFollowers(AIPlayer ai)
     {
         var decisions = new List<PlayerDecision>();
+        var remaining = new Dictionary<OfferingType, int>(ai.Offerings);
         int index = ai.BattleRow.Followers.Count;
+        int slots = Player.MaxFollowerCount - index;
         foreach (Card card in ai.Hand)
         {
+            if (slots <= 0)
+                break;
+
             Follower follower = card as Follower;
             if (follower == null || !follower.CanPlay())
+                continue;
+            if (!CanAfford(remaining, follower))
                 continue;
 
             decisions.Add(new PlayFollowerDecision(follower.ID, index));
             index++;
+            slots--;
+            Spend(remaining, follower);
         }
 
         return decisions;
+    }
+
+    static bool CanAfford(Dictionary<OfferingType, int> remaining, Card card)
+    {
+        foreach (KeyValuePair<OfferingType, int> cost in card.GetCosts())
+        {
+            if (!remaining.TryGetValue(cost.Key, out int have) || have < cost.Value)
+                return false;
+        }
+
+        return true;
+    }
+
+    static void Spend(Dictionary<OfferingType, int> remaining, Card card)
+    {
+        foreach (KeyValuePair<OfferingType, int> cost in card.GetCosts())
+        {
+            if (remaining.ContainsKey(cost.Key))
+                remaining[cost.Key] -= cost.Value;
+        }
     }
 
     static bool TryThrowStoneAtHuman(AIPlayer ai, out List<PlayerDecision> decisions)

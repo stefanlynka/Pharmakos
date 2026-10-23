@@ -164,6 +164,68 @@ public static class VfxLibrary
         return new CharCardVfx();
     }
 
+    // Same wash as StatChangeTint, played on the target player's portrait.
+    public static PortraitColorFlashVfx PortraitColorFlash(Color color, float duration = 0.8f)
+    {
+        duration = Mathf.Max(duration, 0.05f);
+        return new PortraitColorFlashVfx
+        {
+            FlashColor = color,
+            Duration = duration,
+            QueueHold = duration,
+        };
+    }
+
+    // Gold wash when a heartstring is spent to stop lethal damage.
+    public static PortraitColorFlashVfx PortraitHeartstringFlash(float duration = 0.8f)
+    {
+        return PortraitColorFlash(new Color(1f, 0.78f, 0.2f, 0.3f), duration);
+    }
+
+    // Red, white, green, or blue from the ritual's largest Blood, Bone, Crop, or Scroll cost.
+    // Ties keep the earlier of those four. No positive cost falls back to white.
+    public static PortraitColorFlashVfx PortraitOfferingFlash(Ritual ritual, float duration = 0.8f)
+    {
+        return PortraitColorFlash(OfferingFlashColor(DominantOffering(ritual)), duration);
+    }
+
+    public static OfferingType DominantOffering(Ritual ritual)
+    {
+        OfferingType best = OfferingType.Bone;
+        int bestCost = 0;
+        if (ritual == null || ritual.Costs == null)
+            return best;
+
+        foreach (OfferingType type in RitualTokenOrder)
+        {
+            if (type == OfferingType.Gold)
+                continue;
+            if (!ritual.Costs.TryGetValue(type, out int cost) || cost <= bestCost)
+                continue;
+
+            bestCost = cost;
+            best = type;
+        }
+
+        return best;
+    }
+
+    public static Color OfferingFlashColor(OfferingType type)
+    {
+        const float alpha = 0.3f;
+        switch (type)
+        {
+            case OfferingType.Blood:
+                return new Color(0.95f, 0.2f, 0.15f, alpha);
+            case OfferingType.Crop:
+                return new Color(0.25f, 0.95f, 0.3f, alpha);
+            case OfferingType.Scroll:
+                return new Color(0.35f, 0.55f, 1f, alpha);
+            default:
+                return new Color(0.95f, 0.95f, 0.92f, alpha);
+        }
+    }
+
     // A green or red wash over the card. It fades in quickly, holds, and is gone when duration elapses.
     public static CharCardVfx StatChangeTint(bool buff, float duration)
     {

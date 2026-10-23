@@ -13,7 +13,7 @@ public class AphroditeMajor : Ritual
     public AphroditeMajor()
     {
         Name = "Aphrodite\nMajor";
-        Description = "Target Follower switches sides";
+        Description = "Target Follower switches sides. It can't attack this turn";
 
         if (Controller.BlitzMode)
         {
@@ -69,7 +69,7 @@ public class AphroditeMinor : Ritual
             // BlitzMode costs - reduced non-gold costs since they reset each turn
             Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 0 },
+                {OfferingType.Blood, 2 }, // 2
                 {OfferingType.Bone, 0 },
                 {OfferingType.Crop, 0 },
                 {OfferingType.Scroll, 0 },
@@ -180,8 +180,8 @@ public class ApolloMajor : Ritual
             {
                 {OfferingType.Blood, 0 },
                 {OfferingType.Bone, 0 },
-                {OfferingType.Crop, 3 },
-                {OfferingType.Scroll, 3 },
+                {OfferingType.Crop, 0 }, // 3
+                {OfferingType.Scroll, 0 }, // 3
             };
         }
         else
@@ -891,6 +891,11 @@ public class HadesMinor : Ritual
         SummonLastDeadFollowerAction summonAction = new SummonLastDeadFollowerAction(playerTarget);
         Owner.GameState.ActionHandler.AddAction(summonAction, true);
     }
+
+    public override void CollectReferencedCards(List<Card> cards)
+    {
+        CollectLastDeadFollower(cards);
+    }
 }
 
 // At the end of each of target Player's turns, they summon a copy of the last Follower that died
@@ -938,6 +943,11 @@ public class HadesMajor : Ritual
         if (target is not Player playerTarget) return;
         HadesMajorEffectDef hadesMajorEffectDef = new HadesMajorEffectDef(Owner, playerTarget);
         Owner.AddPlayerEffect(hadesMajorEffectDef);
+    }
+
+    public override void CollectReferencedCards(List<Card> cards)
+    {
+        CollectLastDeadFollower(cards);
     }
 }
 
@@ -1135,6 +1145,13 @@ public class HermesMajor : Ritual
         HermesMajorEffectDef effectDef = new HermesMajorEffectDef(Owner, targetPlayer);
         Owner.AddPlayerEffect(effectDef);
     }
+
+    public override void CollectReferencedCards(List<Card> cards)
+    {
+        Herald herald = new Herald();
+        herald.Costs[OfferingType.Gold] = 0;
+        cards.Add(herald);
+    }
 }
 
 public class HermesMajorEffectDef : StaticPlayerEffect
@@ -1162,6 +1179,7 @@ public class HermesMajorEffectDef : StaticPlayerEffect
 
         Herald herald = new Herald();
         herald.Costs[OfferingType.Gold] = 0;
+        herald.Init(TargetPlayer);
         AddCardCopyToHandAction addAction = new AddCardCopyToHandAction(herald);
         TargetPlayer.GameState.ActionHandler.AddAction(addAction);
     }
@@ -1490,26 +1508,37 @@ public class OldOnesMinor : Ritual
         Player targetPlayer = target as Player;
         if (targetPlayer == null) return;
 
-        Follower typhon = new Typhon();
-        typhon.Init(targetPlayer);
-        GameAction summonTyphon = new SummonFollowerAction(typhon);
-        Owner.GameState.ActionHandler.AddAction(summonTyphon, true);
 
         Follower echidna = new Echidna();
         echidna.Init(targetPlayer);
         GameAction summonEchidna = new SummonFollowerAction(echidna);
         Owner.GameState.ActionHandler.AddAction(summonEchidna, true);
 
-        GiveFollowerStaticEffectAction newAction = new GiveFollowerStaticEffectAction(typhon, StaticEffect.Sprint);
-        Owner.GameState.ActionHandler.AddAction(newAction, true);
+        Follower typhon = new Typhon();
+        typhon.Init(targetPlayer);
+        GameAction summonTyphon = new SummonFollowerAction(typhon);
+        Owner.GameState.ActionHandler.AddAction(summonTyphon, true);
 
         GiveFollowerStaticEffectAction newAction2 = new GiveFollowerStaticEffectAction(echidna, StaticEffect.Sprint);
         Owner.GameState.ActionHandler.AddAction(newAction2, true);
+
+        GiveFollowerStaticEffectAction newAction = new GiveFollowerStaticEffectAction(typhon, StaticEffect.Sprint);
+        Owner.GameState.ActionHandler.AddAction(newAction, true);
+    }
+
+    public override void CollectReferencedCards(List<Card> cards)
+    {
+        Typhon typhon = new Typhon();
+        Echidna echidna = new Echidna();
+        typhon.InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Sprint));
+        echidna.InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Sprint));
+        cards.Add(typhon);
+        cards.Add(echidna);
     }
 }
 
 // Whenever you sacrifice a follower, gain a free Drown spell
-public class PoseidonMajor : Ritual
+    public class PoseidonMajor : Ritual
 {
     public PoseidonMajor()
     {
@@ -1520,10 +1549,10 @@ public class PoseidonMajor : Ritual
         {
             Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 2 },
-                {OfferingType.Bone, 3 },
+                {OfferingType.Blood, 2 }, // 2
+                {OfferingType.Bone, 3 }, // 3
                 {OfferingType.Crop, 0 },
-                {OfferingType.Scroll, 3 },
+                {OfferingType.Scroll, 3 }, // 3
             };
         }
         else
@@ -1550,6 +1579,13 @@ public class PoseidonMajor : Ritual
         if (target is not Player targetPlayer) return;
         PoseidonMajorEffectDef effectDef = new PoseidonMajorEffectDef(Owner, targetPlayer);
         Owner.AddPlayerEffect(effectDef);
+    }
+
+    public override void CollectReferencedCards(List<Card> cards)
+    {
+        Drown drown = new Drown();
+        drown.Costs[OfferingType.Gold] = 0;
+        cards.Add(drown);
     }
 }
 
@@ -1578,6 +1614,7 @@ public class PoseidonMajorEffectDef : StaticPlayerEffect
 
         Drown drown = new Drown();
         drown.Costs[OfferingType.Gold] = 0;
+        drown.Init(TargetPlayer);
         AddCardCopyToHandAction addAction = new AddCardCopyToHandAction(drown);
         TargetPlayer.GameState.ActionHandler.AddAction(addAction);
     }
@@ -1721,10 +1758,10 @@ public class ZeusMajor : Ritual
             // BlitzMode costs - reduced non-gold costs since they reset each turn
             Costs = new Dictionary<OfferingType, int>()
             {
-                {OfferingType.Blood, 0 }, // 1
-                {OfferingType.Bone, 0 }, // 1
-                {OfferingType.Crop, 0 }, // 1
-                {OfferingType.Scroll, 0 }, // 1
+                {OfferingType.Blood, 1 }, // 1
+                {OfferingType.Bone, 1 }, // 1
+                {OfferingType.Crop, 1 }, // 1
+                {OfferingType.Scroll, 1 }, // 1
             };
         }
         else

@@ -3013,6 +3013,11 @@ public class Smite : Spell
         HasTargets = true;
     }
 
+    public override VfxEffect GetPlayVfx(ITarget target)
+    {
+        return new LightningStrikeVfx();
+    }
+
     public override List<ITarget> GetTargets()
     {
         List<ITarget> targets = new List<ITarget>();

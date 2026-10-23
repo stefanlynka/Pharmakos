@@ -4,7 +4,7 @@ using UnityEngine;
 public class OverworldMapNode : MonoBehaviour
 {
     /// <summary>DEV: when true, the player can move to any node on the overworld map, ignoring adjacency and cleared state.</summary>
-    public static bool DevMoveAnywhere = true;
+    public static bool DevMoveAnywhere = false;
 
     const string HexMeshResourcesPath = "Overworld/Hexes/Meshes/";
     const string HexMaterialResourcesPath = "Overworld/Hexes/Materials/";

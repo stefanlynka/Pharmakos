@@ -5098,6 +5098,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89eb06f43421287429027d0f6fd313a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IsSelectableCopy: 0
   ScrollCamera: {fileID: 3232322675458847589}
   ContentContainer: {fileID: 6294072926630041117}
   CaptureCanvas: {fileID: 5112347182169171923}

@@ -96,7 +96,7 @@ public class ViewBuff : MonoBehaviour
     {
         if (hoverCard != null)
         {
-            PopupScreenHandler.Instance?.ShowCardPopup(hoverCard, transform, SummaryPosition, hoverPopupSlot);
+            PopupScreenHandler.Instance?.ShowCardPopup(hoverCard, transform, SummaryPosition, hoverPopupSlot, reminderText: summaryDescription);
             return;
         }
 

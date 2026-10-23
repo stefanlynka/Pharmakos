@@ -150,7 +150,7 @@ public class AttackArrowPreview
             return false;
         if (!Controller.Instance.GameRunning || Controller.Instance.GamePaused)
             return false;
-        if (ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking)
+        if (ContentScrollView.BlocksGameInput || TutorialPresenter.BlocksGameInput)
             return false;
         if (View.Instance.MenuSelectionHandler != null && View.Instance.MenuSelectionHandler.IsActive)
             return false;

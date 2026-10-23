@@ -57,9 +57,15 @@ public class ViewFollower : ViewCard
     public int DisplayedAttack => attack;
     public int DisplayedHealth => health;
 
+    // Printed stats stay white. Numbers above the printed value are light green; damage and debuffs below it are light red.
+    static readonly Color BaseStatColor = Color.white;
+    static readonly Color RaisedStatColor = new Color(0.24f, 1f, 0.31f, 1f);
+    static readonly Color LoweredStatColor = new Color(1f, 0.25f, 0.15f, 1f);
+
     const string PowerUpSoundPath = "Audio/SFX/PowerUp";
     const string PowerDownSoundPath = "Audio/SFX/PowerDown";
     const float StatChangeSoundOverlapWindow = 0.25f;
+    const float StatChangeSoundVolume = 2.8f;
 
     static readonly Dictionary<string, AudioClip> statChangeClips = new Dictionary<string, AudioClip>();
     static float nextPowerUpSoundTime;
@@ -109,6 +115,10 @@ public class ViewFollower : ViewCard
         damageStroke.HideImmediate(this, DamageIcon);
         if (FollowerText != null)
             FollowerText.text = string.Empty;
+        if (AttackText != null)
+            AttackText.color = BaseStatColor;
+        if (HealthText != null)
+            HealthText.color = BaseStatColor;
         Card = null;
         Target = null;
         OnClick = null;
@@ -164,30 +174,52 @@ public class ViewFollower : ViewCard
     {
         attack = Follower.GetCurrentAttack();
         health = Follower.MaxHealth;
-
-        AttackText.text = attack.ToString();
-        HealthText.text = health.ToString();
+        ApplyStatText();
     }
 
     public void SetStats(int newAttack, int newHealth)
     {
         attack = newAttack;
-        AttackText.text = attack.ToString();
         health = newHealth;
-        HealthText.text = health.ToString();
+        ApplyStatText();
     }
     public void ChangeStats(int attackChange, int healthChange)
     {
         attack += attackChange;
-        AttackText.text = attack.ToString();
-
         health += healthChange;
-        HealthText.text = health.ToString();
+        ApplyStatText();
     }
     public void ChangeHealth(int change)
     {
         health += change;
-        HealthText.text = health.ToString();
+        ApplyStatText();
+    }
+
+    void ApplyStatText()
+    {
+        int baseAttack = Follower != null ? Follower.BaseAttack : attack;
+        int baseHealth = Follower != null ? Follower.BaseHealth : health;
+
+        if (AttackText != null)
+        {
+            AttackText.text = attack.ToString();
+            AttackText.color = StatColor(attack, baseAttack);
+        }
+
+        if (HealthText != null)
+        {
+            HealthText.text = health.ToString();
+            HealthText.color = StatColor(health, baseHealth);
+        }
+    }
+
+    static Color StatColor(int value, int baseValue)
+    {
+        if (value > baseValue)
+            return RaisedStatColor;
+        if (value < baseValue)
+            return LoweredStatColor;
+        return BaseStatColor;
     }
 
     // Green and PowerUp when the stats rise overall, red and PowerDown when they fall.
@@ -223,7 +255,7 @@ public class ViewFollower : ViewCard
             nextPowerDownSoundTime = now + StatChangeSoundOverlapWindow;
         }
 
-        View.Instance.AudioHandler.PlayOneShot(clip, 2.0f);
+        View.Instance.AudioHandler.PlayOneShot(clip, StatChangeSoundVolume);
     }
 
     static AudioClip LoadStatChangeClip(string path)

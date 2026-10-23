@@ -388,6 +388,12 @@ public class Controller : MonoBehaviour
         if (styxHandler != null && styxHandler.gameObject.activeInHierarchy)
             styxHandler.EndStyx();
 
+        if (ScreenHandler.Instance.TryGetScreen(ScreenName.SelectableDeckViewerScreen, out Screen deckScreen))
+        {
+            deckScreen.GetComponent<SelectableDeckViewerScreenHandler>()?.Hide();
+            ScreenHandler.Instance.HideScreen(ScreenName.SelectableDeckViewerScreen, true);
+        }
+
         ScreenHandler.Instance.HideScreen(ScreenName.Event, true);
         ScreenHandler.Instance.HideScreen(ScreenName.Styx, true);
         ScreenHandler.Instance.HideScreen(ScreenName.TrinketUnlock, true);
@@ -650,21 +656,6 @@ public class Controller : MonoBehaviour
         ScreenHandler.Instance.ShowScreen(ScreenName.Start, true);
         RefreshStartMenu();
     }
-    // TESTING ONLY: starts the run with random rituals and trinkets already waiting at the Styx
-    void SeedStyxForTesting(int count)
-    {
-        List<Ritual> rituals = new List<Ritual>(ProgressionHandler.GetPossibleRitualRewards());
-        for (int i = 0; i < count && rituals.Count > 0; i++)
-        {
-            int index = MetaRNG.Next(0, rituals.Count);
-            StyxRunState.RecordRemovedRitual(rituals[index]);
-            rituals.RemoveAt(index);
-        }
-
-        foreach (Trinket trinket in ProgressionHandler.GetRandomShopTrinkets(count))
-            StyxRunState.RecordRemovedTrinket(trinket);
-    }
-
     public void StartGame()
     {
         IsTutorialRun = false;
@@ -678,8 +669,6 @@ public class Controller : MonoBehaviour
         EncounteredEventsThisRun.Clear();
         SacrificedFollowers.Clear();
         FirstTimeSetup();
-        // TESTING ONLY: remove this line and SeedStyxForTesting above once the Styx encounter is done
-        SeedStyxForTesting(7);
 
         if (!IsTestChamber && OverworldMapController != null)
         {
@@ -1409,8 +1398,11 @@ public class Controller : MonoBehaviour
     }
     public void HidePlayHistory() => HideContentScrollView();
 
-    public void BeginArchiereusEncounter()
+    public void BeginArchiereusEncounter(bool playRefusalRumble = false)
     {
+        if (playRefusalRumble)
+            StartCoroutine(RumbleUntilScreenIsBlack());
+
         int fightNumber = 1;
         if (_lastOverworldNodeEntered != null)
             fightNumber = Mathf.Max(1, _lastOverworldNodeEntered.R);
@@ -1453,6 +1445,46 @@ public class Controller : MonoBehaviour
                 ScreenShakeHandler.Shake(shakeCamera, 0.28f, Screen.ScreenChangeDuration);
         });
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
+
+    IEnumerator RumbleUntilScreenIsBlack()
+    {
+        AudioHandler audio = View.Instance != null ? View.Instance.AudioHandler : null;
+        if (audio == null)
+            yield break;
+
+        audio.PlayRefusalRumble();
+        yield return null;
+        audio.CatchRefusalRumbleStart();
+
+        // The blank overlay fades in on its own. Wait until that fade has actually reached opaque,
+        // then drop the rumble. A stale full-black overlay (alpha already 1) does not count.
+        float elapsed = 0f;
+        float timeout = Screen.ScreenChangeDuration + ScreenTransitionAnimation.HalfwayPauseDuration + 2f;
+        bool sawScreen = false;
+        while (elapsed < timeout)
+        {
+            float alpha = BlankScreenAlpha();
+            if (alpha < 1f)
+                sawScreen = true;
+            else if (sawScreen)
+                break;
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        audio.FadeOutRumble();
+    }
+
+    static float BlankScreenAlpha()
+    {
+        if (ScreenHandler.Instance == null
+            || !ScreenHandler.Instance.TryGetScreen(ScreenName.Blank, out Screen blank)
+            || blank.UIHolder == null)
+            return 0f;
+
+        return blank.UIHolder.alpha;
     }
 
     public void GoToTrinketScreen()

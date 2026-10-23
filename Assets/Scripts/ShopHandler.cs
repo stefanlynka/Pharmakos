@@ -221,6 +221,7 @@ public class ShopHandler : MonoBehaviour
         MarkCardSold(slot, clicked);
         ShopScreenHandler?.RefreshHeartstringsDisplay();
         RefreshPlayerLyre();
+        PlayPurchaseStrum();
     }
 
     void TryPurchaseTrinket(int slot)
@@ -232,6 +233,7 @@ public class ShopHandler : MonoBehaviour
         MarkTrinketSold(slot);
         ShopScreenHandler?.RefreshHeartstringsDisplay();
         RefreshPlayerLyre();
+        PlayPurchaseStrum();
     }
 
     void MarkCardSold(int slot, ViewCard clicked)
@@ -397,6 +399,14 @@ public class ShopHandler : MonoBehaviour
             return;
 
         PlayerLyre.SetHeartstrings(Controller.Instance.RunHeartStrings, highlightedCount);
+    }
+
+    void PlayPurchaseStrum()
+    {
+        if (View.Instance == null || View.Instance.AudioHandler == null)
+            return;
+
+        View.Instance.AudioHandler.PlayHeartstringStrum();
     }
 
     ViewCard GetHoveredShopCard()

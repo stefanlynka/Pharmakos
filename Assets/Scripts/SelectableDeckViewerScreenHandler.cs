@@ -46,6 +46,9 @@ public class SelectableDeckViewerScreenHandler : MonoBehaviour
             return;
         }
 
+        if (ContinueButton != null)
+            ContinueButton.interactable = true;
+
         _viewer.ShowSelectableCards(cards, scrollScreen.ContentView);
     }
 
@@ -58,6 +61,9 @@ public class SelectableDeckViewerScreenHandler : MonoBehaviour
 
     void Continue()
     {
+        if (ContinueButton != null)
+            ContinueButton.interactable = false;
+
         Card selected = _viewer != null ? _viewer.SelectedCard : null;
         Finish(selected);
     }
@@ -66,8 +72,6 @@ public class SelectableDeckViewerScreenHandler : MonoBehaviour
     {
         Action<Card> callback = _onContinue;
         _onContinue = null;
-        if (_viewer != null)
-            _viewer.HideView();
         callback?.Invoke(selected);
     }
 

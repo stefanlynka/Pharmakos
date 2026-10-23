@@ -15,6 +15,7 @@ public class PopupScreenHandler : MonoBehaviour
     public static PopupScreenHandler Instance { get; private set; }
 
     const string TextPopupResourcePath = "Prefabs/Popups/TextPopup";
+    const string RitualPopupResourcePath = "Prefabs/Popups/RitualPopup";
     const string ImagePopupResourcePath = "Prefabs/Popups/PopupImage";
     const string KeywordReminderResourcePath = "Prefabs/Popups/KeywordReminder";
     const float KeywordReminderGap = 8f;
@@ -38,6 +39,11 @@ public class PopupScreenHandler : MonoBehaviour
 
     TextPopup _activePopup;
     Transform _hoverAnchor;
+    RitualPopup _activeRitualPopup;
+    Transform _ritualHoverAnchor;
+    readonly List<Card> _ritualReferenceCards = new List<Card>();
+    Transform _ritualReferenceAnchor;
+    int _ritualReferenceKey;
     RectTransform _imagePopupOne;
     RectTransform _imagePopupTwo;
     RawImage _imageRawOne;
@@ -130,7 +136,471 @@ public class PopupScreenHandler : MonoBehaviour
             _activePopup.gameObject.SetActive(false);
     }
 
-    public void ShowCardPopup(Card card, Transform anchor, PopupPosition position, PopupSlot slot = PopupSlot.One, Camera worldCamera = null, float lowerByWorld = 0f, float sideGapWorld = 0f)
+    /// <summary>Shows the ritual summary popup on the given side of <paramref name="anchor"/>.</summary>
+    public void ShowRitualHoverPopup(Ritual ritual, Transform anchor, PopupPosition position, Camera worldCamera = null)
+    {
+        if (ritual == null || anchor == null)
+            return;
+
+        if (_ritualHoverAnchor != null && _ritualHoverAnchor != anchor)
+            HideRitualReferenceCards(_ritualHoverAnchor);
+
+        _ritualHoverAnchor = anchor;
+
+        RitualPopup popup = GetOrCreateRitualPopup();
+        if (popup == null)
+            return;
+
+        popup.SetRitual(ritual);
+        popup.gameObject.SetActive(true);
+        popup.SetRaycastTargets(false);
+
+        PositionNearTarget(popup.RectTransform, anchor, position, worldCamera);
+        ShowRitualReferenceCards(ritual, anchor, worldCamera);
+    }
+
+    /// <summary>Hides the ritual summary popup only if it was shown for <paramref name="anchor"/>.</summary>
+    public void HideRitualHoverPopup(Transform anchor)
+    {
+        if (anchor == null)
+            return;
+
+        // Another altar may already have replaced the summary. Still drop cards this one opened.
+        if (_activeRitualPopup == null || _ritualHoverAnchor != anchor)
+        {
+            HideRitualReferenceCards(anchor);
+            return;
+        }
+
+        HideRitualHoverPopup();
+    }
+
+    public void HideRitualHoverPopup()
+    {
+        Transform anchor = _ritualHoverAnchor;
+        _ritualHoverAnchor = null;
+        _ritualReferenceAnchor = null;
+        _ritualReferenceKey = 0;
+
+        if (_activeRitualPopup != null)
+            _activeRitualPopup.gameObject.SetActive(false);
+
+        HideRitualReferenceCards(anchor);
+    }
+
+    void ShowRitualReferenceCards(Ritual ritual, Transform anchor, Camera worldCamera)
+    {
+        _ritualReferenceCards.Clear();
+        if (ritual != null)
+            ritual.CollectReferencedCards(_ritualReferenceCards);
+
+        int count = Mathf.Min(_ritualReferenceCards.Count, 2);
+        int key = 17;
+        for (int i = 0; i < count; i++)
+        {
+            Card card = _ritualReferenceCards[i];
+            key = key * 31 + (card != null ? card.GetType().GetHashCode() : 0);
+        }
+
+        bool reuse = count > 0 && key == _ritualReferenceKey && _ritualReferenceAnchor == anchor;
+        _ritualReferenceKey = count > 0 ? key : 0;
+        _ritualReferenceAnchor = count > 0 ? anchor : null;
+
+        for (int i = 0; i < 2; i++)
+        {
+            PopupSlot slot = i == 0 ? PopupSlot.One : PopupSlot.Two;
+            if (i >= count || _ritualReferenceCards[i] == null)
+            {
+                if (GetImageAnchor(slot) == anchor)
+                    HideImagePopup(slot);
+                continue;
+            }
+
+            RectTransform existing = GetImagePopup(slot);
+            bool showing = existing != null && existing.gameObject.activeSelf && GetImageAnchor(slot) == anchor;
+            if (!reuse || !showing)
+                ShowCardPopup(_ritualReferenceCards[i], anchor, PopupPosition.Right, slot, worldCamera);
+        }
+
+        if (count == 0)
+            return;
+
+        PlaceRitualReferenceCards(anchor, worldCamera, count);
+
+        for (int i = 0; i < count; i++)
+        {
+            if (_ritualReferenceCards[i] is not Follower follower)
+                continue;
+
+            PopupSlot slot = i == 0 ? PopupSlot.One : PopupSlot.Two;
+            SetKeywordSource(slot, KeywordReminderSource.ImagePopup);
+            ShowStaticEffectReminders(slot, follower, anchor, worldCamera, besidePopup: true);
+            RepositionRitualReminders(slot);
+        }
+    }
+
+    void HideRitualReferenceCards(Transform anchor)
+    {
+        if (anchor == null)
+            return;
+
+        if (GetImageAnchor(PopupSlot.One) == anchor)
+            HideImagePopup(PopupSlot.One);
+        if (GetImageAnchor(PopupSlot.Two) == anchor)
+            HideImagePopup(PopupSlot.Two);
+    }
+
+    void PlaceRitualReferenceCards(Transform anchor, Camera worldCamera, int count)
+    {
+        if (_activeRitualPopup == null)
+            return;
+
+        RectTransform ritualPopup = _activeRitualPopup.RectTransform;
+        LayoutRebuilder.ForceRebuildLayoutImmediate(ritualPopup);
+        Rect ritualRect = GetRectInContainer(ritualPopup);
+        if (ritualRect.width <= 0f || ritualRect.height <= 0f)
+            return;
+
+        worldCamera = ResolveWorldCamera(worldCamera);
+        Rect altarRect = GetAnchorRectInContainer(anchor, worldCamera);
+        Rect screenBounds = GetContainerLocalScreenBounds();
+
+        RectTransform[] popups = new RectTransform[count];
+        Vector2[] sizes = new Vector2[count];
+        for (int i = 0; i < count; i++)
+        {
+            PopupSlot slot = i == 0 ? PopupSlot.One : PopupSlot.Two;
+            RectTransform popup = GetImagePopup(slot);
+            popups[i] = popup;
+            if (popup == null)
+                continue;
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(popup);
+            sizes[i] = GetRectInContainer(popup).size;
+        }
+
+        PlaceRitualCards(popups, sizes, count, ritualRect, true);
+        ClampPopupsIntoBounds(popups, count, screenBounds);
+        float rightScore = RitualCardScore(popups, count, ritualRect, altarRect, screenBounds);
+        Vector2[] rightPositions = SnapshotPopupPositions(popups, count);
+
+        PlaceRitualCards(popups, sizes, count, ritualRect, false);
+        ClampPopupsIntoBounds(popups, count, screenBounds);
+        float leftScore = RitualCardScore(popups, count, ritualRect, altarRect, screenBounds);
+        if (rightScore < leftScore)
+            RestorePopupPositions(popups, rightPositions, count);
+    }
+
+    void PlaceRitualCards(RectTransform[] popups, Vector2[] sizes, int count, Rect ritualRect, bool placeOnRight)
+    {
+        float totalHeight = 0f;
+        int placed = 0;
+        for (int i = 0; i < count; i++)
+        {
+            if (popups[i] == null || sizes[i].y <= 0f)
+                continue;
+
+            if (placed > 0)
+                totalHeight += KeywordReminderPopupGap;
+            totalHeight += sizes[i].y;
+            placed++;
+        }
+
+        float y = ritualRect.center.y + totalHeight * 0.5f;
+        for (int i = 0; i < count; i++)
+        {
+            if (popups[i] == null || sizes[i].y <= 0f)
+                continue;
+
+            float width = sizes[i].x;
+            float height = sizes[i].y;
+            float x = placeOnRight
+                ? ritualRect.xMax + KeywordReminderPopupGap + width * 0.5f
+                : ritualRect.xMin - KeywordReminderPopupGap - width * 0.5f;
+            MovePopupToContainerPoint(popups[i], new Vector2(x, y - height * 0.5f));
+            popups[i].SetAsLastSibling();
+            y -= height + KeywordReminderPopupGap;
+        }
+    }
+
+    float RitualCardScore(RectTransform[] popups, int count, Rect ritualRect, Rect altarRect, Rect screenBounds)
+    {
+        float score = 0f;
+        for (int i = 0; i < count; i++)
+        {
+            if (popups[i] == null)
+                continue;
+
+            Rect rect = GetRectInContainer(popups[i]);
+            score += OffScreenAmount(rect, screenBounds) * 100000f;
+            score += OverlapArea(rect, ritualRect) * 10000f;
+            if (altarRect.width > 0f && altarRect.height > 0f)
+                score += OverlapArea(rect, altarRect) * 1000f;
+        }
+
+        return score;
+    }
+
+    static Vector2[] SnapshotPopupPositions(RectTransform[] popups, int count)
+    {
+        Vector2[] positions = new Vector2[count];
+        for (int i = 0; i < count; i++)
+            positions[i] = popups[i] != null ? popups[i].anchoredPosition : Vector2.zero;
+        return positions;
+    }
+
+    static void RestorePopupPositions(RectTransform[] popups, Vector2[] positions, int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            if (popups[i] != null)
+                popups[i].anchoredPosition = positions[i];
+        }
+    }
+
+    void ClampPopupsIntoBounds(RectTransform[] popups, int count, Rect bounds)
+    {
+        if (bounds.width <= 0f || bounds.height <= 0f)
+            return;
+
+        GetPopupUnion(popups, count, out float xMin, out float xMax, out float yMin, out float yMax);
+        if (xMin == float.MaxValue)
+            return;
+
+        float shiftY = 0f;
+        if (yMin < bounds.yMin)
+            shiftY += bounds.yMin - yMin;
+        if (yMax + shiftY > bounds.yMax)
+            shiftY += bounds.yMax - (yMax + shiftY);
+        ShiftPopups(popups, count, 0f, shiftY);
+
+        GetPopupUnion(popups, count, out xMin, out xMax, out yMin, out yMax);
+        float shiftX = 0f;
+        if (xMin < bounds.xMin)
+            shiftX += bounds.xMin - xMin;
+        if (xMax + shiftX > bounds.xMax)
+            shiftX += bounds.xMax - (xMax + shiftX);
+        ShiftPopups(popups, count, shiftX, 0f);
+    }
+
+    static void ShiftPopups(RectTransform[] popups, int count, float shiftX, float shiftY)
+    {
+        if (shiftX == 0f && shiftY == 0f)
+            return;
+
+        for (int i = 0; i < count; i++)
+        {
+            if (popups[i] == null)
+                continue;
+
+            Vector2 position = popups[i].anchoredPosition;
+            position.x += shiftX;
+            position.y += shiftY;
+            popups[i].anchoredPosition = position;
+        }
+    }
+
+    void RepositionRitualReminders(PopupSlot slot)
+    {
+        if (_activeRitualPopup == null)
+            return;
+
+        List<KeywordReminderPopup> reminders = GetKeywordReminders(slot);
+        int count = 0;
+        while (count < reminders.Count && reminders[count] != null && reminders[count].gameObject.activeSelf)
+            count++;
+        if (count == 0)
+            return;
+
+        RectTransform cardPopup = GetImagePopup(slot);
+        Rect cardRect = GetVisiblePopupCardRect(slot, cardPopup);
+        if (cardRect.width <= 1f || cardRect.height <= 1f)
+            cardRect = GetRectInContainer(cardPopup);
+        if (cardRect.width <= 0f || cardRect.height <= 0f)
+            return;
+
+        Rect ritualRect = GetRectInContainer(_activeRitualPopup.RectTransform);
+        Rect screenBounds = GetContainerLocalScreenBounds();
+        Rect siblingRect = GetOtherRitualCardRect(slot);
+        bool outerOnRight = cardRect.center.x >= ritualRect.center.x;
+
+        float bestScore = float.MaxValue;
+        Vector2[] bestPositions = null;
+
+        void Consider(System.Action place)
+        {
+            place();
+            ClampRemindersIntoBounds(reminders, count, screenBounds, cardRect, ritualRect, siblingRect);
+            float score = RitualReminderScore(reminders, count, cardRect, ritualRect, siblingRect, screenBounds);
+            if (score >= bestScore)
+                return;
+
+            bestScore = score;
+            bestPositions = CopyReminderPositions(reminders, count);
+        }
+
+        Consider(() => PlaceKeywordReminders(reminders, count, cardRect, outerOnRight));
+        Consider(() => PlaceKeywordReminders(reminders, count, cardRect, !outerOnRight));
+        Consider(() => PlaceReminderStack(reminders, count, cardRect.center.x, cardRect.yMax + KeywordReminderPopupGap, upward: true));
+        Consider(() => PlaceReminderStack(reminders, count, cardRect.center.x, cardRect.yMin - KeywordReminderPopupGap, upward: false));
+
+        if (bestPositions != null)
+            ApplyReminderPositions(reminders, count, bestPositions);
+    }
+
+    void PlaceReminderStack(List<KeywordReminderPopup> reminders, int count, float centerX, float edgeY, bool upward)
+    {
+        float cursor = edgeY;
+        for (int i = 0; i < count; i++)
+        {
+            RectTransform rect = reminders[i].RectTransform;
+            float height = rect.rect.height;
+            float centerY = upward ? cursor + height * 0.5f : cursor - height * 0.5f;
+
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(centerX, centerY);
+
+            float step = height + KeywordReminderGap;
+            cursor = upward ? cursor + step : cursor - step;
+        }
+    }
+
+    Rect GetOtherRitualCardRect(PopupSlot slot)
+    {
+        RectTransform other = GetImagePopup(slot == PopupSlot.One ? PopupSlot.Two : PopupSlot.One);
+        if (other == null || !other.gameObject.activeSelf)
+            return Rect.zero;
+
+        Rect rect = GetRectInContainer(other);
+        if (rect.width <= 0f || rect.height <= 0f)
+            return Rect.zero;
+
+        return rect;
+    }
+
+    float RitualReminderScore(List<KeywordReminderPopup> reminders, int count, Rect cardRect, Rect ritualRect, Rect siblingRect, Rect screenBounds)
+    {
+        return OffScreenAmount(reminders, count, screenBounds) * 100000f
+            + ReminderOverlap(reminders, count, ritualRect) * 100000f
+            + ReminderOverlap(reminders, count, cardRect) * 10000f
+            + ReminderOverlap(reminders, count, siblingRect) * 10000f;
+    }
+
+    void ClampRemindersIntoBounds(List<KeywordReminderPopup> reminders, int count, Rect bounds, Rect cardRect, Rect ritualRect, Rect siblingRect)
+    {
+        if (bounds.width <= 0f || bounds.height <= 0f)
+            return;
+
+        GetReminderUnion(reminders, count, out float xMin, out float xMax, out float yMin, out float yMax);
+        if (xMin == float.MaxValue)
+            return;
+
+        float shiftY = 0f;
+        if (yMin < bounds.yMin)
+            shiftY += bounds.yMin - yMin;
+        if (yMax + shiftY > bounds.yMax)
+            shiftY += bounds.yMax - (yMax + shiftY);
+        shiftY = LimitReminderShift(xMin, xMax, yMin, yMax, cardRect, shiftY, vertical: true);
+        shiftY = LimitReminderShift(xMin, xMax, yMin, yMax, ritualRect, shiftY, vertical: true);
+        shiftY = LimitReminderShift(xMin, xMax, yMin, yMax, siblingRect, shiftY, vertical: true);
+        ShiftReminders(reminders, count, 0f, shiftY);
+
+        GetReminderUnion(reminders, count, out xMin, out xMax, out yMin, out yMax);
+        float shiftX = 0f;
+        if (xMin < bounds.xMin)
+            shiftX += bounds.xMin - xMin;
+        if (xMax + shiftX > bounds.xMax)
+            shiftX += bounds.xMax - (xMax + shiftX);
+        shiftX = LimitReminderShift(xMin, xMax, yMin, yMax, cardRect, shiftX, vertical: false);
+        shiftX = LimitReminderShift(xMin, xMax, yMin, yMax, ritualRect, shiftX, vertical: false);
+        shiftX = LimitReminderShift(xMin, xMax, yMin, yMax, siblingRect, shiftX, vertical: false);
+        ShiftReminders(reminders, count, shiftX, 0f);
+    }
+
+    static void ShiftReminders(List<KeywordReminderPopup> reminders, int count, float shiftX, float shiftY)
+    {
+        if (shiftX == 0f && shiftY == 0f)
+            return;
+
+        for (int i = 0; i < count; i++)
+        {
+            Vector2 position = reminders[i].RectTransform.anchoredPosition;
+            position.x += shiftX;
+            position.y += shiftY;
+            reminders[i].RectTransform.anchoredPosition = position;
+        }
+    }
+
+    static Vector2[] CopyReminderPositions(List<KeywordReminderPopup> reminders, int count)
+    {
+        Vector2[] positions = new Vector2[count];
+        for (int i = 0; i < count; i++)
+            positions[i] = reminders[i].RectTransform.anchoredPosition;
+        return positions;
+    }
+
+    static void ApplyReminderPositions(List<KeywordReminderPopup> reminders, int count, Vector2[] positions)
+    {
+        for (int i = 0; i < count; i++)
+            reminders[i].RectTransform.anchoredPosition = positions[i];
+    }
+
+    static float OffScreenAmount(Rect rect, Rect bounds)
+    {
+        if (bounds.width <= 0f || bounds.height <= 0f)
+            return 0f;
+
+        float amount = 0f;
+        if (rect.xMin < bounds.xMin)
+            amount += bounds.xMin - rect.xMin;
+        if (rect.xMax > bounds.xMax)
+            amount += rect.xMax - bounds.xMax;
+        if (rect.yMin < bounds.yMin)
+            amount += bounds.yMin - rect.yMin;
+        if (rect.yMax > bounds.yMax)
+            amount += rect.yMax - bounds.yMax;
+        return amount;
+    }
+
+    void GetPopupUnion(RectTransform[] popups, int count, out float xMin, out float xMax, out float yMin, out float yMax)
+    {
+        xMin = float.MaxValue;
+        xMax = float.MinValue;
+        yMin = float.MaxValue;
+        yMax = float.MinValue;
+
+        for (int i = 0; i < count; i++)
+        {
+            if (popups[i] == null)
+                continue;
+
+            Rect rect = GetRectInContainer(popups[i]);
+            if (rect.width <= 0f || rect.height <= 0f)
+                continue;
+
+            xMin = Mathf.Min(xMin, rect.xMin);
+            xMax = Mathf.Max(xMax, rect.xMax);
+            yMin = Mathf.Min(yMin, rect.yMin);
+            yMax = Mathf.Max(yMax, rect.yMax);
+        }
+    }
+
+    void MovePopupToContainerPoint(RectTransform popup, Vector2 containerCenter)
+    {
+        Rect current = GetRectInContainer(popup);
+        if (current.width <= 0f || current.height <= 0f)
+        {
+            popup.anchoredPosition = containerCenter;
+            return;
+        }
+
+        Vector2 delta = containerCenter - current.center;
+        popup.anchoredPosition += delta;
+    }
+
+    public void ShowCardPopup(Card card, Transform anchor, PopupPosition position, PopupSlot slot = PopupSlot.One, Camera worldCamera = null, float lowerByWorld = 0f, float sideGapWorld = 0f, string reminderText = null)
     {
         if (card == null || anchor == null || PopupHandler.Instance == null)
             return;
@@ -141,7 +611,12 @@ public class PopupScreenHandler : MonoBehaviour
         if (card is Follower follower)
         {
             SetKeywordSource(slot, KeywordReminderSource.ImagePopup);
-            ShowStaticEffectReminders(slot, follower, anchor, worldCamera, besidePopup: true);
+            ShowStaticEffectReminders(slot, follower, anchor, worldCamera, besidePopup: true, reminderText);
+        }
+        else if (!string.IsNullOrEmpty(reminderText))
+        {
+            SetKeywordSource(slot, KeywordReminderSource.ImagePopup);
+            ShowReminderText(slot, reminderText, anchor, worldCamera, besidePopup: true);
         }
         else if (GetKeywordSource(slot) == KeywordReminderSource.ImagePopup)
         {
@@ -219,6 +694,11 @@ public class PopupScreenHandler : MonoBehaviour
         SetKeywordSource(slot, KeywordReminderSource.None);
     }
 
+    public Transform GetImageAnchor(PopupSlot slot)
+    {
+        return slot == PopupSlot.One ? _imageAnchorOne : _imageAnchorTwo;
+    }
+
     public void HideImagePopup(Transform anchor)
     {
         if (_imageAnchorOne == anchor)
@@ -247,6 +727,22 @@ public class PopupScreenHandler : MonoBehaviour
         }
 
         return _activePopup;
+    }
+
+    RitualPopup GetOrCreateRitualPopup()
+    {
+        if (_activeRitualPopup != null)
+            return _activeRitualPopup;
+
+        RitualPopup prefab = Resources.Load<RitualPopup>(RitualPopupResourcePath);
+        if (prefab == null)
+        {
+            Debug.LogError($"PopupScreenHandler: could not load RitualPopup at Resources/{RitualPopupResourcePath}");
+            return null;
+        }
+
+        _activeRitualPopup = Instantiate(prefab, PopupContainer);
+        return _activeRitualPopup;
     }
 
     void ShowImagePopup(PopupSlot slot, Transform anchor, PopupPosition position, Camera worldCamera, float lowerByWorld = 0f, float sideGapWorld = 0f)
@@ -350,9 +846,7 @@ public class PopupScreenHandler : MonoBehaviour
         Rect targetScreenRect = GetScreenRect(anchor, worldCamera);
         LayoutRebuilder.ForceRebuildLayoutImmediate(popupRect);
 
-        Vector2 popupSize = popupRect.rect.size;
-        if (popupSize.x <= 0f || popupSize.y <= 0f)
-            popupSize = popupRect.sizeDelta;
+        Vector2 popupSize = PopupSizeOnScreen(popupRect);
 
         Rect screenBounds = GetScreenBounds();
         float verticalScreenOffset = WorldDownToScreenY(anchor, worldCamera, lowerByWorld);
@@ -395,7 +889,6 @@ public class PopupScreenHandler : MonoBehaviour
 
             Vector2 candidate = GetPositionForSide(side, targetScreenRect, halfW, halfH, gap);
             // Side choice stays based on the unshifted rect so dropping the popup does not flip it above or below.
-            Rect idealPopupRect = CenteredScreenRect(candidate, popupSize);
             Vector2 placed = new Vector2(candidate.x, candidate.y + verticalScreenOffset);
             Rect popupScreenRect = ClampRectToBounds(CenteredScreenRect(placed, popupSize), screenBounds);
 
@@ -403,8 +896,10 @@ public class PopupScreenHandler : MonoBehaviour
             if (localCenter == Vector2.negativeInfinity)
                 continue;
 
-            float score = Overlaps(idealPopupRect, targetScreenRect, gap)
-                ? -RectOverlapArea(idealPopupRect, targetScreenRect)
+            // Score the rect that is actually drawn. Clamping an off-screen spot back
+            // onto the screen can drop the popup on top of an anchor in the corner.
+            float score = Overlaps(popupScreenRect, targetScreenRect, gap)
+                ? -RectOverlapArea(popupScreenRect, targetScreenRect)
                 : 100000f;
 
             // Strongly prefer the requested side; only use fallbacks when it cannot fit.
@@ -533,26 +1028,66 @@ public class PopupScreenHandler : MonoBehaviour
         return Vector2.negativeInfinity;
     }
 
+    static Vector2 PopupSizeOnScreen(RectTransform popupRect)
+    {
+        Vector2 size = popupRect.rect.size;
+        if (size.x <= 0f || size.y <= 0f)
+            size = popupRect.sizeDelta;
+
+        // rect.size is in canvas units. Placement math is in screen pixels.
+        Canvas canvas = popupRect.GetComponentInParent<Canvas>();
+        if (canvas == null)
+            return size;
+
+        Canvas root = canvas.rootCanvas != null ? canvas.rootCanvas : canvas;
+        if (root.renderMode == RenderMode.WorldSpace)
+        {
+            Vector3 lossy = popupRect.lossyScale;
+            return new Vector2(size.x * Mathf.Abs(lossy.x), size.y * Mathf.Abs(lossy.y));
+        }
+
+        float scale = root.scaleFactor;
+        if (scale > 0.001f)
+            size *= scale;
+
+        return size;
+    }
+
     static Rect GetScreenRect(Transform target, Camera camera)
     {
-        if (target == null)
+        if (target == null || camera == null)
             return Rect.zero;
 
-        if (camera == null)
-            return Rect.zero;
+        if (!TryGetAnchorBounds(target, out Bounds bounds))
+        {
+            Vector3 screenPoint = camera.WorldToScreenPoint(target.position);
+            float size = 48f;
+            return new Rect(screenPoint.x - size * 0.5f, screenPoint.y - size * 0.5f, size, size);
+        }
+
+        return BoundsToScreenRect(bounds, camera);
+    }
+
+    // Collider plus drawn meshes. The ritual collider is a tall upright box, while the altar
+    // mesh lies flat and the camera looks along the board, so either one alone misses the
+    // visible silhouette.
+    static bool TryGetAnchorBounds(Transform target, out Bounds bounds)
+    {
+        bounds = default;
+        bool hasBounds = false;
 
         Collider anchorCollider = target.GetComponent<Collider>();
         if (anchorCollider != null && anchorCollider.enabled)
-            return BoundsToScreenRect(anchorCollider.bounds, camera);
-
-        Bounds bounds = default;
-        bool hasBounds = false;
+        {
+            bounds = anchorCollider.bounds;
+            hasBounds = true;
+        }
 
         Renderer[] renderers = target.GetComponentsInChildren<Renderer>();
         for (int i = 0; i < renderers.Length; i++)
         {
             Renderer renderer = renderers[i];
-            if (renderer == null || !renderer.enabled)
+            if (!IsAnchorRenderer(renderer))
                 continue;
 
             if (!hasBounds)
@@ -583,14 +1118,17 @@ public class PopupScreenHandler : MonoBehaviour
             }
         }
 
-        if (!hasBounds)
-        {
-            Vector3 screenPoint = camera.WorldToScreenPoint(target.position);
-            float size = 48f;
-            return new Rect(screenPoint.x - size * 0.5f, screenPoint.y - size * 0.5f, size, size);
-        }
+        return hasBounds;
+    }
 
-        return BoundsToScreenRect(bounds, camera);
+    static bool IsAnchorRenderer(Renderer renderer)
+    {
+        if (renderer == null || !renderer.enabled || !renderer.gameObject.activeInHierarchy)
+            return false;
+
+        return renderer is not ParticleSystemRenderer
+            && renderer is not TrailRenderer
+            && renderer is not LineRenderer;
     }
 
     static Rect BoundsToScreenRect(Bounds bounds, Camera camera)
@@ -607,25 +1145,64 @@ public class PopupScreenHandler : MonoBehaviour
             new Vector3(bounds.max.x, bounds.max.y, bounds.max.z),
         };
 
-        Vector3 first = camera.WorldToScreenPoint(corners[0]);
-        float xMin = first.x;
-        float xMax = first.x;
-        float yMin = first.y;
-        float yMax = first.y;
+        float near = Mathf.Max(camera.nearClipPlane, 0.01f);
+        bool hasPoint = false;
+        float xMin = 0f;
+        float xMax = 0f;
+        float yMin = 0f;
+        float yMax = 0f;
 
-        for (int i = 1; i < corners.Length; i++)
+        for (int i = 0; i < corners.Length; i++)
         {
             Vector3 screen = camera.WorldToScreenPoint(corners[i]);
+            // A pitched camera puts some of a tall box behind the near plane.
+            // Those points mirror across the screen and throw the rect into a corner.
+            if (screen.z <= near)
+                continue;
+
+            if (!hasPoint)
+            {
+                xMin = xMax = screen.x;
+                yMin = yMax = screen.y;
+                hasPoint = true;
+                continue;
+            }
+
             xMin = Mathf.Min(xMin, screen.x);
             xMax = Mathf.Max(xMax, screen.x);
             yMin = Mathf.Min(yMin, screen.y);
             yMax = Mathf.Max(yMax, screen.y);
         }
 
+        if (!hasPoint)
+        {
+            Vector3 center = camera.WorldToScreenPoint(bounds.center);
+            float size = 48f;
+            return new Rect(center.x - size * 0.5f, center.y - size * 0.5f, size, size);
+        }
+
         return Rect.MinMaxRect(xMin, yMin, xMax, yMax);
     }
 
-    void ShowStaticEffectReminders(PopupSlot slot, Follower follower, Transform anchor, Camera worldCamera, bool besidePopup)
+    void ShowStaticEffectReminders(PopupSlot slot, Follower follower, Transform anchor, Camera worldCamera, bool besidePopup, string extraReminder = null)
+    {
+        StaticEffectReminders.Collect(follower, _reminderTextBuffer);
+        if (!string.IsNullOrEmpty(extraReminder))
+            _reminderTextBuffer.Add(extraReminder);
+
+        PresentReminderBuffer(slot, anchor, worldCamera, besidePopup);
+    }
+
+    void ShowReminderText(PopupSlot slot, string text, Transform anchor, Camera worldCamera, bool besidePopup)
+    {
+        _reminderTextBuffer.Clear();
+        if (!string.IsNullOrEmpty(text))
+            _reminderTextBuffer.Add(text);
+
+        PresentReminderBuffer(slot, anchor, worldCamera, besidePopup);
+    }
+
+    void PresentReminderBuffer(PopupSlot slot, Transform anchor, Camera worldCamera, bool besidePopup)
     {
         RectTransform cardPopup = GetImagePopup(slot);
         if (besidePopup && (cardPopup == null || !cardPopup.gameObject.activeSelf))
@@ -634,7 +1211,6 @@ public class PopupScreenHandler : MonoBehaviour
             return;
         }
 
-        StaticEffectReminders.Collect(follower, _reminderTextBuffer);
         List<KeywordReminderPopup> reminders = GetKeywordReminders(slot);
 
         while (reminders.Count < _reminderTextBuffer.Count)
@@ -791,32 +1367,45 @@ public class PopupScreenHandler : MonoBehaviour
 
     static float LimitShiftAwayFromRect(float xMin, float xMax, float yMin, float yMax, Rect forbidden, float shiftX)
     {
-        if (shiftX == 0f || forbidden.width <= 0f || forbidden.height <= 0f)
-            return shiftX;
+        return LimitReminderShift(xMin, xMax, yMin, yMax, forbidden, shiftX, vertical: false);
+    }
 
-        float movedYMin = yMin;
-        float movedYMax = yMax;
-        bool verticalOverlap = movedYMin < forbidden.yMax && movedYMax > forbidden.yMin;
-        if (!verticalOverlap)
-            return shiftX;
+    static float LimitReminderShift(float xMin, float xMax, float yMin, float yMax, Rect forbidden, float shift, bool vertical)
+    {
+        if (shift == 0f || forbidden.width <= 0f || forbidden.height <= 0f)
+            return shift;
 
-        if (shiftX < 0f && xMin >= forbidden.xMax)
+        float alongMin = vertical ? yMin : xMin;
+        float alongMax = vertical ? yMax : xMax;
+        float crossMin = vertical ? xMin : yMin;
+        float crossMax = vertical ? xMax : yMax;
+        float blockMin = vertical ? forbidden.yMin : forbidden.xMin;
+        float blockMax = vertical ? forbidden.yMax : forbidden.xMax;
+        float crossBlockMin = vertical ? forbidden.xMin : forbidden.yMin;
+        float crossBlockMax = vertical ? forbidden.xMax : forbidden.yMax;
+
+        bool crossOverlap = crossMin < crossBlockMax && crossMax > crossBlockMin;
+        if (!crossOverlap)
+            return shift;
+
+        if (shift < 0f && alongMin >= blockMax)
         {
-            float minShift = forbidden.xMax + KeywordReminderPopupGap - xMin;
-            return Mathf.Max(shiftX, minShift);
+            float minShift = blockMax + KeywordReminderPopupGap - alongMin;
+            return Mathf.Max(shift, minShift);
         }
 
-        if (shiftX > 0f && xMax <= forbidden.xMin)
+        if (shift > 0f && alongMax <= blockMin)
         {
-            float maxShift = forbidden.xMin - KeywordReminderPopupGap - xMax;
-            return Mathf.Min(shiftX, maxShift);
+            float maxShift = blockMin - KeywordReminderPopupGap - alongMax;
+            return Mathf.Min(shift, maxShift);
         }
 
-        Rect moved = Rect.MinMaxRect(xMin + shiftX, yMin, xMax + shiftX, yMax);
-        if (moved.Overlaps(forbidden))
+        float movedMin = alongMin + shift;
+        float movedMax = alongMax + shift;
+        if (movedMin < blockMax && movedMax > blockMin)
             return 0f;
 
-        return shiftX;
+        return shift;
     }
 
     float ReminderOverlap(List<KeywordReminderPopup> reminders, int count, Rect other)

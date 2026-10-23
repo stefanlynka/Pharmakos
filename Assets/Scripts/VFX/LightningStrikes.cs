@@ -10,25 +10,16 @@ public class LightningStrikes : MonoBehaviour
     public static LightningStrikes Instance;
 
     [SerializeField] GameObject lightningPrefab;
-    [SerializeField] Vector3 origin = new Vector3(0f, 35f, -4.5f);
     [SerializeField] Vector3 strikePoint = new Vector3(0f, 10f, 37f);
     [SerializeField] float duration = 0.5f;
     [SerializeField] AudioClip thunderClip;
     [SerializeField] TorchFlickerLight mainLight;
     [SerializeField] float lightFlashExtra = 700f;
-    [SerializeField] KeyCode strikeKey = KeyCode.J;
-
     const string ThunderResourcePath = "Audio/SFX/Thunder";
 
     void Awake()
     {
         Instance = this;
-    }
-
-    void Update()
-    {
-        if (Input.GetKeyDown(strikeKey))
-            Strike(origin, strikePoint);
     }
 
     public void Strike(Vector3 boltOrigin, Vector3 target)

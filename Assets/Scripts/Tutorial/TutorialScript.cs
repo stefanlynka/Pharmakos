@@ -60,7 +60,8 @@ public class TutorialSpriteCue
 /// <summary>
 /// One timed tutorial prompt. <see cref="Hole"/> is a normalized screen rect (x, y, width, height).
 /// <see cref="Focus"/> replaces that rect with the live object when it can be found.
-/// Set <see cref="ShowBlackBlocker"/> to cover the screen in black and block input.
+/// <see cref="BlockInput"/> makes the cover swallow clicks outside <see cref="Hole"/>.
+/// <see cref="ShowBlackBlocker"/> covers the whole screen and blocks input.
 /// </summary>
 public class TutorialBeat
 {
@@ -71,7 +72,7 @@ public class TutorialBeat
     public int Arg = -1;
     public float Delay;
     public float Duration = 4f;
-    public bool BlockInput = true;
+    public bool BlockInput;
     public string Text;
     public Vector2 TextAnchor = new Vector2(0.5f, 0.78f);
     public float SecondsPerCharacter = 0.03f;
@@ -109,6 +110,7 @@ public static class TutorialScript
             Encounter = EncounterType.TutorialCombat1,
             Duration = -1,
             Text = "This is your gold, which you spend to play cards.\nIt refills each turn.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.38f, 0.5f),
             Focus = TutorialFocus.Gold,
             PointAtHole = true,
@@ -120,6 +122,7 @@ public static class TutorialScript
             Encounter = EncounterType.TutorialCombat1,
             Duration = -1,
             Text = "The number on the top left of a card is its gold cost.\nDrag a Follower (A green card) onto your Battle Row to play it.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.5f),
             Focus = TutorialFocus.Hand,
             PointAtHole = true,
@@ -133,6 +136,7 @@ public static class TutorialScript
             Delay = 0.55f,
             Duration = -1f,
             Text = "You played a Follower!\nThe number in the bottom left is it's attack.\nThe number in the bottom right is it's health.\nFollowers can't attack the turn they're played.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.88f),
             Focus = TutorialFocus.PlayerFollowers,
             PointAtHole = true,
@@ -146,6 +150,7 @@ public static class TutorialScript
             Delay = 0.55f,
             Duration = -1,
             Text = "Some Followers give abilities to their neighbours.\nPositioning matters!\nSprint lets Followers attack the turn they're played.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.2f),
             Focus = TutorialFocus.PlayerFollowers,
             PointAtHole = true,
@@ -158,7 +163,8 @@ public static class TutorialScript
             Arg = 0,
             Delay = 0.35f,
             Duration = -1f,
-            Text = "When a Follower has a glowing border, it means it can attack!\nClick it, or click and drag it onto a target. \nNothing is in the way, so you can attack the enemy player directly!",
+            Text = "When a Follower has a glowing border, it means it can attack!\nClick and drag it onto a target. \nNothing is in the way, so you can attack the enemy player directly!",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.2f),
             Focus = TutorialFocus.PlayerFollowers,
             PointAtHole = true,
@@ -170,7 +176,8 @@ public static class TutorialScript
             Encounter = EncounterType.TutorialCombat1,
             Delay = 0.9f,
             Duration = -1f,
-            Text = "Get the enemy's health to 0 to win.",
+            Text = "Get the enemy's health to 0 to win this combat.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.2f),
             Focus = TutorialFocus.EnemyPlayer,
             PointAtHole = true,
@@ -183,7 +190,8 @@ public static class TutorialScript
             Arg = 2,
             Delay = 0.7f,
             Duration = -1f,
-            Text = "The enemy played followers. Time to learn about attacking!",
+            Text = "The enemy played a follower. Time to learn about attacking!",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.2f),
             Focus = TutorialFocus.PlayerFollowers,
             PointAtHole = true,
@@ -209,6 +217,7 @@ public static class TutorialScript
             Duration = -1f,
             ShowCover = false,
             Text = "When you win a combat you will get two sets of card rewards.\nYou can add up to one from each to your deck",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.9f),
         },
 
@@ -220,6 +229,7 @@ public static class TutorialScript
             Duration = -1f,
             ShowCover = false,
             Text = "The next location is a temple. There you will be asked to sacrifice some of your spells and followers, and have them removed from your deck.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.88f),
         },
         new TutorialBeat
@@ -229,6 +239,7 @@ public static class TutorialScript
             Duration = -1f,
             ShowCover = false,
             Text = "You must choose one of these three cards to sacrifice. Refuse, and you will anger the gods and face a difficult fight.\n(I do not recommend it in the tutorial)",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.88f),
         },
         new TutorialBeat
@@ -237,6 +248,7 @@ public static class TutorialScript
             Duration = -1f,
             ShowCover = false,
             Text = "As a reward for sacrificing to the gods, you may adopt new Rituals. You may have up to two rituals at a time.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.9f),
         },
 
@@ -248,6 +260,7 @@ public static class TutorialScript
             Duration = -1f,
             ShowCover = false,
             Text = "Now that you have rituals, you just need something to sacrifice.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.58f),
         },
         new TutorialBeat
@@ -255,7 +268,8 @@ public static class TutorialScript
             Trigger = TutorialTrigger.HandDrawn,
             Encounter = EncounterType.TutorialCombat2,
             Duration = -1f,
-            Text = "Every action you take produces Offerings.",
+            Text = "Every action you take produces Offerings.", 
+            BlockInput = true,
             TextAnchor = new Vector2(0.42f, 0.36f),
             Focus = TutorialFocus.Offerings,
             PointAtHole = true,
@@ -267,6 +281,7 @@ public static class TutorialScript
             Encounter = EncounterType.TutorialCombat2,
             Duration = -1f,
             Text = "Summoning a Follower creates a Crop.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.42f, 0.32f),
             Focus = TutorialFocus.Crop,
             PointAtHole = true,
@@ -278,6 +293,7 @@ public static class TutorialScript
             Encounter = EncounterType.TutorialCombat2,
             Duration = -1f,
             Text = "Playing a Spell creates a Scroll.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.42f, 0.32f),
             Focus = TutorialFocus.Scroll,
             PointAtHole = true,
@@ -289,6 +305,7 @@ public static class TutorialScript
             Encounter = EncounterType.TutorialCombat2,
             Duration = -1f,
             Text = "When a Follower dies on your turn, (yours or your opponent's), you gain a Bone.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.42f, 0.36f),
             Focus = TutorialFocus.Bone,
             PointAtHole = true,
@@ -300,6 +317,7 @@ public static class TutorialScript
             Encounter = EncounterType.TutorialCombat2,
             Duration = -1f,
             Text = "When a player's life changes on your turn, (yours or your opponent's), you gain that much Blood.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.42f, 0.36f),
             Focus = TutorialFocus.Blood,
             PointAtHole = true,
@@ -312,6 +330,7 @@ public static class TutorialScript
             Encounter = EncounterType.TutorialCombat2,
             Duration = -1f,
             Text = "Generate at least one of each in the same turn and you'll be able to call upon the might of Zeus!",
+            BlockInput = true,
             TextAnchor = new Vector2(0.46f, 0.4f),
             Focus = TutorialFocus.Rituals,
             PointAtHole = true,
@@ -324,6 +343,7 @@ public static class TutorialScript
             Delay = 2f,
             Duration = -1f,
             Text = "You've acquired enough Offerings. Click and drag the ritual onto your target to spend them and use its ability.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.46f, 0.42f),
             Focus = TutorialFocus.ReadyRitual,
             PointAtHole = true,
@@ -335,6 +355,7 @@ public static class TutorialScript
             RequiresId = OfferingsBeatId,
             Duration = -1f,
             Text = "Offerings disappear at the end of your turn. The more expensive a ritual, the more carefully you'll have to plan your turn.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.62f, 0.28f),
             Focus = TutorialFocus.EndTurn,
             PointAtHole = true,
@@ -347,6 +368,7 @@ public static class TutorialScript
             Arg = 3,
             Duration = -1f,
             Text = "At the end of each turn, you draw back up to 6 cards.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.52f),
             Focus = TutorialFocus.Hand,
             PointAtHole = true,
@@ -359,6 +381,7 @@ public static class TutorialScript
             Arg = 3,
             Duration = -1f,
             Text = "During your turn, you can discard cards you don't want by dragging them to the discard zone over here or by clicking the discard all button.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.36f, 0.55f),
             Focus = TutorialFocus.Discard,
             PointAtHole = true,
@@ -371,6 +394,7 @@ public static class TutorialScript
             Arg = 3,
             Duration = -1f,
             Text = "Some rituals have Powerful Effects but need lots of Offerings.\nSometimes it's smart to use Discarding to curate your hand as you prepare for an explosive turn!",
+            BlockInput = true,
             TextAnchor = new Vector2(0.52f, 0.62f),
             Focus = TutorialFocus.Rituals,
             PointAtHole = true,
@@ -384,6 +408,7 @@ public static class TutorialScript
             Delay = 1.1f,
             Duration = -1f,
             Text = "Your enemy just damaged you. If your health drops to 0, you'll lose a heartstring and their turn will end. Run out of health and heartstrings, and it's game over.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.42f),
             Focus = TutorialFocus.PlayerHealth,
             PointAtHole = true,
@@ -397,7 +422,8 @@ public static class TutorialScript
             Encounter = EncounterType.TutorialCombat2,
             Duration = -1f,
             ShowCover = false,
-            Text = "Up next is a shop. There you can spend your heartstrings on cards and trinkets. The main way to get more heartstrings is from event nodes.",
+            Text = "Up next is a shop. There you can spend your heartstrings on cards and trinkets. The main way to get more heartstrings is from events.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.88f),
         },
         new TutorialBeat
@@ -406,6 +432,7 @@ public static class TutorialScript
             Duration = -1f,
             ShowCover = false,
             Text = "Heartstrings are rare and valuable. Spend them well.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.9f),
         },
         new TutorialBeat
@@ -414,8 +441,9 @@ public static class TutorialScript
             Encounter = EncounterType.TutorialMarket,
             Duration = -1f,
             ShowCover = false,
-            Text = "Those are the basics. Near the end of this demo are two bosses. Each one grants a powerful ability once defeated, which you can use on future runs. Past those bosses is the River Styx, and the final boss.",
-            TextAnchor = new Vector2(0.5f, 0.88f),
+            Text = "Those are the basics. Near the end of this demo are two bosses. Each one grants a powerful ability once defeated, which you can use on future runs. Past those bosses is the River Styx, and the final boss.\nGood Luck!",
+            BlockInput = true,
+            TextAnchor = new Vector2(0.5f, 0.80f),
         },
         new TutorialBeat
         {
@@ -423,7 +451,8 @@ public static class TutorialScript
             Encounter = EncounterType.Styx,
             Duration = -1f,
             ShowCover = false,
-            Text = "Congratulations on defeating a boss. To reach the final boss, you must pass the River Styx, which comes with a twist.",
+            Text = "Congratulations on defeating a boss! To reach the final boss, you must pass the River Styx, which comes with a twist...",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.82f),
         },
         new TutorialBeat
@@ -433,6 +462,7 @@ public static class TutorialScript
             Duration = -1f,
             ShowCover = false,
             Text = "The River Styx replaces every card in your deck with the cards you've sacrificed this run. The same is true of trinkets and rituals. You can track what you've sacrificed in the status screen.",
+            BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.82f),
         },
     };

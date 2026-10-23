@@ -125,7 +125,7 @@ public class ViewBattleRow : MonoBehaviour
     {
         if (BattleRow.Owner == null) return;
 
-        PopupScreenHandler.Instance?.HideImagePopup(GetPopupSlot()); // Hide popup by default
+        HideOwnFollowerPopup();
 
         int cardCount = Followers.Count;
         if (cardCount == 0) return;
@@ -228,6 +228,35 @@ public class ViewBattleRow : MonoBehaviour
     PopupSlot GetPopupSlot()
     {
         return isHuman ? PopupSlot.One : PopupSlot.Two;
+    }
+
+    // Follower hovers are refreshed every frame. Only clear a popup this row is showing,
+    // so a buff icon's card popup in the same slot is left alone.
+    void HideOwnFollowerPopup()
+    {
+        if (PopupScreenHandler.Instance == null)
+            return;
+
+        PopupSlot slot = GetPopupSlot();
+        Transform anchor = PopupScreenHandler.Instance.GetImageAnchor(slot);
+        if (anchor == null || !IsOwnPopupAnchor(anchor))
+            return;
+
+        PopupScreenHandler.Instance.HideImagePopup(slot);
+    }
+
+    bool IsOwnPopupAnchor(Transform anchor)
+    {
+        if (anchor == transform || anchor.IsChildOf(transform))
+            return true;
+
+        for (int i = 0; i < Followers.Count; i++)
+        {
+            if (Followers[i] != null && Followers[i].transform == anchor)
+                return true;
+        }
+
+        return false;
     }
 
     public int GetPlacementIndex()

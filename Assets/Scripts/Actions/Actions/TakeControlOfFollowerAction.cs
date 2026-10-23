@@ -36,6 +36,8 @@ public class TakeControlOfFollowerAction : GameAction
         // Add Follower to new Owner's Battlerow
         OldOwner = Follower.Owner;
         Follower.Owner = NewOwner;
+        // Treat the steal as a summon so it can't attack this turn unless it has sprint.
+        Follower.PlayedThisTurn = true;
         targetIndex = Mathf.Min(Follower.Owner.BattleRow.Followers.Count);
         NewOwner.BattleRow.AddFollower(Follower);
         //NewOwner.BattleRow.ReapplyAllEffects();

@@ -70,6 +70,7 @@ public class View : MonoBehaviour
         { DeckName.Trials, "Trials" },
         { DeckName.SeasideCliffs, "Cliffs" },
         { DeckName.Delphi, "Temple" },
+        { DeckName.Archiereus, "Archiereus" },
         { DeckName.Throne, "Underworld" },
         { DeckName.Fates, "Underworld" },
         { DeckName.TheGate, "Underworld" }
@@ -174,7 +175,7 @@ public class View : MonoBehaviour
     public void PlayerUpdate()
     {
         bool useCombatSelection = !ContentScrollView.BlocksGameInput
-            && !TutorialPresenter.IsBlocking
+            && !TutorialPresenter.BlocksGameInput
             && (MenuSelectionHandler == null || !MenuSelectionHandler.IsActive);
         if (useCombatSelection)
             SelectionHandler.UpdateSelections();
@@ -192,7 +193,7 @@ public class View : MonoBehaviour
             return;
 
         bool combatInput = !ContentScrollView.BlocksGameInput
-            && !TutorialPresenter.IsBlocking
+            && !TutorialPresenter.BlocksGameInput
             && (MenuSelectionHandler == null || !MenuSelectionHandler.IsActive);
         if (combatInput)
             SelectionHandler.UpdateHeldCardAfterHandLayout();
@@ -209,9 +210,12 @@ public class View : MonoBehaviour
 
     private void LoadBackground()
     {
-        if (!backgroundNamesByDeckName.TryGetValue(Controller.Instance.ProgressionHandler.GetPresentedDeck(Controller.Instance.ProgressionHandler.CurrentEnemy), out string materialBaseName))
+        DeckName enemy = Controller.Instance.ProgressionHandler.CurrentEnemy;
+        if (!backgroundNamesByDeckName.TryGetValue(enemy, out string materialBaseName))
+            backgroundNamesByDeckName.TryGetValue(Controller.Instance.ProgressionHandler.GetPresentedDeck(enemy), out materialBaseName);
+        if (string.IsNullOrEmpty(materialBaseName))
         {
-            Debug.LogError("No background found for current enemy: " + Controller.Instance.ProgressionHandler.CurrentEnemy);
+            Debug.LogError("No background found for current enemy: " + enemy);
             return;
         }
 

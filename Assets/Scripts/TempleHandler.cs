@@ -106,7 +106,7 @@ public class TempleHandler : MonoBehaviour
         if (TempleScreenHandler != null)
             TempleScreenHandler.SetSacrificeButtonsInteractable(false);
 
-        Controller.Instance.BeginArchiereusEncounter();
+        Controller.Instance.BeginArchiereusEncounter(playRefusalRumble: true);
     }
 
     public void AcceptSacrifice()

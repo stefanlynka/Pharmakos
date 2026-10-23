@@ -218,8 +218,10 @@ public class EventHandler : MonoBehaviour
         if (selected != null)
             Controller.Instance.AddCardsToPlayerDeck(new List<Card> { selected.MakeBaseCopy() });
 
-        if (ScreenHandler.Instance != null)
-            ScreenHandler.Instance.HideScreen(ScreenName.SelectableDeckViewerScreen, true);
+        // Blank sits behind this screen. Bring it forward so the return fade covers the deck instead of the skybox.
+        if (ScreenHandler.Instance != null
+            && ScreenHandler.Instance.TryGetScreen(ScreenName.Blank, out Screen blank))
+            blank.transform.SetAsLastSibling();
 
         CompleteAndReturn();
     }

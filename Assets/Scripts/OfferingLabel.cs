@@ -113,7 +113,7 @@ public class OfferingLabel : MonoBehaviour
 
     void OnMouseEnter()
     {
-        if (!hoverEnabled || ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking)
+        if (!hoverEnabled || ContentScrollView.BlocksGameInput || TutorialPresenter.BlocksGameInput)
             return;
 
         ShowHoverSummary();
@@ -138,7 +138,7 @@ public class OfferingLabel : MonoBehaviour
 
     void ShowHoverSummary()
     {
-        if (!hoverEnabled || ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking)
+        if (!hoverEnabled || ContentScrollView.BlocksGameInput || TutorialPresenter.BlocksGameInput)
             return;
 
         if (string.IsNullOrEmpty(summaryDescription))

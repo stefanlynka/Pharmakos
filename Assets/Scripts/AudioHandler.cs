@@ -47,6 +47,12 @@ public class AudioHandler : MonoBehaviour
     public float FlameOngoingDelay = 2f;
     [Tooltip("Volume of the rumble that plays while a ritual is selected. Still scaled by the SFX slider.")]
     [Range(0f, 2f)] public float RumbleVolume = 0.8f;
+    [Tooltip("Seconds to fade the rumble out once the screen has fully faded to black.")]
+    public float RumbleFadeOutDuration = 0.15f;
+    [Tooltip("Seconds to bring a refusal rumble up to full volume.")]
+    public float RumbleFadeInDuration = 0.08f;
+    [Tooltip("Seconds into the rumble clip to start a refusal. The file's own attack stays quiet for several seconds.")]
+    public float RumbleStartTime = 5f;
 
     private float baseMusicVolume = 0.1f;
 
@@ -63,8 +69,19 @@ public class AudioHandler : MonoBehaviour
     private float musicFadeMultiplier = 1.0f;
     private float musicFadeTarget = 1.0f;
 
+    bool rumbleFadeActive;
+    float rumbleFadeFrom = 1f;
+    float rumbleFadeTarget = 1f;
+    float rumbleFadeElapsed;
+    float rumbleFadeDuration;
+    float rumbleLevel = 1f;
+
     private readonly Queue<OfferingCollectNote> offeringCollectQueue = new Queue<OfferingCollectNote>();
     private float nextOfferingCollectTime;
+
+    const string HeartstringStrumPath = "Audio/SFX/HeartstringStrum";
+    AudioClip heartstringStrumClip;
+    bool loggedMissingHeartstringStrum;
 
     AudioClip flameStartClip;
     AudioClip flameOngoingClip;
@@ -277,6 +294,7 @@ public class AudioHandler : MonoBehaviour
     private void LateUpdate()
     {
         UpdateMusicFade();
+        UpdateRumbleFade();
         UpdateRitualFlame();
 
         if (offeringCollectQueue.Count == 0)
@@ -388,6 +406,21 @@ public class AudioHandler : MonoBehaviour
             SoundEffectSource.PlayOneShot(clip, userSoundEffectVolume * volumeScale);
     }
 
+    public void PlayHeartstringStrum()
+    {
+        if (heartstringStrumClip == null && !loggedMissingHeartstringStrum)
+        {
+            heartstringStrumClip = Resources.Load<AudioClip>(HeartstringStrumPath);
+            if (heartstringStrumClip == null)
+            {
+                loggedMissingHeartstringStrum = true;
+                Debug.LogError("Missing heartstring sound at Resources/" + HeartstringStrumPath);
+            }
+        }
+
+        PlayOneShot(heartstringStrumClip);
+    }
+
     public void SetMusicVolume(float volume)
     {
         userMusicVolume = volume;
@@ -403,31 +436,136 @@ public class AudioHandler : MonoBehaviour
         if (flameOngoingSource != null && flameOngoingSource.isPlaying)
             flameOngoingSource.volume = userSoundEffectVolume;
 
-        if (OtherSource != null && OtherSource.isPlaying
-            && OtherAudioByName.TryGetValue(OtherSoundType.Rumble, out AudioClip rumbleClip)
-            && OtherSource.clip == rumbleClip)
-            OtherSource.volume = userSoundEffectVolume * RumbleVolume;
+        ApplyRumbleVolume();
     }
 
     public void PlayOther(OtherSoundType name)
     {
-        if (OtherAudioByName.ContainsKey(name))
+        rumbleFadeActive = false;
+        rumbleLevel = 1f;
+
+        if (OtherSource == null || !OtherAudioByName.ContainsKey(name))
+            return;
+
+        AudioClip audioClip = OtherAudioByName[name];
+        if (audioClip == null)
+            return;
+
+        OtherSource.clip = audioClip;
+
+        if (name == OtherSoundType.Rumble)
         {
-            AudioClip audioClip = OtherAudioByName[name];
-            if (audioClip != null)
-            {
-                OtherSource.clip = audioClip;
-
-                if (name == OtherSoundType.Rumble)
-                    OtherSource.volume = userSoundEffectVolume * RumbleVolume;
-
-                OtherSource.Play();
-            }
+            OtherSource.loop = true;
+            ApplyRumbleVolume();
         }
+
+        OtherSource.Play();
     }
+
+    public void PlayRefusalRumble()
+    {
+        if (OtherSource == null || !OtherAudioByName.TryGetValue(OtherSoundType.Rumble, out AudioClip clip) || clip == null)
+            return;
+
+        if (clip.loadState != AudioDataLoadState.Loaded)
+            clip.LoadAudioData();
+
+        rumbleFadeActive = false;
+        rumbleLevel = 0f;
+        OtherSource.clip = clip;
+        OtherSource.loop = true;
+        ApplyRumbleVolume();
+        OtherSource.Play();
+
+        float start = RumbleStartTime;
+        if (clip.length > 0.05f)
+            start = Mathf.Clamp(start, 0f, clip.length - 0.05f);
+        OtherSource.time = start;
+
+        StartRumbleFade(1f, RumbleFadeInDuration);
+    }
+
+    public void CatchRefusalRumbleStart()
+    {
+        if (OtherSource == null || !OtherSource.isPlaying || !IsRumbleClip(OtherSource.clip))
+            return;
+
+        float start = RumbleStartTime;
+        if (OtherSource.clip.length > 0.05f)
+            start = Mathf.Clamp(start, 0f, OtherSource.clip.length - 0.05f);
+
+        if (OtherSource.time + 0.05f < start)
+            OtherSource.time = start;
+    }
+
+    public void FadeOutRumble()
+    {
+        if (OtherSource == null || !OtherSource.isPlaying || !IsRumbleClip(OtherSource.clip))
+            return;
+
+        StartRumbleFade(0f, RumbleFadeOutDuration);
+    }
+
     public void StopOther()
     {
-        OtherSource.Stop();
+        rumbleFadeActive = false;
+        rumbleLevel = 1f;
+        if (OtherSource != null)
+            OtherSource.Stop();
+    }
+
+    void StartRumbleFade(float target, float duration)
+    {
+        if (duration <= 0f)
+        {
+            rumbleFadeActive = false;
+            rumbleLevel = target;
+            ApplyRumbleVolume();
+            if (target <= 0f && OtherSource != null)
+                OtherSource.Stop();
+            return;
+        }
+
+        rumbleFadeFrom = rumbleLevel;
+        rumbleFadeTarget = target;
+        rumbleFadeElapsed = 0f;
+        rumbleFadeDuration = duration;
+        rumbleFadeActive = true;
+    }
+
+    void UpdateRumbleFade()
+    {
+        if (!rumbleFadeActive || OtherSource == null)
+            return;
+
+        float duration = Mathf.Max(0.01f, rumbleFadeDuration);
+        rumbleFadeElapsed += Time.deltaTime;
+        float t = Mathf.Clamp01(rumbleFadeElapsed / duration);
+        rumbleLevel = Mathf.Lerp(rumbleFadeFrom, rumbleFadeTarget, t);
+        ApplyRumbleVolume();
+
+        if (t < 1f)
+            return;
+
+        rumbleFadeActive = false;
+        rumbleLevel = rumbleFadeTarget;
+        if (rumbleFadeTarget <= 0f)
+            OtherSource.Stop();
+    }
+
+    void ApplyRumbleVolume()
+    {
+        if (OtherSource == null || !IsRumbleClip(OtherSource.clip))
+            return;
+
+        OtherSource.volume = userSoundEffectVolume * RumbleVolume * rumbleLevel;
+    }
+
+    bool IsRumbleClip(AudioClip clip)
+    {
+        return clip != null
+            && OtherAudioByName.TryGetValue(OtherSoundType.Rumble, out AudioClip rumbleClip)
+            && clip == rumbleClip;
     }
     public enum SoundEffectType
     {

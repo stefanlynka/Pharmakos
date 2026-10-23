@@ -168,15 +168,15 @@ public class ProgressionHandler
             PortraitName = "Player",
             MinorRituals = new Dictionary<int, Ritual>
             {
-                [0] = new ZeusMajor(),
+                [0] = new OldOnesMinor(),
             },
             MajorRituals = new Dictionary<int, Ritual>
             {
-                [0] = new AphroditeMinor(),
+                [0] = new PoseidonMajor(),
             },
             Trinkets = new Dictionary<int, List<Trinket>>
             {
-                [0] = new List<Trinket>() { new OdysseyTrinket() }
+                [0] = new List<Trinket>() {} //  new OdysseyTrinket() 
             },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
@@ -190,14 +190,15 @@ public class ProgressionHandler
                     // new ThrowStone(),
                     // new Peltast(),
 
-                    new Lightning(),
-                    new Blessing(),
-                    new Blessing(),
-                    new Blessing(),
+                    // new Lightning(),
+                    // new Blessing(),
+                    // new Blessing(),
+                    // new Blessing(),
                     new Blessing(),
                     new ThrowStone(),
 
-                    //new PriceOfProfit(),
+                    new PriceOfProfit(),
+                    new PriceOfProfit(),
                     //new Pan(),
                     //new Endymion(),
                 },
@@ -1744,14 +1745,7 @@ public class ProgressionHandler
             TwistOfFateIntervals = new Dictionary<int, int> { [1] = 10 },
             DeckBlueprint = new Dictionary<int, List<Card>>
             {
-                [1] = new List<Card>
-                {
-                    new Sheep(),
-                    new Sheep(),
-                    new Sheep(),
-                    new Cyclops(),
-                    new Cyclops(),
-                },
+                [1] = BuildCyclopsOnlyDeck(),
             },
             StartingBattleRow = new Dictionary<int, List<Follower>>(),
             Rewards = new List<Card> { new Sheep(), new ThrowStone(), new Blessing() },
@@ -1814,7 +1808,7 @@ public class ProgressionHandler
             BaseHealth = 10,
             Pool = 1,
             GoldPerTurn = 5,
-            PortraitName = "Delphi",
+            PortraitName = "Archiereus",
             PresentationDeck = DeckName.Delphi,
             FightDisplayName = "Archiereus",
             MinorRituals = new Dictionary<int, Ritual>(),
@@ -1833,9 +1827,23 @@ public class ProgressionHandler
                 [2] = BuildArchiereusDeck(),
                 [3] = BuildArchiereusDeck(),
             },
-            StartingBattleRow = new Dictionary<int, List<Follower>>(),
+            StartingBattleRow = new Dictionary<int, List<Follower>>
+            {
+                [1] = new List<Follower> { new Sheep() },
+                [2] = new List<Follower> { new Sheep() },
+                [3] = new List<Follower> { new Sheep() },
+            },
             Rewards = new List<Card>(),
         };
+    }
+
+    const int TutorialCyclopsCopies = 10;
+
+    static List<Card> BuildCyclopsOnlyDeck()
+    {
+        var deck = new List<Card>();
+        AddCopies(deck, () => new Cyclops(), TutorialCyclopsCopies);
+        return deck;
     }
 
     static List<Card> BuildArchiereusDeck()
@@ -2401,7 +2409,8 @@ public class ProgressionHandler
         }
 
         PlayerDetails newDetails = DetailsByDeckName[deckName];
-        if (newDetails.PresentationDeck != DeckName.None
+        if (string.IsNullOrEmpty(newDetails.PortraitName)
+            && newDetails.PresentationDeck != DeckName.None
             && DetailsByDeckName.TryGetValue(newDetails.PresentationDeck, out PlayerDetails presented)
             && !string.IsNullOrEmpty(presented.PortraitName))
             newDetails.PortraitName = presented.PortraitName;
@@ -2416,7 +2425,8 @@ public class ProgressionHandler
                     newDetails.BaseHealth = bossHealth;
                 else
                     newDetails.BaseHealth = ENEMY_HEALTH_OVERRIDE > 0 ? ENEMY_HEALTH_OVERRIDE : fightPool * 10 + ((fightNumber - 1) % 3) * 5;
-                newDetails.GoldPerTurn = fightNumber >= 10 ? 5 : 2 + Mathf.Min(fightPool, 2);
+                if (deckName != DeckName.TutorialCombat1 && deckName != DeckName.TutorialCombat2)
+                    newDetails.GoldPerTurn = fightNumber >= 10 ? 5 : 2 + Mathf.Min(fightPool, 2);
             }
             else newDetails.BaseHealth = GetPlayerHealth();
         }

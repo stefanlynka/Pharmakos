@@ -195,6 +195,10 @@ MonoBehaviour:
   flareUpDuration: 0.5
   flareSettleDuration: 0.5
   dimDuration: 0.35
+  usePulseScale: 1.2
+  usePulseDuration: 0.5
+  usePulseIntensity: 600
+  usePulseRisePortion: 0.28
   hoverScaleMultiplier: 1.1
   SummaryPosition: 3
   rattleIntervalMin: 4

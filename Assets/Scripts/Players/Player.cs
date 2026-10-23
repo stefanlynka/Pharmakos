@@ -896,7 +896,7 @@ public class PlayerDetails
     public int CardsPerTurn = 5;
     public int GoldPerTurn = 3;
     public string PortraitName = "";
-    /// <summary>When set, portrait, background, music, and the fight title use this deck instead of <see cref="ProgressionHandler.DeckName"/>.</summary>
+    /// <summary>When set, music uses this deck. Portrait and background use it only when this deck has none of its own. The fight title uses it when <see cref="FightDisplayName"/> is empty.</summary>
     public ProgressionHandler.DeckName PresentationDeck = ProgressionHandler.DeckName.None;
     /// <summary>Fight banner text. Empty uses the presented deck name.</summary>
     public string FightDisplayName = "";

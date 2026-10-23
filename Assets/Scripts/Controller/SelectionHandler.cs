@@ -46,7 +46,7 @@ public class SelectionHandler
     public void UpdateSelections()
     {
         if (Controller.Instance.GamePaused) return;
-        if (ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking) return;
+        if (ContentScrollView.BlocksGameInput || TutorialPresenter.BlocksGameInput) return;
         if (GetSelectionCamera() == null) return;
 
         UpdateTargetUnderMouse();
@@ -423,10 +423,13 @@ public class SelectionHandler
     }
 
     const float LegalTargetHoverScale = 1.1f;
+    const float LegalTargetHoverLocalZOffset = -0.1f;
     const string LegalTargetHoverSoundPath = "Audio/SFX/Bump";
     static AudioClip legalTargetHoverClip;
     Transform hoveredLegalTargetTransform;
     Vector3 hoveredLegalTargetBaseScale;
+    float hoveredLegalTargetBaseLocalZ;
+    bool hoveredLegalTargetShiftsZ;
 
     public void UpdateLegalTargetHoverFeedback()
     {
@@ -442,12 +445,42 @@ public class SelectionHandler
                 return;
 
             hoveredLegalTargetBaseScale = targetTransform.localScale;
+            hoveredLegalTargetBaseLocalZ = targetTransform.localPosition.z;
+            hoveredLegalTargetShiftsZ = IsBattleRowFollower(hovered);
             hoveredLegalTargetTransform = targetTransform;
             PlayLegalTargetHoverSound();
         }
 
         if (hoveredLegalTargetTransform != null)
+        {
             hoveredLegalTargetTransform.localScale = hoveredLegalTargetBaseScale * LegalTargetHoverScale;
+            if (hoveredLegalTargetShiftsZ)
+                ApplyLegalTargetHoverZ();
+        }
+    }
+
+    void ApplyLegalTargetHoverZ()
+    {
+        Vector3 pos = hoveredLegalTargetTransform.localPosition;
+        float offsetZ = hoveredLegalTargetBaseLocalZ + LegalTargetHoverLocalZOffset;
+        // The battle row rewrites layout Z before this runs. Keep that as the base
+        // unless this position is already the hover offset from last frame.
+        if (!Mathf.Approximately(pos.z, offsetZ))
+            hoveredLegalTargetBaseLocalZ = pos.z;
+
+        pos.z = hoveredLegalTargetBaseLocalZ + LegalTargetHoverLocalZOffset;
+        hoveredLegalTargetTransform.localPosition = pos;
+    }
+
+    bool IsBattleRowFollower(ViewTarget viewTarget)
+    {
+        if (viewTarget is not ViewFollower viewFollower || View.Instance == null)
+            return false;
+
+        ViewBattleRow playerRow = View.Instance.Player1 != null ? View.Instance.Player1.BattleRow : null;
+        ViewBattleRow enemyRow = View.Instance.Player2 != null ? View.Instance.Player2.BattleRow : null;
+        return (playerRow != null && playerRow.Followers.Contains(viewFollower))
+            || (enemyRow != null && enemyRow.Followers.Contains(viewFollower));
     }
 
     public bool IsHoveredLegalTarget(ViewTarget viewTarget)
@@ -462,7 +495,7 @@ public class SelectionHandler
     {
         if (Controller.Instance == null || !Controller.Instance.GameRunning || Controller.Instance.GamePaused)
             return false;
-        if (ContentScrollView.BlocksGameInput || TutorialPresenter.IsBlocking)
+        if (ContentScrollView.BlocksGameInput || TutorialPresenter.BlocksGameInput)
             return false;
         if (View.Instance != null && View.Instance.MenuSelectionHandler != null && View.Instance.MenuSelectionHandler.IsActive)
             return false;
@@ -517,9 +550,18 @@ public class SelectionHandler
     void RestoreLegalTargetHoverScale()
     {
         if (hoveredLegalTargetTransform != null)
+        {
             hoveredLegalTargetTransform.localScale = hoveredLegalTargetBaseScale;
+            if (hoveredLegalTargetShiftsZ)
+            {
+                Vector3 pos = hoveredLegalTargetTransform.localPosition;
+                pos.z = hoveredLegalTargetBaseLocalZ;
+                hoveredLegalTargetTransform.localPosition = pos;
+            }
+        }
 
         hoveredLegalTargetTransform = null;
+        hoveredLegalTargetShiftsZ = false;
     }
 
     void PlayLegalTargetHoverSound()

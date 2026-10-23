@@ -15,6 +15,29 @@ public abstract class Ritual : ITarget
     public string Description = "No Desc";
     public string ReminderText = "";
 
+    // Cards this ritual names, shown beside the hover summary. Empty when none apply.
+    public virtual void CollectReferencedCards(List<Card> cards) { }
+
+    protected static void CollectLastDeadFollower(List<Card> cards)
+    {
+        if (cards == null || Controller.Instance == null || !Controller.Instance.GameRunning)
+            return;
+
+        if (ScreenHandler.Instance == null
+            || ScreenHandler.Instance.CurrentScreen == null
+            || ScreenHandler.Instance.CurrentScreen.Name != ScreenName.Game)
+            return;
+
+        Follower last = Controller.Instance.CanonGameState != null
+            ? Controller.Instance.CanonGameState.LastFollowerThatDied
+            : null;
+        if (last == null)
+            return;
+
+        if (last.MakeBaseCopy() is Follower copy)
+            cards.Add(copy);
+    }
+
     //public Ritual(){ }
 
     public Ritual()
@@ -74,7 +97,27 @@ public abstract class Ritual : ITarget
 
     public virtual VfxEffect GetPlayVfx(ITarget target)
     {
-        return VfxLibrary.DefaultRitual(this);
+        VfxEffect ritualVfx = VfxLibrary.DefaultRitual(this);
+        if (target is not Player || !TargetsOnlyPlayers())
+            return ritualVfx;
+
+        return new ParallelVfx(ritualVfx, VfxLibrary.PortraitOfferingFlash(this));
+    }
+
+    // True when every current legal target is a player. Rituals that can also hit followers stay false.
+    public bool TargetsOnlyPlayers()
+    {
+        List<ITarget> targets = GetTargets();
+        if (targets == null || targets.Count == 0)
+            return false;
+
+        foreach (ITarget candidate in targets)
+        {
+            if (candidate is not Player)
+                return false;
+        }
+
+        return true;
     }
 
     public Ritual MakeBaseCopy()

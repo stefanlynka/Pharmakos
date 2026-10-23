@@ -36,6 +36,7 @@ public class StarterBundleBucket : MonoBehaviour
         }
 
         ViewRitual.Init(starterBundle.Ritual, false);
+        EnableRitualHover(cardClicked);
 
         for (int i = 0; i < 3; i++)
         {
@@ -47,6 +48,21 @@ public class StarterBundleBucket : MonoBehaviour
         ViewTrinket.SetVisible(true);
 
         SetSelected(false);
+    }
+
+    void EnableRitualHover(Action<ViewTarget> bucketClicked)
+    {
+        if (ViewRitual == null)
+            return;
+
+        ViewRitual.SummaryPosition = PopupPosition.Left;
+
+        BoxCollider collider = ViewRitual.GetComponent<BoxCollider>();
+        if (collider != null)
+            collider.enabled = true;
+
+        ViewTarget bucket = ViewTarget;
+        ViewRitual.OnClick = _ => bucketClicked?.Invoke(bucket);
     }
 
     public void SetSelected(bool selected)
