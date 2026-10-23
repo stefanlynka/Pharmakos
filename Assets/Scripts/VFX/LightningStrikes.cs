@@ -148,7 +148,7 @@ public class LightningStrikes : MonoBehaviour
         }
 
         if (View.Instance != null && View.Instance.AudioHandler != null)
-            View.Instance.AudioHandler.PlayOneShot(clip);
+            View.Instance.AudioHandler.PlayOneShot(clip, 0.3f);
         else
             AudioSource.PlayClipAtPoint(clip, strikePoint);
     }

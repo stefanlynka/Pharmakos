@@ -172,7 +172,7 @@ public class ProgressionHandler
             },
             MajorRituals = new Dictionary<int, Ritual>
             {
-                [0] = new PoseidonMajor(),
+                [0] = new ZeusMajor(),
             },
             Trinkets = new Dictionary<int, List<Trinket>>
             {
@@ -212,9 +212,10 @@ public class ProgressionHandler
                     // new Sheep(),
                     new Toxotes(),
                     new Chariot(),
-                    new Chimera(),
+                    new Toxotes(),
                     new Peltast(),
                     new Chariot(),
+                    new Toxotes(),
                     // new Ekdromos(),
                     //new Pytho(),
                     //new Agamemnon(),

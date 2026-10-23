@@ -424,6 +424,9 @@ public class AudioHandler : MonoBehaviour
                     case SoundEffectType.Defeat:
                         SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.3f);
                         break;
+                    case SoundEffectType.Whoosh:
+                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.5f);
+                        break;
                     default:
                         SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume);
                         break;

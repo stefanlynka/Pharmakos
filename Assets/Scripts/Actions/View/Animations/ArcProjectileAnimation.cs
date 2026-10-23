@@ -301,7 +301,7 @@ public class ArcProjectileAnimation : AnimationAction
         }
 
         if (clip != null)
-            View.Instance.AudioHandler.PlayOneShot(clip);
+            View.Instance.AudioHandler.PlayOneShot(clip, 0.5f);
     }
 
     static GameObject LoadPrefab(string path)
