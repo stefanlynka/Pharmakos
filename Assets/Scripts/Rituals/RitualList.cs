@@ -997,7 +997,7 @@ public class HephaestusMajor : Ritual
     public HephaestusMajor()
     {
         Name = "Hephaestus\nMajor";
-        Description = "When one of your Followers dies, get a copy of every spell you cast on on it. The copies costs 1 less.";
+        Description = "When one of your Followers dies, get a copy of every spell you cast on it. The copies costs 1 less.";
         //Description = "When one of target Player's Followers dies, get a copy of every spell that Player cast on on it. The copies costs 1 less.";
         
         if (Controller.BlitzMode)

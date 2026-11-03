@@ -151,7 +151,11 @@ public class SkipFollowerAttackDecision : PlayerDecision
 
     public override string GetString()
     {
-        Follower follower = Controller.Instance.CanonGameState.TargetsByID[FollowerID] as Follower;
+        // FollowerID -1 is the planning-timeout fallback, and a follower can also be gone by the time this is logged.
+        if (!Controller.Instance.CanonGameState.TargetsByID.TryGetValue(FollowerID, out ITarget target))
+            return "Skip attack (follower " + FollowerID + " not found)";
+
+        Follower follower = target as Follower;
         if (follower == null) return "Attacker not found";
 
         return follower.GetName() + " skips its attack";

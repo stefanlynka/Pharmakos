@@ -51,6 +51,9 @@ public class AIPlayer : Player
     private volatile bool planningCompleted = false;
     private CancellationTokenSource planningTimeoutCts = null;
     private CancellationTokenSource planningLinkedCts = null;
+    private readonly object planLock = new object();
+    private bool planCommitted;
+    private int planningGeneration;
 
     public override void RunUpdate()
     {
@@ -81,14 +84,20 @@ public class AIPlayer : Player
                 planningTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                 planningLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(globalToken, planningTimeoutCts.Token);
 
+                int generation;
+                lock (planLock)
+                {
+                    planCommitted = false;
+                    generation = ++planningGeneration;
+                }
+
                 if (Controller.AIDebugMode)
                 {
-                    PlanActionsSync();
-                    planningCompleted = true;
+                    PlanActionsSync(generation);
                 }
                 else
                 {
-                    planningTask = Task.Run(() => PlanActions(planningLinkedCts.Token), planningLinkedCts.Token);
+                    planningTask = Task.Run(() => PlanActions(planningLinkedCts.Token, generation), planningLinkedCts.Token);
 
                     // Start a timer to enforce the 5 second timeout
                     Task.Run(async () =>
@@ -98,15 +107,10 @@ public class AIPlayer : Player
                             var completedTask = await Task.WhenAny(planningTask, Task.Delay(5000, planningLinkedCts.Token));
                             if (completedTask != planningTask)
                             {
-                                // Timeout occurred
+                                // Cancel unstarted branches. PlanActions commits whatever line has
+                                // already finished, or a one-ply greedy turn if none has.
                                 planningTimeoutCts.Cancel();
-                                Debug.LogWarning("AI planning timed out. Forcing simple actions.");
-                                // Ensure ForceChooseSimpleActions runs on main thread
-                                UnityMainThreadDispatcher.Instance().Enqueue(() =>
-                                {
-                                    ForceChooseSimpleActions();
-                                    planningCompleted = true;
-                                });
+                                Debug.LogWarning("[AI] Planning timed out. Waiting for the search to finish its current line.");
                             }
                         }
                         catch (TaskCanceledException) { }
@@ -116,6 +120,12 @@ public class AIPlayer : Player
             case AITurnPhase.Preparing:
                 if (planningCompleted)
                 {
+                    // The search often finishes while discard, draw, or the turn banner is still queued.
+                    // Hold the chosen line until that playback finishes. The line's own animations start
+                    // only after this transition, so they do not keep the turn waiting.
+                    if (!View.Instance.AnimationHandler.AnimationsComplete())
+                        break;
+
                     Debug.LogWarning("Planning Completed: Preparing");
                     TurnPhase = AITurnPhase.Executing;
                     planningTask = null;
@@ -159,42 +169,68 @@ public class AIPlayer : Player
     }
 
 
-    private void PlanActionsSync()
+    private void PlanActionsSync(int generation)
     {
         System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        playerDecisions = new DecisionSet(new List<PlayerDecision>(), 0);
-        pool = new GameStatePool();
-        playerDecisions = GetBestOptions(GameState, pool, Controller.Instance.CancellationTokenSource.Token, 0);
+        GameStatePool localPool = new GameStatePool();
+        DecisionSet result = GetBestOptions(GameState, localPool, Controller.Instance.CancellationTokenSource.Token, 0);
+        CommitPlan(generation, result, localPool);
         Debug.Log($"[AI] PlanActions (sync) took {stopwatch.ElapsedMilliseconds / 1000f} seconds");
-        planningCompleted = true;
     }
 
-    private void PlanActions(CancellationToken cancellationToken)
+    private void PlanActions(CancellationToken cancellationToken, int generation)
     {
         System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        playerDecisions = new DecisionSet(new List<PlayerDecision>(), 0);
-        pool = new GameStatePool();
-        playerDecisions = GetBestOptions(GameState, pool, cancellationToken, 0);
+        GameStatePool localPool = new GameStatePool();
+        DecisionSet result = GetBestOptions(GameState, localPool, cancellationToken, 0);
         stopwatch.Stop();
         Debug.Log($"[AI] PlanActions (async) took {stopwatch.ElapsedMilliseconds/1000f} seconds");
-        planningCompleted = true;
+        result = ResolveTimedOutSearch(result, cancellationToken, localPool);
+        CommitPlan(generation, result, localPool);
     }
 
-    private void ForceChooseSimpleActions()
+    private DecisionSet ResolveTimedOutSearch(DecisionSet result, CancellationToken cancellationToken, GameStatePool localPool)
     {
-        // This is a fallback method to force the AI to choose simple actions
-        // when the planning is taking too long or is cancelled.
-        playerDecisions = new DecisionSet(new List<PlayerDecision>(), 0);
-        playerDecisions.Decisions.Add(new SkipFollowerAttackDecision(-1)); // Just skip attacks
-        Debug.LogWarning("Forced simple actions due to planning timeout or cancellation.");
+        if (!cancellationToken.IsCancellationRequested)
+            return result;
+
+        if (result.Decisions != null && result.Decisions.Count > 0)
+        {
+            Debug.LogWarning($"[AI] Planning timed out. Playing the best finished line ({result.Decisions.Count} decisions).");
+            return result;
+        }
+
+        Debug.LogWarning("[AI] Planning timed out before a finished line. Choosing a one-ply greedy turn.");
+        DecisionSet greedy = ChooseGreedyLine(GameState, localPool);
+        int decisionCount = greedy.Decisions != null ? greedy.Decisions.Count : 0;
+        if (decisionCount == 0)
+            Debug.LogWarning("[AI] Greedy search found no actions. Ending the turn.");
+        else
+            Debug.LogWarning($"[AI] Greedy turn has {decisionCount} decisions.");
+        return greedy;
+    }
+
+    private void CommitPlan(int generation, DecisionSet result, GameStatePool localPool)
+    {
+        lock (planLock)
+        {
+            if (generation != planningGeneration || planCommitted)
+            {
+                Debug.LogWarning("[AI] Planning finished after another result was committed. Keeping the committed result.");
+                return;
+            }
+
+            pool = localPool;
+            playerDecisions = result;
+            planCommitted = true;
+            planningCompleted = true;
+        }
     }
 
     static int deepestDepth = 12;
     public static DecisionSet GetBestOptions(GameState gameState, GameStatePool pool, CancellationToken cancellationToken, int currentDepth)
     {
         if (cancellationToken.IsCancellationRequested) return new DecisionSet(new List<PlayerDecision>(), float.NegativeInfinity);
-
-        var options = new List<PlayerDecision>();
 
         currentDepth++;
         if (currentDepth > deepestDepth)
@@ -204,129 +240,9 @@ public class AIPlayer : Player
             return new DecisionSet(new List<PlayerDecision>(), utility);
         }
 
-        List<Card> playableCards = gameState.AI.GetPlayableCards();
-        Dictionary<string, Follower> followersByName = new Dictionary<string, Follower>();
-        Dictionary<string, Spell> spellsByName = new Dictionary<string, Spell>();
-        Dictionary<string, Follower> freeFollowersByName = new Dictionary<string, Follower>();
-        Dictionary<string, Spell> freeSpellsByName = new Dictionary<string, Spell>();
-
-        // Sort playable cards into followers and spells, separating free ones
-        foreach (Card card in playableCards)
-        {
-            Follower follower = card as Follower;
-            Spell spell = card as Spell;
-            if (follower != null)
-            {
-                if (follower.Costs[OfferingType.Gold] == 0)
-                {
-                    freeFollowersByName[follower.GetCardType()] = follower;
-                }
-                else
-                {
-                    followersByName[follower.GetCardType()] = follower;
-                }
-            }
-            else if (spell != null)
-            {
-                if (spell.Costs[OfferingType.Gold] == 0)
-                {
-                    freeSpellsByName[spell.GetCardType()] = spell;
-                }
-                else
-                {
-                    spellsByName[spell.GetCardType()] = spell;
-                }
-            }
-        }
-
-
-
-        // Get all options for this player in this GameState
-        bool pickingAttacks = false;
-        if (playableCards.Count > 0)
-        {
-            if (followersByName.Count > 0 || spellsByName.Count > 0)
-            {
-                // Play Followers
-                foreach (Follower follower in followersByName.Values)
-                {
-                    PlayerDecision playFollower = new PlayFollowerDecision(follower.ID, gameState.AI.BattleRow.Followers.Count);
-                    options.Add(playFollower);
-                }
-
-                // Play Spells
-                foreach (Spell spell in spellsByName.Values)
-                {
-                    List<ITarget> possibleTargets = spell.GetTargets();
-                    foreach (ITarget target in possibleTargets)
-                    {
-                        int spellTargetID = target.GetID();
-                        PlaySpellDecision playSpell = new PlaySpellDecision(spell.ID, spellTargetID);
-                        options.Add(playSpell);
-                    }
-                }
-            }
-            else
-            {
-                // Play Free Followers
-                foreach (Follower follower in freeFollowersByName.Values)
-                {
-                    PlayerDecision playFollower = new PlayFollowerDecision(follower.ID, gameState.AI.BattleRow.Followers.Count);
-                    options.Add(playFollower);
-                }
-                // Play Free Spells
-                foreach (Spell spell in freeSpellsByName.Values)
-                {
-                    List<ITarget> possibleTargets = spell.GetTargets();
-                    foreach (ITarget target in possibleTargets)
-                    {
-                        int spellTargetID = target.GetID();
-                        PlaySpellDecision playSpell = new PlaySpellDecision(spell.ID, spellTargetID);
-                        options.Add(playSpell);
-                    }
-                }
-            }
-        }
-        else if (gameState.AI.MajorRitual != null && gameState.AI.MajorRitual.CanPlay())
-        {
-            List<ITarget> possibleTargets = gameState.AI.MajorRitual.GetTargets();
-            foreach (ITarget target in possibleTargets)
-            {
-                int ritualTargetID = target.GetID();
-                UseRitualDecision useRitualDecision = new UseRitualDecision(gameState.AI.MajorRitual.ID, ritualTargetID);
-                options.Add(useRitualDecision);
-            }
-        }
-        else if (gameState.AI.MinorRitual != null && gameState.AI.MinorRitual.CanPlay())
-        {
-            List<ITarget> possibleTargets = gameState.AI.MinorRitual.GetTargets();
-            foreach (ITarget target in possibleTargets)
-            {
-                int ritualTargetID = target.GetID();
-                UseRitualDecision useRitualDecision = new UseRitualDecision(gameState.AI.MinorRitual.ID, ritualTargetID);
-                options.Add(useRitualDecision);
-            }
-        }
-        else
-        {
-            pickingAttacks = true;
-            // Attack with Followers in order
-            Follower followerThatCanAttack = gameState.AI.BattleRow.GetFirstFollowerThatCanAttack();
-            if (followerThatCanAttack != null)
-            {
-                List<ITarget> attackTargets = followerThatCanAttack.GetAttackTargets();
-                foreach (ITarget attackTarget in attackTargets)
-                {
-                    int targetID = attackTarget.GetID();
-                    AttackWithFollowerDecision attackDecision = new AttackWithFollowerDecision(followerThatCanAttack.ID, attackTarget.GetID());
-                    options.Add(attackDecision);
-                }
-
-                SkipFollowerAttackDecision skipAttackDecision = new SkipFollowerAttackDecision(followerThatCanAttack.ID);
-                options.Add(skipAttackDecision);
-            }
-        }
-
+        LegalMoves legalMoves = CollectLegalMoves(gameState);
+        List<PlayerDecision> options = legalMoves.Options;
+        bool pickingAttacks = legalMoves.PickingAttacks;
 
         // If we're out of options, calculate this state's utility and return up the recursive chain
         if (options.Count == 0)
@@ -377,6 +293,131 @@ public class AIPlayer : Player
         return bestOptionSoFar;
     }
 
+    private static DecisionSet ChooseGreedyLine(GameState gameState, GameStatePool pool)
+    {
+        List<PlayerDecision> decisions = new List<PlayerDecision>();
+        GameState state = pool.Get(gameState, true);
+
+        for (int step = 0; step < deepestDepth; step++)
+        {
+            LegalMoves legalMoves = CollectLegalMoves(state);
+            if (legalMoves.Options.Count == 0) break;
+
+            PlayerDecision bestDecision = null;
+            float bestUtility = float.NegativeInfinity;
+            foreach (PlayerDecision option in legalMoves.Options)
+            {
+                GameState simulated = pool.Get(state, true);
+                AIPlayer actor = simulated.GetPlayer(state.AI.PlayerID) as AIPlayer;
+                bool applied = actor != null && actor.DoDecision(option);
+                float utility = applied ? GetUtility(simulated) : float.NegativeInfinity;
+                pool.Return(simulated);
+                if (!applied) continue;
+                if (utility <= bestUtility) continue;
+
+                bestUtility = utility;
+                bestDecision = option;
+            }
+
+            if (bestDecision == null) break;
+
+            AIPlayer current = state.GetPlayer(state.AI.PlayerID) as AIPlayer;
+            if (current == null || !current.DoDecision(bestDecision)) break;
+            decisions.Add(bestDecision);
+        }
+
+        pool.Return(state);
+        return new DecisionSet(decisions, 0f);
+    }
+
+    private struct LegalMoves
+    {
+        public List<PlayerDecision> Options;
+        public bool PickingAttacks;
+    }
+
+    private static LegalMoves CollectLegalMoves(GameState gameState)
+    {
+        var options = new List<PlayerDecision>();
+        bool pickingAttacks = false;
+
+        List<Card> playableCards = gameState.AI.GetPlayableCards();
+        Dictionary<string, Follower> followersByName = new Dictionary<string, Follower>();
+        Dictionary<string, Spell> spellsByName = new Dictionary<string, Spell>();
+        Dictionary<string, Follower> freeFollowersByName = new Dictionary<string, Follower>();
+        Dictionary<string, Spell> freeSpellsByName = new Dictionary<string, Spell>();
+
+        foreach (Card card in playableCards)
+        {
+            Follower follower = card as Follower;
+            Spell spell = card as Spell;
+            if (follower != null)
+            {
+                if (follower.Costs[OfferingType.Gold] == 0)
+                    freeFollowersByName[follower.GetCardType()] = follower;
+                else
+                    followersByName[follower.GetCardType()] = follower;
+            }
+            else if (spell != null)
+            {
+                if (spell.Costs[OfferingType.Gold] == 0)
+                    freeSpellsByName[spell.GetCardType()] = spell;
+                else
+                    spellsByName[spell.GetCardType()] = spell;
+            }
+        }
+
+        if (playableCards.Count > 0)
+        {
+            if (followersByName.Count > 0 || spellsByName.Count > 0)
+            {
+                foreach (Follower follower in followersByName.Values)
+                    options.Add(new PlayFollowerDecision(follower.ID, gameState.AI.BattleRow.Followers.Count));
+
+                foreach (Spell spell in spellsByName.Values)
+                {
+                    foreach (ITarget target in spell.GetTargets())
+                        options.Add(new PlaySpellDecision(spell.ID, target.GetID()));
+                }
+            }
+            else
+            {
+                foreach (Follower follower in freeFollowersByName.Values)
+                    options.Add(new PlayFollowerDecision(follower.ID, gameState.AI.BattleRow.Followers.Count));
+
+                foreach (Spell spell in freeSpellsByName.Values)
+                {
+                    foreach (ITarget target in spell.GetTargets())
+                        options.Add(new PlaySpellDecision(spell.ID, target.GetID()));
+                }
+            }
+        }
+        else if (gameState.AI.MajorRitual != null && gameState.AI.MajorRitual.CanPlay())
+        {
+            foreach (ITarget target in gameState.AI.MajorRitual.GetTargets())
+                options.Add(new UseRitualDecision(gameState.AI.MajorRitual.ID, target.GetID()));
+        }
+        else if (gameState.AI.MinorRitual != null && gameState.AI.MinorRitual.CanPlay())
+        {
+            foreach (ITarget target in gameState.AI.MinorRitual.GetTargets())
+                options.Add(new UseRitualDecision(gameState.AI.MinorRitual.ID, target.GetID()));
+        }
+        else
+        {
+            pickingAttacks = true;
+            Follower followerThatCanAttack = gameState.AI.BattleRow.GetFirstFollowerThatCanAttack();
+            if (followerThatCanAttack != null)
+            {
+                foreach (ITarget attackTarget in followerThatCanAttack.GetAttackTargets())
+                    options.Add(new AttackWithFollowerDecision(followerThatCanAttack.ID, attackTarget.GetID()));
+
+                options.Add(new SkipFollowerAttackDecision(followerThatCanAttack.ID));
+            }
+        }
+
+        return new LegalMoves { Options = options, PickingAttacks = pickingAttacks };
+    }
+
     public struct DecisionSet
     {
         public List<PlayerDecision> Decisions;
@@ -407,6 +448,12 @@ public class AIPlayer : Player
     {
         float utility = 0;
 
+        Player otherPlayer = gameState.GetOtherPlayer(gameState.AI.PlayerID);
+        if (otherPlayer.Health <= 0)
+        {
+            return float.PositiveInfinity;
+        }
+
         // Positive utility
         Player thisPlayer = gameState.GetPlayer(gameState.AI.PlayerID);
         foreach (Follower follower in thisPlayer.BattleRow.Followers)
@@ -417,7 +464,6 @@ public class AIPlayer : Player
         utility += thisPlayer.PlayerEffects.Count * 15;
 
         // Negative utility
-        Player otherPlayer = gameState.GetOtherPlayer(gameState.AI.PlayerID);
         foreach (Follower follower in otherPlayer.BattleRow.Followers)
         {
             utility -= follower.GetUtility();
