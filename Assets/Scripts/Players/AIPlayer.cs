@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
@@ -171,22 +172,94 @@ public class AIPlayer : Player
 
     private void PlanActionsSync(int generation)
     {
-        System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
         GameStatePool localPool = new GameStatePool();
-        DecisionSet result = GetBestOptions(GameState, localPool, Controller.Instance.CancellationTokenSource.Token, 0);
+        DecisionSet result;
+        try
+        {
+            CancellationToken token = Controller.Instance.CancellationTokenSource.Token;
+            System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            SearchContext context = SearchContext.Optimized(localPool, token, UseParallelSearch);
+            result = SearchRoot(GameState, context);
+            stopwatch.Stop();
+            Debug.Log($"[AI] PlanActions (sync) took {stopwatch.ElapsedMilliseconds / 1000f} seconds. {context.Stats}");
+
+            CompareWithBaselineSearch(result, token);
+        }
+        catch (Exception e)
+        {
+            localPool = new GameStatePool();
+            result = RecoverFromFailedSearch(e, localPool);
+        }
         CommitPlan(generation, result, localPool);
-        Debug.Log($"[AI] PlanActions (sync) took {stopwatch.ElapsedMilliseconds / 1000f} seconds");
     }
 
     private void PlanActions(CancellationToken cancellationToken, int generation)
     {
-        System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
         GameStatePool localPool = new GameStatePool();
-        DecisionSet result = GetBestOptions(GameState, localPool, cancellationToken, 0);
-        stopwatch.Stop();
-        Debug.Log($"[AI] PlanActions (async) took {stopwatch.ElapsedMilliseconds/1000f} seconds");
-        result = ResolveTimedOutSearch(result, cancellationToken, localPool);
+        DecisionSet result;
+        try
+        {
+            System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            SearchContext context = SearchContext.Optimized(localPool, cancellationToken, UseParallelSearch);
+            result = SearchRoot(GameState, context);
+            stopwatch.Stop();
+            Debug.Log($"[AI] PlanActions (async) took {stopwatch.ElapsedMilliseconds/1000f} seconds. {context.Stats}");
+            result = ResolveTimedOutSearch(result, cancellationToken, localPool);
+        }
+        catch (Exception e)
+        {
+            localPool = new GameStatePool();
+            result = RecoverFromFailedSearch(e, localPool);
+        }
         CommitPlan(generation, result, localPool);
+    }
+
+    // The planning Task swallows its exceptions, so without this a throw leaves the AI in Preparing forever.
+    private DecisionSet RecoverFromFailedSearch(Exception e, GameStatePool localPool)
+    {
+        Debug.LogError("[AI] Planning threw an exception. Trying a one-ply greedy turn.");
+        LogPlanningException(e);
+
+        try
+        {
+            return ChooseGreedyLine(GameState, localPool);
+        }
+        catch (Exception greedyException)
+        {
+            Debug.LogError("[AI] Greedy fallback also threw. Ending the turn.");
+            LogPlanningException(greedyException);
+            return new DecisionSet(new List<PlayerDecision>(), 0f);
+        }
+    }
+
+    private static void LogPlanningException(Exception e)
+    {
+        if (e is AggregateException aggregate)
+        {
+            foreach (Exception inner in aggregate.Flatten().InnerExceptions)
+                Debug.LogException(inner);
+            return;
+        }
+
+        Debug.LogException(e);
+    }
+
+    // AIDebugMode only. Reruns the original search on the same state; the optimized search must never score lower.
+    private void CompareWithBaselineSearch(DecisionSet optimized, CancellationToken token)
+    {
+        System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        SearchContext baseline = SearchContext.Baseline(new GameStatePool(), token);
+        DecisionSet baselineResult = GetBestOptions(GameState, baseline, 0);
+        stopwatch.Stop();
+
+        Debug.Log($"[AI] Baseline search took {stopwatch.ElapsedMilliseconds / 1000f} seconds. {baseline.Stats}. " +
+                  $"Utility: optimized {optimized.Utility}, baseline {baselineResult.Utility}");
+
+        if (optimized.Utility < baselineResult.Utility)
+        {
+            Debug.LogWarning($"[AI] Optimized search scored {optimized.Utility}, below the baseline's {baselineResult.Utility}. " +
+                             "StateSignature is probably missing a field that differs between the two lines.");
+        }
     }
 
     private DecisionSet ResolveTimedOutSearch(DecisionSet result, CancellationToken cancellationToken, GameStatePool localPool)
@@ -228,9 +301,165 @@ public class AIPlayer : Player
     }
 
     static int deepestDepth = 12;
-    public static DecisionSet GetBestOptions(GameState gameState, GameStatePool pool, CancellationToken cancellationToken, int currentDepth)
+
+    // Searches the top root branches on separate threads. Machines with two or fewer cores stay single-threaded
+    // so the search does not compete with Unity's main and render threads.
+    public static bool ParallelRootSearch = true;
+    private static bool UseParallelSearch => ParallelRootSearch && Environment.ProcessorCount > 2;
+
+    public sealed class SearchStats
     {
-        if (cancellationToken.IsCancellationRequested) return new DecisionSet(new List<PlayerDecision>(), float.NegativeInfinity);
+        public long Nodes;
+        public long StatesCopied;
+        public long CacheHits;
+        public long DuplicateSiblings;
+        public long LethalCutoffs;
+
+        public override string ToString()
+        {
+            return $"nodes={Interlocked.Read(ref Nodes)}, copies={Interlocked.Read(ref StatesCopied)}, " +
+                   $"cacheHits={Interlocked.Read(ref CacheHits)}, duplicateSiblings={Interlocked.Read(ref DuplicateSiblings)}, " +
+                   $"lethalCutoffs={Interlocked.Read(ref LethalCutoffs)}";
+        }
+    }
+
+    private sealed class CachedLine
+    {
+        public readonly PlayerDecision[] Decisions;
+        public readonly float Utility;
+
+        public CachedLine(DecisionSet line)
+        {
+            Decisions = line.Decisions.ToArray();
+            Utility = line.Utility;
+        }
+
+        // Callers prepend to the returned list, so every hit gets its own copy.
+        public DecisionSet ToDecisionSet()
+        {
+            return new DecisionSet(new List<PlayerDecision>(Decisions), Utility);
+        }
+    }
+
+    private sealed class SearchContext
+    {
+        public GameStatePool Pool;
+        public CancellationToken Token;
+        public SearchStats Stats;
+        public ConcurrentDictionary<(ulong signature, int depth), CachedLine> Cache;
+        public bool DedupeSiblings;
+        public bool StopOnLethal;
+        public bool ParallelRoot;
+
+        public static SearchContext Optimized(GameStatePool pool, CancellationToken token, bool parallelRoot)
+        {
+            return new SearchContext
+            {
+                Pool = pool,
+                Token = token,
+                Stats = new SearchStats(),
+                Cache = new ConcurrentDictionary<(ulong signature, int depth), CachedLine>(),
+                DedupeSiblings = true,
+                StopOnLethal = true,
+                ParallelRoot = parallelRoot,
+            };
+        }
+
+        public static SearchContext Baseline(GameStatePool pool, CancellationToken token)
+        {
+            return new SearchContext
+            {
+                Pool = pool,
+                Token = token,
+                Stats = new SearchStats(),
+            };
+        }
+
+        // GameStatePool is not thread-safe, so each parallel branch gets its own. Stats and cache stay shared.
+        public SearchContext ForBranch(GameStatePool pool, CancellationToken token)
+        {
+            SearchContext branch = (SearchContext)MemberwiseClone();
+            branch.Pool = pool;
+            branch.Token = token;
+            return branch;
+        }
+    }
+
+    private static DecisionSet SearchRoot(GameState gameState, SearchContext context)
+    {
+        if (!context.ParallelRoot)
+            return GetBestOptions(gameState, context, 0);
+
+        if (context.Token.IsCancellationRequested) return new DecisionSet(new List<PlayerDecision>(), float.NegativeInfinity);
+
+        const int rootDepth = 1;
+        Interlocked.Increment(ref context.Stats.Nodes);
+
+        LegalMoves legalMoves = CollectLegalMoves(gameState);
+        if (legalMoves.Options.Count == 0)
+            return new DecisionSet(new List<PlayerDecision>(), GetUtility(gameState));
+
+        List<OptionSet> optionSets = ExpandOptions(gameState, legalMoves.Options, context);
+        SortOptions(optionSets);
+        int branchCount = Mathf.Min(legalMoves.PickingAttacks ? 1 : maxBranchSize, optionSets.Count);
+
+        DecisionSet[] results = new DecisionSet[branchCount];
+        using (CancellationTokenSource lethalCts = CancellationTokenSource.CreateLinkedTokenSource(context.Token))
+        {
+            void SearchBranch(int index)
+            {
+                OptionSet optionSet = optionSets[index];
+                SearchContext branch = context.ForBranch(new GameStatePool(), lethalCts.Token);
+                DecisionSet result = GetBestOptions(optionSet.GameState, branch, rootDepth, optionSet.Signature);
+                results[index] = result;
+                if (context.StopOnLethal && float.IsPositiveInfinity(result.Utility))
+                    lethalCts.Cancel();
+            }
+
+            // LongRunning gives each branch its own thread. The planning thread is itself a pool thread,
+            // so blocking it on pool tasks could stall until the pool injects more threads.
+            Task[] workers = new Task[branchCount - 1];
+            for (int i = 1; i < branchCount; i++)
+            {
+                int index = i;
+                workers[i - 1] = Task.Factory.StartNew(() => SearchBranch(index), CancellationToken.None,
+                    TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            }
+
+            try
+            {
+                SearchBranch(0);
+            }
+            finally
+            {
+                // Workers use lethalCts, so they must finish before it is disposed.
+                Task.WaitAll(workers);
+            }
+        }
+
+        // Combine in branch order with a strict comparison so ties resolve the same way as the sequential search.
+        DecisionSet bestOptionSoFar = new DecisionSet(new List<PlayerDecision>(), -9999f);
+        for (int i = 0; i < branchCount; i++)
+        {
+            if (results[i].Utility > bestOptionSoFar.Utility)
+            {
+                List<PlayerDecision> updatedList = results[i].Decisions;
+                updatedList.Insert(0, optionSets[i].PlayerDecision);
+                bestOptionSoFar = new DecisionSet(updatedList, results[i].Utility);
+            }
+        }
+
+        foreach (OptionSet optionSet in optionSets)
+        {
+            context.Pool.Return(optionSet.GameState);
+        }
+
+        return bestOptionSoFar;
+    }
+
+    private static DecisionSet GetBestOptions(GameState gameState, SearchContext context, int currentDepth, ulong? knownSignature = null)
+    {
+        if (context.Token.IsCancellationRequested) return new DecisionSet(new List<PlayerDecision>(), float.NegativeInfinity);
 
         currentDepth++;
         if (currentDepth > deepestDepth)
@@ -238,6 +467,19 @@ public class AIPlayer : Player
             // If we've reached the maximum depth, return a utility value
             float utility = GetUtility(gameState);
             return new DecisionSet(new List<PlayerDecision>(), utility);
+        }
+
+        Interlocked.Increment(ref context.Stats.Nodes);
+
+        (ulong signature, int depth) cacheKey = default;
+        if (context.Cache != null)
+        {
+            cacheKey = (knownSignature ?? StateSignature.Compute(gameState), currentDepth);
+            if (context.Cache.TryGetValue(cacheKey, out CachedLine cached))
+            {
+                Interlocked.Increment(ref context.Stats.CacheHits);
+                return cached.ToDecisionSet();
+            }
         }
 
         LegalMoves legalMoves = CollectLegalMoves(gameState);
@@ -251,46 +493,88 @@ public class AIPlayer : Player
             return new DecisionSet(new List<PlayerDecision>(), utility);
         }
 
-        //Debug.Log("Count: " + options.Count);
-
         DecisionSet bestOptionSoFar = new DecisionSet(new List<PlayerDecision>(), -9999f);
 
-        // Get and store the utility of each option in a list
-        List<OptionSet> optionSets = new List<OptionSet>(options.Count);
-        foreach (PlayerDecision option in options)
-        {
-            GameState simulatedGameState = pool.Get(gameState, true);
-            AIPlayer thisPlayer = simulatedGameState.GetPlayer(gameState.AI.PlayerID) as AIPlayer;
-            bool result = thisPlayer.DoDecision(option);
-            if (!result) Debug.LogError("Decision Failed");
-            float utility = GetUtility(simulatedGameState);
-            optionSets.Add(new OptionSet(simulatedGameState, option, utility));
-        }
-
-        // Sort the options by utility, descending
-        optionSets.Sort((a, b) => b.Utility.CompareTo(a.Utility));
+        List<OptionSet> optionSets = ExpandOptions(gameState, options, context);
+        SortOptions(optionSets);
         // Keep the top maxBranchSize options
         int branchSize = pickingAttacks ? 1 : maxBranchSize;
-        List<OptionSet> topOptions = optionSets.GetRange(0, Mathf.Min(branchSize, optionSets.Count));
+        int topCount = Mathf.Min(branchSize, optionSets.Count);
 
-        foreach (OptionSet optionSet in topOptions)
+        for (int i = 0; i < topCount; i++)
         {
+            OptionSet optionSet = optionSets[i];
             // Recursively explore future options, returning the best one
-            DecisionSet bestOption = GetBestOptions(optionSet.GameState, pool, cancellationToken, currentDepth);
+            DecisionSet bestOption = GetBestOptions(optionSet.GameState, context, currentDepth, optionSet.Signature);
             if (bestOption.Utility > bestOptionSoFar.Utility)
             {
                 List<PlayerDecision> updatedList = bestOption.Decisions;
                 updatedList.Insert(0, optionSet.PlayerDecision);
                 bestOptionSoFar = new DecisionSet(updatedList, bestOption.Utility);
             }
+
+            if (context.StopOnLethal && float.IsPositiveInfinity(bestOptionSoFar.Utility))
+            {
+                if (i < topCount - 1) Interlocked.Increment(ref context.Stats.LethalCutoffs);
+                break;
+            }
         }
 
         foreach (OptionSet optionSet in optionSets)
         {
-            pool.Return(optionSet.GameState);
+            context.Pool.Return(optionSet.GameState);
         }
 
+        // A cancelled search may have skipped branches, so its result is not the true best for this state.
+        if (context.Cache != null && !context.Token.IsCancellationRequested)
+            context.Cache.TryAdd(cacheKey, new CachedLine(bestOptionSoFar));
+
         return bestOptionSoFar;
+    }
+
+    // Simulates each option on its own copy of the state and scores it.
+    private static List<OptionSet> ExpandOptions(GameState gameState, List<PlayerDecision> options, SearchContext context)
+    {
+        List<OptionSet> optionSets = new List<OptionSet>(options.Count);
+        bool needsSignature = context.Cache != null || context.DedupeSiblings;
+        HashSet<ulong> siblingSignatures = context.DedupeSiblings ? new HashSet<ulong>() : null;
+
+        for (int i = 0; i < options.Count; i++)
+        {
+            PlayerDecision option = options[i];
+            GameState simulatedGameState = context.Pool.Get(gameState, true);
+            Interlocked.Increment(ref context.Stats.StatesCopied);
+            AIPlayer thisPlayer = simulatedGameState.GetPlayer(gameState.AI.PlayerID) as AIPlayer;
+            bool result = thisPlayer.DoDecision(option);
+            if (!result) Debug.LogError("Decision Failed");
+
+            ulong? signature = null;
+            if (needsSignature)
+            {
+                signature = StateSignature.Compute(simulatedGameState);
+                if (siblingSignatures != null && !siblingSignatures.Add(signature.Value))
+                {
+                    context.Pool.Return(simulatedGameState);
+                    Interlocked.Increment(ref context.Stats.DuplicateSiblings);
+                    continue;
+                }
+            }
+
+            float utility = GetUtility(simulatedGameState);
+            optionSets.Add(new OptionSet(simulatedGameState, option, utility, i, signature));
+        }
+
+        return optionSets;
+    }
+
+    // Utility descending, ties in legal-move order, so dropping a duplicate sibling never reorders the rest.
+    private static void SortOptions(List<OptionSet> optionSets)
+    {
+        optionSets.Sort((a, b) =>
+        {
+            int byUtility = b.Utility.CompareTo(a.Utility);
+            return byUtility != 0 ? byUtility : a.Index.CompareTo(b.Index);
+        });
     }
 
     private static DecisionSet ChooseGreedyLine(GameState gameState, GameStatePool pool)
@@ -435,12 +719,16 @@ public class AIPlayer : Player
         public GameState GameState;
         public PlayerDecision PlayerDecision;
         public float Utility;
+        public int Index;
+        public ulong? Signature;
 
-        public OptionSet(GameState gameState, PlayerDecision playerDecision, float utility)
+        public OptionSet(GameState gameState, PlayerDecision playerDecision, float utility, int index, ulong? signature)
         {
             GameState = gameState;
             PlayerDecision = playerDecision;
             Utility = utility;
+            Index = index;
+            Signature = signature;
         }
     }
 

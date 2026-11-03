@@ -272,7 +272,8 @@ public class Player : ITarget
         copy.ITargetID = ITargetID;
         copy.GameState.TargetsByID[ITargetID] = copy;
 
-        copy.DeckBlueprint = CopyCardList(DeckBlueprint);
+        // Simulated copies only read the blueprint (RefreshDeck copies from it), so they share the real list.
+        copy.DeckBlueprint = newGameState.IsSimulated ? DeckBlueprint : CopyCardList(DeckBlueprint);
         copy.Hand = DeepCopyCardList(Hand, copy);
         copy.Deck = DeepCopyCardList(Deck, copy);
         copy.Graveyard = DeepCopyCardList(Graveyard, copy);

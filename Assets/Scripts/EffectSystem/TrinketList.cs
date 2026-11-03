@@ -1821,8 +1821,10 @@ public class StringsOfFateTrinketEffectDef : TrinketPlayerEffect
     private void RemoveOneCopyFromDeck(Player player, Card discardedCard)
     {
         string cardType = discardedCard.GetCardType();
+        // Simulated states share the real DeckBlueprint, and the run deck belongs to the real game.
+        bool simulated = player.GameState != null && player.GameState.IsSimulated;
 
-        for (int i = 0; i < player.DeckBlueprint.Count; i++)
+        for (int i = 0; !simulated && i < player.DeckBlueprint.Count; i++)
         {
             if (player.DeckBlueprint[i].GetCardType() == cardType)
             {
@@ -1840,7 +1842,7 @@ public class StringsOfFateTrinketEffectDef : TrinketPlayerEffect
             }
         }
 
-        if (Controller.Instance != null)
+        if (!simulated && Controller.Instance != null)
             Controller.Instance.RemoveOneCardCopyFromPlayerDeck(cardType);
     }
 

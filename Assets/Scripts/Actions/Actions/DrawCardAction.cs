@@ -49,6 +49,8 @@ public class DrawCardAction : GameAction
                 {
                     if (drawnGoldCostReduction > 0)
                     {
+                        // Card.DeepCopy shares Costs with the card it was copied from.
+                        cardDrawn.Costs = new Dictionary<OfferingType, int>(cardDrawn.Costs);
                         cardDrawn.Costs[OfferingType.Gold] = Mathf.Max(cardDrawn.Costs[OfferingType.Gold] - drawnGoldCostReduction, 0);
                     }
                     cardsDrawn.Add(cardDrawn);

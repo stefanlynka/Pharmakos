@@ -211,6 +211,11 @@ public class Follower : Card, ITarget
         {
             foreach (FollowerEffect effectDef in followerOriginal.InnateEffects)
             {
+                // Player effects (Major Rituals, trinkets) bind these to themselves and re-add them to followers
+                // when the copied effect is applied. A clone would stay bound to the original player effect and act on its game.
+                if (effectDef is CustomEffectDef custom && custom.ApplyInstanceAction?.Target is PlayerEffect)
+                    continue;
+
                 FollowerEffect clonedEffectDef = effectDef.Clone();
                 clonedEffectDef.EffectSource = this;
                 InnateEffects.Add(clonedEffectDef);

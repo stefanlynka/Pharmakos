@@ -6,7 +6,8 @@ using static UnityEngine.UI.GridLayoutGroup;
 public class FollowerEffectInstance : IComparable<FollowerEffectInstance>
 {
     // Set while building a card preview. Constructors still record their data, but they do not subscribe the dummy follower.
-    public static bool SuppressRegistration;
+    // Per thread, so a preview on the main thread cannot suppress registration in the AI's search threads.
+    [ThreadStatic] public static bool SuppressRegistration;
 
     public FollowerEffect EffectDef;
     public Follower AffectedFollower; // The follower this EffectInstance is applied to
@@ -423,6 +424,8 @@ public class SetStatsInstance : TriggeredFollowerEffectInstance
 
         foreach (Follower targetFollower in targetFollowers)
         {
+            if (targetFollower == null) continue;
+
             SetStatsAction action = new SetStatsAction(targetFollower, NewAttack, NewHealth);
             AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
         }
@@ -492,6 +495,7 @@ public class TurnToStoneInstance : TriggeredFollowerEffectInstance
         foreach (Follower targetFollower in targetFollowers)
         {
             if (AffectedFollower == null) return;
+            if (targetFollower == null) continue;
 
             if (targetFollower.GetCurrentAttack() < AffectedFollower.GetCurrentAttack())
             {
