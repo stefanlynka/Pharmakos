@@ -283,16 +283,35 @@ public class PopupScreenHandler : MonoBehaviour
             sizes[i] = GetRectInContainer(popup).size;
         }
 
-        PlaceRitualCards(popups, sizes, count, ritualRect, true);
-        ClampPopupsIntoBounds(popups, count, screenBounds);
-        float rightScore = RitualCardScore(popups, count, ritualRect, altarRect, screenBounds);
-        Vector2[] rightPositions = SnapshotPopupPositions(popups, count);
+        // The summary already occupies the open side of the altar. Referenced cards stay on
+        // that side. A screen clamp used to slide them back across the summary, and covering
+        // the altar was scored cheaply enough that the cards then landed on the ritual.
+        bool outerOnRight = altarRect.width <= 0f || altarRect.height <= 0f
+            || ritualRect.center.x >= altarRect.center.x;
 
-        PlaceRitualCards(popups, sizes, count, ritualRect, false);
-        ClampPopupsIntoBounds(popups, count, screenBounds);
-        float leftScore = RitualCardScore(popups, count, ritualRect, altarRect, screenBounds);
-        if (rightScore < leftScore)
-            RestorePopupPositions(popups, rightPositions, count);
+        float bestScore = float.MaxValue;
+        Vector2[] bestPositions = null;
+
+        void Consider(System.Action place)
+        {
+            place();
+            ClampRitualCardsIntoBounds(popups, count, screenBounds, ritualRect, altarRect);
+            float score = RitualCardScore(popups, count, ritualRect, altarRect, screenBounds);
+            if (score >= bestScore)
+                return;
+
+            bestScore = score;
+            bestPositions = SnapshotPopupPositions(popups, count);
+        }
+
+        Consider(() => PlaceRitualCards(popups, sizes, count, ritualRect, outerOnRight));
+        Consider(() => PlaceRitualCardColumn(popups, sizes, count, ritualRect, altarRect, true, outerOnRight));
+        Consider(() => PlaceRitualCardColumn(popups, sizes, count, ritualRect, altarRect, false, outerOnRight));
+        // Other side of the summary only. Covering the altar loses to staying on the open side.
+        Consider(() => PlaceRitualCards(popups, sizes, count, ritualRect, !outerOnRight));
+
+        if (bestPositions != null)
+            RestorePopupPositions(popups, bestPositions, count);
     }
 
     void PlaceRitualCards(RectTransform[] popups, Vector2[] sizes, int count, Rect ritualRect, bool placeOnRight)
@@ -327,6 +346,49 @@ public class PopupScreenHandler : MonoBehaviour
         }
     }
 
+    void PlaceRitualCardColumn(RectTransform[] popups, Vector2[] sizes, int count, Rect ritualRect, Rect altarRect, bool upward, bool outerOnRight)
+    {
+        float centerX = ritualRect.center.x;
+        float edgeY = upward
+            ? ritualRect.yMax + KeywordReminderPopupGap
+            : ritualRect.yMin - KeywordReminderPopupGap;
+        float cursor = edgeY;
+
+        for (int i = 0; i < count; i++)
+        {
+            if (popups[i] == null || sizes[i].y <= 0f)
+                continue;
+
+            float height = sizes[i].y;
+            float centerY = upward ? cursor + height * 0.5f : cursor - height * 0.5f;
+            MovePopupToContainerPoint(popups[i], new Vector2(centerX, centerY));
+            popups[i].SetAsLastSibling();
+            float step = height + KeywordReminderPopupGap;
+            cursor = upward ? cursor + step : cursor - step;
+        }
+
+        NudgePopupsOffRect(popups, count, altarRect, outerOnRight);
+    }
+
+    void NudgePopupsOffRect(RectTransform[] popups, int count, Rect blocked, bool nudgeRight)
+    {
+        if (blocked.width <= 0f || blocked.height <= 0f)
+            return;
+
+        GetPopupUnion(popups, count, out float xMin, out float xMax, out float yMin, out float yMax);
+        if (xMin == float.MaxValue)
+            return;
+
+        Rect union = Rect.MinMaxRect(xMin, yMin, xMax, yMax);
+        if (OverlapArea(union, blocked) <= 0f)
+            return;
+
+        float shiftX = nudgeRight
+            ? blocked.xMax + KeywordReminderPopupGap - xMin
+            : blocked.xMin - KeywordReminderPopupGap - xMax;
+        ShiftPopups(popups, count, shiftX, 0f);
+    }
+
     float RitualCardScore(RectTransform[] popups, int count, Rect ritualRect, Rect altarRect, Rect screenBounds)
     {
         float score = 0f;
@@ -337,9 +399,9 @@ public class PopupScreenHandler : MonoBehaviour
 
             Rect rect = GetRectInContainer(popups[i]);
             score += OffScreenAmount(rect, screenBounds) * 100000f;
-            score += OverlapArea(rect, ritualRect) * 10000f;
+            score += OverlapArea(rect, ritualRect) * 100000f;
             if (altarRect.width > 0f && altarRect.height > 0f)
-                score += OverlapArea(rect, altarRect) * 1000f;
+                score += OverlapArea(rect, altarRect) * 100000f;
         }
 
         return score;
@@ -384,6 +446,35 @@ public class PopupScreenHandler : MonoBehaviour
             shiftX += bounds.xMin - xMin;
         if (xMax + shiftX > bounds.xMax)
             shiftX += bounds.xMax - (xMax + shiftX);
+        ShiftPopups(popups, count, shiftX, 0f);
+    }
+
+    void ClampRitualCardsIntoBounds(RectTransform[] popups, int count, Rect bounds, Rect portraitRect, Rect altarRect)
+    {
+        if (bounds.width <= 0f || bounds.height <= 0f)
+            return;
+
+        GetPopupUnion(popups, count, out float xMin, out float xMax, out float yMin, out float yMax);
+        if (xMin == float.MaxValue)
+            return;
+
+        float shiftY = 0f;
+        if (yMin < bounds.yMin)
+            shiftY += bounds.yMin - yMin;
+        if (yMax + shiftY > bounds.yMax)
+            shiftY += bounds.yMax - (yMax + shiftY);
+        shiftY = LimitReminderShift(xMin, xMax, yMin, yMax, portraitRect, shiftY, vertical: true);
+        shiftY = LimitReminderShift(xMin, xMax, yMin, yMax, altarRect, shiftY, vertical: true);
+        ShiftPopups(popups, count, 0f, shiftY);
+
+        GetPopupUnion(popups, count, out xMin, out xMax, out yMin, out yMax);
+        float shiftX = 0f;
+        if (xMin < bounds.xMin)
+            shiftX += bounds.xMin - xMin;
+        if (xMax + shiftX > bounds.xMax)
+            shiftX += bounds.xMax - (xMax + shiftX);
+        shiftX = LimitReminderShift(xMin, xMax, yMin, yMax, portraitRect, shiftX, vertical: false);
+        shiftX = LimitReminderShift(xMin, xMax, yMin, yMax, altarRect, shiftX, vertical: false);
         ShiftPopups(popups, count, shiftX, 0f);
     }
 

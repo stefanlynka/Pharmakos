@@ -204,7 +204,14 @@ public class OverworldMapController : MonoBehaviour
 
     public void ApplySavedMap(RunSaveData save)
     {
-        SetTutorialNodesActive(false);
+        if (save != null && save.isTutorialRun)
+        {
+            SetTutorialNodesActive(true);
+            RestoreAuthoredTutorialTypes();
+        }
+        else
+            SetTutorialNodesActive(false);
+
         _allNodes = Grid != null ? Grid.GetAllNodes() : new OverworldMapNode[0];
         _clearedNodes.Clear();
 

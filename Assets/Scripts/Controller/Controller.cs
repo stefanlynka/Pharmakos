@@ -1216,13 +1216,14 @@ public class Controller : MonoBehaviour
             return;
         }
 
-        IsTutorialRun = false;
+        IsTutorialRun = save.isTutorialRun;
         IsTestChamber = false;
         TutorialDirector.Reset();
         FirstTimeSetup();
         BeginFreshPlayerDeck();
         if (!RunSave.Apply(save))
         {
+            IsTutorialRun = false;
             RefreshStartMenu();
             return;
         }
@@ -1242,7 +1243,7 @@ public class Controller : MonoBehaviour
 
     void SaveCurrentRun()
     {
-        if (IsTutorialRun || IsTestChamber) return;
+        if (IsTestChamber) return;
         if (OverworldMapController == null) return;
 
         RunSave.WriteFromCurrentRun();
@@ -1251,7 +1252,7 @@ public class Controller : MonoBehaviour
 
     void DeleteRunSave()
     {
-        if (IsTutorialRun || IsTestChamber) return;
+        if (IsTestChamber) return;
         RunSave.Delete();
     }
 

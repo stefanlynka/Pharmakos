@@ -30,6 +30,7 @@ public class TutorialPresenter : MonoBehaviour
     readonly Queue<TutorialBeat> _queue = new Queue<TutorialBeat>();
     TutorialSpriteCue[] _activeCues = System.Array.Empty<TutorialSpriteCue>();
     Coroutine _routine;
+    TutorialBeat _playing;
     bool _dismissRequested;
     float _maxTextWidth = -1f;
     int _slide;
@@ -39,26 +40,24 @@ public class TutorialPresenter : MonoBehaviour
         if (_routine != null)
             _dismissRequested = true;
 
-        if (_queue.Count == 0)
-            return;
-
-        var kept = new Queue<TutorialBeat>();
-        while (_queue.Count > 0)
-        {
-            TutorialBeat beat = _queue.Dequeue();
-            if (beat.Trigger != TutorialTrigger.OverworldShown)
-                kept.Enqueue(beat);
-        }
-
-        while (kept.Count > 0)
-            _queue.Enqueue(kept.Dequeue());
+        DropQueued(TutorialTrigger.OverworldShown);
+        DropQueued(TutorialTrigger.EndTurnHovered);
     }
 
     void Update()
     {
-        if (_routine != null || IsBlocking)
-            return;
         if (Controller.Instance == null || !Controller.Instance.IsTutorialRun)
+            return;
+
+        // Combat only fades its canvas out, and the player's turn number stays put.
+        // After tutorial combat 2 that still matches the discard lesson on the shop screen.
+        if (!TutorialSpotlight.IsEndTurnShown())
+            SuppressEndTurnLessons();
+
+        if (!CanOfferEndTurnLesson())
+            return;
+
+        if (_routine != null || IsBlocking)
             return;
         if (!TutorialSpotlight.IsPointerOverEndTurn())
             return;
@@ -69,6 +68,49 @@ public class TutorialPresenter : MonoBehaviour
             turn = state.CurrentPlayer.TurnNumber;
 
         TutorialDirector.Raise(TutorialTrigger.EndTurnHovered, TutorialCombatScript.ActiveEncounter, turn);
+    }
+
+    bool CanOfferEndTurnLesson()
+    {
+        return Controller.Instance.GameRunning && TutorialSpotlight.IsEndTurnShown();
+    }
+
+    void SuppressEndTurnLessons()
+    {
+        if (_playing != null && _playing.Trigger == TutorialTrigger.EndTurnHovered)
+            _dismissRequested = true;
+
+        DropQueued(TutorialTrigger.EndTurnHovered);
+    }
+
+    void DropQueued(TutorialTrigger trigger)
+    {
+        if (_queue.Count == 0)
+            return;
+
+        bool found = false;
+        foreach (TutorialBeat queued in _queue)
+        {
+            if (queued.Trigger == trigger)
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+            return;
+
+        var kept = new Queue<TutorialBeat>();
+        while (_queue.Count > 0)
+        {
+            TutorialBeat beat = _queue.Dequeue();
+            if (beat.Trigger != trigger)
+                kept.Enqueue(beat);
+        }
+
+        while (kept.Count > 0)
+            _queue.Enqueue(kept.Dequeue());
     }
 
     public static TutorialPresenter Ensure()
@@ -107,6 +149,7 @@ public class TutorialPresenter : MonoBehaviour
     public void ResetRun()
     {
         _queue.Clear();
+        _playing = null;
         if (_routine != null)
         {
             StopCoroutine(_routine);
@@ -116,6 +159,22 @@ public class TutorialPresenter : MonoBehaviour
         IsBlocking = false;
         _dismissRequested = false;
         HideAll();
+    }
+
+    public bool IsPending(TutorialBeat beat)
+    {
+        if (beat == null)
+            return false;
+        if (ReferenceEquals(_playing, beat))
+            return true;
+
+        foreach (TutorialBeat queued in _queue)
+        {
+            if (ReferenceEquals(queued, beat))
+                return true;
+        }
+
+        return false;
     }
 
     public void Enqueue(TutorialBeat beat)
@@ -131,7 +190,11 @@ public class TutorialPresenter : MonoBehaviour
     IEnumerator PlayQueue()
     {
         while (_queue.Count > 0)
-            yield return Play(_queue.Dequeue());
+        {
+            _playing = _queue.Dequeue();
+            yield return Play(_playing);
+            _playing = null;
+        }
 
         _routine = null;
         _dismissRequested = false;
@@ -139,6 +202,12 @@ public class TutorialPresenter : MonoBehaviour
 
     IEnumerator Play(TutorialBeat beat)
     {
+        if (beat.Trigger == TutorialTrigger.EndTurnHovered && !TutorialSpotlight.IsEndTurnShown())
+        {
+            _dismissRequested = false;
+            yield break;
+        }
+
         if (beat.Delay > 0f)
         {
             float waited = 0f;
@@ -213,11 +282,19 @@ public class TutorialPresenter : MonoBehaviour
                 _text.maxVisibleCharacters = visible;
             }
 
+            bool pointerDown = Input.GetMouseButtonDown(0);
+            if (pointerDown && typing && visible < textLength)
+            {
+                visible = textLength;
+                _text.maxVisibleCharacters = textLength;
+                pointerDown = false;
+            }
+
             bool textShown = !typing || visible >= textLength;
             if (textShown)
                 shown += Time.deltaTime;
 
-            bool clicked = textShown && Input.GetMouseButtonDown(0);
+            bool clicked = textShown && pointerDown;
             if (slideshow)
             {
                 if (clicked)
@@ -260,6 +337,7 @@ public class TutorialPresenter : MonoBehaviour
 
         HideAll();
         IsBlocking = false;
+        _dismissRequested = false;
     }
 
     void ApplyCover(TutorialBeat beat)

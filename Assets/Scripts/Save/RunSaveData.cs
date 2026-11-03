@@ -40,4 +40,6 @@ public class RunSaveData
     public int currentQ;
     public int currentR;
     public List<MapNodeSave> nodes = new List<MapNodeSave>();
+    public bool isTutorialRun;
+    public List<int> tutorialBeatsPlayed = new List<int>();
 }

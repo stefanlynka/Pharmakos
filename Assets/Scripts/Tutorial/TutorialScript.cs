@@ -502,6 +502,39 @@ public static class TutorialScript
             Beats[i].Played = false;
     }
 
+    /// <summary>
+    /// Beats the player has already finished. A line still on screen is left out so continuing replays it.
+    /// </summary>
+    public static List<int> FinishedIndices()
+    {
+        var finished = new List<int>();
+        TutorialPresenter presenter = TutorialPresenter.Instance;
+        for (int i = 0; i < Beats.Count; i++)
+        {
+            TutorialBeat beat = Beats[i];
+            if (beat == null || !beat.Played)
+                continue;
+            if (presenter != null && presenter.IsPending(beat))
+                continue;
+            finished.Add(i);
+        }
+
+        return finished;
+    }
+
+    public static void ApplyFinishedIndices(List<int> indices)
+    {
+        Reset();
+        if (indices == null) return;
+
+        for (int i = 0; i < indices.Count; i++)
+        {
+            int index = indices[i];
+            if (index >= 0 && index < Beats.Count && Beats[index] != null)
+                Beats[index].Played = true;
+        }
+    }
+
     public static bool HasPlayed(string id)
     {
         if (string.IsNullOrEmpty(id))

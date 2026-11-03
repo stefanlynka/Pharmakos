@@ -1980,7 +1980,6 @@ public class ProgressionHandler
             new WingsOfIcarusTrinket(),
             new PandorasBoxTrinket(),
             new PandorasHopeTrinket(),
-            new OdysseyTrinket(),
         };
     }
 

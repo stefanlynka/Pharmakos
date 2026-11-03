@@ -31,9 +31,18 @@ public static class TutorialSpotlight
         return hole.width > 0.005f && hole.height > 0.005f;
     }
 
+    public static bool IsEndTurnShown()
+    {
+        return TryGetLabeledButton(ref endTurn, "End Turn", out RectTransform rect) && IsScreenAcceptingInput(rect);
+    }
+
     public static bool IsPointerOverEndTurn()
     {
         if (EventSystem.current == null || !TryGetLabeledButton(ref endTurn, "End Turn", out RectTransform rect))
+            return false;
+        // Leaving combat fades the screen out. The button stays active, so a later
+        // screen (the shop, for one) can still sit under the same rectangle.
+        if (!IsScreenAcceptingInput(rect))
             return false;
 
         Camera camera = null;
@@ -42,6 +51,19 @@ public static class TutorialSpotlight
             camera = canvas.worldCamera;
 
         return RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition, camera);
+    }
+
+    static bool IsScreenAcceptingInput(RectTransform rect)
+    {
+        CanvasGroup[] groups = rect.GetComponentsInParent<CanvasGroup>();
+        for (int i = 0; i < groups.Length; i++)
+        {
+            CanvasGroup group = groups[i];
+            if (group != null && (!group.interactable || !group.blocksRaycasts))
+                return false;
+        }
+
+        return true;
     }
 
     static bool TryWorldRect(TutorialFocus focus, out Rect hole)

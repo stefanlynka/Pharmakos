@@ -101,10 +101,16 @@ public static class RunSave
         ApplyStyx(controller, save);
         ApplySacrificedFollowers(controller, save);
         ApplyEncounteredEvents(controller, save);
+        controller.IsTutorialRun = save.isTutorialRun;
         controller.ProgressionHandler.ReadRunProgress(save);
 
         if (controller.OverworldMapController != null)
             controller.OverworldMapController.ApplySavedMap(save);
+
+        if (save.isTutorialRun)
+            TutorialScript.ApplyFinishedIndices(save.tutorialBeatsPlayed);
+        else
+            TutorialScript.Reset();
 
         return true;
     }
@@ -117,6 +123,8 @@ public static class RunSave
             runSeed = controller.RunSeed,
             metaRngSeed = (int)controller.MetaRNG.CurrentSeed,
             heartstrings = controller.RunHeartStrings,
+            isTutorialRun = controller.IsTutorialRun,
+            tutorialBeatsPlayed = controller.IsTutorialRun ? TutorialScript.FinishedIndices() : new List<int>(),
         };
 
         PlayerDetails details = controller.HumanPlayerDetails;
