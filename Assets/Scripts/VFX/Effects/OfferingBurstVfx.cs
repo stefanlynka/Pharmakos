@@ -30,8 +30,8 @@ public class OfferingBurstVfx : VfxEffect
     public float ParticleFadeLength = 0.5f;
     public float ParticleMaxTravelMultiplier = 2.6f;
 
-    public float TokenScaleMin = 0.09f;
-    public float TokenScaleMax = 0.14f;
+    public float TokenScaleMin = 0.135f;
+    public float TokenScaleMax = 0.21f;
     public float TokenSpin = 180f;
 
     public float ParticleSizeMin = 0.16f;

@@ -1534,21 +1534,31 @@ public class PopupScreenHandler : MonoBehaviour
         else if (screenBounds.width > 0f && followerRect.width > 0f)
             outerOnRight = screenBounds.xMax - followerRect.xMax >= followerRect.xMin - screenBounds.xMin;
 
-        PlaceKeywordReminders(reminders, count, popupBounds, outerOnRight);
-        float outerScore = KeywordPlacementScore(reminders, count, followerRect, screenBounds);
+        // The follower on the board is a separate rect from its popup. Near the right edge the
+        // popup already fills the remaining space, so a screen clamp must not slide reminders onto it.
+        Rect avoidFollower = besidePopup ? followerRect : Rect.zero;
+        float bestScore = float.MaxValue;
+        Vector2[] bestPositions = null;
 
-        PlaceKeywordReminders(reminders, count, popupBounds, !outerOnRight);
-        float otherScore = KeywordPlacementScore(reminders, count, followerRect, screenBounds);
-        if (outerScore <= otherScore)
-            PlaceKeywordReminders(reminders, count, popupBounds, outerOnRight);
+        void Consider(System.Action place)
+        {
+            place();
+            ClampRemindersIntoBounds(reminders, count, screenBounds, popupBounds, avoidFollower, Rect.zero);
+            float score = RitualReminderScore(reminders, count, avoidFollower, popupBounds, Rect.zero, screenBounds);
+            if (score >= bestScore)
+                return;
 
-        ShiftRemindersIntoBounds(reminders, count, screenBounds, followerRect);
-    }
+            bestScore = score;
+            bestPositions = CopyReminderPositions(reminders, count);
+        }
 
-    float KeywordPlacementScore(List<KeywordReminderPopup> reminders, int count, Rect followerRect, Rect screenBounds)
-    {
-        return ReminderOverlap(reminders, count, followerRect) * 10000f
-            + OffScreenAmount(reminders, count, screenBounds);
+        Consider(() => PlaceKeywordReminders(reminders, count, popupBounds, outerOnRight));
+        Consider(() => PlaceKeywordReminders(reminders, count, popupBounds, !outerOnRight));
+        Consider(() => PlaceReminderStack(reminders, count, popupBounds.center.x, popupBounds.yMax + KeywordReminderPopupGap, upward: true));
+        Consider(() => PlaceReminderStack(reminders, count, popupBounds.center.x, popupBounds.yMin - KeywordReminderPopupGap, upward: false));
+
+        if (bestPositions != null)
+            ApplyReminderPositions(reminders, count, bestPositions);
     }
 
     void PlaceKeywordReminders(List<KeywordReminderPopup> reminders, int count, Rect popupBounds, bool placeOnRight)
@@ -1572,54 +1582,6 @@ public class PopupScreenHandler : MonoBehaviour
 
             y -= height + KeywordReminderGap;
         }
-    }
-
-    void ShiftRemindersIntoBounds(List<KeywordReminderPopup> reminders, int count, Rect bounds, Rect forbidden)
-    {
-        if (count == 0 || bounds.width <= 0f || bounds.height <= 0f)
-            return;
-
-        GetReminderUnion(reminders, count, out float xMin, out float xMax, out float yMin, out float yMax);
-
-        float shiftY = 0f;
-        if (yMin < bounds.yMin)
-            shiftY += bounds.yMin - yMin;
-        if (yMax + shiftY > bounds.yMax)
-            shiftY += bounds.yMax - (yMax + shiftY);
-
-        if (shiftY != 0f)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                Vector2 position = reminders[i].RectTransform.anchoredPosition;
-                position.y += shiftY;
-                reminders[i].RectTransform.anchoredPosition = position;
-            }
-        }
-
-        GetReminderUnion(reminders, count, out xMin, out xMax, out yMin, out yMax);
-
-        float shiftX = 0f;
-        if (xMin < bounds.xMin)
-            shiftX += bounds.xMin - xMin;
-        if (xMax + shiftX > bounds.xMax)
-            shiftX += bounds.xMax - (xMax + shiftX);
-
-        shiftX = LimitShiftAwayFromRect(xMin, xMax, yMin, yMax, forbidden, shiftX);
-        if (shiftX == 0f)
-            return;
-
-        for (int i = 0; i < count; i++)
-        {
-            Vector2 position = reminders[i].RectTransform.anchoredPosition;
-            position.x += shiftX;
-            reminders[i].RectTransform.anchoredPosition = position;
-        }
-    }
-
-    static float LimitShiftAwayFromRect(float xMin, float xMax, float yMin, float yMax, Rect forbidden, float shiftX)
-    {
-        return LimitReminderShift(xMin, xMax, yMin, yMax, forbidden, shiftX, vertical: false);
     }
 
     static float LimitReminderShift(float xMin, float xMax, float yMin, float yMax, Rect forbidden, float shift, bool vertical)

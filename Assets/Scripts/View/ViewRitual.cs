@@ -701,10 +701,24 @@ public class ViewRitual : ViewTarget
 
     void UpdateHoverSummary()
     {
+        if (IsSelectedForTargeting())
+        {
+            if (isHoverSummaryShown)
+                HideHoverSummary();
+            return;
+        }
+
         if (IsHovered())
             ShowHoverSummary();
         else if (isHoverSummaryShown)
             HideHoverSummary();
+    }
+
+    bool IsSelectedForTargeting()
+    {
+        return View.Instance != null
+            && View.Instance.SelectionHandler != null
+            && View.Instance.SelectionHandler.SelectedRitual == this;
     }
 
     void ShowHoverSummary()

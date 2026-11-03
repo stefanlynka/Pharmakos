@@ -91,6 +91,10 @@ public class Player : ITarget
         }
     }
 
+    // Set after this turn's summoning sickness clear, until the next turn starts.
+    // End-of-turn summons are queued into that window.
+    public bool SummoningSicknessCleared;
+
     public int GetID()
     {
         return ITargetID;
@@ -283,6 +287,7 @@ public class Player : ITarget
 
         copy.Offerings = new Dictionary<OfferingType, int>(Offerings);
         copy.FollowerCostReductions = new Dictionary<OfferingType, int>(FollowerCostReductions);
+        copy.SummoningSicknessCleared = SummoningSicknessCleared;
         copy.MinorRitual = MinorRitual?.DeepCopy(copy);
         copy.MajorRitual = MajorRitual?.DeepCopy(copy);
 
@@ -392,13 +397,17 @@ public class Player : ITarget
     // Setup for this Player. Should only be called by GameState.EndTurn()
     public virtual void StartTurn()
     {
+        SummoningSicknessCleared = false;
+        Player otherPlayer = GameState.GetOtherPlayer(PlayerID);
+        if (otherPlayer != null)
+            otherPlayer.SummoningSicknessCleared = false;
+
         foreach (Follower follower in BattleRow.Followers)
         {
             follower.DoStartOfMyTurnEffects();
             follower.DoStartOfEachTurnEffects();
         }
 
-        Player otherPlayer = GameState.GetOtherPlayer(PlayerID);
         foreach (Follower follower in otherPlayer.BattleRow.Followers)
         {
             follower.DoStartOfEachTurnEffects();
@@ -458,6 +467,10 @@ public class Player : ITarget
         }
 
         otherPlayer.DoEndOfEveryTurnPlayerActions();
+
+        // Followers already in play just had PlayedThisTurn cleared. Summons queued by the
+        // end-of-turn actions above run after this returns, so mark that window now.
+        SummoningSicknessCleared = true;
 
         GameState.FollowerDeathsThisTurn = 0;
     }
@@ -665,6 +678,9 @@ public class Player : ITarget
         // Add to BattleRow
         index = Mathf.Min(index, BattleRow.Followers.Count);
         BattleRow.AddFollower(follower, index);
+
+        if (SummoningSicknessCleared)
+            follower.PlayedThisTurn = false;
 
         // Trigger Offerings
         if (createCrop)

@@ -17,7 +17,23 @@ public class RevealTrinketAnimation : AnimationAction
     {
         base.Play(onFinish);
         View.Instance.RevealBuff(effect);
+        RefreshOwnerRitualCosts();
         CallCallback();
+    }
+
+    void RefreshOwnerRitualCosts()
+    {
+        if (View.Instance == null || effect == null || effect.Owner == null)
+            return;
+
+        ViewPlayer viewPlayer = View.Instance.GetViewPlayer(effect.Owner);
+        if (viewPlayer == null)
+            return;
+
+        if (viewPlayer.ViewMajorRitual != null)
+            viewPlayer.ViewMajorRitual.Refresh();
+        if (viewPlayer.ViewMinorRitual != null)
+            viewPlayer.ViewMinorRitual.Refresh();
     }
 }
 
