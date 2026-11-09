@@ -143,7 +143,18 @@ public class AIPlayer : Player
                 foreach (PlayerDecision playerDecision in playerDecisions.Decisions)
                 {
                     Debug.LogWarning("Decision: " + playerDecision.GetString());
-                    bool result = DoDecision(playerDecision);
+                    bool result;
+                    try
+                    {
+                        result = DoDecision(playerDecision);
+                    }
+                    catch (Exception e)
+                    {
+                        // Escaping here would leave the phase on Executing and replay every decision next frame.
+                        Debug.LogError("[AI] Decision threw. Skipping the rest of the turn.");
+                        Debug.LogException(e);
+                        break;
+                    }
                     if (!result)
                     {
                         Debug.LogWarning("Decision Failed");

@@ -32,13 +32,20 @@ public class ActionHandler
     {
         //Debug.LogError("Start evaluating " + ActionStack.Count + " Actions");
         Evaluating = true;
-        while (ActionStack.Count > 0)
+        try
         {
-            GameAction newAction = ActionStack[0];
-            ActionStack.RemoveAt(0);
-            newAction.Execute(Simulated);
+            while (ActionStack.Count > 0)
+            {
+                GameAction newAction = ActionStack[0];
+                ActionStack.RemoveAt(0);
+                newAction.Execute(Simulated);
+            }
         }
-        Evaluating = false;
+        finally
+        {
+            // A throwing action must not leave Evaluating set, or later actions (like ending the turn) never run.
+            Evaluating = false;
+        }
     }
 
     public void ClearStack()

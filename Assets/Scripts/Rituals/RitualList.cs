@@ -416,6 +416,9 @@ public class AresMajorEffectDef : StaticPlayerEffect
     private int attackGain = 0;
     private int healthGain = 0;
 
+    // Trinket<T> creates its effect with a single Player argument.
+    public AresMajorEffectDef(Player owner) : this(owner, owner, 1, 1) { }
+
     public AresMajorEffectDef(Player owner, Player target, int attackGain, int healthGain)
     {
         Owner = owner;
