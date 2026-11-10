@@ -22,6 +22,7 @@ public class PopupScreenHandler : MonoBehaviour
     const float KeywordReminderPopupGap = 16f / 5f;
     const string PopupRenderTextureOnePath = "RenderTextures/Popup1";
     const string PopupRenderTextureTwoPath = "RenderTextures/Popup2";
+    const float BlankCoverAlpha = 0.001f;
 
     [Tooltip("Parent for instantiated text popups. Defaults to this object's RectTransform.")]
     public RectTransform PopupContainer;
@@ -61,12 +62,15 @@ public class PopupScreenHandler : MonoBehaviour
     readonly List<string> _reminderTextBuffer = new List<string>();
     KeywordReminderSource _keywordSourceOne;
     KeywordReminderSource _keywordSourceTwo;
+    Transform _textKeywordAnchor;
+    PopupSlot _textKeywordSlot = PopupSlot.One;
 
     enum KeywordReminderSource
     {
         None,
         ImagePopup,
         Hand,
+        Text,
     }
 
     void Awake()
@@ -92,6 +96,39 @@ public class PopupScreenHandler : MonoBehaviour
             PopupImageTemplate.gameObject.SetActive(false);
     }
 
+    void LateUpdate()
+    {
+        // Hover uses physics raycasts, which the fade does not block, and this canvas draws
+        // above the blank overlay. Drop popups until that overlay is gone.
+        if (IsBlankCovering())
+            HidePopupsForBlankFade();
+    }
+
+    static bool IsBlankCovering()
+    {
+        if (ScreenHandler.Instance == null
+            || !ScreenHandler.Instance.TryGetScreen(ScreenName.Blank, out Screen blank)
+            || blank == null
+            || blank.UIHolder == null)
+            return false;
+
+        return blank.UIHolder.alpha > BlankCoverAlpha;
+    }
+
+    void HidePopupsForBlankFade()
+    {
+        HideTextPopup();
+        HideRitualHoverPopup();
+
+        if (_followerReferenceAnchor != null)
+            HideFollowerReferencedCard(_followerReferenceAnchor);
+
+        HideImagePopup(PopupSlot.One);
+        HideImagePopup(PopupSlot.Two);
+        HideHandKeywordReminders(PopupSlot.One);
+        HideHandKeywordReminders(PopupSlot.Two);
+    }
+
     void OnDestroy()
     {
         if (Instance == this)
@@ -105,9 +142,10 @@ public class PopupScreenHandler : MonoBehaviour
     }
 
     /// <summary>Shows a text popup on the given side of <paramref name="anchor"/>, with fallbacks if it does not fit on screen.</summary>
-    public void ShowTextPopup(string text, Transform anchor, PopupPosition position, Camera worldCamera = null)
+    /// <param name="showKeywordReminders">Also show reminder popups for keywords named in <paramref name="text"/>, beside this popup.</param>
+    public void ShowTextPopup(string text, Transform anchor, PopupPosition position, Camera worldCamera = null, bool showKeywordReminders = false)
     {
-        if (string.IsNullOrEmpty(text) || anchor == null)
+        if (IsBlankCovering() || string.IsNullOrEmpty(text) || anchor == null)
             return;
 
         _hoverAnchor = anchor;
@@ -121,6 +159,11 @@ public class PopupScreenHandler : MonoBehaviour
         popup.SetRaycastTargets(false);
 
         PositionNearTarget(popup.RectTransform, anchor, position, worldCamera);
+
+        if (showKeywordReminders)
+            ShowTextKeywordReminders(text, anchor, worldCamera);
+        else
+            HideTextKeywordReminders();
     }
 
     /// <summary>Hides the hover popup only if it was shown for <paramref name="anchor"/>.</summary>
@@ -135,6 +178,7 @@ public class PopupScreenHandler : MonoBehaviour
     public void HideTextPopup()
     {
         _hoverAnchor = null;
+        HideTextKeywordReminders();
 
         if (_activePopup != null)
             _activePopup.gameObject.SetActive(false);
@@ -143,7 +187,7 @@ public class PopupScreenHandler : MonoBehaviour
     /// <summary>Shows the ritual summary popup on the given side of <paramref name="anchor"/>.</summary>
     public void ShowRitualHoverPopup(Ritual ritual, Transform anchor, PopupPosition position, Camera worldCamera = null)
     {
-        if (ritual == null || anchor == null)
+        if (IsBlankCovering() || ritual == null || anchor == null)
             return;
 
         if (_ritualHoverAnchor != null && _ritualHoverAnchor != anchor)
@@ -697,7 +741,7 @@ public class PopupScreenHandler : MonoBehaviour
 
     public void ShowCardPopup(Card card, Transform anchor, PopupPosition position, PopupSlot slot = PopupSlot.One, Camera worldCamera = null, float lowerByWorld = 0f, float sideGapWorld = 0f, string reminderText = null)
     {
-        if (card == null || anchor == null || PopupHandler.Instance == null)
+        if (IsBlankCovering() || card == null || anchor == null || PopupHandler.Instance == null)
             return;
 
         PopupHandler.ShowCard(slot, card);
@@ -722,7 +766,7 @@ public class PopupScreenHandler : MonoBehaviour
 
     public void ShowRitualPopup(Ritual ritual, Transform anchor, PopupPosition position, PopupSlot slot = PopupSlot.One, Camera worldCamera = null)
     {
-        if (ritual == null || anchor == null || PopupHandler.Instance == null)
+        if (IsBlankCovering() || ritual == null || anchor == null || PopupHandler.Instance == null)
             return;
 
         PopupHandler.ShowRitual(slot, ritual);
@@ -731,16 +775,23 @@ public class PopupScreenHandler : MonoBehaviour
 
     public void ShowTrinketPopup(Trinket trinket, Transform anchor, PopupPosition position, PopupSlot slot = PopupSlot.One, Camera worldCamera = null)
     {
-        if (trinket == null || anchor == null || PopupHandler.Instance == null)
+        if (IsBlankCovering() || trinket == null || anchor == null || PopupHandler.Instance == null)
             return;
 
         PopupHandler.ShowTrinket(slot, trinket);
         ShowImagePopup(slot, anchor, position, worldCamera);
+
+        string description = trinket.Description;
+        PlayerEffectDescriptionData descriptionData = trinket.GetDescriptionData();
+        if (descriptionData != null && !string.IsNullOrEmpty(descriptionData.Description))
+            description = descriptionData.Description;
+
+        ShowDescribedKeywordReminders(slot, description, anchor, worldCamera);
     }
 
     public void ShowBuffPopup(StaticPlayerEffect buff, Transform anchor, PopupPosition position, PopupSlot slot = PopupSlot.One, int amount = 1, Camera worldCamera = null)
     {
-        if (buff == null || anchor == null || PopupHandler.Instance == null)
+        if (IsBlankCovering() || buff == null || anchor == null || PopupHandler.Instance == null)
             return;
 
         PopupHandler.ShowBuff(slot, buff, amount);
@@ -749,7 +800,7 @@ public class PopupScreenHandler : MonoBehaviour
 
     public void ShowHeartstringPopup(Transform anchor, PopupPosition position, PopupSlot slot = PopupSlot.One, Camera worldCamera = null)
     {
-        if (anchor == null || PopupHandler.Instance == null)
+        if (IsBlankCovering() || anchor == null || PopupHandler.Instance == null)
             return;
 
         PopupHandler.ShowHeartstring(slot);
@@ -764,7 +815,8 @@ public class PopupScreenHandler : MonoBehaviour
             popup.gameObject.SetActive(false);
 
         PopupHandler.Clear(slot);
-        if (GetKeywordSource(slot) != KeywordReminderSource.Hand)
+        KeywordReminderSource source = GetKeywordSource(slot);
+        if (source != KeywordReminderSource.Hand && source != KeywordReminderSource.Text)
         {
             HideStaticEffectReminders(slot);
             SetKeywordSource(slot, KeywordReminderSource.None);
@@ -773,7 +825,7 @@ public class PopupScreenHandler : MonoBehaviour
 
     public void ShowHandKeywordReminders(Follower follower, Transform anchor, PopupSlot slot, Camera worldCamera = null)
     {
-        if (follower == null || anchor == null)
+        if (IsBlankCovering() || follower == null || anchor == null)
             return;
 
         SetKeywordSource(slot, KeywordReminderSource.Hand);
@@ -797,7 +849,7 @@ public class PopupScreenHandler : MonoBehaviour
     /// </summary>
     public void ShowFollowerReferencedCard(Follower follower, Transform anchor, PopupSlot primarySlot, Camera worldCamera = null)
     {
-        if (anchor == null)
+        if (IsBlankCovering() || anchor == null)
             return;
 
         if (_followerReferenceAnchor != null && _followerReferenceAnchor != anchor)
@@ -1527,6 +1579,80 @@ public class PopupScreenHandler : MonoBehaviour
         return Rect.MinMaxRect(xMin, yMin, xMax, yMax);
     }
 
+    void ShowDescribedKeywordReminders(PopupSlot slot, string text, Transform anchor, Camera worldCamera)
+    {
+        StaticEffectReminders.CollectFromText(text, _reminderTextBuffer);
+        if (_reminderTextBuffer.Count > 0)
+        {
+            SetKeywordSource(slot, KeywordReminderSource.ImagePopup);
+            PresentReminderBuffer(slot, anchor, worldCamera, besidePopup: true);
+            return;
+        }
+
+        if (GetKeywordSource(slot) == KeywordReminderSource.ImagePopup)
+        {
+            HideStaticEffectReminders(slot);
+            SetKeywordSource(slot, KeywordReminderSource.None);
+        }
+    }
+
+    void ShowTextKeywordReminders(string text, Transform anchor, Camera worldCamera)
+    {
+        StaticEffectReminders.CollectFromText(text, _reminderTextBuffer);
+        if (_reminderTextBuffer.Count == 0)
+        {
+            HideTextKeywordReminders();
+            return;
+        }
+
+        PopupSlot slot = ChooseTextKeywordSlot();
+        _textKeywordSlot = slot;
+        _textKeywordAnchor = anchor;
+        SetKeywordSource(slot, KeywordReminderSource.Text);
+
+        int count = FillReminderPopups(slot);
+        if (count == 0 || _activePopup == null)
+            return;
+
+        Rect host = GetRectInContainer(_activePopup.RectTransform);
+        worldCamera = ResolveWorldCamera(worldCamera);
+        Rect avoid = GetAnchorRectInContainer(anchor, worldCamera);
+        LayoutKeywordReminders(GetKeywordReminders(slot), count, host, avoid);
+    }
+
+    void HideTextKeywordReminders()
+    {
+        if (_textKeywordAnchor == null)
+            return;
+
+        PopupSlot slot = _textKeywordSlot;
+        _textKeywordAnchor = null;
+        if (GetKeywordSource(slot) != KeywordReminderSource.Text)
+            return;
+
+        HideStaticEffectReminders(slot);
+        SetKeywordSource(slot, KeywordReminderSource.None);
+    }
+
+    PopupSlot ChooseTextKeywordSlot()
+    {
+        if (_textKeywordAnchor != null && GetKeywordSource(_textKeywordSlot) == KeywordReminderSource.Text)
+            return _textKeywordSlot;
+
+        if (IsKeywordSlotFree(PopupSlot.One))
+            return PopupSlot.One;
+        if (IsKeywordSlotFree(PopupSlot.Two))
+            return PopupSlot.Two;
+
+        return PopupSlot.One;
+    }
+
+    bool IsKeywordSlotFree(PopupSlot slot)
+    {
+        KeywordReminderSource source = GetKeywordSource(slot);
+        return source == KeywordReminderSource.None || source == KeywordReminderSource.Text;
+    }
+
     void ShowStaticEffectReminders(PopupSlot slot, Follower follower, Transform anchor, Camera worldCamera, bool besidePopup, string extraReminder = null)
     {
         StaticEffectReminders.Collect(follower, _reminderTextBuffer);
@@ -1555,12 +1681,22 @@ public class PopupScreenHandler : MonoBehaviour
         }
 
         List<KeywordReminderPopup> reminders = GetKeywordReminders(slot);
+        int count = FillReminderPopups(slot);
+        if (count == 0)
+            return;
+
+        LayoutKeywordReminders(slot, reminders, count, cardPopup, anchor, worldCamera, besidePopup);
+    }
+
+    int FillReminderPopups(PopupSlot slot)
+    {
+        List<KeywordReminderPopup> reminders = GetKeywordReminders(slot);
 
         while (reminders.Count < _reminderTextBuffer.Count)
         {
             KeywordReminderPopup created = CreateKeywordReminder();
             if (created == null)
-                return;
+                return 0;
 
             reminders.Add(created);
         }
@@ -1577,10 +1713,7 @@ public class PopupScreenHandler : MonoBehaviour
             reminders[i].transform.SetAsLastSibling();
         }
 
-        if (_reminderTextBuffer.Count == 0)
-            return;
-
-        LayoutKeywordReminders(slot, reminders, _reminderTextBuffer.Count, cardPopup, anchor, worldCamera, besidePopup);
+        return _reminderTextBuffer.Count;
     }
 
     void HideStaticEffectReminders(PopupSlot slot)
@@ -1628,14 +1761,29 @@ public class PopupScreenHandler : MonoBehaviour
         // The follower on the board is a separate rect from its popup. Near the right edge the
         // popup already fills the remaining space, so a screen clamp must not slide reminders onto it.
         Rect avoidFollower = besidePopup ? followerRect : Rect.zero;
+        LayoutKeywordReminders(reminders, count, popupBounds, avoidFollower, outerOnRight);
+    }
+
+    void LayoutKeywordReminders(List<KeywordReminderPopup> reminders, int count, Rect host, Rect avoid, bool? preferRight = null)
+    {
+        Rect screenBounds = GetContainerLocalScreenBounds();
+        bool outerOnRight = preferRight ?? true;
+        if (!preferRight.HasValue)
+        {
+            if (avoid.width > 0f)
+                outerOnRight = host.center.x >= avoid.center.x;
+            else if (screenBounds.width > 0f && host.width > 0f)
+                outerOnRight = screenBounds.xMax - host.xMax >= host.xMin - screenBounds.xMin;
+        }
+
         float bestScore = float.MaxValue;
         Vector2[] bestPositions = null;
 
         void Consider(System.Action place)
         {
             place();
-            ClampRemindersIntoBounds(reminders, count, screenBounds, popupBounds, avoidFollower, Rect.zero);
-            float score = RitualReminderScore(reminders, count, avoidFollower, popupBounds, Rect.zero, screenBounds);
+            ClampRemindersIntoBounds(reminders, count, screenBounds, host, avoid, Rect.zero);
+            float score = RitualReminderScore(reminders, count, avoid, host, Rect.zero, screenBounds);
             if (score >= bestScore)
                 return;
 
@@ -1643,10 +1791,10 @@ public class PopupScreenHandler : MonoBehaviour
             bestPositions = CopyReminderPositions(reminders, count);
         }
 
-        Consider(() => PlaceKeywordReminders(reminders, count, popupBounds, outerOnRight));
-        Consider(() => PlaceKeywordReminders(reminders, count, popupBounds, !outerOnRight));
-        Consider(() => PlaceReminderStack(reminders, count, popupBounds.center.x, popupBounds.yMax + KeywordReminderPopupGap, upward: true));
-        Consider(() => PlaceReminderStack(reminders, count, popupBounds.center.x, popupBounds.yMin - KeywordReminderPopupGap, upward: false));
+        Consider(() => PlaceKeywordReminders(reminders, count, host, outerOnRight));
+        Consider(() => PlaceKeywordReminders(reminders, count, host, !outerOnRight));
+        Consider(() => PlaceReminderStack(reminders, count, host.center.x, host.yMax + KeywordReminderPopupGap, upward: true));
+        Consider(() => PlaceReminderStack(reminders, count, host.center.x, host.yMin - KeywordReminderPopupGap, upward: false));
 
         if (bestPositions != null)
             ApplyReminderPositions(reminders, count, bestPositions);
@@ -1781,6 +1929,9 @@ public class PopupScreenHandler : MonoBehaviour
 
     void SetKeywordSource(PopupSlot slot, KeywordReminderSource source)
     {
+        if (source != KeywordReminderSource.Text && _textKeywordSlot == slot)
+            _textKeywordAnchor = null;
+
         if (slot == PopupSlot.One)
             _keywordSourceOne = source;
         else

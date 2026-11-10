@@ -50,6 +50,9 @@ public class ViewRitual : ViewTarget
     [Tooltip("Which side of this ritual the hover summary popup appears on.")]
     public PopupPosition SummaryPosition = PopupPosition.Above;
 
+    /// <summary>While true, no ritual shows its hover summary (e.g. while one is being dragged).</summary>
+    public static bool HoverSummariesSuppressed;
+
     [Header("Idle Rattle")]
     [SerializeField] float rattleIntervalMin = 4f;
     [SerializeField] float rattleIntervalMax = 6f;
@@ -701,7 +704,7 @@ public class ViewRitual : ViewTarget
 
     void UpdateHoverSummary()
     {
-        if (IsSelectedForTargeting())
+        if (HoverSummariesSuppressed || IsSelectedForTargeting())
         {
             if (isHoverSummaryShown)
                 HideHoverSummary();

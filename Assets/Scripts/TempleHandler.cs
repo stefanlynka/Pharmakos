@@ -415,16 +415,14 @@ public class TempleHandler : MonoBehaviour
 
     void FinishToRitualRewards()
     {
-        EndTemple();
+        _busy = true;
+        if (TempleScreenHandler != null)
+            TempleScreenHandler.SetSacrificeButtonsInteractable(false);
+
         if (TempleScreenHandler != null)
             TempleScreenHandler.ProgressToRitualScreen();
-        else if (Controller.Instance != null && Controller.Instance.IsTutorialRun)
-        {
-            var rewards = TutorialScript.TempleRitualRewards();
-            Controller.Instance.GoToRitualRewardScreen(rewards.top, rewards.bottom);
-        }
-        else
-            Controller.Instance.GoToRitualRewardScreen();
+        else if (Controller.Instance != null)
+            Controller.Instance.ContinueFromTempleSacrifice();
     }
 
     void ClearActiveCards()

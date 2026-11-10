@@ -143,7 +143,7 @@ public class StyxTrinketOption : ViewTarget
                 camera = unlockArea.AreaCamera;
         }
 
-        PopupScreenHandler.Instance?.ShowTextPopup(summary, transform, SummaryPosition, camera);
+        PopupScreenHandler.Instance?.ShowTextPopup(summary, transform, SummaryPosition, camera, showKeywordReminders: true);
         isHoverSummaryShown = true;
     }
 

@@ -1,11 +1,46 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 public static class StaticEffectReminders
 {
     const string LifeSiphonText = "<b>Life Siphon</b>\nHeals you for the damage this deals.";
 
     static readonly StaticEffect[] AllEffects = (StaticEffect[])Enum.GetValues(typeof(StaticEffect));
+    static readonly KeywordMention[] Mentions;
+    static readonly List<int> MentionOrder = new List<int>();
+    static readonly List<int> MentionIndex = new List<int>();
+
+    struct KeywordMention
+    {
+        public Regex Pattern;
+        public string Reminder;
+    }
+
+    static StaticEffectReminders()
+    {
+        var mentions = new List<KeywordMention>();
+        for (int i = 0; i < AllEffects.Length; i++)
+        {
+            StaticEffect effect = AllEffects[i];
+            if (effect == StaticEffect.None)
+                continue;
+
+            mentions.Add(new KeywordMention
+            {
+                Pattern = BuildPattern(effect),
+                Reminder = GetText(effect),
+            });
+        }
+
+        mentions.Add(new KeywordMention
+        {
+            Pattern = new Regex(@"\blife\s+siphon\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant),
+            Reminder = LifeSiphonText,
+        });
+
+        Mentions = mentions.ToArray();
+    }
 
     public static void Collect(Follower follower, List<string> results)
     {
@@ -25,6 +60,52 @@ public static class StaticEffectReminders
 
         if (HasLifeSiphon(follower))
             results.Add(LifeSiphonText);
+    }
+
+    /// <summary>
+    /// Keyword reminders named in <paramref name="text"/>, in the order they appear.
+    /// "Can't attack this turn" is a temporary restriction, not the Can't Attack keyword.
+    /// </summary>
+    public static void CollectFromText(string text, List<string> results)
+    {
+        results.Clear();
+        if (string.IsNullOrEmpty(text))
+            return;
+
+        MentionOrder.Clear();
+        MentionIndex.Clear();
+        for (int i = 0; i < Mentions.Length; i++)
+        {
+            Match match = Mentions[i].Pattern.Match(text);
+            if (!match.Success)
+                continue;
+
+            int index = match.Index;
+            int insert = MentionOrder.Count;
+            while (insert > 0 && MentionOrder[insert - 1] > index)
+                insert--;
+
+            MentionOrder.Insert(insert, index);
+            MentionIndex.Insert(insert, i);
+        }
+
+        for (int i = 0; i < MentionIndex.Count; i++)
+            results.Add(Mentions[MentionIndex[i]].Reminder);
+    }
+
+    static Regex BuildPattern(StaticEffect effect)
+    {
+        if (effect == StaticEffect.CantAttack)
+            return new Regex(@"\b(?:can't|cant)\s+attack\b(?!\s+this\b)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+        string phrase = effect.ToString();
+        if (effect == StaticEffect.RangedAttacker)
+            phrase = "Ranged Attacker";
+        else if (effect == StaticEffect.LowVision)
+            phrase = "Low Vision";
+
+        string body = Regex.Escape(phrase).Replace("\\ ", "\\s+");
+        return new Regex(@"\b" + body + @"\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     }
 
     public static string GetText(StaticEffect effect)

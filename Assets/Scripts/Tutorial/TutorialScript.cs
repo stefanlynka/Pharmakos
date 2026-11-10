@@ -238,7 +238,7 @@ public static class TutorialScript
             Encounter = EncounterType.TutorialTemple,
             Duration = -1f,
             ShowCover = false,
-            Text = "You must choose one of these three cards to sacrifice. Refuse, and you will anger the gods and face a difficult fight.\n(I do not recommend it in the tutorial)",
+            Text = "You must choose one of these three cards to sacrifice. The gods will ask this three times. Refuse, and you will anger the gods and face a difficult fight.\n(I do not recommend it in the tutorial)",
             BlockInput = true,
             TextAnchor = new Vector2(0.5f, 0.88f),
         },
@@ -552,10 +552,51 @@ public static class TutorialScript
 
     public static List<List<Type>> SacrificeBatches()
     {
-        return new List<List<Type>>
+        var batches = new List<List<Type>>
         {
-            new List<Type> { typeof(Hoplite), typeof(Sheep), typeof(Blessing) },
+            new List<Type> { typeof(Ekdromos), typeof(Thureophoros), typeof(ThrowStone) },
+            new List<Type> { typeof(Hippeis), typeof(Myrmidon), typeof(Scry) },
+            new List<Type> { typeof(Hippeis), typeof(PriceOfProfit) },
         };
+
+        Type added = FirstCardAddedAfterFirstFight();
+        if (added != null)
+            batches[2].Add(added);
+
+        return batches;
+    }
+
+    static Type FirstCardAddedAfterFirstFight()
+    {
+        if (Controller.Instance == null
+            || Controller.Instance.HumanPlayerDetails == null
+            || Controller.Instance.ProgressionHandler == null
+            || Controller.Instance.HumanPlayerDetails.DeckBlueprint == null
+            || !Controller.Instance.HumanPlayerDetails.DeckBlueprint.TryGetValue(0, out List<Card> deck)
+            || deck == null)
+            return null;
+
+        ProgressionHandler progression = Controller.Instance.ProgressionHandler;
+        var starterCopiesLeft = new Dictionary<Type, int>();
+        for (int i = 0; i < deck.Count; i++)
+        {
+            Card card = deck[i];
+            if (card == null) continue;
+
+            Type cardType = card.GetType();
+            if (!starterCopiesLeft.ContainsKey(cardType))
+                starterCopiesLeft[cardType] = progression.StarterDeckCopyCount(cardType);
+
+            if (starterCopiesLeft[cardType] > 0)
+            {
+                starterCopiesLeft[cardType]--;
+                continue;
+            }
+
+            return cardType;
+        }
+
+        return null;
     }
 
     public static (Ritual top, Ritual bottom) TempleRitualRewards()

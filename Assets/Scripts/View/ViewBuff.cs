@@ -103,7 +103,7 @@ public class ViewBuff : MonoBehaviour
         if (string.IsNullOrEmpty(summaryDescription))
             return;
 
-        PopupScreenHandler.Instance?.ShowTextPopup(summaryDescription, transform, SummaryPosition);
+        PopupScreenHandler.Instance?.ShowTextPopup(summaryDescription, transform, SummaryPosition, showKeywordReminders: true);
     }
 
     void HideHoverSummary()

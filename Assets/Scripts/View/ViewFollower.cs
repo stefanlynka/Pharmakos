@@ -57,7 +57,8 @@ public class ViewFollower : ViewCard
     public int DisplayedAttack => attack;
     public int DisplayedHealth => health;
 
-    // Printed stats stay white. Numbers above the printed value are light green; damage and debuffs below it are light red.
+    // Printed stats stay white. Numbers above the printed value are light green; debuffs below it are light red.
+    // Health is red whenever it is below the follower's current maximum, even if that is still above the printed base.
     static readonly Color BaseStatColor = Color.white;
     static readonly Color RaisedStatColor = new Color(0.24f, 1f, 0.31f, 1f);
     static readonly Color LoweredStatColor = new Color(1f, 0.25f, 0.15f, 1f);
@@ -199,6 +200,7 @@ public class ViewFollower : ViewCard
     {
         int baseAttack = Follower != null ? Follower.BaseAttack : attack;
         int baseHealth = Follower != null ? Follower.BaseHealth : health;
+        int maxHealth = Follower != null ? Follower.MaxHealth : health;
 
         if (AttackText != null)
         {
@@ -209,7 +211,7 @@ public class ViewFollower : ViewCard
         if (HealthText != null)
         {
             HealthText.text = health.ToString();
-            HealthText.color = StatColor(health, baseHealth);
+            HealthText.color = HealthStatColor(health, baseHealth, maxHealth);
         }
     }
 
@@ -220,6 +222,15 @@ public class ViewFollower : ViewCard
         if (value < baseValue)
             return LoweredStatColor;
         return BaseStatColor;
+    }
+
+    // Missing health against the current maximum is damage, so it stays red even when the number is still above the printed base.
+    // At full health, a raised maximum is green and a lowered maximum is red.
+    static Color HealthStatColor(int value, int baseValue, int maxHealth)
+    {
+        if (value < maxHealth)
+            return LoweredStatColor;
+        return StatColor(value, baseValue);
     }
 
     // Green and PowerUp when the stats rise overall, red and PowerDown when they fall.

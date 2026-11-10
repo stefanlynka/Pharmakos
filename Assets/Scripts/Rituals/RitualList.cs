@@ -252,8 +252,7 @@ public class ApolloMajorEffectDef : StaticPlayerEffect
 
     protected override string GetDescription()
     {
-        string myTarget = TargetPlayer.IsHuman ? "you play" : "your opponent plays";
-        return "When " + myTarget + " a Spell, your next Follower costs 1 less";
+        return "When you play a Spell, your next Follower costs 1 less";
     }
 }
 
@@ -357,8 +356,7 @@ public class AresMinorEffectDef : StaticPlayerEffect
     }
     protected override string GetDescription()
     {
-        string myTarget = TargetPlayer.IsHuman ? "Your" : "Your opponent's";
-        return myTarget + " Followers have sprint";
+        return "Your Followers have sprint";
     }
 }
 
@@ -482,8 +480,7 @@ public class AresMajorEffectDef : StaticPlayerEffect
     }
     protected override string GetDescription()
     {
-        string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
-        return "When one of " + myTarget + " Followers kills an enemy, it gains +1/+1 and can attack again";
+        return "When one of your Followers kills an enemy, it gains +1/+1 and can attack again";
     }
 }
 
@@ -591,8 +588,7 @@ public class AthenaMajorEffectDef : StaticPlayerEffect
     }
     protected override string GetDescription()
     {
-        string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
-        return "When one of " + myTarget + " Followers draws blood, you get a free spell with cost equal to the damage dealt";
+        return "When one of your Followers draws blood, you get a free spell with cost equal to the damage dealt";
     }
 }
 
@@ -988,9 +984,7 @@ public class HadesMajorEffectDef : StaticPlayerEffect
 
     protected override string GetDescription()
     {
-        string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
-        string myTargetSingular = TargetPlayer.IsHuman ? "you" : "they";
-        return "At the end of each of " + myTarget + " turns, " + myTargetSingular + " summon a copy of the last Follower that died";
+        return "At the end of each of your turns, summon a copy of the last Follower that died";
     }
 }
 
@@ -1099,9 +1093,7 @@ public class HephaestusMajorEffectDef : StaticPlayerEffect
     }
     protected override string GetDescription()
     {
-        string myTarget = TargetPlayer.IsHuman ? "your" : "your opponent's";
-        string singularTarget = TargetPlayer.IsHuman ? "you" : "they";
-        return "When one of " + myTarget + " Followers dies, you get a copy of every spell " + singularTarget + " cast on on it. The copies costs 1 less.";
+        return "When one of your Followers dies, you get a copy of every spell you've cast on it. The copies costs 1 less.";
     }
 }
 

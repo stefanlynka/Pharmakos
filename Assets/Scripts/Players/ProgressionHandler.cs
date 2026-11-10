@@ -96,6 +96,7 @@ public class ProgressionHandler
     List<StarterBundle> starterBundles = new List<StarterBundle>();
 
     List<Trinket> availableTrinkets = new List<Trinket>();
+    readonly Dictionary<Type, int> starterDeckCounts = new Dictionary<Type, int>();
 
     public ProgressionHandler()
     {
@@ -1727,6 +1728,33 @@ public class ProgressionHandler
 
         SetupTrinkets();
         SetupStarterBundles();
+        RememberStarterDeckCounts();
+    }
+
+    void RememberStarterDeckCounts()
+    {
+        starterDeckCounts.Clear();
+        if (!DetailsByDeckName.TryGetValue(DeckName.PlayerStarterDeck, out PlayerDetails details)
+            || details.DeckBlueprint == null
+            || !details.DeckBlueprint.TryGetValue(0, out List<Card> deck)
+            || deck == null)
+            return;
+
+        for (int i = 0; i < deck.Count; i++)
+        {
+            Card card = deck[i];
+            if (card == null) continue;
+
+            Type cardType = card.GetType();
+            starterDeckCounts.TryGetValue(cardType, out int count);
+            starterDeckCounts[cardType] = count + 1;
+        }
+    }
+
+    public int StarterDeckCopyCount(Type cardType)
+    {
+        if (cardType == null) return 0;
+        return starterDeckCounts.TryGetValue(cardType, out int count) ? count : 0;
     }
 
     void AddTutorialDecks()

@@ -724,6 +724,36 @@ public class Controller : MonoBehaviour
 
         ScreenHandler.Instance.ShowScreen(ScreenName.GameOver);
     }
+    /// <summary>
+    /// Fades out of the temple sacrifice, then opens the ritual rewards once the screen is black.
+    /// If this runs inside the fade that opened the temple, that fade already covers the swap.
+    /// </summary>
+    public void ContinueFromTempleSacrifice()
+    {
+        if (View.Instance == null || AnimationHandler.IsAnimating)
+        {
+            OpenRitualRewardsAfterTemple();
+            return;
+        }
+
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, OpenRitualRewardsAfterTemple);
+        View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
+
+    void OpenRitualRewardsAfterTemple()
+    {
+        if (TempleHandler != null)
+            TempleHandler.EndTemple();
+
+        if (IsTutorialRun)
+        {
+            var rewards = TutorialScript.TempleRitualRewards();
+            GoToRitualRewardScreen(rewards.top, rewards.bottom);
+        }
+        else
+            GoToRitualRewardScreen();
+    }
+
     public void GoToRitualRewardScreen()
     {
         GoToRitualRewardScreen(null, null);
