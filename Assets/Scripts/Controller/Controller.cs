@@ -160,8 +160,37 @@ public class Controller : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
             HandleEscapeKey();
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        HandleDevHotkeys();
+#endif
+
         View.Instance.AnimationUpdate();
     }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    // Dev-only shortcuts. Compiled out of release (non-development) player builds.
+    private void HandleDevHotkeys()
+    {
+        bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        if (!ctrl || !shift) return;
+
+        // Ctrl+Shift+T: start the test chamber from the main menu.
+        if (Input.GetKeyDown(KeyCode.T) && CanStartTestChamberFromHotkey())
+        {
+            Debug.Log("Dev hotkey: starting test chamber");
+            StartTestChamber();
+        }
+    }
+
+    private bool CanStartTestChamberFromHotkey()
+    {
+        if (GameRunning || GamePaused) return false;
+        return ScreenHandler.Instance != null
+            && ScreenHandler.Instance.TryGetCurrentScreen(out var screen)
+            && screen.Name == ScreenName.Start;
+    }
+#endif
 
     private void HandleEscapeKey()
     {

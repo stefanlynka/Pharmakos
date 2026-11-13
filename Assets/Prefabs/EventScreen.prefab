@@ -547,8 +547,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Hecatomb
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 3acf8bb35d4d1df4fbddb3f40441d047, type: 2}
-  m_sharedMaterial: {fileID: 1320851124031916961, guid: 3acf8bb35d4d1df4fbddb3f40441d047, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 6187af34ccea5074ba89e678d8b6d220, type: 2}
+  m_sharedMaterial: {fileID: -7812985619046522512, guid: 6187af34ccea5074ba89e678d8b6d220, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -796,8 +796,8 @@ MonoBehaviour:
     it did every day, but until then he would watch the town's flickering torches
     and smile.
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 45a3f7fb57e6c894b8063fa605f7fc36, type: 2}
-  m_sharedMaterial: {fileID: 6128296336055684191, guid: 45a3f7fb57e6c894b8063fa605f7fc36, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ff3e69b4be619bf43817ab6cc61454ab, type: 2}
+  m_sharedMaterial: {fileID: 2736570632344991359, guid: ff3e69b4be619bf43817ab6cc61454ab, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -933,8 +933,8 @@ MonoBehaviour:
     it did every day, but until then he would watch the town's flickering torches
     and smile.
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 45a3f7fb57e6c894b8063fa605f7fc36, type: 2}
-  m_sharedMaterial: {fileID: 6128296336055684191, guid: 45a3f7fb57e6c894b8063fa605f7fc36, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ff3e69b4be619bf43817ab6cc61454ab, type: 2}
+  m_sharedMaterial: {fileID: 2736570632344991359, guid: ff3e69b4be619bf43817ab6cc61454ab, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1719,8 +1719,8 @@ MonoBehaviour:
     it did every day, but until then he would watch the town's flickering torches
     and smile.
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 45a3f7fb57e6c894b8063fa605f7fc36, type: 2}
-  m_sharedMaterial: {fileID: 6128296336055684191, guid: 45a3f7fb57e6c894b8063fa605f7fc36, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ff3e69b4be619bf43817ab6cc61454ab, type: 2}
+  m_sharedMaterial: {fileID: 2736570632344991359, guid: ff3e69b4be619bf43817ab6cc61454ab, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1988,6 +1988,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4299151969452390647}
     m_Modifications:
+    - target: {fileID: 4755114426392019732, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
+      propertyPath: m_wordSpacing
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4755114426392019732, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
+      propertyPath: m_characterSpacing
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5010369248474128984, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
       propertyPath: m_LocalScale.x
       value: 25
@@ -2039,6 +2047,10 @@ PrefabInstance:
     - target: {fileID: 6324587304967478772, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
       propertyPath: m_Name
       value: Follower2Big
+      objectReference: {fileID: 0}
+    - target: {fileID: 8350191079895314111, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
+      propertyPath: m_wordSpacing
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2516,6 +2528,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 755574118325541707}
     m_Modifications:
+    - target: {fileID: 4755114426392019732, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
+      propertyPath: m_wordSpacing
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4755114426392019732, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
+      propertyPath: m_characterSpacing
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5010369248474128984, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
       propertyPath: m_LocalScale.x
       value: 25
@@ -2568,6 +2588,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Follower2Big
       objectReference: {fileID: 0}
+    - target: {fileID: 8350191079895314111, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
+      propertyPath: m_wordSpacing
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2589,6 +2613,10 @@ PrefabInstance:
     - target: {fileID: 630472415757744531, guid: 7e0851aee49bc794db23f4234256e4f6, type: 3}
       propertyPath: m_Name
       value: ViewRitual
+      objectReference: {fileID: 0}
+    - target: {fileID: 1082345163102184091, guid: 7e0851aee49bc794db23f4234256e4f6, type: 3}
+      propertyPath: m_characterSpacing
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 7e0851aee49bc794db23f4234256e4f6, type: 3}
       propertyPath: m_LocalScale.x
@@ -2810,6 +2838,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ViewRitual
       objectReference: {fileID: 0}
+    - target: {fileID: 1082345163102184091, guid: 7e0851aee49bc794db23f4234256e4f6, type: 3}
+      propertyPath: m_characterSpacing
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 7e0851aee49bc794db23f4234256e4f6, type: 3}
       propertyPath: m_LocalScale.x
       value: 12
@@ -2876,6 +2908,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1960022341800812275}
     m_Modifications:
+    - target: {fileID: 4755114426392019732, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
+      propertyPath: m_wordSpacing
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4755114426392019732, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
+      propertyPath: m_characterSpacing
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5010369248474128984, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
       propertyPath: m_LocalScale.x
       value: 25
@@ -2927,6 +2967,10 @@ PrefabInstance:
     - target: {fileID: 6324587304967478772, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
       propertyPath: m_Name
       value: Follower2Big
+      objectReference: {fileID: 0}
+    - target: {fileID: 8350191079895314111, guid: e147b18e8a636f748baeb593998db3fb, type: 3}
+      propertyPath: m_wordSpacing
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

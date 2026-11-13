@@ -65,6 +65,7 @@ public static class StyxUI
     {
         RectTransform rect = CreateRect(parent, name);
         TextMeshProUGUI tmp = rect.gameObject.AddComponent<TextMeshProUGUI>();
+        if (GameFonts.TextFont != null) tmp.font = GameFonts.TextFont;
         tmp.text = text;
         tmp.fontSize = fontSize;
         tmp.alignment = alignment;
@@ -83,6 +84,7 @@ public static class StyxUI
             button.onClick.AddListener(() => onClick());
 
         TextMeshProUGUI text = CreateText(image.transform, "Label", label, fontSize, TextAlignmentOptions.Center);
+        if (GameFonts.DisplayFont != null) text.font = GameFonts.DisplayFont;
         Stretch(text.rectTransform);
         return button;
     }

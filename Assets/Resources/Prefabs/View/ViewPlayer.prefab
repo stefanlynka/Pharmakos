@@ -532,10 +532,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7150598145223921473}
     m_Modifications:
+    - target: {fileID: 983616665352465590, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: -7812985619046522512, guid: 6187af34ccea5074ba89e678d8b6d220, type: 2}
     - target: {fileID: 2464121028304336616, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
       propertyPath: m_Name
       value: ViewPlayerPortrait
       objectReference: {fileID: 0}
+    - target: {fileID: 4914813875038394437, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 6187af34ccea5074ba89e678d8b6d220, type: 2}
+    - target: {fileID: 4914813875038394437, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -7812985619046522512, guid: 6187af34ccea5074ba89e678d8b6d220, type: 2}
     - target: {fileID: 5575641415602518279, guid: 894abd6f334549240a71a8d1fdf12887, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

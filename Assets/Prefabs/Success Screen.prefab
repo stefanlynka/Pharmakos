@@ -71,8 +71,8 @@ MonoBehaviour:
     with feedback, bugs, and things you'd like to see in the full game! \nThanks
     for Playing!"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f67d759ca2ab3694cabded70a9403cde, type: 2}
-  m_sharedMaterial: {fileID: 8394293278821799712, guid: f67d759ca2ab3694cabded70a9403cde, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ff3e69b4be619bf43817ab6cc61454ab, type: 2}
+  m_sharedMaterial: {fileID: 2736570632344991359, guid: ff3e69b4be619bf43817ab6cc61454ab, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -106,7 +106,7 @@ MonoBehaviour:
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
-  m_characterSpacing: -13.73
+  m_characterSpacing: 0
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -464,8 +464,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Success
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 3acf8bb35d4d1df4fbddb3f40441d047, type: 2}
-  m_sharedMaterial: {fileID: 1320851124031916961, guid: 3acf8bb35d4d1df4fbddb3f40441d047, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 6187af34ccea5074ba89e678d8b6d220, type: 2}
+  m_sharedMaterial: {fileID: -7812985619046522512, guid: 6187af34ccea5074ba89e678d8b6d220, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

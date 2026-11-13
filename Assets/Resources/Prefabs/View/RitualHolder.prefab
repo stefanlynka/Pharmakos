@@ -150,6 +150,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: ViewRitual3
       objectReference: {fileID: 0}
+    - target: {fileID: 1082345163102184091, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
+      propertyPath: m_characterSpacing
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6718831043198805541, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
+      propertyPath: m_characterSpacing
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.7

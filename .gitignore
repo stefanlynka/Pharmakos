@@ -72,3 +72,6 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 /[Aa]ssets/[Pp]lugins/[Cc]odeAssist/*
+
+# Agent working files (screenshots, previews)
+/Claude/

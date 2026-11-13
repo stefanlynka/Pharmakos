@@ -140,8 +140,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: The Gods Demand A Sacrifice
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 45a3f7fb57e6c894b8063fa605f7fc36, type: 2}
-  m_sharedMaterial: {fileID: 6128296336055684191, guid: 45a3f7fb57e6c894b8063fa605f7fc36, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 6187af34ccea5074ba89e678d8b6d220, type: 2}
+  m_sharedMaterial: {fileID: -7812985619046522512, guid: 6187af34ccea5074ba89e678d8b6d220, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

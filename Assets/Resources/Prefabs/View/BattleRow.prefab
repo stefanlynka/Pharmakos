@@ -458,6 +458,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5607151898634052446, guid: 91d24f4ed48dd954ab97956416234aca, type: 3}
+      propertyPath: m_characterSpacing
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6622656725543288254, guid: 91d24f4ed48dd954ab97956416234aca, type: 3}
       propertyPath: m_Name
       value: PopupCard
