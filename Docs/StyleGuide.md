@@ -63,7 +63,7 @@ Targeting arrows use the Target colour and must read clearly against the board.
 
 ## UI components
 
-- **Button (locked):** black-figure style. Sprite `Assets/Resources/Images/UI/Button_BlackFigure.png` (dark fill, terracotta Greek key; a recolour of the original `Button2` art), Image type **Tiled**.
+- **Button (locked):** black-figure style. Sprite `Assets/Resources/Images/UI/Button_BlackFigure.png` (dark fill, terracotta Greek key; a recolour of `Button3`, the corrected `Button2` art: fill `#1C1714`, lines `#D9733F`, 9-slice border 230/227/212/200), Image type **Tiled**.
   - Border scale: `Pixels Per Unit Multiplier ≈ 700 / button height` (7 on a 100-tall button, clamped 5–13), so every button shows the same key thickness.
   - Label: Cinzel, colour `#E3864F`, TMP margins inset inside the key border (≈ `230/ppum × 0.85` horizontal, `210/ppum × 0.55` vertical).
   - States (Button Color Tint, multiplier 1.25): normal `0.8` grey → reads as 1.0; highlighted white → brightens; pressed `0.6`; disabled `0.5` at 60% alpha. Don't tint buttons with hue colours in code; dim/brighten only (e.g. status tabs: inactive `0.55` grey, active white).
