@@ -75,7 +75,7 @@ Run saves (`Save/RunSave.cs`, JSON in `Application.persistentDataPath/run-save.j
 - Remove stray auto-added usings like `using static Unity.VisualScripting.Member;` / `UnityEngine.GraphicsBuffer` when touching a file — they're IDE accidents.
 - `FindObjectOfType` is used in places; fine on 2022.3, but prefer serialized references or existing singletons (`Controller.Instance`, `View.Instance`, `ScreenHandler.Instance`).
 - There are no automated tests yet.
-- **Git:** work directly on `main`. Don't commit or push — the developer handles commits.
+- **Git:** work directly on `main`. Agents may commit finished, verified chunks of work (one logical change per commit, existing message style). Never push.
 - One-off working notes (feature checklists, plans) are temporary: delete them once the feature is finished. Keep lasting design references like `Rituals.txt`.
 
 ## Third-party assets
