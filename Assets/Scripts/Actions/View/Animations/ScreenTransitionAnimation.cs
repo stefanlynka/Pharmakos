@@ -24,8 +24,13 @@ public class ScreenTransitionAnimation : AnimationAction
     {
         base.Play(onFinish);
 
+        Screen.ClearScreenChangeDurationOverride();
         if (FadeOutDuration < 0) FadeOutDuration = Screen.ScreenChangeDuration;
         if (FadeInDuration < 0) FadeInDuration = Screen.ScreenChangeDuration;
+
+        // Match the blank overlay to a longer fade-out so it darkens for the whole strum.
+        if (FadeOutDuration > Screen.ScreenChangeDuration)
+            Screen.SetScreenChangeDurationOverride(FadeOutDuration);
 
         onStartAction?.Invoke();
 
@@ -59,11 +64,13 @@ public class ScreenTransitionAnimation : AnimationAction
     private void Halfway()
     {
         //Debug.LogWarning("Halways through transition");
+        Screen.ClearScreenChangeDurationOverride();
         halfwayAction?.Invoke();
     }
     private void AnimationOver()
     {
         //Debug.LogWarning("Finished transition");
+        Screen.ClearScreenChangeDurationOverride();
         onFinishAction?.Invoke();
     }
 }

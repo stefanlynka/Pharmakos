@@ -75,6 +75,8 @@ public class ViewCard : ViewTarget
         ViewOfferingCost.Load(Card.GetCosts());
     }
 
+    public virtual void UpdateText() { }
+
     public virtual void SetDescriptiveMode(bool value)
     {
         if (Card == null)

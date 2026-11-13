@@ -790,6 +790,15 @@ public class Player : ITarget
             GameAction newAction = new CreateOfferingAction(GameState.CurrentPlayer, OfferingType.Blood, Mathf.Abs(value), ITargetID, GameState.CurrentPlayer.ITargetID, animateBlood);
             GameState.ActionHandler.AddAction(newAction);
         }
+
+        // Copies used by the AI are not the live opponent, so this does not freeze cards during a search.
+        if (Controller.Instance != null && ReferenceEquals(this, Controller.Instance.Player2))
+        {
+            if (Health <= 0)
+                Controller.Instance.HoldCombatCardsForDefeat();
+            else
+                Controller.Instance.ReleaseCombatCardHoldIfDefeatNotStarted();
+        }
         //GameState.CurrentPlayer.ChangeOffering(OfferingType.Blood, Mathf.Abs(value));
     }
 

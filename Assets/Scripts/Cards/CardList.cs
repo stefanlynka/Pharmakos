@@ -4117,6 +4117,14 @@ public class RiverStyx : Spell
         HasTargets = true;
     }
 
+    public override string GetText()
+    {
+        if (GameState == null || Controller.Instance == null || !Controller.Instance.GameRunning)
+            return Text;
+
+        return Text + " (" + GameState.FollowerDeathsThisTurn + ")";
+    }
+
     public override List<ITarget> GetTargets()
     {
         List<ITarget> targets = new List<ITarget>();

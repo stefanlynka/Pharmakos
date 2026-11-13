@@ -17,8 +17,20 @@ public class Screen : MonoBehaviour
     public Action OnExit;
 
     private bool active = false;
-    public static float ScreenChangeDuration => screenChangeDuration;
+    public static float ScreenChangeDuration =>
+        screenChangeDurationOverride > 0f ? screenChangeDurationOverride : screenChangeDuration;
     private const float screenChangeDuration = 0.6f;
+    static float screenChangeDurationOverride = -1f;
+
+    public static void SetScreenChangeDurationOverride(float duration)
+    {
+        screenChangeDurationOverride = duration;
+    }
+
+    public static void ClearScreenChangeDurationOverride()
+    {
+        screenChangeDurationOverride = -1f;
+    }
 
 
     protected virtual void Update()

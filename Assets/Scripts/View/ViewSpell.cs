@@ -46,6 +46,16 @@ public class ViewSpell : ViewCard
         GetComponent<CardViewRaycastTarget>()?.SetActiveCard(this);
     }
 
+    public override void UpdateText()
+    {
+        if (SpellText == null || Card == null)
+            return;
+
+        string text = Card.GetText();
+        if (SpellText.text != text)
+            SpellText.text = text;
+    }
+
     public void EnterCardMode()
     {
         CardHolder.SetActive(true);

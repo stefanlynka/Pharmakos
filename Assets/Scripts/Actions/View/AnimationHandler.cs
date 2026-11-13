@@ -151,6 +151,18 @@ public class AnimationHandler
         }
     }
 
+    // Starts an animation now, even if another one is already playing. A non-stackable one
+    // keeps later queued animations from starting until it finishes.
+    public void PlayAlongsideCurrent(AnimationAction animationAction)
+    {
+        if (animationAction == null)
+            return;
+
+        CurrentAnimationIsStackable = animationAction.Stackable;
+        ActiveAnimationCount++;
+        animationAction.Play(AnimationComplete);
+    }
+
     /// <summary>
     /// Removes and returns queued animations that satisfy <paramref name="match"/>, scanning from the front of the
     /// queue and stopping at the first animation that satisfies <paramref name="stopAt"/>.

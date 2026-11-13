@@ -8,6 +8,7 @@ public class ChangePlayerHealthAction : GameAction
     Player target;
     ITarget source;
     int amount = 0;
+    int healthChanged = 0;
 
     public ChangePlayerHealthAction(Player target, ITarget source, int amount)
     {
@@ -27,7 +28,9 @@ public class ChangePlayerHealthAction : GameAction
 
     public override void Execute(bool simulated = false, bool success = true)
     {
+        int prevHealth = target.Health;
         target.ChangeHealth(source, amount);
+        healthChanged = target.Health - prevHealth;
 
         base.Execute(simulated);
     }
@@ -36,7 +39,7 @@ public class ChangePlayerHealthAction : GameAction
     {
         List<AnimationAction> animationActions = new List<AnimationAction>()
         {
-            new ChangeStatsAnimation(this, target, 0, amount)
+            new ChangeStatsAnimation(this, target, 0, healthChanged)
             //new SummonFollowerAnimation(this)
         };
         return animationActions;

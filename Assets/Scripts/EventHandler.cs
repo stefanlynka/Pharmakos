@@ -30,6 +30,9 @@ public class EventHandler : MonoBehaviour
     Coroutine _eventImageIntroRoutine;
     System.Action _onEventComplete;
     bool _eventRunning;
+    // Fade-out to request on the leave transition so the heartstring strum finishes before the camera swap.
+    const float HeartstringStrumTail = 0.05f;
+    float _heartstringDepartureFadeOut = -1f;
 
     public void BeginRandomEvent(System.Action onEventComplete)
     {
@@ -276,12 +279,24 @@ public class EventHandler : MonoBehaviour
             PlayHeartstringStrum();
     }
 
+    /// <summary>
+    /// Fade-out the next leave transition should use so a strum that just started is not cut off. Returns -1 when none is pending.
+    /// </summary>
+    public float ConsumeHeartstringDepartureFadeOut()
+    {
+        float duration = _heartstringDepartureFadeOut;
+        _heartstringDepartureFadeOut = -1f;
+        return duration;
+    }
+
     void PlayHeartstringStrum()
     {
         if (View.Instance == null || View.Instance.AudioHandler == null)
             return;
 
-        View.Instance.AudioHandler.PlayHeartstringStrum();
+        float length = View.Instance.AudioHandler.PlayHeartstringStrum();
+        if (length > 0f)
+            _heartstringDepartureFadeOut = length + HeartstringStrumTail;
     }
 
     void ApplyGainRituals(EventOutcomeData outcome)
@@ -365,6 +380,8 @@ public class EventHandler : MonoBehaviour
         _onEventComplete = null;
         _currentDefinition = null;
         complete?.Invoke();
+        // Drop a hold the leave transition did not take, so it cannot lengthen a later return.
+        _heartstringDepartureFadeOut = -1f;
     }
 
     void StopEventCoroutines()

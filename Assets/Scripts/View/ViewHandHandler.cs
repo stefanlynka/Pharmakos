@@ -128,6 +128,7 @@ public class ViewHandHandler : MonoBehaviour
 
             viewCard.SetHighlight(!skipHighlighting && canPlay && View.Instance.IsInteractible);
             viewCard.UpdateCost();
+            viewCard.UpdateText();
         }
     }
 

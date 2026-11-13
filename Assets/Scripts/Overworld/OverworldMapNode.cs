@@ -230,8 +230,8 @@ public class OverworldMapNode : MonoBehaviour
 
     /// <summary>
     /// Floor = axial <see cref="R"/>: 0,1,2,….
-    /// Shops on R=4 (1) and R=7 (3). From R≥2, temples = ⌈n/3⌉ on odd floors and ⌊n/3⌋ on even (n = nodes on that floor).
-    /// Among remaining nodes per floor, ⌈remaining/4⌉ are events; the rest combat.
+    /// One shop on R=0, two on R=4 and R=7. From R≥2, one temple per floor except R=7.
+    /// Among remaining nodes, one event per floor (none on R=4, two on R=6); the rest combat.
     /// </summary>
     public static void AssignEncountersByFloorRules(OverworldMapNode[] nodes, CustomRandom rng)
     {
@@ -323,7 +323,8 @@ public class OverworldMapNode : MonoBehaviour
         pool.RemoveRange(0, templeTarget);
 
         int eventTarget = 1; //Mathf.CeilToInt(pool.Count / 4f);
-        if (floor == 4 || floor == 4 || floor == 7) eventTarget = 0;
+        if (floor == 4) eventTarget = 0;
+        else if (floor == 6) eventTarget = 2;
         eventTarget = Mathf.Min(eventTarget, pool.Count);
         ShuffleInPlace(pool, rng);
         for (int i = 0; i < eventTarget; i++)

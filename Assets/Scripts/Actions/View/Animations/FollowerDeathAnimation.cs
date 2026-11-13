@@ -56,6 +56,13 @@ public class FollowerDeathAnimation : AnimationAction
     private void RemoveFollower()
     {
         //Debug.LogWarning(ViewFollower.Follower.GetName() + " " + ViewFollower.Follower.ID + " death Animation end");
+        if (ViewFollower == null || follower == null || View.Instance == null)
+            return;
+
+        // The fight may already have cleared this card once the screen went black.
+        if (!View.Instance.TryGetViewFollower(follower, out ViewFollower current) || current != ViewFollower)
+            return;
+
         View.Instance.RemoveViewCard(ViewFollower);
     }
 

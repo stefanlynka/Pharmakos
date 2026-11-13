@@ -238,6 +238,13 @@ public class MoveCardAnimation : AnimationAction
 
     private void Complete()
     {
+        // The fight may already have cleared this card once the screen went black.
+        if (!View.Instance.TryGetViewCard(card, out ViewCard current) || current != viewCard)
+        {
+            CallCallback();
+            return;
+        }
+
         switch (newZone)
         {
             case GameZone.BattleRow:

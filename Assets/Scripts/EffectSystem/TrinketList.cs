@@ -1598,7 +1598,7 @@ public class OdysseyTrinket : Trinket<OdysseyTrinketEffectDef>
     public OdysseyTrinket()
     {
         Name = "Odyssey";
-        Description = "When you play a follower, play a spell, and use a ritual in the same turn for the first time, summon Odysseus";
+        Description = "When you play a Follower, a Spell, and a Ritual in the same turn, summon Odysseus";
         AvailableAsStartingTrinket = false;
     }
 }
@@ -1688,7 +1688,7 @@ public class OdysseyTrinketEffectDef : TrinketPlayerEffect
 
     protected override string GetDescription()
     {
-        return "When you play a follower, play a spell, and use a ritual in the same turn for the first time, summon Odysseus";
+        return "When you play a Follower, a Spell, and a Ritual in the same turn, summon Odysseus";
     }
 }
 

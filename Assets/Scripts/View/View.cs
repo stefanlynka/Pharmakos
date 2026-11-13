@@ -329,6 +329,9 @@ public class View : MonoBehaviour
 
     public void RemoveViewCard(ViewCard viewCard)
     {
+        if (Controller.Instance != null && Controller.Instance.HoldCombatCardRemoval)
+            return;
+
         if (viewCard == null)
         {
             Debug.LogError("Tried to remove null ViewCard");

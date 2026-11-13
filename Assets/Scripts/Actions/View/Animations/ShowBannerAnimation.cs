@@ -53,8 +53,18 @@ public class ShowBannerAnimation : AnimationAction
             return;
 
         ViewPlayer viewPlayer = View.Instance.GetViewPlayer(player);
-        if (viewPlayer?.ViewResources != null)
-            viewPlayer.ViewResources.SyncToPlayerState();
+        if (viewPlayer?.ViewResources == null)
+            return;
+
+        viewPlayer.ViewResources.SyncToPlayerState();
+
+        // Start-of-turn gains are already in the player's totals but their sprites play after
+        // the banner, so keep them hidden until they land.
+        foreach (AnimationAction queued in View.Instance.AnimationHandler.AnimationActionQueue)
+        {
+            if (queued is CreateOfferingAnimation offering && View.Instance.GetViewPlayer(offering.Owner) == viewPlayer)
+                viewPlayer.ViewResources.QueuePendingCollect(offering.OfferingType, offering.Amount);
+        }
     }
 
     private void MoveBanner(float progress)

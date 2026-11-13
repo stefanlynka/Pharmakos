@@ -92,6 +92,8 @@ public class ChangeStatsAnimation : AnimationAction
             if (playDeathFlames)
             {
                 pending++;
+                // Lethal hit: fade out with the flames, instead of after they finish.
+                Controller.Instance.BeginOpponentDefeatFade();
                 viewPlayer.PlayDeathFlames(finishOne);
             }
 

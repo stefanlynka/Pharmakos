@@ -32,6 +32,10 @@ public class Controller : MonoBehaviour
     public GameState CanonGameState;
 
     public bool GameRunning = false;
+    // While an opponent's defeat fade is covering the board, card views stay until it is black.
+    public bool HoldCombatCardRemoval { get; private set; }
+    bool opponentDefeatFadeStarted;
+    bool opponentDefeatCompleted;
     public bool IsTestChamber = false;
     public bool IsTutorialRun = false;
     private bool isGameSetup = false;
@@ -272,6 +276,10 @@ public class Controller : MonoBehaviour
     }
     private void LoadLevel()
     {
+        opponentDefeatFadeStarted = false;
+        opponentDefeatCompleted = false;
+        HoldCombatCardRemoval = false;
+
         CardGainRewardHandler.gameObject.SetActive(false);
         RitualRewardHandler.gameObject.SetActive(false);
         if (TrinketRewardHandler != null)
@@ -320,6 +328,13 @@ public class Controller : MonoBehaviour
 
     public void ClearLevel()
     {
+        HoldCombatCardRemoval = false;
+
+        // Animations still queued for this fight would create card views after the clear,
+        // and those views would still be on the board when the next fight loads.
+        if (View.Instance != null && View.Instance.AnimationHandler != null)
+            View.Instance.AnimationHandler.AnimationActionQueue.Clear();
+
         Player1.Clear();
         Player2.Clear();
 
@@ -328,11 +343,12 @@ public class Controller : MonoBehaviour
     public void StartNextLevel(bool useScreenTransition = true)
     {
         PlayHistoryHandler.Clear();
+        float fadeOut = TakeHeartstringDepartureFadeOut();
 
         if (!IsTestChamber && OverworldMapController != null)
         {
             if (useScreenTransition)
-                ReturnToOverworld();
+                ReturnToOverworld(fadeOut);
             else
                 ReturnToOverworldImmediate();
             return;
@@ -341,14 +357,34 @@ public class Controller : MonoBehaviour
         ProgressionHandler.SetupNextEnemy();
         View.Instance.DarknessHandler.SetDarkness();
         ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, ShowNextLevel);
+        ApplyHeartstringDepartureFadeOut(transitionAnimation, fadeOut);
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }
 
-    private void ReturnToOverworld()
+    private void ReturnToOverworld(float fadeOutDuration = -1f)
     {
         View.Instance.DarknessHandler.SetDarkness();
         ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, ReturnToOverworldImmediate);
+        ApplyHeartstringDepartureFadeOut(transitionAnimation, fadeOutDuration);
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
+    }
+
+    float TakeHeartstringDepartureFadeOut()
+    {
+        if (EventHandler == null)
+            return -1f;
+
+        return EventHandler.ConsumeHeartstringDepartureFadeOut();
+    }
+
+    // Halfway through this transition the hearing camera is turned off, which cuts a one-shot still playing.
+    // Hold the fade-out until the strum has finished.
+    static void ApplyHeartstringDepartureFadeOut(ScreenTransitionAnimation transitionAnimation, float fadeOutDuration)
+    {
+        if (fadeOutDuration <= 0f)
+            return;
+
+        transitionAnimation.FadeOutDuration = Mathf.Max(Screen.ScreenChangeDuration, fadeOutDuration);
     }
 
     private void ReturnToOverworldImmediate()
@@ -880,6 +916,9 @@ public class Controller : MonoBehaviour
 
     public bool CheckForPlayerDeath()
     {
+        if (opponentDefeatFadeStarted)
+            return true;
+
         if (CurrentScreen != ScreenName.Game) return false;
 
         if (Player1.Health <= 0)
@@ -893,19 +932,97 @@ public class Controller : MonoBehaviour
         }
         else if (Player2.Health <= 0)
         {
-            ClearLevel();
-            GameRunning = false;
-
-            ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, ProgressToNextLevel);
-            View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
-
-            
-
-            Player2.Health = 1;
+            BeginOpponentDefeatFade();
             return true;
         }
 
         return false;
+    }
+
+    // The live opponent has been killed. Card views stay until the defeat fade is black.
+    public void HoldCombatCardsForDefeat()
+    {
+        if (opponentDefeatCompleted || CurrentScreen != ScreenName.Game)
+            return;
+        if (Player1 != null && Player1.Health <= 0)
+            return;
+
+        HoldCombatCardRemoval = true;
+    }
+
+    public void ReleaseCombatCardHoldIfDefeatNotStarted()
+    {
+        if (opponentDefeatFadeStarted)
+            return;
+
+        HoldCombatCardRemoval = false;
+    }
+
+    // Starts the fade as soon as the killing blow's flames do. The board stays up until the overlay is black.
+    public void BeginOpponentDefeatFade()
+    {
+        if (opponentDefeatFadeStarted || CurrentScreen != ScreenName.Game)
+            return;
+        if (Player1 != null && Player1.Health <= 0)
+            return;
+        if (Player2 == null || Player2.Health > 0)
+            return;
+        if (View.Instance == null || View.Instance.AnimationHandler == null)
+            return;
+
+        opponentDefeatFadeStarted = true;
+        HoldCombatCardRemoval = true;
+        GameRunning = false;
+        Player2.Health = 1;
+        View.Instance.TurnIsEnding = false;
+        View.Instance.WaitingForTurnBanner = false;
+        View.Instance.DoingEndOfTurnActions = false;
+
+        ScreenTransitionAnimation transitionAnimation = new ScreenTransitionAnimation(null, FinishOpponentDefeat);
+        View.Instance.AnimationHandler.PlayAlongsideCurrent(transitionAnimation);
+    }
+
+    void FinishOpponentDefeat()
+    {
+        if (BlankScreenAlpha() >= 1f)
+        {
+            CompleteOpponentDefeat();
+            return;
+        }
+
+        StartCoroutine(CompleteOpponentDefeatWhenBlack());
+    }
+
+    IEnumerator CompleteOpponentDefeatWhenBlack()
+    {
+        // Halfway lines up with the fade, but the overlay alpha ticks in Screen.Update.
+        // Wait until that black is actually opaque before taking the cards away.
+        float elapsed = 0f;
+        float previousAlpha = BlankScreenAlpha();
+        while (BlankScreenAlpha() < 1f && elapsed < ScreenTransitionAnimation.HalfwayPauseDuration)
+        {
+            float alpha = BlankScreenAlpha();
+            // The overlay has started fading back in, so swap while it is still black.
+            if (alpha < previousAlpha)
+                break;
+
+            previousAlpha = alpha;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        CompleteOpponentDefeat();
+    }
+
+    void CompleteOpponentDefeat()
+    {
+        if (opponentDefeatCompleted)
+            return;
+
+        opponentDefeatCompleted = true;
+
+        ClearLevel();
+        ProgressToNextLevel();
     }
 
     private void ProgressToNextLevel()
@@ -1552,7 +1669,13 @@ public class Controller : MonoBehaviour
 
             ScreenHandler.Instance.HideScreen(ScreenName.TrinketRewardScreen, true);
             GameField.SetActive(false);
-            GoToRitualRewardScreen();
+            if (IsTutorialRun && ProgressionHandler.CurrentEnemy == ProgressionHandler.DeckName.Archiereus)
+            {
+                var rewards = TutorialScript.TempleRitualRewards();
+                GoToRitualRewardScreen(rewards.top, rewards.bottom);
+            }
+            else
+                GoToRitualRewardScreen();
         });
         View.Instance.AnimationHandler.AddAnimationActionToQueue(transitionAnimation);
     }

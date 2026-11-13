@@ -442,7 +442,7 @@ public class AudioHandler : MonoBehaviour
             SoundEffectSource.PlayOneShot(clip, userSoundEffectVolume * volumeScale);
     }
 
-    public void PlayHeartstringStrum()
+    public float PlayHeartstringStrum()
     {
         if (heartstringStrumClip == null && !loggedMissingHeartstringStrum)
         {
@@ -455,6 +455,7 @@ public class AudioHandler : MonoBehaviour
         }
 
         PlayOneShot(heartstringStrumClip);
+        return heartstringStrumClip != null ? heartstringStrumClip.length : 0f;
     }
 
     public void SetMusicVolume(float volume)

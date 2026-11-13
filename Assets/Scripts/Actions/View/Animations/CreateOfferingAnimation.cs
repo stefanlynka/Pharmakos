@@ -23,6 +23,10 @@ public class CreateOfferingAnimation : AnimationAction
     private float duration = 0.65f;
     private Vector3 middleOfScreen = new Vector3(0, 0, 30);
 
+    public Player Owner => owner;
+    public OfferingType OfferingType => offeringType;
+    public int Amount => amount;
+
     public CreateOfferingAnimation(GameAction gameAction, Player owner, OfferingType offeringType, int amount, int sourceID, int destinationID) : base(gameAction)
     {
         Stackable = true;
