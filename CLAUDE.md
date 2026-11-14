@@ -49,6 +49,8 @@ All gameplay code is in `Assets/Scripts` (default `Assembly-CSharp`, no asmdefs,
 
 **Determinism.** Use the seeded `CustomRandom` (`GameState.RNG`, `Controller.MetaRNG`) for anything gameplay-affecting so seeds and saves reproduce.
 
+**Click protection.** `Utility/InputGuard` blocks clicks while a `ScreenTransitionAnimation` is in flight (from construction until the new screen is revealed, with a 5 s safety cap) and for 0.35 s after any button click (via `ButtonFeedback`). UI is blocked automatically by an invisible top-most overlay; any code that reads the mouse directly (`Input.GetMouseButtonDown` + raycasts) must check `InputGuard.IsBlocked` before acting on a press.
+
 ## Adding content (usually done by the developer; here for reference)
 
 - **Card:** new class in `Cards/CardList.cs` deriving from `Follower` or `Spell`; set `Costs`, stats, `Text`, `Icon`; add effects in `SetupInnateEffects()`; register it in the relevant deck/pool in `CardHandler.cs`.

@@ -18,6 +18,20 @@ public class ScreenTransitionAnimation : AnimationAction
         this.halfwayAction = halfwayAction;
         this.onFinishAction = onFinishAction;
         this.onStartAction = onStartAction;
+
+        // Lock input from the moment the transition is requested (it may wait in the animation
+        // queue) until the new screen is revealed, so repeat clicks can't queue it twice.
+        InputGuard.BeginTransition();
+        holdingInputLock = true;
+    }
+
+    private bool holdingInputLock;
+
+    private void ReleaseInputLock()
+    {
+        if (!holdingInputLock) return;
+        holdingInputLock = false;
+        InputGuard.EndTransition();
     }
 
     public override void Play(Action onFinish = null)
@@ -60,6 +74,7 @@ public class ScreenTransitionAnimation : AnimationAction
     private void HideBlankScreen()
     {
         ScreenHandler.Instance.HideScreen(ScreenName.Blank, false);
+        ReleaseInputLock();
     }
     private void Halfway()
     {
@@ -71,6 +86,7 @@ public class ScreenTransitionAnimation : AnimationAction
     {
         //Debug.LogWarning("Finished transition");
         Screen.ClearScreenChangeDurationOverride();
+        ReleaseInputLock();
         onFinishAction?.Invoke();
     }
 }

@@ -86,7 +86,8 @@ public class SelectionHandler
     private void HandleMouseInputs()
     {
         if (!Controller.Instance.Player1.IsMyTurn) return;
-        if (Input.GetMouseButtonDown(0))
+        // Only presses are guarded; releases must still go through so a held card/drag always resolves.
+        if (Input.GetMouseButtonDown(0) && !InputGuard.IsBlocked)
         {
             if (CurrentHover == null)
             {

@@ -102,9 +102,13 @@ public class MenuSelectionHandler : MonoBehaviour
     {
         if (_blockInput != null && _blockInput()) return;
         if (!Input.GetMouseButtonDown(0)) return;
+        if (InputGuard.IsBlocked) return;
 
         if (CurrentHover != null)
+        {
+            InputGuard.BlockFor(InputGuard.ClickBlockDuration);
             CurrentHover.OnClick?.Invoke(CurrentHover);
+        }
     }
 
     /// <summary>Camera used for menu screen-point rays; falls back to <see cref="Camera.main"/>.</summary>

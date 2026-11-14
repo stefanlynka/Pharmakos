@@ -486,7 +486,7 @@ public class OverworldMapController : MonoBehaviour
 
         UpdateAccessibleHexHover();
 
-        if (Input.GetMouseButtonDown(0) && !ContentScrollView.BlocksGameInput && !TutorialPresenter.BlocksGameInput)
+        if (Input.GetMouseButtonDown(0) && !InputGuard.IsBlocked && !ContentScrollView.BlocksGameInput && !TutorialPresenter.BlocksGameInput)
         {
             var cam = GetOverworldCamera();
             if (cam == null) return;
@@ -658,6 +658,7 @@ public class OverworldMapController : MonoBehaviour
             return;
         }
 
+        InputGuard.BlockFor(InputGuard.ClickBlockDuration);
         TutorialPresenter.Instance?.DismissForOverworldTravel();
         Controller.Instance.BeginEncounterFromOverworldNode(node);
     }
