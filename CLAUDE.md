@@ -79,6 +79,7 @@ Run saves (`Save/RunSave.cs`, JSON in `Application.persistentDataPath/run-save.j
 - There are no automated tests yet.
 - **Git:** work directly on `main`. Agents may commit finished, verified chunks of work (one logical change per commit, existing message style). Never push.
 - One-off working notes (feature checklists, plans) are temporary: delete them once the feature is finished. Keep lasting design references like `Rituals.txt`.
+- **Subsystem notes:** when you learn something non-obvious about a subsystem (how it flows, where state lives, gotchas), add it to a `CLAUDE.md` in that subsystem's folder (e.g. `Assets/Scripts/Rituals/CLAUDE.md`) before finishing; create the file if needed. These load automatically when a session works in that folder. Keep them short and verified, and fix or delete anything you find stale. Project-wide rules stay in this root file.
 
 ## Third-party assets
 
