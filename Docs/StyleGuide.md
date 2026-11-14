@@ -66,7 +66,8 @@ Targeting arrows use the Target colour and must read clearly against the board.
 - **Button (locked):** black-figure style. Sprite `Assets/Resources/Images/UI/Button_BlackFigure.png` (dark fill, terracotta Greek key; a recolour of `Button3`, the corrected `Button2` art: fill `#1C1714`, lines `#D9733F`, 9-slice border 230/227/212/200), Image type **Tiled**.
   - Border scale: `Pixels Per Unit Multiplier ≈ 700 / button height` (7 on a 100-tall button, clamped 5–13), so every button shows the same key thickness.
   - Label: Cinzel, colour `#E3864F`, TMP margins inset inside the key border (≈ `230/ppum × 0.85` horizontal, `210/ppum × 0.55` vertical).
-  - States (Button Color Tint, multiplier 1.25): normal `0.8` grey → reads as 1.0; highlighted white → brightens; pressed `0.6`; disabled `0.5` at 60% alpha. Don't tint buttons with hue colours in code; dim/brighten only (e.g. status tabs: inactive `0.55` grey, active white).
+  - States (Button Color Tint, multiplier **1** — UI colours clamp at 1, so a multiplier above 1 can't brighten): normal `0.8`, highlighted white, pressed `0.65`, disabled `0.45` at 60% alpha. Don't tint buttons with hue colours in code; dim/brighten only (e.g. status tabs: inactive `0.55` grey, active white).
+  - Every button also has a `ButtonFeedback` component: on hover the label eases to bone-gold `#F5C794` and the button scales to 1.04; on press it dips to 0.97. Add it to any new button. If code recolours a label at runtime, call `ButtonFeedback.CaptureLabelColors()` afterwards.
 - **Title plaque:** one style for every screen title. Kiln Black fill, single Terracotta Greek-key frame, Display face in Bone.
 - **Panel:** Kiln Black at ~90% opacity, thin Terracotta rule. No Greek key on secondary panels.
 - **Greek key:** at most one scale per screen. Used for title plaques and large framing elements only.

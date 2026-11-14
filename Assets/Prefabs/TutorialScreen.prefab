@@ -598,6 +598,7 @@ GameObject:
   - component: {fileID: 6981678009561046199}
   - component: {fileID: 5401470170735762071}
   - component: {fileID: 8698623424946123567}
+  - component: {fileID: 7130946176474497763}
   m_Layer: 5
   m_Name: QuitButton
   m_TagString: Untagged
@@ -686,10 +687,10 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
     m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
-    m_PressedColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
+    m_PressedColor: {r: 0.65, g: 0.65, b: 0.65, a: 1}
     m_SelectedColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
-    m_DisabledColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.6}
-    m_ColorMultiplier: 1.25
+    m_DisabledColor: {r: 0.45, g: 0.45, b: 0.45, a: 0.6}
+    m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
@@ -719,6 +720,22 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &7130946176474497763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1261994423696918125}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a49ecbb45fa067d47a23a63188d54d44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LabelHoverColor: {r: 0.96, g: 0.78, b: 0.58, a: 1}
+  HoverScale: 1.04
+  PressedScale: 0.97
+  Speed: 18
 --- !u!1 &1433105159660050064
 GameObject:
   m_ObjectHideFlags: 0
@@ -2656,6 +2673,7 @@ GameObject:
   - component: {fileID: 7769475860708401240}
   - component: {fileID: 8197527898606455477}
   - component: {fileID: 9092591985766425153}
+  - component: {fileID: 3187373947205054599}
   m_Layer: 5
   m_Name: TryAgainButton
   m_TagString: Untagged
@@ -2744,10 +2762,10 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
     m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
-    m_PressedColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
+    m_PressedColor: {r: 0.65, g: 0.65, b: 0.65, a: 1}
     m_SelectedColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
-    m_DisabledColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.6}
-    m_ColorMultiplier: 1.25
+    m_DisabledColor: {r: 0.45, g: 0.45, b: 0.45, a: 0.6}
+    m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
@@ -2777,6 +2795,22 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &3187373947205054599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8120636234735311569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a49ecbb45fa067d47a23a63188d54d44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LabelHoverColor: {r: 0.96, g: 0.78, b: 0.58, a: 1}
+  HoverScale: 1.04
+  PressedScale: 0.97
+  Speed: 18
 --- !u!1 &8346523147139948791
 GameObject:
   m_ObjectHideFlags: 0
@@ -4498,19 +4532,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_PressedColor.b
-      value: 0.6
+      value: 0.65
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_PressedColor.g
-      value: 0.6
+      value: 0.65
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_PressedColor.r
-      value: 0.6
+      value: 0.65
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_ColorMultiplier
-      value: 1.25
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_DisabledColor.a
@@ -4518,15 +4552,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_DisabledColor.b
-      value: 0.5
+      value: 0.45
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_DisabledColor.g
-      value: 0.5
+      value: 0.45
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_DisabledColor.r
-      value: 0.5
+      value: 0.45
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_SelectedColor.b
@@ -4587,13 +4621,37 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4637905969415826762}
   m_SourcePrefab: {fileID: 100100000, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
 --- !u!224 &587183433627333431 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1442558165868321064, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
   m_PrefabInstance: {fileID: 2027437020966709791}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5204630232607147274 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+  m_PrefabInstance: {fileID: 2027437020966709791}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4637905969415826762
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5204630232607147274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a49ecbb45fa067d47a23a63188d54d44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LabelHoverColor: {r: 0.96, g: 0.78, b: 0.58, a: 1}
+  HoverScale: 1.04
+  PressedScale: 0.97
+  Speed: 18
 --- !u!1001 &2102284761037742602
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6707,19 +6765,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_PressedColor.b
-      value: 0.6
+      value: 0.65
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_PressedColor.g
-      value: 0.6
+      value: 0.65
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_PressedColor.r
-      value: 0.6
+      value: 0.65
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_ColorMultiplier
-      value: 1.25
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_DisabledColor.a
@@ -6727,15 +6785,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_DisabledColor.b
-      value: 0.5
+      value: 0.45
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_DisabledColor.g
-      value: 0.5
+      value: 0.45
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_DisabledColor.r
-      value: 0.5
+      value: 0.45
       objectReference: {fileID: 0}
     - target: {fileID: 4949218398337824127, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Colors.m_SelectedColor.b
@@ -6796,8 +6854,32 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7982546671503986566}
   m_SourcePrefab: {fileID: 100100000, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+--- !u!1 &1490556236377084908 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+  m_PrefabInstance: {fileID: 4663455812268817657}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7982546671503986566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1490556236377084908}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a49ecbb45fa067d47a23a63188d54d44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LabelHoverColor: {r: 0.96, g: 0.78, b: 0.58, a: 1}
+  HoverScale: 1.04
+  PressedScale: 0.97
+  Speed: 18
 --- !u!224 &6103243189373167057 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1442558165868321064, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
