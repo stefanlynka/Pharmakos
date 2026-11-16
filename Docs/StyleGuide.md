@@ -4,7 +4,7 @@ The standard every visual change is checked against. Goal: one visual language a
 
 **Direction:** *Black-figure pottery in a candlelit temple.* Dark grounds, terracotta and bone accents, warm firelight, restrained gold for anything precious or interactive. The inked main-menu illustration is the tone benchmark: ancient, hand-made, slightly grim.
 
-Status: **draft**. Values marked *(TBD)* get locked as each step lands. Locked so far: typography, buttons, plaques.
+Status: **draft**. Values marked *(TBD)* get locked as each step lands. Locked so far: typography, buttons, plaques, interaction states.
 
 ---
 
@@ -26,7 +26,7 @@ Use these, not ad-hoc colours. Hex values are starting points sampled by eye fro
 
 Rules:
 - Offering colours mean offerings. Don't reuse them for UI states.
-- No cyan, no saturated pure green, no default Unity grey anywhere.
+- No cyan, no neon green, no default Unity grey anywhere.
 - Text is Bone on dark, or Kiln Black on terracotta/parchment. Never pure white `#FFFFFF` on large areas.
 
 ## Typography
@@ -43,23 +43,30 @@ Both are SIL Open Font License (licence files alongside the fonts). Cinzel is al
 Rules:
 - Never ship LiberationSans or Red Rose. TMP's default font is set to Alegreya Sans; text created from code should take its font from `GameFonts.DisplayFont` / `GameFonts.TextFont` (`Assets/Resources/GameFonts.asset`).
 - Alegreya Sans is narrower than Red Rose was: don't use negative character or word spacing with it (it swallows spaces).
+- The font assets are **Static** (pre-baked: ASCII, Latin-1, typographic punctuation and every character in the game's text). If new text uses a character outside that set, add it with `TMP_FontAsset.TryAddCharacters` (switch to Dynamic, add, switch back to Static) or it will render from the LiberationSans fallback.
 - Card rules text uses **fixed sizes in tiers**, not auto-size: Normal (most cards) and Compact (long text). Auto-size is allowed only as a last-resort floor.
 - Keyword names (Sprint, Taunt, Frenzy...) are bold in rules text.
 - Title case for titles and buttons; sentence case for rules and prose.
 
 ## Interaction states
 
-Three states, used identically on cards, followers, rituals, tiles, trinkets and buttons.
+**(Locked.)** Glow *colour* says what kind of thing it is; glow *behaviour* says what you can do with it. Code: `HighlightState` + `Assets/Resources/HighlightPalette.asset` (presets in `Assets/Content/HighlightSettings`). Use `ViewCard.SetHighlight(bool, HighlightState)`; colours are applied from the palette at runtime, so don't hand-tune glow colours on prefabs.
 
 | State | Meaning | Treatment |
 |---|---|---|
-| **Available** | Can be played / used / chosen now | Soft Votive Gold glow *(TBD: exact width/intensity)* |
-| **Selected** | Currently picked or being dragged | Stronger gold glow + slight lift/scale |
-| **Target** | Valid target for the current action | Terracotta glow (pulsing) |
+| **Ready** | Can act now: playable card, follower that can attack | Steady glow in the card's **offering colour**: followers = Crop green, spells = Scroll blue (they produce those offerings when played). Sampled from `OfferingHandler.GetOfferingColor`. |
+| **Selected** | Currently picked (e.g. the attacking follower) | Its Ready colour at 1.45× intensity |
+| **Target** | Valid target while aiming an attack, spell or ritual | **Pulsing ember** (`Target`, `TargetMesh` for portraits), whatever the kind. Ember is deliberately not an offering colour. |
+| **Choice** | A pick outside combat: rewards, shop, temple, deck selection, starter bundles, trinkets | Steady ember (`Choice`) |
+| Ritual usable | Ritual on the altar can be used | Fire (`Altar` preset), unchanged |
 | Hover | Mouse over | Brighten + lift; no colour change of its own |
-| Unavailable | Can't use | Desaturate/darken ~40%, no glow |
+| Unavailable | Can't use | No glow |
 
-Targeting arrows use the Target colour and must read clearly against the board.
+Never use the five offering colours (Gold, Blood, Bone, Crop, Scroll) for anything except offerings, or for the Ready glow of what produces them.
+
+Overworld: reachable hexes get an **amber** outline (Choice ember brightened to read on terracotta tiles), the current hex a **warm bone** outline (`Assets/Outlines/Free Outline Settings.asset`, rendering layers 2 and 4). The legend icon sheets (`Images/Overworld/2.png`, `3.png`) are baked screenshots; if outline colours change, recolour their rings too.
+
+*(TBD: targeting arrows still use their own colours; the held/aimed spell card in hand has no Selected glow yet.)*
 
 ## UI components
 
@@ -71,7 +78,7 @@ Targeting arrows use the Target colour and must read clearly against the board.
   - Every button has a `ButtonFeedback` component: on hover the label eases to the `LabelHoverColor` set on the `ViewButton` prefab (currently `#FFDCA7`) and the button scales to 1.04 (one component per button; duplicates fight over the label); on press it dips to 0.97. It also blocks double-clicks (`InputGuard`). Add it to any new button. If code recolours a label at runtime, call `ButtonFeedback.CaptureLabelColors()` afterwards.
 - **Plaque (locked):** one style for all non-clickable framed info, large or small: screen titles, subheadings, the overworld legend, tutorial popups, text popups. Sprite `Assets/Resources/Images/UI/BlackUIElement.png` (black fill, terracotta key), Image type **Tiled**, colour white. Text in Bone `#E8DCC2`: Cinzel for titles and labels, Alegreya Sans for prose. Size, typeface and position carry the hierarchy, not a different frame. No soft/blurred black boxes.
 - **Greek key thickness (locked):** the same *on-screen* thickness on every button and plaque, about 28 px at 1080p. Because canvases are scaled differently, set `Pixels Per Unit Multiplier = 8.2 × (element scale ÷ root-canvas scale)`, and never less than `230 / (0.4 × smaller side)` so the key can't swallow a small element. Most elements end up at 8.2; the 2×-scaled overworld legend is 16.4.
-- **Prose box** (event story, long descriptions): a plaque with generous inner padding, never an unframed black rectangle. *(TBD: event story box not converted yet.)*
+- **Prose box** (event story, long descriptions): a plaque with generous inner padding, never an unframed or blurred black box. Framed boxes must sit fully on screen (≥16px from the edges) and never under buttons. *(TBD: the card-hover keyword popups `Popup1`/`Popup2` still use the blurred box.)*
 
 ## Art cohesion
 
