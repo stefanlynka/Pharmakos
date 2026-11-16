@@ -41,12 +41,14 @@ public class ButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     {
         hovered = false;
         pressed = false;
+        holdingHoverThroughLock = false;
         hoverAmount = 0f;
         Apply();
     }
 
     void OnDisable()
     {
+        holdingHoverThroughLock = false;
         hovered = false;
         pressed = false;
         hoverAmount = 0f;
@@ -64,8 +66,29 @@ public class ButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     bool Interactable => selectable == null || selectable.IsInteractable();
 
-    public void OnPointerEnter(PointerEventData eventData) { hovered = true; }
-    public void OnPointerExit(PointerEventData eventData) { hovered = false; pressed = false; }
+    // True while InputGuard's click-catcher overlay has stolen the pointer from us but the mouse is still
+    // physically over the button. We keep the hover look (label, lift and clay tint) until the lock ends,
+    // instead of dropping to rest and popping back once the overlay disappears.
+    bool holdingHoverThroughLock;
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        hovered = true;
+        holdingHoverThroughLock = false;
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        pressed = false;
+        if (InputGuard.IsBlocked && PointerIsOverButton())
+        {
+            holdingHoverThroughLock = true;
+            return;
+        }
+
+        hovered = false;
+        holdingHoverThroughLock = false;
+    }
     public void OnPointerDown(PointerEventData eventData) { if (eventData.button == PointerEventData.InputButton.Left) pressed = true; }
     public void OnPointerUp(PointerEventData eventData) { pressed = false; }
 
@@ -79,12 +102,62 @@ public class ButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     void Update()
     {
+        if (holdingHoverThroughLock)
+            UpdateHeldHover();
+
         float target = hovered && Interactable ? 1f : 0f;
         bool showPressed = pressed && Interactable;
         if (Mathf.Approximately(hoverAmount, target) && showPressed == lastAppliedPressed) return;
 
         hoverAmount = Mathf.MoveTowards(hoverAmount, target, Speed * Time.unscaledDeltaTime);
         Apply();
+    }
+
+    void LateUpdate()
+    {
+        // The Button's own tint dropped to normal when the overlay stole the pointer; hold it at highlighted.
+        if (holdingHoverThroughLock && selectable != null && selectable.targetGraphic != null && Interactable)
+        {
+            ColorBlock c = selectable.colors;
+            selectable.targetGraphic.CrossFadeColor(c.highlightedColor * c.colorMultiplier, 0f, true, true);
+        }
+    }
+
+    void UpdateHeldHover()
+    {
+        bool lockEnded = !InputGuard.IsBlocked;
+        bool mouseLeft = !PointerIsOverButton();
+        if (!lockEnded && !mouseLeft) return;
+
+        holdingHoverThroughLock = false;
+        if (mouseLeft)
+        {
+            // Mouse moved off while locked: settle to rest. (If the lock ended with the mouse still over us,
+            // the EventSystem re-sends OnPointerEnter, which keeps us hovered with no visible change.)
+            hovered = false;
+            if (selectable != null && selectable.targetGraphic != null)
+            {
+                ColorBlock c = selectable.colors;
+                selectable.targetGraphic.CrossFadeColor(c.normalColor * c.colorMultiplier, c.fadeDuration, true, true);
+            }
+        }
+    }
+
+    bool PointerIsOverButton()
+    {
+        RectTransform rect = transform as RectTransform;
+        if (rect == null) return false;
+
+        Canvas canvas = GetComponentInParent<Canvas>();
+        Camera cam = null;
+        if (canvas != null)
+        {
+            Canvas root = canvas.rootCanvas;
+            if (root.renderMode != RenderMode.ScreenSpaceOverlay)
+                cam = root.worldCamera != null ? root.worldCamera : Camera.main;
+        }
+
+        return RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition, cam);
     }
 
     void Apply()
