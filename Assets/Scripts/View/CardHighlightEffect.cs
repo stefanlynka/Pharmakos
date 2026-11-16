@@ -52,6 +52,9 @@ public class CardHighlightEffect : MonoBehaviour
     static readonly int GlowDriftId = Shader.PropertyToID("_Drift");
     static readonly int GlowSeedId = Shader.PropertyToID("_Seed");
 
+    /// <summary>Runtime multiplier on glow intensity (used for the Selected highlight state).</summary>
+    public float IntensityScale { get; set; } = 1f;
+
     MaterialPropertyBlock corePropertyBlock;
     MaterialPropertyBlock outerPropertyBlock;
     float coreSeed;
@@ -266,6 +269,7 @@ public class CardHighlightEffect : MonoBehaviour
 
     void ApplyGlow(float glowIntensity, float emissionMultiplier = 1f)
     {
+        glowIntensity *= IntensityScale;
         ApplyGlowToRenderer(coreHighlight, corePropertyBlock, glowCoreColor, glowIntensity * glowCoreIntensityMultiplier, glowCoreEmissionStrength * emissionMultiplier, coreSeed);
 
         if (outerHighlight != null)

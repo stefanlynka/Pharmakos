@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e3b9c1d2f5486a8b0c1d2e3f4a5b6c, type: 3}
   m_Name: Follower
   m_EditorClassIdentifier: 
-  glowColor: {r: 0.052918315, g: 1, b: 0, a: 0.87058824}
-  hotColor: {r: 0.9, g: 0.95, b: 1, a: 0.92941177}
-  outerColor: {r: 0.02, g: 0.45, b: 0.08, a: 1}
-  outerShellGlowColor: {r: 0.05856738, g: 0.7924528, b: 0.0037379938, a: 0.95686275}
-  outerShellOuterColor: {r: 0.01, g: 0.28, b: 0.05, a: 0.75}
+  glowColor: {r: 0.46, g: 0.9, b: 0.3, a: 0.87}
+  hotColor: {r: 0.84, g: 1, b: 0.7, a: 0.93}
+  outerColor: {r: 0.2, g: 0.52, b: 0.12, a: 1}
+  outerShellGlowColor: {r: 0.26, g: 0.64, b: 0.16, a: 0.95}
+  outerShellOuterColor: {r: 0.1, g: 0.3, b: 0.06, a: 0.75}
   coreFlameExtent: 0.012
   coreFlameExtentMin: 0.001
   outerFlameExtent: 0.032

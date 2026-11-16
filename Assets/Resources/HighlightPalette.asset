@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce4385f85d45a6c45839e019700db64c, type: 3}
+  m_Name: HighlightPalette
+  m_EditorClassIdentifier: 
+  Follower: {fileID: 11400000, guid: 4bfbd096a4e566b4c9a790af8940c60d, type: 2}
+  Spell: {fileID: 11400000, guid: 8cc07dd7762adca48945461dd4e84bc8, type: 2}
+  Target: {fileID: 11400000, guid: 235d67678fa6bc14ca2c03f2d0048e5d, type: 2}
+  Choice: {fileID: 11400000, guid: bf78c6ee7995e374fb74ab90c6fc97cf, type: 2}
+  TargetMesh: {fileID: 11400000, guid: 594f4eb519c966647870a8bee8c16f58, type: 2}
+  SelectedIntensity: 1.45

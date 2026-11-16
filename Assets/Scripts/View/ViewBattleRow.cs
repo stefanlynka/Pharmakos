@@ -154,18 +154,19 @@ public class ViewBattleRow : MonoBehaviour
 
             X += CardWidth + MaxSpacing;
 
-            // Determine if a card is highlighted
+            // Determine if a card is highlighted, and what the highlight means (Docs/StyleGuide.md, "Interaction states")
             bool highlighted = false;
+            HighlightState state = HighlightState.Ready;
 
             if ((!isHuman && BattleRow.Owner.IsMyTurn) || !View.Instance.IsInteractible) highlighted = false; //  || AnimationHandler.IsAnimating
             else if (isHuman && !BattleRow.Owner.IsMyTurn) highlighted = false;
-            else if (View.Instance.SelectionHandler.AttackingFollower == viewFollower) highlighted = true; // If it's attacking
-            else if (View.Instance.SelectionHandler.AttackableTargets.Contains(viewFollower.Follower)) highlighted = true; // If it's a potential attack target
-            else if (isHuman && !View.Instance.SelectionHandler.IsSelectingTarget() && viewFollower.Follower.CanAttack()) highlighted = true; // nothing's held and it can attack
-            else if (View.Instance.SelectionHandler.IsSelectingTarget() && View.Instance.SelectionHandler.CurrentTargets.Contains(viewFollower.Follower)) highlighted = true; // is a potential target of a spell
-            else if (View.Instance.SelectionHandler.SelectedRitual != null && View.Instance.SelectionHandler.PotentialRitualTargets.Contains(viewFollower.Follower)) highlighted = true; // Is a potential target of a ritual
+            else if (View.Instance.SelectionHandler.AttackingFollower == viewFollower) { highlighted = true; state = HighlightState.Selected; } // If it's attacking
+            else if (View.Instance.SelectionHandler.AttackableTargets.Contains(viewFollower.Follower)) { highlighted = true; state = HighlightState.Target; } // If it's a potential attack target
+            else if (isHuman && !View.Instance.SelectionHandler.IsSelectingTarget() && viewFollower.Follower.CanAttack()) { highlighted = true; state = HighlightState.Ready; } // nothing's held and it can attack
+            else if (View.Instance.SelectionHandler.IsSelectingTarget() && View.Instance.SelectionHandler.CurrentTargets.Contains(viewFollower.Follower)) { highlighted = true; state = HighlightState.Target; } // is a potential target of a spell
+            else if (View.Instance.SelectionHandler.SelectedRitual != null && View.Instance.SelectionHandler.PotentialRitualTargets.Contains(viewFollower.Follower)) { highlighted = true; state = HighlightState.Target; } // Is a potential target of a ritual
 
-            viewFollower.SetHighlight(highlighted);
+            viewFollower.SetHighlight(highlighted, state);
 
             // Hover popups stay hidden while placing a follower, choosing an attack or ritual target, or aiming a spell.
             if (!View.Instance.SelectionHandler.IsHoldingFollower() &&
@@ -331,7 +332,7 @@ public class ViewBattleRow : MonoBehaviour
     {
         foreach (ViewFollower follower in Followers)
         {
-            if (targets.Contains(follower.Follower)) follower.SetHighlight(true);
+            if (targets.Contains(follower.Follower)) follower.SetHighlight(true, HighlightState.Target);
             else follower.SetHighlight(false);
         }
     }

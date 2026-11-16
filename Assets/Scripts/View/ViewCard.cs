@@ -52,9 +52,18 @@ public class ViewCard : ViewTarget
         SetDescriptiveMode(false);
     }
 
+    /// <summary>Ready highlight (the card's offering colour). Use the overload for Selected / Target / Choice.</summary>
     public void SetHighlight(bool highlight)
     {
+        SetHighlight(highlight, HighlightState.Ready);
+    }
+
+    public void SetHighlight(bool highlight, HighlightState state)
+    {
         EnsureCardHighlight();
+
+        if (highlight)
+            ApplyHighlightState(state);
 
         if (isHighlightActive == highlight)
             return;
@@ -63,6 +72,31 @@ public class ViewCard : ViewTarget
 
         if (CardHighlightEffect != null)
             CardHighlightEffect.SetActive(highlight);
+    }
+
+    public HighlightState CurrentHighlightState => appliedState;
+
+    HighlightState appliedState;
+    MeshHighlightSettings appliedPreset;
+
+    void ApplyHighlightState(HighlightState state)
+    {
+        if (CardHighlightEffect == null)
+            return;
+
+        HighlightPalette palette = HighlightPalette.Instance;
+        MeshHighlightSettings preset = palette != null ? palette.For(state, Card is Follower) : null;
+        if (preset == null)
+            preset = highlightSettings;
+
+        if (preset != null && preset != appliedPreset)
+        {
+            CardHighlightEffect.ApplySettings(preset);
+            appliedPreset = preset;
+        }
+
+        CardHighlightEffect.IntensityScale = state == HighlightState.Selected && palette != null ? palette.SelectedIntensity : 1f;
+        appliedState = state;
     }
 
     public bool IsHighlighted()

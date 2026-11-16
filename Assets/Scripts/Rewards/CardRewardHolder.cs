@@ -33,7 +33,7 @@ public class CardRewardHolder : MonoBehaviour
                 CardRewards[1].ViewCard.SetHighlight(false);
                 CardRewards[2].ViewCard.SetHighlight(false);
 
-                viewCard.SetHighlight(true);
+                viewCard.SetHighlight(true, HighlightState.Choice);
             }
 
             //viewCard.SetHighlight(!viewCard.IsHighlighted());

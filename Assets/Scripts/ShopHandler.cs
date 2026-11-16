@@ -358,7 +358,7 @@ public class ShopHandler : MonoBehaviour
         {
             ViewCard viewCard = _cardViews[i];
             bool highlight = viewCard == hoveredCard && canAffordCard;
-            viewCard.SetHighlight(highlight);
+            viewCard.SetHighlight(highlight, HighlightState.Choice);
         }
 
         UpdateKeywordReminders(hoveredCard);

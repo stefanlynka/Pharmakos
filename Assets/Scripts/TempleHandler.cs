@@ -243,7 +243,7 @@ public class TempleHandler : MonoBehaviour
 
         _selectedCardIndex = 0;
         if (_activeViewCards.Count > 0)
-            _activeViewCards[0].SetHighlight(true);
+            _activeViewCards[0].SetHighlight(true, HighlightState.Choice);
 
         _animationRoutine = StartCoroutine(AnimateCardsToOnScreen());
     }
@@ -408,7 +408,7 @@ public class TempleHandler : MonoBehaviour
         if (_selectedCardIndex == index) return;
 
         for (int i = 0; i < _activeViewCards.Count; i++)
-            _activeViewCards[i].SetHighlight(i == index);
+            _activeViewCards[i].SetHighlight(i == index, HighlightState.Choice);
 
         _selectedCardIndex = index;
     }

@@ -989,7 +989,7 @@ public class ContentScrollView : MonoBehaviour
         foreach (ViewCard viewCard in _viewCards)
         {
             if (viewCard != null)
-                viewCard.SetHighlight(viewCard.Card == _selectedCard);
+                viewCard.SetHighlight(viewCard.Card == _selectedCard, HighlightState.Choice);
         }
     }
 

@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7e3b9c1d2f5486a8b0c1d2e3f4a5b6c, type: 3}
   m_Name: Spell
   m_EditorClassIdentifier: 
-  glowColor: {r: 0.68, g: 0.82, b: 1, a: 0.87058824}
-  hotColor: {r: 0.9, g: 0.95, b: 1, a: 0.92941177}
-  outerColor: {r: 0, g: 0.18552971, b: 1, a: 1}
-  outerShellGlowColor: {r: 0.15, g: 0.45, b: 1, a: 0.95686275}
-  outerShellOuterColor: {r: 0.02, g: 0.12, b: 0.55, a: 0.75}
+  glowColor: {r: 0.44, g: 0.66, b: 1, a: 0.87}
+  hotColor: {r: 0.8, g: 0.89, b: 1, a: 0.93}
+  outerColor: {r: 0.18, g: 0.36, b: 0.78, a: 1}
+  outerShellGlowColor: {r: 0.24, g: 0.46, b: 0.9, a: 0.95}
+  outerShellOuterColor: {r: 0.08, g: 0.18, b: 0.46, a: 0.75}
   coreFlameExtent: 0.012
   coreFlameExtentMin: 0.001
   outerFlameExtent: 0.032

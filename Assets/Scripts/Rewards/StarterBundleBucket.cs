@@ -73,11 +73,18 @@ public class StarterBundleBucket : MonoBehaviour
             CardHighlightEffect.SetActive(selected);
     }
 
+    bool appliedChoicePalette;
+
     void EnsureCardHighlight()
     {
-        if (CardHighlightEffect != null)
-            return;
+        if (CardHighlightEffect == null)
+            CardHighlightEffect = GetComponentInChildren<CardHighlightEffect>(true);
 
-        CardHighlightEffect = GetComponentInChildren<CardHighlightEffect>(true);
+        // A bundle is a pick outside combat: Choice glow (Docs/StyleGuide.md).
+        if (!appliedChoicePalette && CardHighlightEffect != null && HighlightPalette.Instance != null && HighlightPalette.Instance.Choice != null)
+        {
+            CardHighlightEffect.ApplySettings(HighlightPalette.Instance.Choice);
+            appliedChoicePalette = true;
+        }
     }
 }
