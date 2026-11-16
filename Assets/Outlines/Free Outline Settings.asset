@@ -21,13 +21,13 @@ MonoBehaviour:
   renderQueue: 0
   occlusion: 0
   maskingStrategy: 0
-  color: {r: 0.085861966, g: 0.745283, b: 0, a: 1}
+  color: {r: 1, g: 0.66, b: 0.22, a: 1}
   enableOcclusion: 0
   occludedColor: {r: 1, g: 0, b: 0, a: 1}
   blendMode: 0
   extrusionMethod: 1
   scaling: 0
-  width: 3
+  width: 4
   minWidth: 0
   scaleWithResolution: 0
   referenceResolution: 0
@@ -107,7 +107,7 @@ MonoBehaviour:
   renderQueue: 0
   occlusion: 0
   maskingStrategy: 0
-  color: {r: 1, g: 1, b: 1, a: 1}
+  color: {r: 1, g: 0.93, b: 0.8, a: 1}
   enableOcclusion: 0
   occludedColor: {r: 1, g: 0, b: 0, a: 1}
   blendMode: 0
