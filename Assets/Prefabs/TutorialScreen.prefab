@@ -733,7 +733,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BlockDoubleClicks: 1
-  LabelHoverColor: {r: 1, g: 0.97, b: 0.92, a: 1}
+  LabelHoverColor: {r: 1, g: 0.8627451, b: 0.654902, a: 1}
   HoverScale: 1.04
   PressedScale: 0.97
   Speed: 18
@@ -2809,7 +2809,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BlockDoubleClicks: 1
-  LabelHoverColor: {r: 1, g: 0.97, b: 0.92, a: 1}
+  LabelHoverColor: {r: 1, g: 0.8627451, b: 0.654902, a: 1}
   HoverScale: 1.04
   PressedScale: 0.97
   Speed: 18
@@ -4619,18 +4619,6 @@ PrefabInstance:
     - target: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Name
       value: Back
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.b
-      value: 0.92
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.g
-      value: 0.97
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.r
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6840,18 +6828,6 @@ PrefabInstance:
     - target: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Name
       value: Next
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.b
-      value: 0.92
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.g
-      value: 0.97
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.r
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

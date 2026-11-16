@@ -2451,18 +2451,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Option
       objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.b
-      value: 0.92
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.g
-      value: 0.97
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.r
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2992,18 +2980,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Option (3)
       objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.b
-      value: 0.92
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.g
-      value: 0.97
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.r
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3414,18 +3390,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Option (2)
       objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.b
-      value: 0.92
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.g
-      value: 0.97
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.r
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3679,18 +3643,6 @@ PrefabInstance:
     - target: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
       propertyPath: m_Name
       value: Option (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.b
-      value: 0.92
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.g
-      value: 0.97
-      objectReference: {fileID: 0}
-    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      propertyPath: LabelHoverColor.r
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
