@@ -219,7 +219,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BlockDoubleClicks: 1
-  LabelHoverColor: {r: 0.2901961, g: 0.078431375, b: 0.03137255, a: 1}
+  LabelHoverColor: {r: 1, g: 0.97, b: 0.92, a: 1}
   HoverScale: 1.04
   PressedScale: 0.97
   Speed: 18
@@ -492,7 +492,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BlockDoubleClicks: 1
-  LabelHoverColor: {r: 0.2901961, g: 0.078431375, b: 0.03137255, a: 1}
+  LabelHoverColor: {r: 1, g: 0.97, b: 0.92, a: 1}
   HoverScale: 1.04
   PressedScale: 0.97
   Speed: 18

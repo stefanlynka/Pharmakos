@@ -660,7 +660,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BlockDoubleClicks: 1
-  LabelHoverColor: {r: 0.2901961, g: 0.078431375, b: 0.03137255, a: 1}
+  LabelHoverColor: {r: 1, g: 0.97, b: 0.92, a: 1}
   HoverScale: 1.04
   PressedScale: 0.97
   Speed: 18
@@ -1104,13 +1104,22 @@ PrefabInstance:
       propertyPath: m_Name
       value: NewRun
       objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.b
+      value: 0.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.g
+      value: 0.97
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.r
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 941809475139259384}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
 --- !u!224 &2210624608538325691 stripped
 RectTransform:
@@ -1122,23 +1131,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
   m_PrefabInstance: {fileID: 768224772487277459}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &941809475139259384
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6823271167369856134}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a49ecbb45fa067d47a23a63188d54d44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BlockDoubleClicks: 1
-  LabelHoverColor: {r: 0.96, g: 0.78, b: 0.58, a: 1}
-  HoverScale: 1.04
-  PressedScale: 0.97
-  Speed: 18
 --- !u!1001 &3308837377597594742
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1367,41 +1359,28 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tutorial
       objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.b
+      value: 0.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.g
+      value: 0.97
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.r
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2678132457571918546}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
 --- !u!224 &4174736876782404958 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1442558165868321064, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
   m_PrefabInstance: {fileID: 3308837377597594742}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &8787423054553805667 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-  m_PrefabInstance: {fileID: 3308837377597594742}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &2678132457571918546
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8787423054553805667}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a49ecbb45fa067d47a23a63188d54d44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BlockDoubleClicks: 1
-  LabelHoverColor: {r: 0.96, g: 0.78, b: 0.58, a: 1}
-  HoverScale: 1.04
-  PressedScale: 0.97
-  Speed: 18
 --- !u!1001 &3319790657104881210
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1630,41 +1609,28 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tutorial2
       objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.b
+      value: 0.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.g
+      value: 0.97
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.r
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1445968793910202060}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
 --- !u!224 &4185738517614051090 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1442558165868321064, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
   m_PrefabInstance: {fileID: 3319790657104881210}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &8793890318091618607 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-  m_PrefabInstance: {fileID: 3319790657104881210}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1445968793910202060
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8793890318091618607}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a49ecbb45fa067d47a23a63188d54d44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BlockDoubleClicks: 1
-  LabelHoverColor: {r: 0.96, g: 0.78, b: 0.58, a: 1}
-  HoverScale: 1.04
-  PressedScale: 0.97
-  Speed: 18
 --- !u!1001 &3712054447437305501
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1873,13 +1839,22 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.b
+      value: 0.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.g
+      value: 0.97
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.r
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6318419197500038111}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
 --- !u!224 &2848283600477179829 stripped
 RectTransform:
@@ -1891,23 +1866,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
   m_PrefabInstance: {fileID: 3712054447437305501}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6318419197500038111
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7465760367593159048}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a49ecbb45fa067d47a23a63188d54d44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BlockDoubleClicks: 1
-  LabelHoverColor: {r: 0.96, g: 0.78, b: 0.58, a: 1}
-  HoverScale: 1.04
-  PressedScale: 0.97
-  Speed: 18
 --- !u!1001 &5139172095226215299
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2100,36 +2058,23 @@ PrefabInstance:
       propertyPath: m_Name
       value: CancelAbandon (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.b
+      value: 0.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.g
+      value: 0.97
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.r
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7819617966172508720}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
---- !u!1 &1390039361557517462 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-  m_PrefabInstance: {fileID: 5139172095226215299}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &7819617966172508720
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1390039361557517462}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a49ecbb45fa067d47a23a63188d54d44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BlockDoubleClicks: 1
-  LabelHoverColor: {r: 0.96, g: 0.78, b: 0.58, a: 1}
-  HoverScale: 1.04
-  PressedScale: 0.97
-  Speed: 18
 --- !u!224 &6005267290304897707 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1442558165868321064, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
@@ -2363,36 +2308,23 @@ PrefabInstance:
       propertyPath: m_Name
       value: Quit
       objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.b
+      value: 0.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.g
+      value: 0.97
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.r
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7233467126720487747}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
---- !u!1 &318733004606651581 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-  m_PrefabInstance: {fileID: 5797317302927561640}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &7233467126720487747
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 318733004606651581}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a49ecbb45fa067d47a23a63188d54d44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BlockDoubleClicks: 1
-  LabelHoverColor: {r: 0.96, g: 0.78, b: 0.58, a: 1}
-  HoverScale: 1.04
-  PressedScale: 0.97
-  Speed: 18
 --- !u!224 &4931664094350707328 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1442558165868321064, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
@@ -2586,36 +2518,23 @@ PrefabInstance:
       propertyPath: m_Name
       value: ConfirmAbandon (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.b
+      value: 0.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.g
+      value: 0.97
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.r
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6459083937845241994}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
---- !u!1 &4346866156481447391 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-  m_PrefabInstance: {fileID: 7515174176001501898}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &6459083937845241994
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4346866156481447391}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a49ecbb45fa067d47a23a63188d54d44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BlockDoubleClicks: 1
-  LabelHoverColor: {r: 0.96, g: 0.78, b: 0.58, a: 1}
-  HoverScale: 1.04
-  PressedScale: 0.97
-  Speed: 18
 --- !u!224 &8957585007303046114 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1442558165868321064, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
@@ -2857,36 +2776,28 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.b
+      value: 0.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.g
+      value: 0.97
+      objectReference: {fileID: 0}
+    - target: {fileID: 9029970902918351013, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
+      propertyPath: LabelHoverColor.r
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2466109270539035876}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
 --- !u!1 &2423818980909044554 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6059708358770601749, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}
   m_PrefabInstance: {fileID: 8483455828308950111}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2466109270539035876
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2423818980909044554}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a49ecbb45fa067d47a23a63188d54d44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BlockDoubleClicks: 1
-  LabelHoverColor: {r: 0.96, g: 0.78, b: 0.58, a: 1}
-  HoverScale: 1.04
-  PressedScale: 0.97
-  Speed: 18
 --- !u!224 &7043547502791484791 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1442558165868321064, guid: 2ddf7cb8eae48264a82a76146abc7d66, type: 3}

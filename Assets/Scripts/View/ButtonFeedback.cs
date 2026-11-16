@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Hover/press feedback for the terracotta buttons (see Docs/StyleGuide.md):
-/// the clay brightens (Button colour tint), the label warms and the button lifts slightly on hover,
+/// the clay brightens (Button colour tint), the label turns warm white and the button lifts slightly on hover,
 /// and it dips on press.
 /// Works alongside the Button's own colour tint. Uses unscaled time so it works while paused.
 /// Also guards against double-clicks via <see cref="InputGuard"/>.
@@ -16,7 +16,7 @@ public class ButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [Tooltip("After a click, block all clicks briefly so a double-click can't fire the action twice. See InputGuard.")]
     public bool BlockDoubleClicks = true;
 
-    public Color LabelHoverColor = new Color(0.29f, 0.08f, 0.03f, 1f); // deep oxblood (#4A1408) on terracotta
+    public Color LabelHoverColor = new Color(1f, 0.97f, 0.92f, 1f); // warm white (#FFF7EB) on terracotta
     public float HoverScale = 1.04f;
     public float PressedScale = 0.97f;
     public float Speed = 18f;
