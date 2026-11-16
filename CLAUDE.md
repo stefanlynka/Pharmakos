@@ -69,7 +69,8 @@ Run saves (`Save/RunSave.cs`, JSON in `Application.persistentDataPath/run-save.j
 - Dev hotkeys live in `Controller.HandleDevHotkeys()`, wrapped in `#if UNITY_EDITOR || DEVELOPMENT_BUILD` so release builds strip them. **Ctrl+Shift+T** on the main menu starts the test chamber. Add new dev shortcuts there.
 - To verify behaviour: enter play mode via MCP (`manage_editor`), reach the state you need (calling methods like `StartTestChamber()` via `execute_code` is easier than clicking through UI), and read the console.
 - **Working folder:** put screenshots, previews, comparison pages and other agent working files in `Claude/` at the repo root (e.g. `Claude/FontPreview/`). Never use `Temp/` — Unity wipes it when the editor closes. The developer also drops reference screenshots in `Claude/`.
-- **Screenshots are opt-in.** Don't take play-mode screenshots to verify changes by default; do it only when the developer asks.
+- **Screenshots are allowed freely** for checking visual work (the developer said so). `ScreenCapture.CaptureScreenshot` via `execute_code` captures exactly what the Game view shows, including overlay UI and 3D cameras; `manage_camera` screenshots can miss overlay UI or stacked cameras.
+- **Run saves are fair game** for testing: agents may load, overwrite or delete `run-save.json` without backing it up. `Controller.Instance.ContinueRun()` resumes it; private encounter starters (e.g. `BeginTempleEncounter`) can be invoked by reflection to reach a screen directly.
 
 ## Conventions
 
