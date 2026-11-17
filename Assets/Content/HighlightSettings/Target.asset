@@ -47,6 +47,6 @@ MonoBehaviour:
   outerEmissionBoost: 2.2
   flickerSpeed: 0.65
   flickerStrength: 0.38
-  pulseSpeed: 0.55
+  pulseSpeed: 0.3
   pulseMin: 0.35
   pulseMax: 1.35

@@ -56,7 +56,7 @@ Rules:
 |---|---|---|
 | **Ready** | Can act now: playable card, follower that can attack | Steady glow in the card's **offering colour**: followers = Crop green, spells = Scroll blue (they produce those offerings when played). Sampled from `OfferingHandler.GetOfferingColor`. |
 | **Selected** | Currently picked (e.g. the attacking follower) | Its Ready colour at 1.45× intensity |
-| **Target** | Valid target while aiming an attack, spell or ritual | **Slowly pulsing ember** (`Target`, `TargetMesh` for portraits; ~0.55 Hz, faster reads as nervous), whatever the kind. Ember is deliberately not an offering colour. |
+| **Target** | Valid target while aiming an attack, spell or ritual | **Slowly pulsing ember** (`Target`, `TargetMesh` for portraits; 0.3 Hz, the same rate as the Ready glow), whatever the kind. Ember is deliberately not an offering colour. |
 | **Choice** | A pick outside combat: rewards, shop, temple, deck selection, starter bundles, trinkets | Steady ember (`Choice`). Large framed picks (starter bundles) glow at Selected intensity with a widened band, or the thin edge disappears against pale marble. |
 | Ritual usable | Ritual on the altar can be used | Fire (`Altar` preset), unchanged |
 | Hover | Mouse over | Brighten + lift; no colour change of its own |
