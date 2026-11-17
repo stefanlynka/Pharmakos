@@ -115,6 +115,18 @@ public class Controller : MonoBehaviour
         ScreenName.TrinketRewardScreen,
     };
 
+    // Screens where the Map button can open the view-only map (the overworld itself doesn't need it).
+    private static readonly ScreenName[] MapButtonScreens =
+    {
+        ScreenName.Game,
+        ScreenName.CardGainRewards,
+        ScreenName.Temple,
+        ScreenName.Event,
+        ScreenName.Shop,
+        ScreenName.RitualRewards,
+        ScreenName.TrinketRewardScreen,
+    };
+
     private OverworldMapNode _lastOverworldNodeEntered;
 
     public const int OverworldStatusDisabledFloor = 11;
@@ -150,7 +162,11 @@ public class Controller : MonoBehaviour
 
     private void Update()
     {
-        if (Player1 != null && Player2 != null && GameRunning)
+        // The map view freezes whatever is underneath it (combat turns, queued animations,
+        // screen transitions) so nothing can happen out of sight.
+        bool frozenByMapView = OverworldMapView.IsOpen;
+
+        if (Player1 != null && Player2 != null && GameRunning && !frozenByMapView)
         {
             Player1.RunUpdate();
             Player2.RunUpdate();
@@ -164,7 +180,8 @@ public class Controller : MonoBehaviour
         HandleDevHotkeys();
 #endif
 
-        View.Instance.AnimationUpdate();
+        if (!frozenByMapView)
+            View.Instance.AnimationUpdate();
     }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -200,6 +217,12 @@ public class Controller : MonoBehaviour
                 CloseStatusScreen();
             else
                 HideContentScrollView();
+            return;
+        }
+
+        if (OverworldMapView.IsOpen)
+        {
+            CloseMapView();
             return;
         }
 
@@ -1872,6 +1895,52 @@ public class Controller : MonoBehaviour
         CurrentScreen = ScreenName.Status;
         ScreenHandler.Instance.ShowScreen(ScreenName.Status, true, false);
         statusScreenHandler.Open();
+    }
+
+    /// <summary>
+    /// Whether the Map button should be showing: same places as the Status button, minus the
+    /// overworld itself (and the starter bundle, before the map exists). Hidden while Status is
+    /// open, where it would sit over the Rituals panel; the Status button closes it.
+    /// </summary>
+    public bool ShouldShowMapButton()
+    {
+        if (CurrentScreen == ScreenName.Status) return false;
+        if (OverworldMapView.IsOpen) return true;
+        if (IsTestChamber || OverworldMapController == null) return false;
+        if (!System.Array.Exists(MapButtonScreens, screen => screen == CurrentScreen)) return false;
+
+        return ScreenHandler.Instance != null
+            && ScreenHandler.Instance.TryGetScreen(ScreenName.StatusButton, out Screen statusButton)
+            && statusButton.IsActive;
+    }
+
+    public void ToggleMapView()
+    {
+        if (OverworldMapView.IsOpen)
+            CloseMapView();
+        else
+            OpenMapView();
+    }
+
+    public void OpenMapView()
+    {
+        if (OverworldMapView.IsOpen || !ShouldShowMapButton()) return;
+        if (TutorialPresenter.IsBlocking) return;
+
+        OverworldMapNode focus = _lastOverworldNodeEntered != null
+            ? _lastOverworldNodeEntered
+            : OverworldMapController.CurrentNode;
+        OverworldMapView.Open(focus);
+    }
+
+    public void CloseMapView()
+    {
+        if (!OverworldMapView.IsOpen) return;
+
+        if (CurrentScreen == ScreenName.Status)
+            CloseStatusScreen();
+
+        OverworldMapView.Close();
     }
 
     public void CloseStatusScreen()

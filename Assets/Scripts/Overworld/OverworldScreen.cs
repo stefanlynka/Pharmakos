@@ -6,9 +6,15 @@ public class OverworldScreen : Screen
     [Tooltip("Game camera to disable when overworld is shown. Assign Main Camera.")]
     public Camera MainCamera;
 
+    [Tooltip("Overworld camera depth while the map is viewed from another screen. Must be above the other screens' cameras (Main, Event, Altar, Shop...) and below the Status camera, so the map covers the current screen and Status still opens over it.")]
+    public float MapViewCameraDepth = 5f;
+
     const string LegendObjectName = "OverworldLegend";
 
     CanvasGroup _legendGroup;
+    bool _inMapView;
+    float _mapViewSavedDepth;
+    bool _mapViewCameraWasActive;
     float _legendAlpha = 1f;
     float _legendTarget = 1f;
     float _legendDelay;
@@ -20,6 +26,12 @@ public class OverworldScreen : Screen
 
     public override void Enter(bool instant = false)
     {
+        if (_inMapView)
+        {
+            ExitMapView();
+            OverworldMapView.NotifyClosedExternally();
+        }
+
         if (MainCamera != null) MainCamera.gameObject.SetActive(false);
         var overworldCam = Camera != null ? Camera : MapController?.OverworldCamera;
         if (overworldCam != null) overworldCam.gameObject.SetActive(true);
@@ -31,12 +43,76 @@ public class OverworldScreen : Screen
 
     public override void Exit(bool instant = false)
     {
+        if (_inMapView)
+        {
+            // Something hid every screen while the map view was open: close the view, then exit as usual.
+            ExitMapView();
+            OverworldMapView.NotifyClosedExternally();
+        }
+
         if (MapController != null)
             MapController.HideMap();
         base.Exit(instant);
         var overworldCam = Camera != null ? Camera : MapController?.OverworldCamera;
         if (overworldCam != null) overworldCam.gameObject.SetActive(false);
         if (MainCamera != null) MainCamera.gameObject.SetActive(true);
+    }
+
+    Camera OverworldCamera => Camera != null ? Camera : MapController?.OverworldCamera;
+
+    public bool IsInMapView => _inMapView;
+
+    /// <summary>
+    /// Shows the map over the current screen for viewing only. Unlike <see cref="Enter"/> this
+    /// leaves the current screen's cameras alone: the overworld camera renders above them for
+    /// as long as the view is open (<see cref="MapViewCameraDepth"/>).
+    /// </summary>
+    public void EnterMapView(OverworldMapNode focusNode)
+    {
+        if (_inMapView) return;
+        _inMapView = true;
+
+        Camera overworldCam = OverworldCamera;
+        if (overworldCam != null)
+        {
+            _mapViewCameraWasActive = overworldCam.gameObject.activeSelf;
+            _mapViewSavedDepth = overworldCam.depth;
+            overworldCam.depth = MapViewCameraDepth;
+            overworldCam.gameObject.SetActive(true);
+        }
+
+        base.Enter(false);
+        if (MapController != null)
+            MapController.ShowMapViewOnly(focusNode);
+
+        CacheLegendGroup();
+        _legendDelay = 0f;
+        _legendTarget = 1f;
+    }
+
+    /// <summary>Closes the map view and gives the screen underneath its cameras back.</summary>
+    public void ExitMapView()
+    {
+        if (!_inMapView) return;
+        _inMapView = false;
+
+        if (MapController != null)
+            MapController.HideMap();
+        base.Exit(true);
+
+        Camera overworldCam = OverworldCamera;
+        if (overworldCam != null)
+        {
+            overworldCam.depth = _mapViewSavedDepth;
+            overworldCam.gameObject.SetActive(_mapViewCameraWasActive);
+        }
+
+        if (_legendGroup != null)
+        {
+            _legendAlpha = 0f;
+            _legendTarget = 0f;
+            _legendGroup.alpha = 0f;
+        }
     }
 
     /// <summary>

@@ -73,8 +73,14 @@ public class OverworldMapController : MonoBehaviour
     private OverworldMapNode[] _allNodes;
     private OverworldMapNode _hoveredAccessibleNode;
 
+    // Map view (opened from another screen): the player can look around but not travel.
+    private OverworldMapNode _viewOnlyFocusNode;
+
     public OverworldMapNode CurrentNode => _currentNode;
     public bool IsActive { get; private set; }
+
+    /// <summary>True while the map is shown for viewing only (see <see cref="ShowMapViewOnly"/>).</summary>
+    public bool IsViewOnly { get; private set; }
 
     private void Awake()
     {
@@ -295,9 +301,37 @@ public class OverworldMapController : MonoBehaviour
             TutorialDirector.Raise(TutorialTrigger.OverworldShown, EncounterType.Styx);
     }
 
+    /// <summary>
+    /// Shows the map for looking around from another screen (combat, events, rewards...).
+    /// Panning and zoom work; hovering and clicking nodes do nothing, and no progress or tutorial
+    /// state changes. <paramref name="focusNode"/> is where the player is now (the encounter being
+    /// played), which can be ahead of <see cref="CurrentNode"/> until the encounter is completed.
+    /// </summary>
+    public void ShowMapViewOnly(OverworldMapNode focusNode)
+    {
+        gameObject.SetActive(true);
+        IsActive = true;
+        IsViewOnly = true;
+        _viewOnlyFocusNode = focusNode != null ? focusNode : _currentNode;
+
+        _cameraPanVelocityLocal = Vector2.zero;
+        _cameraScrollInitialized = false;
+        _cameraScrollSmoothVelocity = 0f;
+
+        UpdatePlayerMarker();
+        CenterCameraOnCurrentNode();
+        RefreshHexInteractionLayers();
+        ResetHexVisualScales();
+        PositionSideLightsForCurrentRow();
+        SetLights(true);
+        RefreshPlayerLyre();
+    }
+
     public void HideMap()
     {
         IsActive = false;
+        IsViewOnly = false;
+        _viewOnlyFocusNode = null;
         _cameraPanVelocityLocal = Vector2.zero;
         _cameraScrollInitialized = false;
         _cameraScrollSmoothVelocity = 0f;
@@ -317,6 +351,9 @@ public class OverworldMapController : MonoBehaviour
 
         ShowMap();
     }
+
+    /// <summary>The node the player stands on for display: the map view's focus, else <see cref="CurrentNode"/>.</summary>
+    OverworldMapNode DisplayNode => IsViewOnly && _viewOnlyFocusNode != null ? _viewOnlyFocusNode : _currentNode;
 
     private OverworldMapNode FindStartNode()
     {
@@ -347,12 +384,22 @@ public class OverworldMapController : MonoBehaviour
         if (layerAccessible < 0) layerAccessible = 0;
         if (layerCurrent < 0) layerCurrent = 0;
 
+        OverworldMapNode displayNode = DisplayNode;
         foreach (var node in _allNodes)
         {
             if (node == null) continue;
 
-            if (_currentNode != null && node == _currentNode)
+            if (displayNode != null && node == displayNode)
                 node.ApplyHexInteractionLayers(layerCurrent, RenderingLayerYellowHighlight);
+            else if (IsViewOnly)
+            {
+                // From the encounter being played: show where the player can go next.
+                bool next = displayNode != null
+                    && !node.Cleared
+                    && OverworldHexGrid.IsAheadAdjacent(displayNode.Q, displayNode.R, node.Q, node.R);
+                node.ApplyHexInteractionLayers(next ? layerAccessible : layerDefault,
+                    next ? RenderingLayerGreenHighlight : RenderingLayerDefault);
+            }
             else if (_currentNode != null && IsAccessibleNeighbor(node))
                 node.ApplyHexInteractionLayers(layerAccessible, RenderingLayerGreenHighlight);
             else
@@ -422,9 +469,10 @@ public class OverworldMapController : MonoBehaviour
 
     private void UpdatePlayerMarker()
     {
-        if (PlayerMarker == null || _currentNode == null) return;
+        OverworldMapNode displayNode = DisplayNode;
+        if (PlayerMarker == null || displayNode == null) return;
 
-        PlayerMarker.position = _currentNode.transform.position + Vector3.up * PlayerIconHeight;
+        PlayerMarker.position = displayNode.transform.position + Vector3.up * PlayerIconHeight;
         PlayerMarker.gameObject.SetActive(true);
     }
 
@@ -434,7 +482,8 @@ public class OverworldMapController : MonoBehaviour
     /// </summary>
     void CenterCameraOnCurrentNode()
     {
-        if (_currentNode == null) return;
+        OverworldMapNode displayNode = DisplayNode;
+        if (displayNode == null) return;
 
         var cam = GetOverworldCamera();
         if (cam == null) return;
@@ -443,7 +492,7 @@ public class OverworldMapController : MonoBehaviour
         Transform camParent = camTransform.parent;
         if (camParent == null) return;
 
-        Vector3 nodeLocal = camParent.InverseTransformPoint(_currentNode.transform.position);
+        Vector3 nodeLocal = camParent.InverseTransformPoint(displayNode.transform.position);
         Vector3 local = camTransform.localPosition;
 
         float pitchRad = camTransform.localEulerAngles.x * Mathf.Deg2Rad;
@@ -482,7 +531,7 @@ public class OverworldMapController : MonoBehaviour
 
         UpdateOverworldCamera();
 
-        if (_currentNode == null) return;
+        if (IsViewOnly || _currentNode == null) return;
 
         UpdateAccessibleHexHover();
 
@@ -685,7 +734,8 @@ public class OverworldMapController : MonoBehaviour
     /// </summary>
     private void PositionSideLightsForCurrentRow()
     {
-        if (OverworldLightController == null || Grid == null || _currentNode == null)
+        OverworldMapNode displayNode = DisplayNode;
+        if (OverworldLightController == null || Grid == null || displayNode == null)
             return;
 
         var leftGo = OverworldLightController.LeftLightGameObject;
@@ -693,7 +743,7 @@ public class OverworldMapController : MonoBehaviour
         if (leftGo == null || rightGo == null)
             return;
 
-        int rowR = _currentNode.R;
+        int rowR = displayNode.R;
         OverworldMapNode leftMost = null;
         OverworldMapNode rightMost = null;
         float minLocalX = float.MaxValue;

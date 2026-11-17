@@ -182,5 +182,6 @@ public enum ScreenName
     PlayHistoryScreen,
     NewTutorialScreen,
     SelectableDeckViewerScreen,
+    MapButton,
 }
 

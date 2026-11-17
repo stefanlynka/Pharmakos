@@ -78,7 +78,7 @@ public class ViewBuff : MonoBehaviour
 
     void OnMouseEnter()
     {
-        if (summaryForced)
+        if (summaryForced || OverworldMapView.BlocksGameInput)
             return;
 
         ShowHoverSummary();
@@ -119,6 +119,9 @@ public class ViewBuff : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (OverworldMapView.BlocksGameInput)
+            return;
+
         if (OnClick != null)
         {
             OnClick.Invoke(this);
