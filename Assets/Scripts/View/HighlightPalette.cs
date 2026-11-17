@@ -17,7 +17,7 @@ public enum HighlightState
 }
 
 /// <summary>
-/// The single source of highlight colours. Lives at Assets/Resources/HighlightPalette.asset.
+/// The single source of highlight colours. Lives at Assets/Resources/Content/HighlightSettings/HighlightPalette.asset.
 /// Card glow colours are applied from here at runtime, so per-prefab glow colour fields don't matter.
 /// </summary>
 [CreateAssetMenu(fileName = "HighlightPalette", menuName = "Hecatomb/Highlight Palette")]
@@ -44,6 +44,9 @@ public class HighlightPalette : ScriptableObject
     [Tooltip("Intensity multiplier for the Selected state.")]
     public float SelectedIntensity = 1.45f;
 
+    /// <summary>Asset lives at Assets/Resources/Content/HighlightSettings/HighlightPalette.asset, next to its presets.</summary>
+    const string ResourcePath = "Content/HighlightSettings/HighlightPalette";
+
     static HighlightPalette instance;
     static bool attemptedLoad;
 
@@ -54,7 +57,7 @@ public class HighlightPalette : ScriptableObject
             if (instance == null && !attemptedLoad)
             {
                 attemptedLoad = true;
-                instance = Resources.Load<HighlightPalette>("HighlightPalette");
+                instance = Resources.Load<HighlightPalette>(ResourcePath);
             }
             return instance;
         }

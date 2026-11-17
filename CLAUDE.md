@@ -31,7 +31,7 @@ All gameplay code is in `Assets/Scripts` (default `Assembly-CSharp`, no asmdefs,
 | `Players/` | `Player`, `HumanPlayer`, `AIPlayer` (search-based planning), `ProgressionHandler` (decks/encounters). |
 | `View/`, `VFX/`, `Screens/` | MonoBehaviour presentation: `View.Instance`, screen handlers, highlights, animations. |
 | `Overworld/`, `Styx/`, `Rewards/`, `Tutorial/`, `Save/` | Map, River Styx node, reward screens, scripted tutorial, run save/load. |
-| `Assets/Events/` | `EventDefinition` ScriptableObjects (`Pharmakos.Events` namespace); instances in `Assets/Content/Events`. |
+| `Assets/Events/` | `EventDefinition` ScriptableObjects (`Pharmakos.Events` namespace); instances in `Assets/Resources/Content/Events`. |
 
 ## Core architecture rules
 
@@ -56,7 +56,7 @@ All gameplay code is in `Assets/Scripts` (default `Assembly-CSharp`, no asmdefs,
 - **Card:** new class in `Cards/CardList.cs` deriving from `Follower` or `Spell`; set `Costs`, stats, `Text`, `Icon`; add effects in `SetupInnateEffects()`; register it in the relevant deck/pool in `CardHandler.cs`.
 - **Ritual:** class in `Rituals/RitualList.cs` (+ `StaticPlayerEffect` def if it has a lasting effect). Keep `Rituals.txt` in sync.
 - **Trinket:** `Trinket<TEffectDef>` + `TrinketPlayerEffect` pair in `EffectSystem/TrinketList.cs`.
-- **Event:** `EventDefinition` asset under `Assets/Content/Events`.
+- **Event:** `EventDefinition` asset under `Assets/Resources/Content/Events`.
 
 ## Saves — don't break them
 
@@ -74,6 +74,8 @@ Run saves (`Save/RunSave.cs`, JSON in `Application.persistentDataPath/run-save.j
 
 ## Conventions
 
+- **The inspector is the source of truth.** Don't write code that silently overrides values the developer sees and edits in the inspector (e.g. replacing a component's serialized preset at runtime). If something must change at runtime, leave the authored field alone and make the runtime value clearly separate.
+- **Content lives together** under `Assets/Resources/Content` (events, follower layouts, highlight presets and the `HighlightPalette`). Put new content ScriptableObjects there.
 - C# style: PascalCase public members, `camelCase`/`_camelCase` private, Allman braces, 4-space indent. Match surrounding code.
 - Remove stray auto-added usings like `using static Unity.VisualScripting.Member;` / `UnityEngine.GraphicsBuffer` when touching a file — they're IDE accidents.
 - `FindObjectOfType` is used in places; fine on 2022.3, but prefer serialized references or existing singletons (`Controller.Instance`, `View.Instance`, `ScreenHandler.Instance`).

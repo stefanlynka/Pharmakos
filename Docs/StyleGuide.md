@@ -50,7 +50,7 @@ Rules:
 
 ## Interaction states
 
-**(Locked.)** Glow *colour* says what kind of thing it is; glow *behaviour* says what you can do with it. Code: `HighlightState` + `Assets/Resources/HighlightPalette.asset` (presets in `Assets/Content/HighlightSettings`). Use `ViewCard.SetHighlight(bool, HighlightState)`; colours are applied from the palette at runtime, so don't hand-tune glow colours on prefabs.
+**(Locked.)** Glow *colour* says what kind of thing it is; glow *behaviour* says what you can do with it. Code: `HighlightState` + `Assets/Resources/Content/HighlightSettings/HighlightPalette.asset` (alongside its presets). Use `ViewCard.SetHighlight(bool, HighlightState)`; colours are applied from the palette at runtime, so don't hand-tune glow colours on prefabs.
 
 | State | Meaning | Treatment |
 |---|---|---|
