@@ -66,7 +66,7 @@ Never use the five offering colours (Gold, Blood, Bone, Crop, Scroll) for anythi
 
 Overworld: reachable hexes get an **amber** outline (Choice ember brightened to read on terracotta tiles), the current hex a **warm bone** outline (`Assets/Outlines/Free Outline Settings.asset`, rendering layers 2 and 4). The legend icon sheets (`Images/Overworld/2.png`, `3.png`) are baked screenshots; if outline colours change, recolour their rings too.
 
-*(TBD: targeting arrows still use their own colours; the held/aimed spell card in hand has no Selected glow yet.)*
+Targeting arrows are black with orange edges; the edges glow ember (emission masked by the arrow's own texture, `Models/Materials/3DArrow.mat`) so they read on the dark board and match the Target glow. The spell being aimed stays in hand in the Selected state.
 
 ## UI components
 
@@ -78,7 +78,7 @@ Overworld: reachable hexes get an **amber** outline (Choice ember brightened to 
   - Every button has a `ButtonFeedback` component: on hover the label eases to the `LabelHoverColor` set on the `ViewButton` prefab (currently `#FFDCA7`) and the button scales to 1.04 (one component per button; duplicates fight over the label); on press it dips to 0.97. It also blocks double-clicks (`InputGuard`). Add it to any new button. If code recolours a label at runtime, call `ButtonFeedback.CaptureLabelColors()` afterwards.
 - **Plaque (locked):** one style for all non-clickable framed info, large or small: screen titles, subheadings, the overworld legend, tutorial popups, text popups. Sprite `Assets/Resources/Images/UI/BlackUIElement.png` (black fill, terracotta key), Image type **Tiled**, colour white. Text in Bone `#E8DCC2`: Cinzel for titles and labels, Alegreya Sans for prose. Size, typeface and position carry the hierarchy, not a different frame. No soft/blurred black boxes.
 - **Greek key thickness (locked):** the same *on-screen* thickness on every button and plaque, about 28 px at 1080p. Because canvases are scaled differently, set `Pixels Per Unit Multiplier = 8.2 × (element scale ÷ root-canvas scale)`, and never less than `230 / (0.4 × smaller side)` so the key can't swallow a small element. Most elements end up at 8.2; the 2×-scaled overworld legend is 16.4.
-- **Prose box** (event story, long descriptions): a plaque with generous inner padding, never an unframed or blurred black box. Framed boxes must sit fully on screen (≥16px from the edges) and never under buttons. *(TBD: the card-hover keyword popups `Popup1`/`Popup2` still use the blurred box.)*
+- **Prose box** (event story, long descriptions): a plaque with generous inner padding, never an unframed or blurred black box. Framed boxes must sit fully on screen (≥16px from the edges) and never under buttons.
 
 ## Art cohesion
 

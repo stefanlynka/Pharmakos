@@ -126,7 +126,11 @@ public class ViewHandHandler : MonoBehaviour
 
             bool canPlay = viewCard.Card.CanPlay();
 
-            viewCard.SetHighlight(!skipHighlighting && canPlay && View.Instance.IsInteractible);
+            // The spell being aimed stays in hand: it glows Selected (its Ready colour, brighter) while you pick a target.
+            if (selectingTarget && IsHuman && viewCard == View.Instance.SelectionHandler.HeldCard)
+                viewCard.SetHighlight(true, HighlightState.Selected);
+            else
+                viewCard.SetHighlight(!skipHighlighting && canPlay && View.Instance.IsInteractible);
             viewCard.UpdateCost();
             viewCard.UpdateText();
         }
