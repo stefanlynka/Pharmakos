@@ -46,6 +46,8 @@ Rules:
 - The font assets are **Static** (pre-baked: ASCII, Latin-1, typographic punctuation and every character in the game's text). If new text uses a character outside that set, add it with `TMP_FontAsset.TryAddCharacters` (switch to Dynamic, add, switch back to Static) or it will render from the LiberationSans fallback.
 - Card rules text uses **fixed sizes in tiers**, not auto-size: Normal (most cards) and Compact (long text). Auto-size is allowed only as a last-resort floor.
 - Keyword names (Sprint, Taunt, Frenzy...) are bold in rules text.
+- Popups (keyword reminders, text and ritual popups) set their body in Alegreya Sans with the title in Cinzel. Reminder strings stay `<b>Title</b>
+Body`; `GameFonts.WithDisplayTitle` turns the leading bold title into Cinzel, and `GameFonts.InDisplayFont` wraps any other Cinzel run inside Alegreya text.
 - Title case for titles and buttons; sentence case for rules and prose.
 
 ## Interaction states

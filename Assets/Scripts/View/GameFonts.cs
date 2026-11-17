@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 
@@ -28,4 +29,36 @@ public class GameFonts : ScriptableObject
 
     public static TMP_FontAsset DisplayFont => Instance != null ? Instance.Display : null;
     public static TMP_FontAsset TextFont => Instance != null ? Instance.Text : null;
+
+    static readonly Regex LeadingBoldTitle = new Regex(@"^\s*<b>(.*?)</b>", RegexOptions.Singleline);
+
+    /// <summary>
+    /// Wraps text in a rich-text tag that sets it in the Display face (Cinzel) inside a text set in Alegreya Sans.
+    /// </summary>
+    public static string InDisplayFont(string text)
+    {
+        TMP_FontAsset display = DisplayFont;
+        if (display == null || string.IsNullOrEmpty(text))
+            return text;
+
+        // <font="..."> finds fonts by name through TMP's reference manager; register ours so it never
+        // needs a Resources lookup (the font assets live outside Resources).
+        MaterialReferenceManager.AddFontAsset(display);
+        return $"<font=\"{display.name}\">{text}</font>";
+    }
+
+    /// <summary>
+    /// Popup prose: a leading "&lt;b&gt;Title&lt;/b&gt;" (keyword reminders) becomes a Cinzel title; the rest stays in the text face.
+    /// </summary>
+    public static string WithDisplayTitle(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return text;
+
+        Match match = LeadingBoldTitle.Match(text);
+        if (!match.Success)
+            return text;
+
+        return InDisplayFont(match.Groups[1].Value) + text.Substring(match.Length);
+    }
 }

@@ -37,7 +37,7 @@ public class RitualPopup : MonoBehaviour
         if (ritual == null)
             return string.Empty;
 
-        string name = ritual.Name ?? string.Empty;
+        string name = GameFonts.InDisplayFont(ritual.Name ?? string.Empty);
         if (string.IsNullOrEmpty(ritual.ReminderText))
             return name;
 

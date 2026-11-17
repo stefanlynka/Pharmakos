@@ -18,7 +18,7 @@ public class KeywordReminderPopup : MonoBehaviour
         if (Text == null)
             return;
 
-        Text.text = text ?? string.Empty;
+        Text.text = GameFonts.WithDisplayTitle(text ?? string.Empty);
         Text.enableAutoSizing = true;
 
         float measureSize = Text.fontSizeMax > 0f ? Text.fontSizeMax : Text.fontSize;

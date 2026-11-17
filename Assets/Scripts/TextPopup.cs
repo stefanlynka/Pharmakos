@@ -17,7 +17,7 @@ public class TextPopup : MonoBehaviour
         if (Text == null)
             return;
 
-        Text.text = text ?? string.Empty;
+        Text.text = GameFonts.WithDisplayTitle(text ?? string.Empty);
 
         RectTransform textRect = Text.rectTransform;
         textRect.offsetMin = new Vector2(FrameInset, FrameInset);
