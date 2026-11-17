@@ -81,13 +81,19 @@ public class OverworldScreen : Screen
             overworldCam.gameObject.SetActive(true);
         }
 
-        base.Enter(false);
+        // The map button swaps views instantly: no UI or legend fade.
+        base.Enter(true);
         if (MapController != null)
             MapController.ShowMapViewOnly(focusNode);
 
         CacheLegendGroup();
         _legendDelay = 0f;
         _legendTarget = 1f;
+        if (_legendGroup != null)
+        {
+            _legendAlpha = 1f;
+            _legendGroup.alpha = 1f;
+        }
     }
 
     /// <summary>Closes the map view and gives the screen underneath its cameras back.</summary>

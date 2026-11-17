@@ -3,6 +3,7 @@ using System.Collections.Generic;
 /// <summary>
 /// The Map button's view: shows the overworld over the current screen (combat, events, temple,
 /// shop, rewards) so the player can look around, then puts them back where they were.
+/// Opening and closing are instant (no UI fades).
 ///
 /// Nothing on the map can be selected, the screen underneath is only hidden (never exited), and
 /// the Controller freezes combat/animation updates while the view is open, so nothing can move
@@ -58,7 +59,7 @@ public static class OverworldMapView
             if (other == null || !other.IsActive || other.IsSuppressed || ShouldKeepVisible(other.Name))
                 continue;
 
-            other.SetSuppressed(true);
+            other.SetSuppressed(true, instant: true);
             suppressedScreens.Add(other);
         }
 
@@ -91,7 +92,7 @@ public static class OverworldMapView
         foreach (Screen suppressed in suppressedScreens)
         {
             if (suppressed != null)
-                suppressed.SetSuppressed(false);
+                suppressed.SetSuppressed(false, instant: true);
         }
         suppressedScreens.Clear();
     }
