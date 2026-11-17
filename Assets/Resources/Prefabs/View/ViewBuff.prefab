@@ -484,7 +484,7 @@ MonoBehaviour:
   coreHighlight: {fileID: 6827084424421632922}
   outerHighlight: {fileID: 5901847263018475623}
   glowMaterialTemplate: {fileID: 2100000, guid: e8d9c0b1a2f3446580fedcba98765431, type: 2}
-  settings: {fileID: 0}
+  settings: {fileID: 11400000, guid: bf78c6ee7995e374fb74ab90c6fc97cf, type: 2}
   glowCoreColor: {r: 1, g: 1, b: 1, a: 0.87058824}
   glowOuterColor: {r: 1, g: 1, b: 1, a: 0.95686275}
   glowSecondaryColor: {r: 1, g: 1, b: 1, a: 0.92941177}

@@ -73,45 +73,11 @@ public class StarterBundleBucket : MonoBehaviour
             CardHighlightEffect.SetActive(selected);
     }
 
-    bool appliedChoicePalette;
-
+    // The glow preset (ChoiceLarge) is assigned on the Highlight object in the prefab. Its band is widened in the
+    // prefab itself: the glow sprites are scaled up with their 9-slice size scaled down by the same factor.
     void EnsureCardHighlight()
     {
         if (CardHighlightEffect == null)
             CardHighlightEffect = GetComponentInChildren<CardHighlightEffect>(true);
-
-        // A bundle is a pick outside combat: Choice glow (Docs/StyleGuide.md). The selected bundle is
-        // the current pick, so it glows at Selected intensity to read against the pale marble.
-        HighlightPalette palette = HighlightPalette.Instance;
-        MeshHighlightSettings preset = palette == null ? null : (palette.ChoiceLarge != null ? palette.ChoiceLarge : palette.Choice);
-        if (!appliedChoicePalette && CardHighlightEffect != null && preset != null)
-        {
-            CardHighlightEffect.ApplySettings(preset);
-            CardHighlightEffect.IntensityScale = HighlightPalette.Instance.SelectedIntensity;
-            WidenGlowBand();
-            appliedChoicePalette = true;
-        }
-    }
-
-    [Tooltip("The glow sprite's 9-slice border is sized for cards, so on a full-width bundle the band is a hairline. " +
-             "These scale the band (not the box) for the core and outer glow.")]
-    public float GlowCoreBandScale = 1.5f;
-    public float GlowOuterBandScale = 2.5f;
-
-    // Scaling a sliced sprite's transform by k while dividing its size by k keeps the outer edge
-    // in place but thickens the border band by k.
-    void WidenGlowBand()
-    {
-        foreach (SpriteRenderer glow in CardHighlightEffect.GetComponentsInChildren<SpriteRenderer>(true))
-        {
-            if (glow.drawMode == SpriteDrawMode.Simple)
-                continue;
-
-            float k = glow.name.EndsWith("_OuterGlow") ? GlowOuterBandScale : GlowCoreBandScale;
-            Vector3 scale = glow.transform.localScale;
-            Vector2 worldSize = new Vector2(glow.size.x * scale.x, glow.size.y * scale.y);
-            glow.transform.localScale = new Vector3(k, k, scale.z);
-            glow.size = worldSize / k;
-        }
     }
 }

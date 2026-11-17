@@ -9,6 +9,8 @@ public class CardHighlightEffect : MonoBehaviour
     [SerializeField] SpriteRenderer coreHighlight;
     [SerializeField] SpriteRenderer outerHighlight;
     [SerializeField] Material glowMaterialTemplate;
+    [Tooltip("The preset this glow plays. Tune the glow by editing the preset asset. " +
+             "Cards switch preset by highlight state at runtime (HighlightPalette) without changing this field.")]
     [SerializeField] MeshHighlightSettings settings;
 
     [Header("Colors")]
@@ -55,6 +57,12 @@ public class CardHighlightEffect : MonoBehaviour
     /// <summary>Runtime multiplier on glow intensity (used for the Selected highlight state).</summary>
     public float IntensityScale { get; set; } = 1f;
 
+    /// <summary>Preset chosen at runtime by highlight state (cards). Never written to the serialized field.</summary>
+    MeshHighlightSettings livePreset;
+
+    /// <summary>The preset currently playing: the runtime state preset if one was set, else the inspector one.</summary>
+    public MeshHighlightSettings LivePreset => livePreset != null ? livePreset : settings;
+
     MaterialPropertyBlock corePropertyBlock;
     MaterialPropertyBlock outerPropertyBlock;
     float coreSeed;
@@ -67,6 +75,8 @@ public class CardHighlightEffect : MonoBehaviour
     void Awake()
     {
         EnsureInitialized();
+        if (settings != null)
+            CopySettingsToFields(settings);
         SetActive(false);
     }
 
@@ -74,6 +84,12 @@ public class CardHighlightEffect : MonoBehaviour
     {
         if (!isActive && !flarePlaying)
             return;
+
+#if UNITY_EDITOR
+        // Edits to the preset asset show up live while tuning in play mode.
+        if (LivePreset != null)
+            CopySettingsToFields(LivePreset);
+#endif
 
         float resting = isActive ? RestingIntensity() : 0f;
         float intensity = resting;
@@ -137,13 +153,16 @@ public class CardHighlightEffect : MonoBehaviour
         ApplyGlow(isActive ? RestingIntensity() : 0f);
     }
 
-    public void ApplySettings(MeshHighlightSettings newSettings)
+    /// <summary>
+    /// Plays a different preset at runtime (e.g. a card's highlight state) without touching the inspector's preset.
+    /// </summary>
+    public void UsePreset(MeshHighlightSettings preset)
     {
-        if (newSettings == null)
+        if (preset == null)
             return;
 
-        settings = newSettings;
-        CopySettingsToFields(newSettings);
+        livePreset = preset;
+        CopySettingsToFields(preset);
 
         if (isActive || flarePlaying)
             ApplyGlow(isActive ? RestingIntensity() : 0f);

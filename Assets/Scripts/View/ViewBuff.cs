@@ -149,19 +149,11 @@ public class ViewBuff : MonoBehaviour
             HighlightEffect.Flare();
     }
 
-    bool appliedChoicePalette;
-
+    // The glow preset (Choice) is assigned on the prefab's CardHighlightEffect.
     void EnsureHighlight()
     {
         if (HighlightEffect == null)
             HighlightEffect = GetComponent<CardHighlightEffect>();
-
-        // Trinkets glow as picks (shop, rewards) and flare in the same ember when they trigger in combat.
-        if (!appliedChoicePalette && HighlightEffect != null && HighlightPalette.Instance != null && HighlightPalette.Instance.Choice != null)
-        {
-            HighlightEffect.ApplySettings(HighlightPalette.Instance.Choice);
-            appliedChoicePalette = true;
-        }
 
         if (HighlightObject != null && !HighlightObject.activeSelf)
             HighlightObject.SetActive(true);

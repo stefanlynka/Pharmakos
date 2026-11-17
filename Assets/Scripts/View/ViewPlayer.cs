@@ -64,21 +64,13 @@ public class ViewPlayer : ViewTarget
         ViewMinorRitual.UpdateRitual();
     }
 
-    bool appliedTargetPalette;
-
-    /// <summary>The portrait is only ever highlighted as a valid target, so it uses the Target palette.</summary>
+    /// <summary>The portrait is only ever highlighted as a valid target; its MeshHighlightEffect is assigned the TargetMesh preset.</summary>
     public void SetHighlight(bool active)
     {
         if (MeshHighlightEffect != null)
         {
             if (ViewPlayerPortrait != null && ViewPlayerPortrait.Highlight != null)
                 ViewPlayerPortrait.Highlight.enabled = false;
-
-            if (active && !appliedTargetPalette && HighlightPalette.Instance != null && HighlightPalette.Instance.TargetMesh != null)
-            {
-                MeshHighlightEffect.ApplySettings(HighlightPalette.Instance.TargetMesh);
-                appliedTargetPalette = true;
-            }
 
             MeshHighlightEffect.SetActive(active);
             return;

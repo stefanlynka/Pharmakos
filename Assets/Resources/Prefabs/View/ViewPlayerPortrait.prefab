@@ -1553,7 +1553,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetRoot: {fileID: 0}
   glowMaterialTemplate: {fileID: 2100000, guid: d1e2f3a4b5c6478091a2b3c4d5e6f708, type: 2}
-  settings: {fileID: 11400000, guid: 5e91646741b2bf648b36139aff285ebf, type: 2}
+  settings: {fileID: 11400000, guid: 594f4eb519c966647870a8bee8c16f58, type: 2}
   explicitRenderers: []
   glowColor: {r: 0.2, g: 0.95, b: 0.35, a: 1}
   hotColor: {r: 0.85, g: 1, b: 0.75, a: 1}

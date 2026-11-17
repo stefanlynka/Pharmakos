@@ -11,6 +11,7 @@ public class MeshHighlightEffect : MonoBehaviour
 
     [SerializeField] Transform targetRoot;
     [SerializeField] Material glowMaterialTemplate;
+    [Tooltip("The preset this glow plays. Tune the glow by editing the preset asset.")]
     [SerializeField] MeshHighlightSettings settings;
     [SerializeField] List<Renderer> explicitRenderers = new List<Renderer>();
 
@@ -104,6 +105,8 @@ public class MeshHighlightEffect : MonoBehaviour
 
     void Awake()
     {
+        if (settings != null)
+            CopySettingsToFields(settings);
         EnsureInitialized();
         SetActive(false);
     }
@@ -112,6 +115,12 @@ public class MeshHighlightEffect : MonoBehaviour
     {
         if (!isActive || glowShells.Count == 0)
             return;
+
+#if UNITY_EDITOR
+        // Edits to the preset asset show up live while tuning in play mode.
+        if (settings != null)
+            CopySettingsToFields(settings);
+#endif
 
         float pulseT = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * pulseSpeed * Mathf.PI * 2f);
         float glowIntensity = Mathf.Lerp(pulseMin, pulseMax, pulseT);
@@ -145,17 +154,6 @@ public class MeshHighlightEffect : MonoBehaviour
         }
 
         if (active)
-            ApplyGlow(Mathf.Lerp(pulseMin, pulseMax, 0.5f));
-    }
-
-    public void ApplySettings(MeshHighlightSettings newSettings)
-    {
-        if (newSettings == null)
-            return;
-
-        settings = newSettings;
-        CopySettingsToFields(newSettings);
-        if (isActive)
             ApplyGlow(Mathf.Lerp(pulseMin, pulseMax, 0.5f));
     }
 

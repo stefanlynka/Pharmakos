@@ -40,7 +40,7 @@ MonoBehaviour:
   coreNoiseStrength: 1.15
   outerNoiseStrength: 1.35
   flowBias: 0.24
-  intensity: 1
+  intensity: 1.45
   coreIntensityMultiplier: 1
   outerIntensityMultiplier: 1
   emissionBoost: 2

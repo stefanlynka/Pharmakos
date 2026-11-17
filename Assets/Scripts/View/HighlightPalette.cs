@@ -17,8 +17,8 @@ public enum HighlightState
 }
 
 /// <summary>
-/// The single source of highlight colours. Lives at Assets/Resources/Content/HighlightSettings/HighlightPalette.asset.
-/// Card glow colours are applied from here at runtime, so per-prefab glow colour fields don't matter.
+/// Which preset a card's glow plays for each highlight state. Lives at Assets/Resources/Content/HighlightSettings/HighlightPalette.asset.
+/// Only cards switch preset at runtime (their state changes); everything else plays the preset assigned in its inspector.
 /// </summary>
 [CreateAssetMenu(fileName = "HighlightPalette", menuName = "Hecatomb/Highlight Palette")]
 public class HighlightPalette : ScriptableObject
@@ -34,12 +34,6 @@ public class HighlightPalette : ScriptableObject
 
     [Tooltip("Pick-me glow outside combat (rewards, shop, temple, starter bundles).")]
     public MeshHighlightSettings Choice;
-
-    [Tooltip("Choice glow for large framed picks (starter bundles). Same colours as Choice; its own pulse so it can be tuned separately.")]
-    public MeshHighlightSettings ChoiceLarge;
-
-    [Tooltip("Target glow for 3D mesh highlights (player portraits). Same colours as Target, mesh-shaped.")]
-    public MeshHighlightSettings TargetMesh;
 
     [Tooltip("Intensity multiplier for the Selected state.")]
     public float SelectedIntensity = 1.45f;

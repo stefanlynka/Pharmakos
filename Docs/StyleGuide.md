@@ -50,14 +50,14 @@ Rules:
 
 ## Interaction states
 
-**(Locked.)** Glow *colour* says what kind of thing it is; glow *behaviour* says what you can do with it. Code: `HighlightState` + `Assets/Resources/Content/HighlightSettings/HighlightPalette.asset` (alongside its presets). Use `ViewCard.SetHighlight(bool, HighlightState)`; colours are applied from the palette at runtime, so don't hand-tune glow colours on prefabs.
+**(Locked.)** Glow *colour* says what kind of thing it is; glow *behaviour* says what you can do with it. Code: `HighlightState` + `Assets/Resources/Content/HighlightSettings/HighlightPalette.asset` (alongside its presets). Cards use `ViewCard.SetHighlight(bool, HighlightState)`, which picks the preset from the palette by state. Everything else plays the preset assigned in its inspector. Tune glows by editing the preset assets, never per-prefab colour fields.
 
 | State | Meaning | Treatment |
 |---|---|---|
 | **Ready** | Can act now: playable card, follower that can attack | Steady glow in the card's **offering colour**: followers = Crop green, spells = Scroll blue (they produce those offerings when played). Sampled from `OfferingHandler.GetOfferingColor`. |
 | **Selected** | Currently picked (e.g. the attacking follower) | Its Ready colour at 1.45× intensity |
 | **Target** | Valid target while aiming an attack, spell or ritual | **Slowly pulsing ember** (`Target`, `TargetMesh` for portraits; 0.3 Hz, the same rate as the Ready glow), whatever the kind. Ember is deliberately not an offering colour. |
-| **Choice** | A pick outside combat: rewards, shop, temple, deck selection, starter bundles, trinkets | Steady ember (`Choice`). Large framed picks (starter bundles) glow at Selected intensity with a widened band, or the thin edge disappears against pale marble. |
+| **Choice** | A pick outside combat: rewards, shop, temple, deck selection, starter bundles, trinkets | Steady ember (`Choice`). Large framed picks (starter bundles) use `ChoiceLarge`: same colours, 1.45× intensity and a widened band, or the thin edge disappears against pale marble. |
 | Ritual usable | Ritual on the altar can be used | Fire (`Altar` preset), unchanged |
 | Hover | Mouse over | Brighten + lift; no colour change of its own |
 | Unavailable | Can't use | No glow |

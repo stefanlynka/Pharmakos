@@ -77,7 +77,6 @@ public class ViewCard : ViewTarget
     public HighlightState CurrentHighlightState => appliedState;
 
     HighlightState appliedState;
-    MeshHighlightSettings appliedPreset;
 
     void ApplyHighlightState(HighlightState state)
     {
@@ -89,11 +88,9 @@ public class ViewCard : ViewTarget
         if (preset == null)
             preset = highlightSettings;
 
-        if (preset != null && preset != appliedPreset)
-        {
-            CardHighlightEffect.ApplySettings(preset);
-            appliedPreset = preset;
-        }
+        // Compare with what the effect is actually playing: Load paths (ApplyHighlightSettings) switch it too.
+        if (preset != null && preset != CardHighlightEffect.LivePreset)
+            CardHighlightEffect.UsePreset(preset);
 
         CardHighlightEffect.IntensityScale = state == HighlightState.Selected && palette != null ? palette.SelectedIntensity : 1f;
         appliedState = state;
@@ -167,7 +164,7 @@ public class ViewCard : ViewTarget
         EnsureCardHighlight();
         if (CardHighlightEffect != null)
         {
-            CardHighlightEffect.ApplySettings(settings);
+            CardHighlightEffect.UsePreset(settings);
             hasAppliedHighlightSettings = true;
         }
     }
@@ -180,7 +177,7 @@ public class ViewCard : ViewTarget
         EnsureCardHighlight();
         if (CardHighlightEffect != null)
         {
-            CardHighlightEffect.ApplySettings(highlightSettings);
+            CardHighlightEffect.UsePreset(highlightSettings);
             hasAppliedHighlightSettings = true;
         }
     }
