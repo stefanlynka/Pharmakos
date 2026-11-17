@@ -18743,7 +18743,7 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: d8b57c8a1b780454d93d7ea663cd6b9d, type: 2}
+      objectReference: {fileID: 2100000, guid: 03b26c9e0d37d1743afa124447ee3780, type: 2}
     - target: {fileID: 919132149155446097, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
       propertyPath: m_Name
       value: AIBattleRow
@@ -36122,7 +36122,7 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: d8b57c8a1b780454d93d7ea663cd6b9d, type: 2}
+      objectReference: {fileID: 2100000, guid: 03b26c9e0d37d1743afa124447ee3780, type: 2}
     - target: {fileID: 919132149155446097, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
       propertyPath: m_Name
       value: PlayerBattleRow
@@ -51250,7 +51250,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 7b3ba994e22e9fa4b9a9b7b10dd3eaae, type: 2}
+  - {fileID: 2100000, guid: 03bc4344703bad24e8c29b0c49464738, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -66675,7 +66675,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3044235388074134870, guid: 67e7f588a84c7df40abe0251e1ccb3f1, type: 3}
       propertyPath: m_fontSize
-      value: 40.15
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 3044235388074134870, guid: 67e7f588a84c7df40abe0251e1ccb3f1, type: 3}
       propertyPath: m_margin.w
@@ -66747,7 +66747,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5852465831086357712, guid: 67e7f588a84c7df40abe0251e1ccb3f1, type: 3}
       propertyPath: m_fontSize
-      value: 40.15
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 5852465831086357712, guid: 67e7f588a84c7df40abe0251e1ccb3f1, type: 3}
       propertyPath: m_margin.w
@@ -66827,7 +66827,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8397779508930045767, guid: 67e7f588a84c7df40abe0251e1ccb3f1, type: 3}
       propertyPath: m_fontSize
-      value: 40.15
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 8397779508930045767, guid: 67e7f588a84c7df40abe0251e1ccb3f1, type: 3}
       propertyPath: m_margin.w
@@ -66851,7 +66851,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8404898480034819718, guid: 67e7f588a84c7df40abe0251e1ccb3f1, type: 3}
       propertyPath: m_fontSize
-      value: 40.15
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 8404898480034819718, guid: 67e7f588a84c7df40abe0251e1ccb3f1, type: 3}
       propertyPath: m_margin.w
@@ -67364,6 +67364,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2065159696}
     m_Modifications:
+    - target: {fileID: 2802186967638420665, guid: d175c7958802cf748b70178b9d68eba3, type: 3}
+      propertyPath: settings
+      value: 
+      objectReference: {fileID: 11400000, guid: d4514d766a524d64ead9437f78b15f91, type: 2}
     - target: {fileID: 4049118238073177246, guid: d175c7958802cf748b70178b9d68eba3, type: 3}
       propertyPath: CenterLight
       value: 
@@ -69192,6 +69196,10 @@ PrefabInstance:
       propertyPath: m_Alpha
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6221185225056107282, guid: 73a6a960f48780a4b8903262ace7ceba, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 6224279407998918035, guid: 73a6a960f48780a4b8903262ace7ceba, type: 3}
       propertyPath: m_Name
       value: StyxTrinketSelectScreen
@@ -69211,6 +69219,14 @@ PrefabInstance:
     - target: {fileID: 6769532672737715421, guid: 73a6a960f48780a4b8903262ace7ceba, type: 3}
       propertyPath: m_fontColor32.rgba
       value: 4290960616
+      objectReference: {fileID: 0}
+    - target: {fileID: 7430808287051464572, guid: 73a6a960f48780a4b8903262ace7ceba, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: -30
+      objectReference: {fileID: 0}
+    - target: {fileID: 7430808287051464572, guid: 73a6a960f48780a4b8903262ace7ceba, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

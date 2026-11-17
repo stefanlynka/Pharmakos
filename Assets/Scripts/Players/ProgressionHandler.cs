@@ -11,7 +11,7 @@ public class ProgressionHandler
 
     /// <summary>Pause debug toggle. Enemy players loaded into a combat start at 1 health.</summary>
     public static bool ForceCombatEnemyHealthToOne = false;
-    private const DeckName FORCED_FIRST_ENEMY = DeckName.None; // DeckName.None to disable
+    private const DeckName FORCED_FIRST_ENEMY = DeckName.Cyclops; // DeckName.None to disable
     private const string FORCED_STARTER_BUNDLE_RITUAL = ""; // HestiaMinor // e.g. nameof(HadesMinor); "" to disable
     public const int BossPoolNumber = 4;
     public const int HighestEnemyPoolNumber = 3;
@@ -106,7 +106,7 @@ public class ProgressionHandler
             IsFightableEnemy = false,
             BaseHealth = 1,
             Pool = 1,
-            PortraitName = "Underworld",
+            PortraitName = "Bacchanali",
             MinorRituals = new Dictionary<int, Ritual>
             {
                 [1] = null

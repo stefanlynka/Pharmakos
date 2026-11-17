@@ -1077,9 +1077,25 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2992771954657032125}
     m_Modifications:
+    - target: {fileID: 2616216932299700660, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 8.45
+      objectReference: {fileID: 0}
     - target: {fileID: 3333907658013090552, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
       propertyPath: m_wordSpacing
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3912522254897818394, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 15.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4184667891807405936, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 3.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 4429345808643136863, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 8.45
       objectReference: {fileID: 0}
     - target: {fileID: 5306786102659809810, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1122,6 +1138,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5607151898634052446, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 12.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 5607151898634052446, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
       propertyPath: m_wordSpacing
       value: 0
       objectReference: {fileID: 0}
@@ -1158,9 +1178,25 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5418445923815408310}
     m_Modifications:
+    - target: {fileID: 2616216932299700660, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 8.45
+      objectReference: {fileID: 0}
     - target: {fileID: 3333907658013090552, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
       propertyPath: m_wordSpacing
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3912522254897818394, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 15.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4184667891807405936, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 3.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 4429345808643136863, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 8.45
       objectReference: {fileID: 0}
     - target: {fileID: 5306786102659809810, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1201,6 +1237,10 @@ PrefabInstance:
     - target: {fileID: 5306786102659809810, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5607151898634052446, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 12.95
       objectReference: {fileID: 0}
     - target: {fileID: 5607151898634052446, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
       propertyPath: m_wordSpacing
@@ -1247,9 +1287,29 @@ PrefabInstance:
       propertyPath: m_characterSpacing
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5901725559430794434, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
+      propertyPath: m_fontSize
+      value: 16.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 6392942612921389765, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
+      propertyPath: m_fontSize
+      value: 16.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 6486245781538987945, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
+      propertyPath: m_fontSize
+      value: 16.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 6718831043198805541, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
+      propertyPath: m_fontSize
+      value: 35.5
+      objectReference: {fileID: 0}
     - target: {fileID: 6718831043198805541, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_characterSpacing
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7053768295869864595, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
+      propertyPath: m_fontSize
+      value: 16.95
       objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_LocalScale.x
@@ -1332,9 +1392,25 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6296768176519305863}
     m_Modifications:
+    - target: {fileID: 2616216932299700660, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 8.45
+      objectReference: {fileID: 0}
     - target: {fileID: 3333907658013090552, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
       propertyPath: m_wordSpacing
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3912522254897818394, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 15.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4184667891807405936, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 3.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 4429345808643136863, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 8.45
       objectReference: {fileID: 0}
     - target: {fileID: 5306786102659809810, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1375,6 +1451,10 @@ PrefabInstance:
     - target: {fileID: 5306786102659809810, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5607151898634052446, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
+      propertyPath: m_fontSize
+      value: 12.95
       objectReference: {fileID: 0}
     - target: {fileID: 5607151898634052446, guid: 4bb4bbc87255a82469118d784a4ca1e6, type: 3}
       propertyPath: m_wordSpacing

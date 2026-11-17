@@ -738,7 +738,7 @@ public class TrojanHorse : Follower
 
         SetBaseStats(0, 2);
 
-        Text = "On Death: Summon 3 1/1's";
+        Text = "On Death: Summon Three 1/1 Peltasts";
         Icon = IconType.Skull;
         inherentValue = 2;
 
@@ -1317,7 +1317,7 @@ public class Hippolyta : Follower
 
         SetBaseStats(3, 3);
 
-        Text = "OnEnter: Grant adjacent Followers +2 attack and Sprint";
+        Text = "On Enter: Grant adjacent Followers +2 attack and Sprint";
         Icon = IconType.Horn;
         AffectsAdjacent = true;
 
@@ -1397,7 +1397,7 @@ public class Agamemnon : Follower
 
         SetBaseStats(5, 3);
 
-        Text = "On Attack: summon two 1/1s";
+        Text = "On Attack: Summon two 1/1 Peltasts";
         Icon = IconType.Sword;
         inherentValue = 2;
 
@@ -1443,7 +1443,7 @@ public class Menelaus : Follower
         SetBaseStats(2, 4);
         inherentValue = 4;
 
-        Text = "On Damaged: Summon two 1/1s";
+        Text = "On Damaged: Summon two 1/1 Peltasts";
         Icon = IconType.Shield;
 
         SetupInnateEffects();
@@ -2855,7 +2855,7 @@ public class DragonTeeth : Spell
         };
 
         OverrideName = "Dragon Teeth";
-        Text = "Summon 3 1/1s for target player";
+        Text = "Summon 3 1/1 Peltasts for target player";
         HasTargets = true;
     }
 
@@ -4696,7 +4696,7 @@ public class PriceOfLegacy : Spell
         };
 
         OverrideName = "Price of Legacy";
-        Text = "Sacrifice a Follower and lose life equal to its attack to Summon that many 1/1s";
+        Text = "Sacrifice a Follower and lose life equal to its attack to Summon that many 1/1 Peltasts";
         HasTargets = true;
     }
 

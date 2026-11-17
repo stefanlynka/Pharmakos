@@ -60,6 +60,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 2d97e2c854f4dfa41add249a64c7dc42, type: 3}
+    - target: {fileID: 5378407865826809301, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
+      propertyPath: m_SortingOrder
+      value: -1
+      objectReference: {fileID: 0}
     - target: {fileID: 5409982399357799893, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
       propertyPath: m_LocalPosition.z
       value: -5
@@ -82,7 +86,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6396398521787745821, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
       propertyPath: m_fontSize
-      value: 15.6
+      value: 17.25
       objectReference: {fileID: 0}
     - target: {fileID: 6396398521787745821, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
       propertyPath: m_margin.x
@@ -118,6 +122,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7276594699902258578, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
       propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7358783637990881905, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}
+      propertyPath: m_SortingOrder
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7358783637990881905, guid: f9e93ad5c4f81f54e9f2a459e86364ec, type: 3}

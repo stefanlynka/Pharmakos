@@ -180,7 +180,7 @@ public class PeltastTrumpetTrinket : Trinket<PeltastTrumpetTrinketEffectDef>
     public PeltastTrumpetTrinket()
     {
         Name = "Peltast Trumpet";
-        Description = "When you use a ritual: summon a 1/1 peltast";
+        Description = "When you use a ritual: summon a 1/1 Peltast";
     }
 }
 public class PeltastTrumpetTrinketEffectDef : TrinketPlayerEffect
@@ -223,7 +223,7 @@ public class PeltastTrumpetTrinketEffectDef : TrinketPlayerEffect
 
     protected override string GetDescription()
     {
-        return "When you use a ritual: summon a 1/1 peltast";
+        return "When you use a ritual: summon a 1/1 Peltast";
     }
 }
 
