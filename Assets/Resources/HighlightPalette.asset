@@ -16,5 +16,6 @@ MonoBehaviour:
   Spell: {fileID: 11400000, guid: 8cc07dd7762adca48945461dd4e84bc8, type: 2}
   Target: {fileID: 11400000, guid: 235d67678fa6bc14ca2c03f2d0048e5d, type: 2}
   Choice: {fileID: 11400000, guid: bf78c6ee7995e374fb74ab90c6fc97cf, type: 2}
+  ChoiceLarge: {fileID: 11400000, guid: d4514d766a524d64ead9437f78b15f91, type: 2}
   TargetMesh: {fileID: 11400000, guid: 594f4eb519c966647870a8bee8c16f58, type: 2}
   SelectedIntensity: 1.45

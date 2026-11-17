@@ -82,9 +82,11 @@ public class StarterBundleBucket : MonoBehaviour
 
         // A bundle is a pick outside combat: Choice glow (Docs/StyleGuide.md). The selected bundle is
         // the current pick, so it glows at Selected intensity to read against the pale marble.
-        if (!appliedChoicePalette && CardHighlightEffect != null && HighlightPalette.Instance != null && HighlightPalette.Instance.Choice != null)
+        HighlightPalette palette = HighlightPalette.Instance;
+        MeshHighlightSettings preset = palette == null ? null : (palette.ChoiceLarge != null ? palette.ChoiceLarge : palette.Choice);
+        if (!appliedChoicePalette && CardHighlightEffect != null && preset != null)
         {
-            CardHighlightEffect.ApplySettings(HighlightPalette.Instance.Choice);
+            CardHighlightEffect.ApplySettings(preset);
             CardHighlightEffect.IntensityScale = HighlightPalette.Instance.SelectedIntensity;
             WidenGlowBand();
             appliedChoicePalette = true;

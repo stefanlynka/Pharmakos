@@ -35,6 +35,9 @@ public class HighlightPalette : ScriptableObject
     [Tooltip("Pick-me glow outside combat (rewards, shop, temple, starter bundles).")]
     public MeshHighlightSettings Choice;
 
+    [Tooltip("Choice glow for large framed picks (starter bundles). Same colours as Choice; its own pulse so it can be tuned separately.")]
+    public MeshHighlightSettings ChoiceLarge;
+
     [Tooltip("Target glow for 3D mesh highlights (player portraits). Same colours as Target, mesh-shaped.")]
     public MeshHighlightSettings TargetMesh;
 
