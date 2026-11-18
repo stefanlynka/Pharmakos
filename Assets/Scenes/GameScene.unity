@@ -18707,7 +18707,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.04
+      value: -0.09
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
       propertyPath: m_LocalPosition.z
@@ -18752,7 +18752,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 536478981}
   m_SourcePrefab: {fileID: 100100000, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
 --- !u!4 &402688060 stripped
 Transform:
@@ -20266,6 +20269,33 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &536478978 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
+  m_PrefabInstance: {fileID: 402688059}
+  m_PrefabAsset: {fileID: 0}
+--- !u!33 &536478980 stripped
+MeshFilter:
+  m_CorrespondingSourceObject: {fileID: -5754084199372789682, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
+  m_PrefabInstance: {fileID: 402688059}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &536478981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 536478978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1abdbba1b63dd8549b76d4f1b2c3fd54, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Lane: {fileID: 536478980}
+  Material: {fileID: 2100000, guid: 66febfc33e5f7d040945da569694f2e9, type: 2}
+  OuterWidth: 0.9
+  InnerWidth: 0.7
+  HeightOffset: 0.012
 --- !u!224 &553640402 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6696710726460212568, guid: e26a7318fc78e1d408103f1d22520c69, type: 3}
@@ -36170,7 +36200,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.04
+      value: -0.09
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
       propertyPath: m_LocalPosition.z
@@ -36215,7 +36245,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1255424356}
   m_SourcePrefab: {fileID: 100100000, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
 --- !u!4 &1055981864 stripped
 Transform:
@@ -38071,6 +38104,33 @@ Transform:
   - {fileID: 645188674}
   m_Father: {fileID: 2099432155}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1255424353 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
+  m_PrefabInstance: {fileID: 1055981863}
+  m_PrefabAsset: {fileID: 0}
+--- !u!33 &1255424355 stripped
+MeshFilter:
+  m_CorrespondingSourceObject: {fileID: -5754084199372789682, guid: b900af7c298130b4c8e97f1563856d27, type: 3}
+  m_PrefabInstance: {fileID: 1055981863}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1255424356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1255424353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1abdbba1b63dd8549b76d4f1b2c3fd54, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Lane: {fileID: 1255424355}
+  Material: {fileID: 2100000, guid: 66febfc33e5f7d040945da569694f2e9, type: 2}
+  OuterWidth: 0.9
+  InnerWidth: 0.7
+  HeightOffset: 0.012
 --- !u!1 &1258869833
 GameObject:
   m_ObjectHideFlags: 0

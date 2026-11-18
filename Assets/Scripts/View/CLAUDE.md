@@ -13,3 +13,8 @@
 - **Only cards switch preset at runtime**, because their state changes: `ViewCard.SetHighlight(bool, HighlightState)` picks from `HighlightPalette` (`Resources/Content/HighlightSettings`: Follower, Spell, Target, Choice) and calls `CardHighlightEffect.UsePreset`, which sets a runtime-only live preset (`LivePreset`); the inspector shows which one is playing. Selected = Ready preset × `SelectedIntensity` via `IntensityScale`.
 - Combat state decisions live in `ViewBattleRow.RefreshPositions` (per-frame: attacker = Selected, attack/spell/ritual targets = Target, can-attack = Ready) and `View.HighlightTargets` / `ViewBattleRow.HighlightTargets` (Target). Hand cards: `ViewHandHandler` (Ready; the spell being aimed, `SelectionHandler.HeldCard`, stays in hand as Selected). Out-of-combat callers pass `HighlightState.Choice` (rewards, shop, temple, deck selection).
 - Ritual altars use the Altar preset and `RitualOutlineHighlight` (Linework layer 8) colours.
+
+## Combat board
+
+- `View.LoadBackground` picks the encounter's ground (`Background`) and lane (`AIBattleRow`, `PlayerBattleRow`) materials under `NewBackgroundHolder`. Lanes are 60x0.2x10 slabs sunk to y = -0.09 so their side face doesn't show as a dark line.
+- `LaneEdge` (on each lane) draws the carved edge with `Graphics.DrawMesh` from the lane mesh bounds: no child objects, runs in edit mode. Tune it via its fields and `LaneEdge.mat` (transparent Lit, queue 2950 so card glows draw over it).

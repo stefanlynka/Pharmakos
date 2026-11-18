@@ -1521,7 +1521,7 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: 91f24473264874b4899452ba502f612b, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 27ebf9a43c4e5184ab52bbd76a02705c, type: 2}
+      objectReference: {fileID: 2100000, guid: 7e8af8afd7db28441b2bceac978f4cf9, type: 2}
     - target: {fileID: 919132149155446097, guid: 91f24473264874b4899452ba502f612b, type: 3}
       propertyPath: m_Name
       value: PortraitFrame

@@ -63,7 +63,7 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: 92d88d550fead0e4a8cdb37cbd6d5e17, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 2fd2fb3a081ef7f4985a5f3bed6359f7, type: 2}
+      objectReference: {fileID: 2100000, guid: bdc07b653ecd99348abc324940176e1f, type: 2}
     - target: {fileID: 919132149155446097, guid: 92d88d550fead0e4a8cdb37cbd6d5e17, type: 3}
       propertyPath: m_Name
       value: ResourceHolder
