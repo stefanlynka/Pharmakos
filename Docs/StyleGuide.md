@@ -86,7 +86,7 @@ Targeting arrows are black with orange edges; the edges glow ember (emission mas
 ## Combat board
 
 - **Ground and lanes:** each encounter has a ground material (`<Name>_1`) and a lane material (`<Name>_2`) in `Resources/Images/Backgrounds/Materials`. Ground darker and calmer than the lanes; lanes muted, no high-contrast pattern behind cards (Cyclops is the reference).
-- **Lane edge (locked):** a carved-slab edge on every lane: soft drop shadow on the ground, dark lip, bone bevel, faint inner shade. `LaneEdge` component on each lane, look in `Images/Backgrounds/LaneEdge/LaneEdge.mat` (profile texture `LaneEdgeSlab.png`). No meander on lanes.
+- **Lane edge (locked):** a carved-slab edge on every lane: soft drop shadow on the ground, dark lip, bone bevel, faint inner shade. `LaneEdge` component on each lane, look in `Images/Backgrounds/LaneEdge/LaneEdge.mat` (profile texture `LaneEdgeSlab.png`). No meander on lanes. While a playable follower is held, the player lane's bevel is the drop target: pulsing ember (Target colour), steady and brighter under the cursor. No flat overlays on lanes.
 - **Board objects:** one family, black-figure pottery. Black glaze (≈ `#1E1714`, satin) for bodies, terracotta (≈ `#B5603A`, matte) for rims and raised motifs, bone limestone (≈ `#CDBFA3`) only for ritual altars. No metal or gloss; the board has no reflections, so metal reads as mud. The heartstrings dial is the only gold. Portrait frames and resource holders use `PortraitFrame_Glaze` / `ResourceHolder_Glaze` (albedo regenerated from the originals in `Models/Textures/BoardGlaze`); remakes planned for the resource holder and a new shallow Discard basin.
 
 ## Art cohesion

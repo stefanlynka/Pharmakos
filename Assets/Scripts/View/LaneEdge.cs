@@ -25,7 +25,27 @@ public class LaneEdge : MonoBehaviour
     [Tooltip("Height above the lane's top face, to avoid z-fighting.")]
     public float HeightOffset = 0.012f;
 
+    [Header("Drop highlight")]
+    [Tooltip("Additive glow drawn along the bevel while this lane is a valid drop target (see LaneEdgeGlow.mat).")]
+    public Material HighlightMaterial;
+
+    [Tooltip("Colour and pulse speed for the glow. Use the Target preset so the lane matches other valid targets.")]
+    public MeshHighlightSettings HighlightPreset;
+
+    [Tooltip("Glow strength range while pulsing (a playable follower is held), and when the cursor is over the lane.")]
+    public float PulseMin = 0.35f;
+    public float PulseMax = 0.8f;
+    public float HoverStrength = 1.2f;
+
+    [Tooltip("How fast the glow fades in and out, per second.")]
+    public float FadeSpeed = 6f;
+
+    static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+
     Mesh mesh;
+    MaterialPropertyBlock highlightBlock;
+    bool highlightActive, highlightHovered;
+    float highlightLevel, hoverLevel;
     Bounds builtFor;
     float builtOuter = -1f, builtInner = -1f, builtHeight = -1f;
 
@@ -33,6 +53,13 @@ public class LaneEdge : MonoBehaviour
     {
         if (Lane == null)
             Lane = GetComponent<MeshFilter>();
+    }
+
+    /// <summary>Lights the lane's bevel: active = it's a valid drop target; hovered = the cursor is over it.</summary>
+    public void SetHighlight(bool active, bool hovered)
+    {
+        highlightActive = active;
+        highlightHovered = active && hovered;
     }
 
     void OnDisable()
@@ -54,7 +81,28 @@ public class LaneEdge : MonoBehaviour
         if (mesh == null || bounds != builtFor || OuterWidth != builtOuter || InnerWidth != builtInner || HeightOffset != builtHeight)
             Rebuild(bounds);
 
-        Graphics.DrawMesh(mesh, Lane.transform.localToWorldMatrix, Material, gameObject.layer, null, 0, null, false, false);
+        Matrix4x4 matrix = Lane.transform.localToWorldMatrix;
+        Graphics.DrawMesh(mesh, matrix, Material, gameObject.layer, null, 0, null, false, false);
+        DrawHighlight(matrix);
+    }
+
+    void DrawHighlight(Matrix4x4 matrix)
+    {
+        float step = Application.isPlaying ? Time.unscaledDeltaTime * FadeSpeed : 1f;
+        highlightLevel = Mathf.MoveTowards(highlightLevel, highlightActive ? 1f : 0f, step);
+        hoverLevel = Mathf.MoveTowards(hoverLevel, highlightHovered ? 1f : 0f, step);
+        if (highlightLevel <= 0.001f || HighlightMaterial == null)
+            return;
+
+        float speed = HighlightPreset != null ? HighlightPreset.pulseSpeed : 0.3f;
+        float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * speed * Mathf.PI * 2f);
+        float strength = Mathf.Lerp(Mathf.Lerp(PulseMin, PulseMax, wave), HoverStrength, hoverLevel) * highlightLevel;
+
+        Color color = HighlightPreset != null ? HighlightPreset.glowColor : new Color(1f, 0.46f, 0.14f);
+        color.a = 1f;
+        highlightBlock ??= new MaterialPropertyBlock();
+        highlightBlock.SetColor(BaseColorId, color * strength);
+        Graphics.DrawMesh(mesh, matrix, HighlightMaterial, gameObject.layer, null, 0, highlightBlock, false, false);
     }
 
     void Rebuild(Bounds b)

@@ -18,3 +18,4 @@
 
 - `View.LoadBackground` picks the encounter's ground (`Background`) and lane (`AIBattleRow`, `PlayerBattleRow`) materials under `NewBackgroundHolder`. Lanes are 60x0.2x10 slabs sunk to y = -0.09 so their side face doesn't show as a dark line.
 - `LaneEdge` (on each lane) draws the carved edge with `Graphics.DrawMesh` from the lane mesh bounds: no child objects, runs in edit mode. Tune it via its fields and `LaneEdge.mat` (transparent Lit, queue 2950 so card glows draw over it).
+- Drop target: while a playable follower is held and the row has room, `ViewBattleRow.Update` calls `LaneEdge.SetHighlight`; the bevel glows with `LaneEdgeGlow.mat` (additive) in the Target preset's colour, pulsing at its speed, and goes steady and brighter while the cursor is over the lane. The old flat `ViewBattleRow.Highlight` sprite is only a fallback when no LaneEdge is assigned.

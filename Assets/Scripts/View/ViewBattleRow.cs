@@ -4,7 +4,11 @@ using UnityEngine;
 
 public class ViewBattleRow : MonoBehaviour
 {
+    [Tooltip("Old flat drop highlight; only used when no LaneEdge is assigned.")]
     public SpriteRenderer Highlight;
+
+    [Tooltip("The lane's carved edge. Its bevel glows while a playable follower is held (drop target).")]
+    public LaneEdge LaneEdge;
     public bool isHuman = false;
 
     private LayerMask zoneLayer = 128; // only layer 7
@@ -60,14 +64,20 @@ public class ViewBattleRow : MonoBehaviour
     {
         if (!isHuman) return;
 
-        if (View.Instance.SelectionHandler.TryGetHeldFollower(out ViewFollower viewFollower))
+        // The lane is a drop target while a playable follower is held and there's room for it.
+        bool canDrop = View.Instance.SelectionHandler.TryGetHeldFollower(out ViewFollower viewFollower)
+            && viewFollower != null && viewFollower.Follower != null && viewFollower.Follower.CanPlay()
+            && Followers.Count < Player.MaxFollowerCount;
+
+        if (LaneEdge != null)
         {
-            // Only highlight if the held follower can actually be played
-            Highlight.enabled = viewFollower != null && viewFollower.Follower != null && viewFollower.Follower.CanPlay();
+            LaneEdge.SetHighlight(canDrop, canDrop && IsMouseOverThis());
+            if (Highlight != null)
+                Highlight.enabled = false;
         }
-        else
+        else if (Highlight != null)
         {
-            Highlight.enabled = false;
+            Highlight.enabled = canDrop;
         }
     }
 

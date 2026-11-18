@@ -20296,6 +20296,12 @@ MonoBehaviour:
   OuterWidth: 0.9
   InnerWidth: 0.7
   HeightOffset: 0.012
+  HighlightMaterial: {fileID: 2100000, guid: b3c3b8fdfedad634592978fc3fe62b44, type: 2}
+  HighlightPreset: {fileID: 11400000, guid: 235d67678fa6bc14ca2c03f2d0048e5d, type: 2}
+  PulseMin: 0.35
+  PulseMax: 0.8
+  HoverStrength: 1.2
+  FadeSpeed: 6
 --- !u!224 &553640402 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6696710726460212568, guid: e26a7318fc78e1d408103f1d22520c69, type: 3}
@@ -38131,6 +38137,12 @@ MonoBehaviour:
   OuterWidth: 0.9
   InnerWidth: 0.7
   HeightOffset: 0.012
+  HighlightMaterial: {fileID: 2100000, guid: b3c3b8fdfedad634592978fc3fe62b44, type: 2}
+  HighlightPreset: {fileID: 11400000, guid: 235d67678fa6bc14ca2c03f2d0048e5d, type: 2}
+  PulseMin: 0.35
+  PulseMax: 0.8
+  HoverStrength: 1.2
+  FadeSpeed: 6
 --- !u!1 &1258869833
 GameObject:
   m_ObjectHideFlags: 0
@@ -57820,6 +57832,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2612490471410026630, guid: 1efe884c649118d44b3a456ab25afd5b, type: 3}
+      propertyPath: LaneEdge
+      value: 
+      objectReference: {fileID: 536478981}
+    - target: {fileID: 2612490471410026630, guid: 1efe884c649118d44b3a456ab25afd5b, type: 3}
       propertyPath: Highlight
       value: 
       objectReference: {fileID: 1807053023}
@@ -70001,6 +70017,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2612490471410026630, guid: 1efe884c649118d44b3a456ab25afd5b, type: 3}
+      propertyPath: LaneEdge
+      value: 
+      objectReference: {fileID: 1255424356}
     - target: {fileID: 2612490471410026630, guid: 1efe884c649118d44b3a456ab25afd5b, type: 3}
       propertyPath: Highlight
       value: 
