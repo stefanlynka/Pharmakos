@@ -63,7 +63,11 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: 92d88d550fead0e4a8cdb37cbd6d5e17, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: bdc07b653ecd99348abc324940176e1f, type: 2}
+      objectReference: {fileID: 2100000, guid: e31a6e7cefe756141841969041909908, type: 2}
+    - target: {fileID: -5754084199372789682, guid: 92d88d550fead0e4a8cdb37cbd6d5e17, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 2188295159595757205, guid: 0aa742ac306afeb4696378f92777946e, type: 3}
     - target: {fileID: 919132149155446097, guid: 92d88d550fead0e4a8cdb37cbd6d5e17, type: 3}
       propertyPath: m_Name
       value: ResourceHolder
