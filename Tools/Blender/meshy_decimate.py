@@ -7,7 +7,8 @@ original's custom normals onto the decimated mesh (Data Transfer), which keeps M
 Usage (Blender 4.1+; tested with 5.1):
   blender -b --factory-startup --python Tools/Blender/meshy_decimate.py -- <in.fbx> <out.fbx> <ratio> <MeshName>
 
-  ratio 0.03 took the portrait frame from 1.95M to 58k triangles with no visible change at board size.
+  ratio 1 keeps full detail and only renames the mesh (the portrait frame ships like this for now: 0.03 / 58k
+  triangles was visibly softer in game). Mind GitHub's 100 MB file limit: the full frame exports at ~75 MB.
   MeshName becomes the mesh sub-asset name in Unity. Keep it the same on re-export, or prefab references break.
 
 Unity import settings for the output: Scale Factor 100 (matches Meshy's FBX), Normals = Import,
@@ -30,10 +31,11 @@ low.data.materials.clear()
 bpy.context.scene.collection.objects.link(low)
 bpy.context.view_layer.objects.active = low
 
-decimate = low.modifiers.new("decimate", 'DECIMATE')
-decimate.ratio = ratio
-decimate.use_collapse_triangulate = True
-bpy.ops.object.modifier_apply(modifier="decimate")
+if ratio < 1.0:
+    decimate = low.modifiers.new("decimate", 'DECIMATE')
+    decimate.ratio = ratio
+    decimate.use_collapse_triangulate = True
+    bpy.ops.object.modifier_apply(modifier="decimate")
 
 for polygon in low.data.polygons:
     polygon.use_smooth = True
