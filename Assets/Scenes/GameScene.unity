@@ -20298,7 +20298,7 @@ MonoBehaviour:
   HeightOffset: 0.012
   HighlightMaterial: {fileID: 2100000, guid: b3c3b8fdfedad634592978fc3fe62b44, type: 2}
   HighlightPreset: {fileID: 11400000, guid: 235d67678fa6bc14ca2c03f2d0048e5d, type: 2}
-  PulseMin: 0.35
+  PulseMin: 0.6
   PulseMax: 0.8
   HoverStrength: 1.2
   FadeSpeed: 6
@@ -38139,7 +38139,7 @@ MonoBehaviour:
   HeightOffset: 0.012
   HighlightMaterial: {fileID: 2100000, guid: b3c3b8fdfedad634592978fc3fe62b44, type: 2}
   HighlightPreset: {fileID: 11400000, guid: 235d67678fa6bc14ca2c03f2d0048e5d, type: 2}
-  PulseMin: 0.35
+  PulseMin: 0.6
   PulseMax: 0.8
   HoverStrength: 1.2
   FadeSpeed: 6

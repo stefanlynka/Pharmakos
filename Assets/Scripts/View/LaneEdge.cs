@@ -33,7 +33,7 @@ public class LaneEdge : MonoBehaviour
     public MeshHighlightSettings HighlightPreset;
 
     [Tooltip("Glow strength range while pulsing (a playable follower is held), and when the cursor is over the lane.")]
-    public float PulseMin = 0.35f;
+    public float PulseMin = 0.6f;
     public float PulseMax = 0.8f;
     public float HoverStrength = 1.2f;
 
@@ -45,7 +45,7 @@ public class LaneEdge : MonoBehaviour
     Mesh mesh;
     MaterialPropertyBlock highlightBlock;
     bool highlightActive, highlightHovered;
-    float highlightLevel, hoverLevel;
+    float highlightLevel, hoverLevel, pulseStartTime;
     Bounds builtFor;
     float builtOuter = -1f, builtInner = -1f, builtHeight = -1f;
 
@@ -58,6 +58,9 @@ public class LaneEdge : MonoBehaviour
     /// <summary>Lights the lane's bevel: active = it's a valid drop target; hovered = the cursor is over it.</summary>
     public void SetHighlight(bool active, bool hovered)
     {
+        // Restart the pulse each time the lane lights up, so it always opens at the same moment (midway, rising).
+        if (active && !highlightActive)
+            pulseStartTime = Time.unscaledTime;
         highlightActive = active;
         highlightHovered = active && hovered;
     }
@@ -95,7 +98,8 @@ public class LaneEdge : MonoBehaviour
             return;
 
         float speed = HighlightPreset != null ? HighlightPreset.pulseSpeed : 0.3f;
-        float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * speed * Mathf.PI * 2f);
+        // sin starts at 0 and rising, so the pulse opens halfway between PulseMin and PulseMax, getting brighter.
+        float wave = 0.5f + 0.5f * Mathf.Sin((Time.unscaledTime - pulseStartTime) * speed * Mathf.PI * 2f);
         float strength = Mathf.Lerp(Mathf.Lerp(PulseMin, PulseMax, wave), HoverStrength, hoverLevel) * highlightLevel;
 
         Color color = HighlightPreset != null ? HighlightPreset.glowColor : new Color(1f, 0.46f, 0.14f);
