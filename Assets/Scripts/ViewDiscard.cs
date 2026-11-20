@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class ViewDiscard : MonoBehaviour
 {
+    [Tooltip("Glows the bowl while a card is held (brighter over it). When set, the old flat Highlight is unused.")]
+    public DiscardBowl Bowl;
+    [Tooltip("Old flat outline, used only when no Bowl is assigned.")]
     public MeshRenderer Highlight;
     public bool isHuman = false;
 
@@ -14,13 +17,16 @@ public class ViewDiscard : MonoBehaviour
     {
         if (!isHuman) return;
 
-        if (View.Instance.SelectionHandler.IsHoldingCard())
+        bool holding = View.Instance.SelectionHandler.IsHoldingCard();
+        if (Bowl != null)
         {
-            Highlight.enabled = true;
+            Bowl.SetHighlight(holding, holding && IsMouseOverThis());
+            if (Highlight != null)
+                Highlight.enabled = false;
         }
-        else
+        else if (Highlight != null)
         {
-            Highlight.enabled = false;
+            Highlight.enabled = holding;
         }
     }
 

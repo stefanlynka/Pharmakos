@@ -44,8 +44,7 @@ public class LaneEdge : MonoBehaviour
 
     Mesh mesh;
     MaterialPropertyBlock highlightBlock;
-    bool highlightActive, highlightHovered;
-    float highlightLevel, hoverLevel, pulseStartTime;
+    readonly DropGlow glow = new DropGlow();
     Bounds builtFor;
     float builtOuter = -1f, builtInner = -1f, builtHeight = -1f;
 
@@ -58,11 +57,7 @@ public class LaneEdge : MonoBehaviour
     /// <summary>Lights the lane's bevel: active = it's a valid drop target; hovered = the cursor is over it.</summary>
     public void SetHighlight(bool active, bool hovered)
     {
-        // Restart the pulse each time the lane lights up, so it always opens at the same moment (midway, rising).
-        if (active && !highlightActive)
-            pulseStartTime = Time.unscaledTime;
-        highlightActive = active;
-        highlightHovered = active && hovered;
+        glow.Set(active, hovered);
     }
 
     void OnDisable()
@@ -91,16 +86,10 @@ public class LaneEdge : MonoBehaviour
 
     void DrawHighlight(Matrix4x4 matrix)
     {
-        float step = Application.isPlaying ? Time.unscaledDeltaTime * FadeSpeed : 1f;
-        highlightLevel = Mathf.MoveTowards(highlightLevel, highlightActive ? 1f : 0f, step);
-        hoverLevel = Mathf.MoveTowards(hoverLevel, highlightHovered ? 1f : 0f, step);
-        if (highlightLevel <= 0.001f || HighlightMaterial == null)
-            return;
-
         float speed = HighlightPreset != null ? HighlightPreset.pulseSpeed : 0.3f;
-        // sin starts at 0 and rising, so the pulse opens halfway between PulseMin and PulseMax, getting brighter.
-        float wave = 0.5f + 0.5f * Mathf.Sin((Time.unscaledTime - pulseStartTime) * speed * Mathf.PI * 2f);
-        float strength = Mathf.Lerp(Mathf.Lerp(PulseMin, PulseMax, wave), HoverStrength, hoverLevel) * highlightLevel;
+        float strength = glow.Update(speed, PulseMin, PulseMax, HoverStrength, FadeSpeed);
+        if (!glow.IsVisible || HighlightMaterial == null)
+            return;
 
         Color color = HighlightPreset != null ? HighlightPreset.glowColor : new Color(1f, 0.46f, 0.14f);
         color.a = 1f;
