@@ -64,7 +64,6 @@ public static class StaticEffectReminders
 
     /// <summary>
     /// Keyword reminders named in <paramref name="text"/>, in the order they appear.
-    /// "Can't attack this turn" is a temporary restriction, not the Can't Attack keyword.
     /// </summary>
     public static void CollectFromText(string text, List<string> results)
     {
@@ -95,9 +94,6 @@ public static class StaticEffectReminders
 
     static Regex BuildPattern(StaticEffect effect)
     {
-        if (effect == StaticEffect.CantAttack)
-            return new Regex(@"\b(?:can't|cant)\s+attack\b(?!\s+this\b)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-
         string phrase = effect.ToString();
         if (effect == StaticEffect.RangedAttacker)
             phrase = "Ranged Attacker";
@@ -126,8 +122,8 @@ public static class StaticEffectReminders
                 return "<b>Ranged Attacker</b>\nAttacks enemies outside melee range and takes no damage when attacking.";
             case StaticEffect.Frenzy:
                 return "<b>Frenzy</b>\nCan attack twice each turn.";
-            case StaticEffect.CantAttack:
-                return "<b>Can't Attack</b>\nCannot attack.";
+            case StaticEffect.Immobile:
+                return "<b>Immobile</b>\nCannot attack.";
             case StaticEffect.LowVision:
                 return "<b>Low Vision</b>\nCan only attack followers directly in front of it.";
             default:

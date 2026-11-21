@@ -39,7 +39,7 @@ public enum StaticEffect
     Taunt, // Must be attacked first
     RangedAttacker, // Inverted attacking and takes no damage while attacking
     Frenzy, // 2 attacks per turn
-    CantAttack,
+    Immobile, // Cannot attack
     LowVision, // Can only attack directly in front
 }
 

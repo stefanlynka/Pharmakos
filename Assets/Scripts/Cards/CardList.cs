@@ -363,7 +363,7 @@ public class Filth : Follower
 
         SetBaseStats(0, 1);
 
-        Text = "Taunt\nCan't Attack\nOn Damaged: Reduce attacker's Attack by 1";
+        Text = "Taunt\nImmobile\nOn Damaged: Reduce attacker's Attack by 1";
         Icon = IconType.Target;
 
         SetupInnateEffects();
@@ -374,7 +374,7 @@ public class Filth : Follower
         base.SetupInnateEffects();
 
         InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Taunt));
-        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.CantAttack));
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Immobile));
 
         CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
@@ -408,7 +408,7 @@ public class WallOfTroy : Follower
         SetBaseStats(0, 3);
 
         OverrideName = "Wall of Troy";
-        Text = "Taunt\nCan't Attack";
+        Text = "Taunt\nImmobile";
         Icon = IconType.Target;
 
         SetupInnateEffects();
@@ -419,7 +419,7 @@ public class WallOfTroy : Follower
         base.SetupInnateEffects();
 
         InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Taunt));
-        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.CantAttack));
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Immobile));
     }
 }
 
@@ -441,7 +441,7 @@ public class Corridor : Follower
 
         SetBaseStats(0, 1);
 
-        Text = "Taunt\nCan't Attack\nOn Death: Summon a Monster";
+        Text = "Taunt\nImmobile\nOn Death: Summon a Monster";
         Icon = IconType.Target;
 
         SetupInnateEffects();
@@ -457,7 +457,7 @@ public class Corridor : Follower
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
         InnateEffects.Add(customEffectDef);
 
-        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.CantAttack));
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.Immobile));
     }
 
     private void CustomEffectAction(FollowerEffect effectDef, Follower instanceTarget, int offset)

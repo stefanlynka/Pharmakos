@@ -149,7 +149,7 @@ public class Follower : Card, ITarget
 
     public int GetAttacksPerTurn()
     {
-        if (HasStaticEffect(StaticEffect.CantAttack)) return 0;
+        if (HasStaticEffect(StaticEffect.Immobile)) return 0;
         else if (HasStaticEffect(StaticEffect.Frenzy)) return 2;
         return 1;
     }
