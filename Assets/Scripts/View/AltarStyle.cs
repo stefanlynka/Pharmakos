@@ -1,0 +1,70 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+/// <summary>
+/// One god's look for the ritual altar. The altar mesh (Models/Meshes/AltarKit.fbx) has four material slots,
+/// and a style is just the four materials for them plus the colour of the rules text on the altar.
+/// Styles live at Resources/Content/AltarStyles/&lt;God&gt;/&lt;God&gt;.asset and are picked by <see cref="Ritual.God"/>;
+/// rituals whose god has no style use the Default style.
+/// </summary>
+[CreateAssetMenu(menuName = "Hecatomb/Altar Style", fileName = "AltarStyle")]
+public class AltarStyle : ScriptableObject
+{
+    const string Folder = "Content/AltarStyles/";
+    const string DefaultName = "Default";
+
+    [Tooltip("Body, steps and slab sides (material slot 0).")]
+    public Material Stone;
+    [Tooltip("The two faces that carry the rules text and costs (slot 1). Keep it calm so the text reads.")]
+    public Material Panel;
+    [Tooltip("Raised border strips round the text faces (slot 2). Texture tiles along U; V = 0 is the outer edge.")]
+    public Material Trim;
+    [Tooltip("Raised corner blocks (slot 3).")]
+    public Material Corner;
+
+    [Tooltip("Colour of the rules text printed on the altar. Light on dark stone, dark on pale stone.")]
+    public Color TextColor = Color.black;
+
+    static readonly Dictionary<string, AltarStyle> cache = new Dictionary<string, AltarStyle>();
+    Material[] materials;
+
+    /// <summary>The four materials in the altar mesh's slot order.</summary>
+    public Material[] Materials
+    {
+        get
+        {
+            if (materials == null || materials.Length != 4)
+                materials = new[] { Stone, Panel, Trim, Corner };
+            return materials;
+        }
+    }
+
+    void OnValidate()
+    {
+        materials = null;
+    }
+
+    /// <summary>The style for a ritual's god, falling back to Default. Null only if no Default style exists.</summary>
+    public static AltarStyle For(Ritual ritual)
+    {
+        if (ritual != null)
+        {
+            AltarStyle style = Load(ritual.God);
+            if (style != null)
+                return style;
+        }
+        return Load(DefaultName);
+    }
+
+    static AltarStyle Load(string god)
+    {
+        if (string.IsNullOrEmpty(god))
+            return null;
+        if (!cache.TryGetValue(god, out AltarStyle style))
+        {
+            style = Resources.Load<AltarStyle>(Folder + god + "/" + god);
+            cache[god] = style;
+        }
+        return style;
+    }
+}

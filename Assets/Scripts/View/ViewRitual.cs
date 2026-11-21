@@ -184,11 +184,30 @@ public class ViewRitual : ViewTarget
 
         Title.text = Ritual.Name;
         Description.text = Ritual.Description;
+        ApplyAltarStyle();
 
         BloodText.text = Ritual.GetCost(OfferingType.Blood).ToString();
         BonesText.text = Ritual.GetCost(OfferingType.Bone).ToString();
         CropsText.text = Ritual.GetCost(OfferingType.Crop).ToString();
         ScrollsText.text = Ritual.GetCost(OfferingType.Scroll).ToString();
+    }
+
+    // Dresses the altar in its god's style (AltarStyle): the four materials of the altar kit mesh and the colour of the
+    // rules text. Altars that aren't the kit mesh (four material slots) are left as authored.
+    void ApplyAltarStyle()
+    {
+        AltarStyle style = AltarStyle.For(Ritual);
+        if (style == null)
+            return;
+
+        Transform root = ResolveAltarRoot();
+        MeshRenderer altarRenderer = root != null ? root.GetComponent<MeshRenderer>() : null;
+        if (altarRenderer == null || altarRenderer.sharedMaterials.Length != style.Materials.Length)
+            return;
+
+        altarRenderer.sharedMaterials = style.Materials;
+        if (Description != null)
+            Description.color = style.TextColor;
     }
 
     public void SetHighlight(bool active)

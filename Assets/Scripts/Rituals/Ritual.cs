@@ -15,6 +15,21 @@ public abstract class Ritual : ITarget
     public string Description = "No Desc";
     public string ReminderText = "";
 
+    /// <summary>
+    /// The god this ritual belongs to, which picks its altar's look (see AltarStyle). Read from the class name:
+    /// AphroditeMajor and AphroditeMinor both give "Aphrodite". Override if a ritual's class name doesn't follow that pattern.
+    /// </summary>
+    public virtual string God
+    {
+        get
+        {
+            string name = GetType().Name;
+            if (name.EndsWith("Major") || name.EndsWith("Minor"))
+                return name.Substring(0, name.Length - 5);
+            return name;
+        }
+    }
+
     // Cards this ritual names, shown beside the hover summary. Empty when none apply.
     public virtual void CollectReferencedCards(List<Card> cards) { }
 

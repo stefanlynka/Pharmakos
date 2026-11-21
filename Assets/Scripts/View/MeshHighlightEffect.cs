@@ -350,7 +350,11 @@ public class MeshHighlightEffect : MonoBehaviour
             meshFilter.sharedMesh = mesh;
 
             var meshRenderer = shellObject.AddComponent<MeshRenderer>();
-            meshRenderer.sharedMaterial = glowMaterial;
+            // One glow material per submesh, so meshes with several material slots glow everywhere.
+            var glowMaterials = new Material[Mathf.Max(1, mesh.subMeshCount)];
+            for (int i = 0; i < glowMaterials.Length; i++)
+                glowMaterials[i] = glowMaterial;
+            meshRenderer.sharedMaterials = glowMaterials;
             meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             meshRenderer.receiveShadows = false;
             renderer = meshRenderer;

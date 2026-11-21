@@ -54,7 +54,7 @@ All gameplay code is in `Assets/Scripts` (default `Assembly-CSharp`, no asmdefs,
 ## Adding content (usually done by the developer; here for reference)
 
 - **Card:** new class in `Cards/CardList.cs` deriving from `Follower` or `Spell`; set `Costs`, stats, `Text`, `Icon`; add effects in `SetupInnateEffects()`; register it in the relevant deck/pool in `CardHandler.cs`.
-- **Ritual:** class in `Rituals/RitualList.cs` (+ `StaticPlayerEffect` def if it has a lasting effect). Keep `Rituals.txt` in sync.
+- **Ritual:** class in `Rituals/RitualList.cs` (+ `StaticPlayerEffect` def if it has a lasting effect). Keep `Rituals.txt` in sync. Its altar's look comes from its god (`Ritual.God`, read from the class name) via an `AltarStyle` in `Resources/Content/AltarStyles`; see `Docs/AltarKit.md`.
 - **Trinket:** `Trinket<TEffectDef>` + `TrinketPlayerEffect` pair in `EffectSystem/TrinketList.cs`.
 - **Event:** `EventDefinition` asset under `Assets/Resources/Content/Events`.
 

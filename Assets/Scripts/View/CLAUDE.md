@@ -23,3 +23,9 @@
 - Drop target: while a playable follower is held and the row has room, `ViewBattleRow.Update` calls `LaneEdge.SetHighlight`; the bevel glows with `LaneEdgeGlow.mat` (additive) in the Target preset's colour, pulsing at its speed, and goes steady and brighter while the cursor is over the lane. The old flat `ViewBattleRow.Highlight` sprite is only a fallback when no LaneEdge is assigned.
 - Discard: `ViewDiscard` (scene, `Player Discard`, layer 7 BoxCollider for drops) drives `DiscardBowl.SetHighlight` on the bowl prefab: an additive ring drawn with Graphics.DrawMesh at the rim (bowl-local radii; the bowl's opening faces local +Z) plus a MaterialPropertyBlock brightening of the label. The old flat `Plane`/label are inactive and `Highlight` is only a fallback. Lane and bowl share the fade/pulse timing in `DropGlow`.
 - `CurvedText` bends any TextMeshPro along an arc by rewriting vertices on `TEXT_CHANGED_EVENT`; edit text, font, size and colour on the TMP component as usual. Its pivot is the top of the arc (centre/baseline alignment).
+
+## Ritual altars
+
+- Every altar (`ViewRitual3` → `Altar2` child) uses the generated `AltarKit.fbx` with four material slots (Stone, Panel, Trim, Corner). `ViewRitual.Refresh` → `ApplyAltarStyle` swaps in the ritual's `AltarStyle` (`Resources/Content/AltarStyles/<God>/<God>.asset`, god from `Ritual.God`, fallback Default) and sets the rules text colour. Full guide: `Docs/AltarKit.md`.
+- `MeshHighlightEffect` glow shells get one glow material per submesh; before that, multi-slot meshes only glowed on slot 0.
+- `ScreenCapture` right after changing TMP text can capture the frame before the text mesh rebuilds (text missing); capture again a frame later.

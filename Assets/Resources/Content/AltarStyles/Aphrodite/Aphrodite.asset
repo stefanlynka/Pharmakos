@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53174c69a9d5a5b4e884cede34d66799, type: 3}
+  m_Name: Aphrodite
+  m_EditorClassIdentifier: 
+  Stone: {fileID: 2100000, guid: 3665caccab48fdd478781865b43b48f4, type: 2}
+  Panel: {fileID: 2100000, guid: 635bade827ac40647ba994033c546d5f, type: 2}
+  Trim: {fileID: 2100000, guid: c3611c69044ddb3419658f40ef2779cb, type: 2}
+  Corner: {fileID: 2100000, guid: 8c8bd90998bccce46b7ef005d237a120, type: 2}
+  TextColor: {r: 0, g: 0, b: 0, a: 1}
