@@ -43,8 +43,17 @@ SLAB_X = 0.735
 SLAB_FRONT, SLAB_BACK = -0.07, 0.815
 SLAB_TOP = 0.172
 RAMP_X = 0.53
-RAMP_FRONT, RAMP_BACK = -0.95, -0.03
-RAMP_FRONT_TOP, RAMP_BACK_TOP = -0.15, 0.160
+# The ramp stops at the slab's front face and stays below its top, so the ramp's border never pokes into the slab.
+RAMP_FRONT, RAMP_BACK = -0.95, SLAB_FRONT
+RAMP_FRONT_TOP, RAMP_BACK_TOP = -0.15, 0.150
+
+# Rounded edges: each solid is built with shared vertices and its edges bevelled (3 segments, smooth shaded).
+BEVEL_STEP = 0.008
+BEVEL_SLAB = 0.010
+BEVEL_TRIM = 0.002
+BEVEL_CORNER = 0.004
+BEVEL_SEGMENTS = 3
+SMOOTH_ANGLE = 40      # degrees; bevel facets (30 deg apart) shade smooth, the blocks' real corners stay sharp
 
 STONE, PANEL, TRIM, CORNER = 0, 1, 2, 3
 
@@ -55,6 +64,36 @@ ref_matrix = ref.matrix_world.copy()
 
 bm = bmesh.new()
 uv_layer = bm.loops.layers.uv.new("UVMap")
+
+# While a solid is being built its faces share vertices (so its edges can be bevelled); between solids nothing is shared.
+solid_verts = None
+solid_faces = []
+
+
+def begin_solid():
+    global solid_verts, solid_faces
+    solid_verts, solid_faces = {}, []
+
+
+def end_solid(bevel_width):
+    """Rounds the solid's edges. Only edges between two of its faces are bevelled; open rims (e.g. where a block
+    sits on another surface) are left as they are."""
+    global solid_verts
+    edges = {e for f in solid_faces for e in f.edges if len(e.link_faces) == 2}
+    if edges and bevel_width > 0:
+        bmesh.ops.bevel(bm, geom=list(edges), offset=bevel_width, offset_type='OFFSET', segments=BEVEL_SEGMENTS,
+                        profile=0.5, affect='EDGES', clamp_overlap=True, material=-1)
+    solid_verts = None
+
+
+def vert_at(p):
+    if solid_verts is None:
+        return bm.verts.new(p)
+    key = (round(p.x, 6), round(p.y, 6), round(p.z, 6))
+    v = solid_verts.get(key)
+    if v is None:
+        v = solid_verts[key] = bm.verts.new(p)
+    return v
 
 
 def add_face(points, material, uvs, outward=None):
@@ -67,8 +106,10 @@ def add_face(points, material, uvs, outward=None):
         if normal.dot(Vector(outward)) < 0:
             points.reverse()
             uvs.reverse()
-    verts = [bm.verts.new(p) for p in points]
+    verts = [vert_at(p) for p in points]
     face = bm.faces.new(verts)
+    if solid_verts is not None:
+        solid_faces.append(face)
     face.material_index = material
     for loop, uv in zip(face.loops, uvs):
         loop[uv_layer].uv = uv
@@ -128,6 +169,7 @@ def framed_face(origin, u_axis, v_axis, width, height):
     add_face([P(u, v) for u, v in corners], PANEL, [world_uv(u, v) for u, v in corners], N)
 
     def raised_rect(u0, v0, u1, v1, h, material, top_uvs, side_material=STONE):
+        begin_solid()
         a, b, c, d = P(u0, v0, h), P(u1, v0, h), P(u1, v1, h), P(u0, v1, h)
         add_face([a, b, c, d], material, top_uvs, N)
         # side walls down to the panel plane, pointing out of the block
@@ -137,6 +179,7 @@ def framed_face(origin, u_axis, v_axis, width, height):
         for i in range(4):
             j = (i + 1) % 4
             quad([base[i], base[j], top[j], top[i]], centre, side_material)
+        end_solid(BEVEL_CORNER if material == CORNER else BEVEL_TRIM)
 
     # Trim strips run between the corner blocks. Texture v: 0 at the face's outer edge, 1 at the inner edge.
     c = CORNER_W
@@ -161,22 +204,29 @@ def framed_face(origin, u_axis, v_axis, width, height):
 step_h = (PLINTH_TOP - Z0) / STEPS
 for i in range(STEPS):
     inset = i * STEP_INSET
+    begin_solid()
     box(-PLINTH_X + inset, PLINTH_X - inset,
         PLINTH_FRONT + inset, PLINTH_BACK - inset,
         Z0 + i * step_h, Z0 + (i + 1) * step_h,
         top=True, bottom=(i == 0))
+    end_solid(BEVEL_STEP)
 
 # --- Table slab with framed top -------------------------------------------
+begin_solid()
 box(-SLAB_X, SLAB_X, SLAB_FRONT, SLAB_BACK, PLINTH_TOP, SLAB_TOP, top=False)
+end_solid(BEVEL_SLAB)
 framed_face((-SLAB_X, SLAB_FRONT, SLAB_TOP), (1, 0, 0), (0, 1, 0), 2 * SLAB_X, SLAB_BACK - SLAB_FRONT)
 
 # --- Ramp (wedge) with framed sloped face -----------------------------------
 fb, ft = Vector((0, RAMP_FRONT, Z0)), Vector((0, RAMP_FRONT, RAMP_FRONT_TOP))
 bt, bb = Vector((0, RAMP_BACK, RAMP_BACK_TOP)), Vector((0, RAMP_BACK, Z0))
 ramp_centre = (0, (RAMP_FRONT + RAMP_BACK) / 2, (Z0 + RAMP_BACK_TOP) / 2)
+begin_solid()
 for sx in (-RAMP_X, RAMP_X):
     quad([Vector((sx, p.y, p.z)) for p in (fb, ft, bt, bb)], ramp_centre)
 quad([(-RAMP_X, RAMP_FRONT, Z0), (RAMP_X, RAMP_FRONT, Z0), (RAMP_X, RAMP_FRONT, RAMP_FRONT_TOP), (-RAMP_X, RAMP_FRONT, RAMP_FRONT_TOP)], ramp_centre)
+quad([(-RAMP_X, RAMP_BACK, Z0), (RAMP_X, RAMP_BACK, Z0), (RAMP_X, RAMP_BACK, RAMP_BACK_TOP), (-RAMP_X, RAMP_BACK, RAMP_BACK_TOP)], ramp_centre)
+end_solid(BEVEL_SLAB)
 slope = (bt - ft)
 slope_len = slope.length
 framed_face((-RAMP_X, RAMP_FRONT, RAMP_FRONT_TOP), (1, 0, 0), tuple(slope.normalized()), 2 * RAMP_X, slope_len)
@@ -185,8 +235,8 @@ framed_face((-RAMP_X, RAMP_FRONT, RAMP_FRONT_TOP), (1, 0, 0), tuple(slope.normal
 mesh = bpy.data.meshes.new("AltarKit")
 bm.to_mesh(mesh)
 bm.free()
-for poly in mesh.polygons:
-    poly.use_smooth = False
+mesh.shade_smooth()
+mesh.set_sharp_from_angle(angle=math.radians(SMOOTH_ANGLE))
 for name in ("Stone", "Panel", "Trim", "Corner"):
     mesh.materials.append(bpy.data.materials.new(name))
 

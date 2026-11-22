@@ -75,6 +75,8 @@ blender -b --factory-startup --python Tools/Blender/build_altar_kit.py -- Assets
 
 - **Proportions:** the dimensions live at the top of the script. Border width is `TRIM_W` and `CORNER_W`, steps are
   `STEPS` and `STEP_INSET`.
+- **Rounded edges:** every block (steps, slab, ramp, border strips, corners) is built with shared vertices and bevelled. The widths are the `BEVEL_*` constants. `SMOOTH_ANGLE` keeps the bevels smooth-shaded and the real corners sharp.
+- **Ramp and slab:** the ramp stops at the slab's front face and below its top, so the ramp's border can't poke into the slab.
 - **Reference mesh:** the old Meshy altar (`Altar2.fbx`) is only read for its transform, so the new mesh lands in the
   same space and the cost badges and text stay put. Keep that file.
 - **Unity import settings:**
