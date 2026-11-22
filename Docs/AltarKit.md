@@ -83,3 +83,11 @@ blender -b --factory-startup --python Tools/Blender/build_altar_kit.py -- Assets
   - Scale Factor 100
   - Normals: Import
   - Material Creation: None
+
+## Ready flame
+
+When a ritual is usable its altar burns: `AltarFlame` (on the prefab's `Altar2`) draws a skirt of flame rising from the altar's footprint and leaning outward, so tongues show past every side without touching the text faces.
+
+- **Shape and timing** (component): `Height`, `Lean`, `Inset`, `FadeSpeed`, `Intensity`. Tick **Preview In Editor** to see it while tuning.
+- **Look** (`Models/Materials/AltarFlame.mat`): base/body/tip colours, noise scale, rise speed, tongue sharpness, base glow.
+- If the altar's outline changes, update `Footprint` (local x/z, in order round the base).

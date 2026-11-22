@@ -216,8 +216,17 @@ public class ViewRitual : ViewTarget
             return;
 
         isHighlightActive = active;
-        EnsureMeshHighlight();
 
+        // Kit altars burn with AltarFlame; older altar models fall back to the shell-based MeshHighlightEffect.
+        Transform root = ResolveAltarRoot();
+        AltarFlame flame = root != null ? root.GetComponent<AltarFlame>() : null;
+        if (flame != null)
+        {
+            flame.SetActive(active);
+            return;
+        }
+
+        EnsureMeshHighlight();
         if (MeshHighlightEffect != null)
             MeshHighlightEffect.SetActive(active);
     }

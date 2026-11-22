@@ -9,10 +9,10 @@
 ## Highlights
 
 - Two glow components: `CardHighlightEffect` (cards, trinkets/`ViewBuff`, starter bundles; sprite-based "mist" shader) and `MeshHighlightEffect` (3D: player portraits, ritual altars, Styx trinkets).
-- **The inspector's `settings` preset is what plays.** Both components copy it into their glow fields on `Awake` (and every frame in the editor while glowing, so preset edits show live in play mode). The custom inspectors show the preset inline and hide the mirrored fields. Code never writes `settings`. Assigned presets: bundle = ChoiceLarge (band widened in the prefab: glow sprites scaled up, 9-slice size scaled down), trinkets (`ViewBuff.prefab`) = Choice, portraits (`ViewPlayerPortrait`) = TargetMesh, altars = Altar, Styx trinkets = Hammer1/Shears1 (scene overrides, `Assets/Settings`).
+- **The inspector's `settings` preset is what plays.** Both components copy it into their glow fields on `Awake` (and every frame in the editor while glowing, so preset edits show live in play mode). The custom inspectors show the preset inline and hide the mirrored fields. Code never writes `settings`. Assigned presets: bundle = ChoiceLarge (band widened in the prefab: glow sprites scaled up, 9-slice size scaled down), trinkets (`ViewBuff.prefab`) = Choice, portraits (`ViewPlayerPortrait`) = TargetMesh, altars = AltarFlame (see below), Styx trinkets = Hammer1/Shears1 (scene overrides, `Assets/Settings`).
 - **Only cards switch preset at runtime**, because their state changes: `ViewCard.SetHighlight(bool, HighlightState)` picks from `HighlightPalette` (`Resources/Content/HighlightSettings`: Follower, Spell, Target, Choice) and calls `CardHighlightEffect.UsePreset`, which sets a runtime-only live preset (`LivePreset`); the inspector shows which one is playing. Selected = Ready preset × `SelectedIntensity` via `IntensityScale`.
 - Combat state decisions live in `ViewBattleRow.RefreshPositions` (per-frame: attacker = Selected, attack/spell/ritual targets = Target, can-attack = Ready) and `View.HighlightTargets` / `ViewBattleRow.HighlightTargets` (Target). Hand cards: `ViewHandHandler` (Ready; the spell being aimed, `SelectionHandler.HeldCard`, stays in hand as Selected). Out-of-combat callers pass `HighlightState.Choice` (rewards, shop, temple, deck selection).
-- Ritual altars use the Altar preset and `RitualOutlineHighlight` (Linework layer 8) colours.
+- Ritual altars burn with `AltarFlame` (not `MeshHighlightEffect`) plus `RitualOutlineHighlight` (Linework layer 8) colours.
 
 ## Combat board
 
@@ -27,5 +27,5 @@
 ## Ritual altars
 
 - Every altar (`ViewRitual3` → `Altar2` child) uses the generated `AltarKit.fbx` with four material slots (Stone, Panel, Trim, Corner). `ViewRitual.Refresh` → `ApplyAltarStyle` swaps in the ritual's `AltarStyle` (`Resources/Content/AltarStyles/<God>/<God>.asset`, god from `Ritual.God`, fallback Default) and sets the rules text colour. Full guide: `Docs/AltarKit.md`.
-- `MeshHighlightEffect` glow shells get one glow material per submesh; before that, multi-slot meshes only glowed on slot 0.
+- Ready glow on kit altars: `AltarFlame` on `Altar2` draws a ring of flame quads rising from the altar's footprint (Graphics.DrawMesh, shader `Pharmakos/AltarFlame`, material `Models/Materials/AltarFlame.mat`). `ViewRitual.SetHighlight` lights it; `UpdateSpotlight` turns it off again whenever the ritual isn't usable, so to preview it in a test call `AltarFlame.SetActive(true)` directly. The old shell-based `MeshHighlightEffect` (inflated copies of the mesh) is kept only as a fallback for non-kit altars; on the clean kit mesh it missed sides and bled onto the cost icons.
 - `ScreenCapture` right after changing TMP text can capture the frame before the text mesh rebuilds (text missing); capture again a frame later.
