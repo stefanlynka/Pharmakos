@@ -57,7 +57,16 @@ bm = bmesh.new()
 uv_layer = bm.loops.layers.uv.new("UVMap")
 
 
-def add_face(points, material, uvs):
+def add_face(points, material, uvs, outward=None):
+    """outward: a direction the face must point along. Every face is its own island, so its winding has to be set
+    explicitly (letting Blender recalculate normals guesses per face and flips about half of them)."""
+    points = [Vector(p) for p in points]
+    uvs = list(uvs)
+    if outward is not None:
+        normal = (points[1] - points[0]).cross(points[2] - points[0])
+        if normal.dot(Vector(outward)) < 0:
+            points.reverse()
+            uvs.reverse()
     verts = [bm.verts.new(p) for p in points]
     face = bm.faces.new(verts)
     face.material_index = material
@@ -77,24 +86,27 @@ def stone_uvs(points, normal):
     return [(p[0] / STONE_TILE, p[1] / STONE_TILE) for p in points]
 
 
-def quad(points, material=STONE, uvs=None):
+def quad(points, away_from, material=STONE, uvs=None):
+    """A face pointing away from the point away_from (the centre of the solid it belongs to)."""
     pts = [Vector(p) for p in points]
-    normal = (pts[1] - pts[0]).cross(pts[2] - pts[0])
+    centroid = sum(pts, Vector()) / len(pts)
+    outward = centroid - Vector(away_from)
     if uvs is None:
-        uvs = stone_uvs(pts, normal)
-    return add_face(pts, material, uvs)
+        uvs = stone_uvs(pts, outward)
+    return add_face(pts, material, uvs, outward)
 
 
 def box(x0, x1, y0, y1, z0, z1, top=True, bottom=False):
-    """Axis-aligned stone block. Faces wound counter-clockwise seen from outside."""
+    """Axis-aligned stone block, every face pointing out of it."""
+    c = ((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2)
     if top:
-        quad([(x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)])
+        quad([(x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)], c)
     if bottom:
-        quad([(x0, y1, z0), (x1, y1, z0), (x1, y0, z0), (x0, y0, z0)])
-    quad([(x0, y0, z0), (x1, y0, z0), (x1, y0, z1), (x0, y0, z1)])   # front (-Y)
-    quad([(x1, y1, z0), (x0, y1, z0), (x0, y1, z1), (x1, y1, z1)])   # back (+Y)
-    quad([(x0, y1, z0), (x0, y0, z0), (x0, y0, z1), (x0, y1, z1)])   # left (-X)
-    quad([(x1, y0, z0), (x1, y1, z0), (x1, y1, z1), (x1, y0, z1)])   # right (+X)
+        quad([(x0, y1, z0), (x1, y1, z0), (x1, y0, z0), (x0, y0, z0)], c)
+    quad([(x0, y0, z0), (x1, y0, z0), (x1, y0, z1), (x0, y0, z1)], c)   # front (-Y)
+    quad([(x1, y1, z0), (x0, y1, z0), (x0, y1, z1), (x1, y1, z1)], c)   # back (+Y)
+    quad([(x0, y1, z0), (x0, y0, z0), (x0, y0, z1), (x0, y1, z1)], c)   # left (-X)
+    quad([(x1, y0, z0), (x1, y1, z0), (x1, y1, z1), (x1, y0, z1)], c)   # right (+X)
 
 
 def framed_face(origin, u_axis, v_axis, width, height):
@@ -113,17 +125,18 @@ def framed_face(origin, u_axis, v_axis, width, height):
 
     # Panel
     corners = [(w, w), (width - w, w), (width - w, height - w), (w, height - w)]
-    add_face([P(u, v) for u, v in corners], PANEL, [world_uv(u, v) for u, v in corners])
+    add_face([P(u, v) for u, v in corners], PANEL, [world_uv(u, v) for u, v in corners], N)
 
     def raised_rect(u0, v0, u1, v1, h, material, top_uvs, side_material=STONE):
         a, b, c, d = P(u0, v0, h), P(u1, v0, h), P(u1, v1, h), P(u0, v1, h)
-        add_face([a, b, c, d], material, top_uvs)
-        # side walls down to the panel plane
+        add_face([a, b, c, d], material, top_uvs, N)
+        # side walls down to the panel plane, pointing out of the block
+        centre = P((u0 + u1) / 2, (v0 + v1) / 2, h / 2)
         base = [P(u0, v0), P(u1, v0), P(u1, v1), P(u0, v1)]
         top = [a, b, c, d]
         for i in range(4):
             j = (i + 1) % 4
-            quad([base[i], base[j], top[j], top[i]], side_material)
+            quad([base[i], base[j], top[j], top[i]], centre, side_material)
 
     # Trim strips run between the corner blocks. Texture v: 0 at the face's outer edge, 1 at the inner edge.
     c = CORNER_W
@@ -160,18 +173,15 @@ framed_face((-SLAB_X, SLAB_FRONT, SLAB_TOP), (1, 0, 0), (0, 1, 0), 2 * SLAB_X, S
 # --- Ramp (wedge) with framed sloped face -----------------------------------
 fb, ft = Vector((0, RAMP_FRONT, Z0)), Vector((0, RAMP_FRONT, RAMP_FRONT_TOP))
 bt, bb = Vector((0, RAMP_BACK, RAMP_BACK_TOP)), Vector((0, RAMP_BACK, Z0))
+ramp_centre = (0, (RAMP_FRONT + RAMP_BACK) / 2, (Z0 + RAMP_BACK_TOP) / 2)
 for sx in (-RAMP_X, RAMP_X):
-    pts = [Vector((sx, p.y, p.z)) for p in (fb, ft, bt, bb)]
-    if sx > 0:
-        pts.reverse()
-    quad(pts)
-quad([(-RAMP_X, RAMP_FRONT, Z0), (RAMP_X, RAMP_FRONT, Z0), (RAMP_X, RAMP_FRONT, RAMP_FRONT_TOP), (-RAMP_X, RAMP_FRONT, RAMP_FRONT_TOP)])
+    quad([Vector((sx, p.y, p.z)) for p in (fb, ft, bt, bb)], ramp_centre)
+quad([(-RAMP_X, RAMP_FRONT, Z0), (RAMP_X, RAMP_FRONT, Z0), (RAMP_X, RAMP_FRONT, RAMP_FRONT_TOP), (-RAMP_X, RAMP_FRONT, RAMP_FRONT_TOP)], ramp_centre)
 slope = (bt - ft)
 slope_len = slope.length
 framed_face((-RAMP_X, RAMP_FRONT, RAMP_FRONT_TOP), (1, 0, 0), tuple(slope.normalized()), 2 * RAMP_X, slope_len)
 
 # --- Finish ------------------------------------------------------------------
-bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
 mesh = bpy.data.meshes.new("AltarKit")
 bm.to_mesh(mesh)
 bm.free()
@@ -195,6 +205,7 @@ if preview_path:
     scene.render.resolution_x, scene.render.resolution_y = 900, 700
     scene.display.shading.light = 'STUDIO'
     scene.display.shading.color_type = 'MATERIAL'
+    scene.display.shading.show_backface_culling = True   # holes show up here exactly as in Unity
     colors = {"Stone": (0.75, 0.72, 0.66, 1), "Panel": (0.9, 0.88, 0.8, 1), "Trim": (0.7, 0.5, 0.25, 1), "Corner": (0.3, 0.5, 0.6, 1)}
     for m in mesh.materials:
         m.diffuse_color = colors[m.name]
@@ -203,10 +214,15 @@ if preview_path:
     scene.collection.objects.link(cam_obj)
     scene.camera = cam_obj
     centre = Vector((0, -0.04, 0))
-    cam_obj.location = centre + Vector((1.2, -1.6, 1.3)).normalized() * 3.6
-    cam_obj.rotation_euler = (centre - cam_obj.location).to_track_quat('-Z', 'Y').to_euler()
-    scene.render.filepath = preview_path
-    bpy.ops.render.render(write_still=True)
+    # A high three-quarter view, plus low views from the front and both sides where gaps would show.
+    # (The mesh has been turned half round about Z above, so its ramp now faces +Y.)
+    views = [("", (-1.2, 1.6, 1.3)), ("_low_front_right", (-1.0, 1.4, 0.35)), ("_low_left", (1.6, 0.6, 0.3)), ("_back", (-0.6, -1.6, 0.8))]
+    stem, ext = preview_path.rsplit(".", 1)
+    for suffix, direction in views:
+        cam_obj.location = centre + Vector(direction).normalized() * 3.6
+        cam_obj.rotation_euler = (centre - cam_obj.location).to_track_quat('-Z', 'Y').to_euler()
+        scene.render.filepath = stem + suffix + "." + ext
+        bpy.ops.render.render(write_still=True)
 
 bpy.ops.object.select_all(action='DESELECT')
 obj.select_set(True)
