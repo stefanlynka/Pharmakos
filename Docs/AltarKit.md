@@ -18,6 +18,8 @@ thin dark outline), so it stays legible on the rough stone; change it there, not
 Dark text reads thinner than light text on stone (and the dark outline adds nothing to it), so dark-text styles set
 **Text Material** to `AlegreyaSans-Regular Altar Dark.mat` (heavier face, faint light rim): Aphrodite, Apollo, Muse,
 Default. Empty uses the prefab's material.
+The text colour is converted to linear before it reaches TMP, so what renders matches the hex on the style
+(TMP 3.0 would otherwise show dark colours much lighter in this Linear project).
 
 - Styles live in `Assets/Resources/Content/AltarStyles/<God>/<God>.asset`, next to their textures and materials.
 - The god comes from the ritual's class name (`AphroditeMajor` → `Aphrodite`, see `Ritual.God`).

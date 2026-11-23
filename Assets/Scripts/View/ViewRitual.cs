@@ -214,7 +214,13 @@ public class ViewRitual : ViewTarget
             Material textMaterial = style.TextMaterial != null ? style.TextMaterial : defaultTextMaterial;
             if (Description.fontSharedMaterial != textMaterial)
                 Description.fontSharedMaterial = textMaterial;
-            Description.color = style.TextColor;
+            // TMP 3.0 feeds vertex colours to its shaders unconverted, so in a Linear project a dark colour shows up
+            // much lighter than authored (#3F0000 renders near #890000). Convert, so the altar shows the style's colour.
+            Color textColor = style.TextColor;
+            if (QualitySettings.activeColorSpace == ColorSpace.Linear)
+                textColor = new Color(Mathf.GammaToLinearSpace(textColor.r), Mathf.GammaToLinearSpace(textColor.g),
+                    Mathf.GammaToLinearSpace(textColor.b), textColor.a);
+            Description.color = textColor;
         }
     }
 
