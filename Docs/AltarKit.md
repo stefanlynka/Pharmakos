@@ -59,7 +59,8 @@ The ones marked (env) can also be set per run with an environment variable of th
   stone as the body (the calmer `<God>_Panel` material still exists; drag it back into the Panel slot to undo).
   - **Exception, Tablet:** a style whose stone carries stains that mustn't run under the rules text (Aphrodite's
     `blood`) also gets `Tablet_Albedo` / `Tablet_Mask`: the same stone without them. The builder makes
-    `<God>_Tablet.mat` from them (a copy of Stone) and puts it in the Panel slot.
+    `<God>_Tablet.mat` from them (a copy of Stone) and puts it in the Panel slot. `tablet_lift_darks` (0..1) pulls the
+    tablet's darker parts (grime, pits, veins) toward the stone's average so dark text stays readable (Aphrodite 0.65).
   - Text colour: run **Tools → Altar Kit → Reset Text Colours From Panels**. It reads the texture of whatever
     material is in the Panel slot; light text unless the panel is genuinely pale (brightness ≥ 0.62 gets black).
     It overwrites hand-picked colours, so re-apply them afterwards (Aphrodite: #3F0000 with the Dark text material).

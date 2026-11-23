@@ -233,6 +233,18 @@ def run_streaks(n, seed, count, width, length, strength, wander_px=24):
     return out
 
 
+def lift_darks(alb, amount):
+    """Pull the parts darker than the stone's average up toward it (grime, pits, soot, veins), leaving the lighter
+    parts alone, so the texture still reads as stone but stays quiet behind dark text."""
+    if amount <= 0:
+        return alb
+    lum = alb @ np.array((0.3, 0.59, 0.11))
+    mean_lum = float(lum.mean())
+    mean = alb.reshape(-1, 3).mean(0)
+    dark = np.clip((mean_lum - lum) / max(mean_lum, 1e-3), 0, 1) ** 0.6      # 0 at average, 1 at black
+    return lerp(alb, np.broadcast_to(mean, alb.shape), dark * amount)
+
+
 def blood_streams(alb, seed, b):
     """Blood run down the stone in streams: fresh red in the middle of each, dried dark at the edges and tails, with
     a few drips and splashes. Returns the albedo and a wetness mask (fresh blood is glossy)."""
@@ -271,7 +283,7 @@ def stone_set(s, folder, seed):
     if "blood" in s:
         # The text faces get the same rough stone without the blood (Tablet_*), so the rules stay readable;
         # the blood runs down the steps and sides only.
-        save("Tablet_Albedo", folder, rgba(alb))
+        save("Tablet_Albedo", folder, rgba(lift_darks(alb, s.get("tablet_lift_darks", 0.0))))
         save("Tablet_Mask", folder, mask(0.0, gloss))
         alb, wet = blood_streams(alb, seed, s["blood"])
         gloss = np.maximum(gloss, wet * 0.55)                 # fresh blood catches the light
@@ -808,7 +820,7 @@ STYLES = {
     "Aphrodite": dict(
         stone_dark=C(0.80, 0.76, 0.71), stone_light=C(0.94, 0.92, 0.88), vein=C(0.58, 0.54, 0.52), vein_amount=0.45,
         vein_width=0.03, fine_veins=0.3, warp=1.3, vein_dir=(1, 2), stone_smooth=0.5, panel_calm=0.7,
-        blood=dict(count=11, width=(10, 26), length=(300, 900), amount=1.0), carve=0.1, pigment_loss=0.15,
+        blood=dict(count=11, width=(10, 26), length=(300, 900), amount=1.0), carve=0.1, pigment_loss=0.15, tablet_lift_darks=0.65,
         trim="rosettes", corner="rose", relief=C(0.34, 0.02, 0.03), relief_hi=C(0.48, 0.04, 0.05), relief_ground=C(0.04, 0.03, 0.03),
         relief_metal=0.0, relief_smooth=0.45, relief_bump=6.0),
     "Apollo": dict(
