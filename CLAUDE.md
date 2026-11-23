@@ -84,6 +84,23 @@ Run saves (`Save/RunSave.cs`, JSON in `Application.persistentDataPath/run-save.j
 - One-off working notes (feature checklists, plans) are temporary: delete them once the feature is finished. Keep lasting design references like `Rituals.txt`.
 - **Subsystem notes:** when you learn something non-obvious about a subsystem (how it flows, where state lives, gotchas), add it to a `CLAUDE.md` in that subsystem's folder (e.g. `Assets/Scripts/Rituals/CLAUDE.md`) before finishing; create the file if needed. These load automatically when a session works in that folder. Keep them short and verified, and fix or delete anything you find stale. Project-wide rules stay in this root file.
 
+## AFK mode
+
+When the developer says they're going AFK (e.g. "Do X, I'm going afk"), they can't answer questions and you have as much time as you need. Work autonomously:
+
+- **No questions — decide and log.** Make the call with best judgement and record each judgement call (what you chose, the alternative, how to undo it). Between close options pick the most reversible. For visual choices it's fine to build both variants and leave side-by-side screenshots in `Claude/` for the developer to pick.
+- **Finish X properly first.** Compiles cleanly, verified in play mode, screenshots taken and actually looked at, edge cases tried. Thorough verification is the main value of unattended time.
+- **Then keep going, in this order:**
+  1. Natural follow-ons to X (the same fix on a sister screen, gaps found along the way).
+  2. Items from `Claude/Backlog.md` (developer-approved ideas), top first.
+  3. Low-risk cleanup in the agent lane: subsystem `CLAUDE.md` notes, small code-quality fixes.
+  Don't invent large self-directed features beyond these.
+- **One commit per finished, verified chunk**, so any part can be reverted on its own. Stage only your own files — never commit the developer's uncommitted work in progress.
+- **Hard limits, regardless of judgement:** no card text/stat/balance changes, no save-format changes, no deleting the developer's work, no pushing, nothing sent or posted outside the repo, nothing that risks the release build (dev shortcuts, Test Chamber). If the next step crosses one of these, stop that thread and move to the next.
+- **If something blocks you** (Unity/MCP down, a permission prompt you can avoid), switch to work that doesn't need it and note what couldn't be verified.
+- **Before going quiet:** ask the app to keep the machine awake for the session if that's available.
+- **When done:** send a push notification if available, and finish with a report: what was done, how it was verified, the decision log, anything needing the developer's eyes, and what you'd do next.
+
 ## Third-party assets
 
 Purchased store assets, free to use, edit or remake as needed: `Assets/Vefects`, `Assets/Hovl Studio`, `Assets/Stylized Terrain Textures`, and Linework Lite's Free Outline (`Packages/dev.ameye.linework-lite`, settings in `Assets/Outlines`; it already has Unity 6 render-graph support). Prefer copying before heavily modifying a shared asset that many prefabs use.
