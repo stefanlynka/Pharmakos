@@ -26,8 +26,10 @@
 
 ## Trinkets
 
-- Every trinket is a `ViewBuff` (prefab `Resources/Prefabs/View/ViewBuff`): the round art (`Sprite`, set at runtime) sits on `Base`, a squat black-and-gold marble cylinder (`Models/Meshes/TrinketBase.fbx`, material `Models/Materials/TrinketBase/TrinketMarble.mat`). Both are made by `Tools/Blender/build_trinket_base.py`; the side-wall texture is unwrapped from `Images/Icons/trinketBackdropBorder.png`.
-- `TrinketBase` (on `Base`) sizes the cylinder from the art in play mode, because instances use very different scales (event screen 50x50x1, starter bundles scale the art x2). Tune height and rim on the component, not the Transform. It also copies the art's layer so the offscreen popup cameras (layers 11/12) see it. It doesn't run in edit mode, so it never writes overrides into scenes.
+- Every trinket is a `ViewBuff` (prefab `Resources/Prefabs/View/ViewBuff`) shown on `Base`, a squat black-and-gold marble puck (`Models/Meshes/TrinketBase.fbx`, slots Side / Top rim / Inlay, materials in `Models/Materials/TrinketBase`). Mesh and marble textures come from `Tools/Blender/build_trinket_base.py`; the marble is unwrapped from `Images/Icons/trinketBackdropBorder.png`.
+- In play mode the art is drawn **on the model**: `TrinketBase` copies `Icon.sprite` into the inlay slot (MaterialPropertyBlock, `_BaseMap`/`_EmissionMap`/`_BaseMap_ST`) and sets `Icon.forceRenderingOff`. The inlay UVs show only the inner 86% of each icon, cropping the black-gold ring painted into every icon (the model's rim replaces it). Art brightness on dark boards = `TrinketInlay.mat`'s Emission colour. Trinket icons import with mipmaps and bias -0.5, otherwise they shimmer on the lit inlay.
+- `TrinketBase` also sizes the model from the art in play mode (instances use very different scales: event screen 50x50x1, starter bundles scale the art x2), so tune `Height`/`RadiusFit` on the component, not the Transform; position stays the prefab's. It copies the art's layer so the offscreen popup cameras (layers 11/12) see it. It doesn't run in edit mode, so it never writes overrides into scenes; in the editor the sprite still shows over the model.
+- The `Highlight` glow sprites must sit deeper than the inlay floor (ViewBuff local z ≥ ~0.07; the prefab uses 0.1), or they draw over the art.
 
 ## Ritual altars
 
