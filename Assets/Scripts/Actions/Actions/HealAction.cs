@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Unity.VisualScripting.Member;
 
 public class HealAction : GameAction
 {
@@ -43,7 +42,9 @@ public class HealAction : GameAction
         }
         else if (playerTarget != null)
         {
+            int healthBefore = playerTarget.Health;
             playerTarget.ChangeHealth(source, amount);
+            amountHealed = playerTarget.Health - healthBefore;
         }
 
         base.Execute(simulated);

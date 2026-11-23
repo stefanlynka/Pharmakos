@@ -76,6 +76,11 @@ public class ChangeStatsAnimation : AnimationAction
                     playDeathFlames = !player.IsHuman;
                 }
             }
+            else if (healthChange > 0)
+            {
+                // Doesn't hold the queue: healing keeps its existing pace, the wash just plays over it.
+                VfxLibrary.PortraitHealFlash().Play(new VfxContext(null, viewPlayer), null);
+            }
         }
 
 

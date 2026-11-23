@@ -182,6 +182,12 @@ public static class VfxLibrary
         return PortraitColorFlash(new Color(1f, 0.78f, 0.2f, 0.3f), duration);
     }
 
+    // Green wash when a player gains health. Same green as a follower's StatChangeTint buff.
+    public static PortraitColorFlashVfx PortraitHealFlash(float duration = 0.8f)
+    {
+        return PortraitColorFlash(new Color(0.25f, 0.95f, 0.3f, 0.3f), duration);
+    }
+
     // Red, white, green, or blue from the ritual's largest Blood, Bone, Crop, or Scroll cost.
     // Ties keep the earlier of those four. No positive cost falls back to white.
     public static PortraitColorFlashVfx PortraitOfferingFlash(Ritual ritual, float duration = 0.8f)
