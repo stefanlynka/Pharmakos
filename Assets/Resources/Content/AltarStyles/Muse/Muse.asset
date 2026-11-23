@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Muse
   m_EditorClassIdentifier: 
   Stone: {fileID: 2100000, guid: 5afd11eafcc5ff3489e0f64b8a80daa9, type: 2}
-  Panel: {fileID: 2100000, guid: db5ac42cfb91b4040a200120828ccfd1, type: 2}
+  Panel: {fileID: 2100000, guid: 5afd11eafcc5ff3489e0f64b8a80daa9, type: 2}
   Trim: {fileID: 2100000, guid: 42a618409dca0b2458e139023fe35b2e, type: 2}
   Corner: {fileID: 2100000, guid: ec45edfeb748a0246b86218c2a9891bf, type: 2}
   TextColor: {r: 0, g: 0, b: 0, a: 1}

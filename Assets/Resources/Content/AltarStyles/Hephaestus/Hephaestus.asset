@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Hephaestus
   m_EditorClassIdentifier: 
   Stone: {fileID: 2100000, guid: 473b08879c79a2348b0f78281445cf59, type: 2}
-  Panel: {fileID: 2100000, guid: d293d6e70d5205c4eaafc892c3af4bf0, type: 2}
+  Panel: {fileID: 2100000, guid: 473b08879c79a2348b0f78281445cf59, type: 2}
   Trim: {fileID: 2100000, guid: aca8f6415f49e9b4f974dc31cc48285c, type: 2}
   Corner: {fileID: 2100000, guid: b60f13815210dc641b00f3a1fe5f20aa, type: 2}
   TextColor: {r: 0.93, g: 0.89, b: 0.8, a: 1}

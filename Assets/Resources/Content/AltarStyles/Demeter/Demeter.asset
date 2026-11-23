@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Demeter
   m_EditorClassIdentifier: 
   Stone: {fileID: 2100000, guid: 262a3c79acec9f848a12ff16d77ee1d5, type: 2}
-  Panel: {fileID: 2100000, guid: 2eadd4b2bc8bac341a6f37b57c8860b1, type: 2}
+  Panel: {fileID: 2100000, guid: 262a3c79acec9f848a12ff16d77ee1d5, type: 2}
   Trim: {fileID: 2100000, guid: aa35444d13a438d4797721ea53e91f3c, type: 2}
   Corner: {fileID: 2100000, guid: 61dfa6d081ced4d42a1848d596ba46ac, type: 2}
-  TextColor: {r: 0, g: 0, b: 0, a: 1}
+  TextColor: {r: 0.93, g: 0.89, b: 0.8, a: 1}

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Athena
   m_EditorClassIdentifier: 
   Stone: {fileID: 2100000, guid: 817fd01f1f082e04db3601a03a0b77e8, type: 2}
-  Panel: {fileID: 2100000, guid: ebd66abba1720c740ae2e4deeffcd035, type: 2}
+  Panel: {fileID: 2100000, guid: 817fd01f1f082e04db3601a03a0b77e8, type: 2}
   Trim: {fileID: 2100000, guid: cee1f610b3c4f1f47982b22233365470, type: 2}
   Corner: {fileID: 2100000, guid: da06716eb3fe06b4f8816c53e56b80ef, type: 2}
   TextColor: {r: 0.93, g: 0.89, b: 0.8, a: 1}

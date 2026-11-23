@@ -21,7 +21,7 @@ Styles (every god in `Rituals.txt` has one; Default is the fallback):
 
 | God | Stone (body) | Border | Corner |
 |---|---|---|---|
-| Aphrodite | rose marble | rosette vine on wine red | rose |
+| Aphrodite | pale white marble, blood running down the steps (red text) | blood-red roses on black | rose |
 | Apollo | sunlit gold marble | gold sun rays | sun |
 | Ares | oxblood jasper | black spears on terracotta | round shield |
 | Athena | grey-green stone | silver olive branch | owl |
@@ -46,9 +46,15 @@ The styles follow shared rules so fifteen different altars still read as one set
 sits with the dark board. They live as constants at the top of `altar_textures.py`, so every style follows them.
 The ones marked (env) can also be set per run with an environment variable of the same name prefixed `ALTAR_`.
 
-- **One material.** The text panel is a calmer version of the god's own stone (`PANEL_LIFT_MAX` 0 (env
-  `ALTAR_PANEL_LIFT`); raise it toward 1 to pull panels toward a shared cream, `PANEL_TINT` sets how much god hue
-  that cream keeps). After changing it, run **Tools → Altar Kit → Reset Text Colours From Panels**.
+- **One material.** Each style's Panel slot points at its **Stone** material, so the text faces are the same rough
+  stone as the body (the calmer `<God>_Panel` material still exists; drag it back into the Panel slot to undo).
+  - **Exception, Tablet:** a style whose stone carries stains that mustn't run under the rules text (Aphrodite's
+    `blood`) also gets `Tablet_Albedo` / `Tablet_Mask`: the same stone without them. The builder makes
+    `<God>_Tablet.mat` from them (a copy of Stone) and puts it in the Panel slot.
+  - Text colour: run **Tools → Altar Kit → Reset Text Colours From Panels**. It reads the texture of whatever
+    material is in the Panel slot; light text unless the panel is genuinely pale (brightness ≥ 0.62 gets black).
+    It overwrites hand-picked colours, so re-apply them afterwards (Aphrodite: red, 0.8, 0, 0).
+  - `PANEL_LIFT_MAX` / `PANEL_TINT` (env `ALTAR_PANEL_LIFT`) only affect the unused Panel textures now.
 - **Muted, aged colour** (`STONE_SAT` 0.7, env): every stone loses some saturation.
 - **Matte, weathered stone** (`MATTE_STONE`, `MATTE_RELIEF`, `WEATHER`): low smoothness like the terracotta, grime
   patches, pitting, grime in the recesses beside the carving and rubbed-light highs on the motifs.
@@ -61,7 +67,10 @@ The ones marked (env) can also be set per run with an environment variable of th
     unevenly.
   - `RELIEF_DEPTH` 1.5: deeper normal maps, so the carving reads by light.
 - **Sacrificial wear** (`STAINS` 1, env): soot clouding, dark libation streaks running down the sides and along the
-  steps, old stains pooled in the recesses.
+  steps, old stains pooled in the recesses. A style can add `blood=dict(count, width, length, amount)`: streams of
+  fresh (glossy) and dried blood with rounded starts and drops, on the body only (see Tablet).
+- **Per-style overrides:** `carve` and `pigment_loss` override the global values (Aphrodite keeps its red and black
+  crisp with `carve=0.1, pigment_loss=0.15`).
 - **Warm palette.** Prefer warm stones; a cool god's colour is muted onto the body and border ground.
 - **Warm light, grounded.** The altar spotlight is warm (`ViewRitual3` → `Spot Light`, colour ≈ `#FFE0B8`) and
   `AltarContactShadow` on `Altar2` draws a soft shadow round the footprint (Graphics.DrawMesh, shape from the

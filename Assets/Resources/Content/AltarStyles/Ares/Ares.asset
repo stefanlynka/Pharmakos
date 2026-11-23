@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Ares
   m_EditorClassIdentifier: 
   Stone: {fileID: 2100000, guid: 72f2b0c993dacb543bb9bd94bc7b96fb, type: 2}
-  Panel: {fileID: 2100000, guid: d1e782ae7c2587c4a8a58a8d42af7f55, type: 2}
+  Panel: {fileID: 2100000, guid: 72f2b0c993dacb543bb9bd94bc7b96fb, type: 2}
   Trim: {fileID: 2100000, guid: 9804d1a9315f5b545a648b7d238b4899, type: 2}
   Corner: {fileID: 2100000, guid: ff513828cc868ce449f9775cfda7039e, type: 2}
   TextColor: {r: 0.93, g: 0.89, b: 0.8, a: 1}

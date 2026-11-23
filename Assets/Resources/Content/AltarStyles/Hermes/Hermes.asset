@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Hermes
   m_EditorClassIdentifier: 
   Stone: {fileID: 2100000, guid: 3b9c0ccdcb7220540845dd7d702b496d, type: 2}
-  Panel: {fileID: 2100000, guid: 7705cf86765e4cd4a9f2d44edb4bcbdd, type: 2}
+  Panel: {fileID: 2100000, guid: 3b9c0ccdcb7220540845dd7d702b496d, type: 2}
   Trim: {fileID: 2100000, guid: 8ae085b244285c0458e154504bd22836, type: 2}
   Corner: {fileID: 2100000, guid: 3557e4497e0aff9418e2dea348df10b9, type: 2}
   TextColor: {r: 0.93, g: 0.89, b: 0.8, a: 1}

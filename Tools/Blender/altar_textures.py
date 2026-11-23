@@ -207,28 +207,54 @@ def weather(alb, hgt, seed):
     return alb, hgt, rough
 
 
+def run_streaks(n, seed, count, width, length, strength, wander_px=24):
+    """Tileable field (0..1) of streaks running down the texture (v decreasing), each widest where it starts and
+    tapering as it runs; texture v runs up the altar's sides and along the steps on their tops."""
+    r = np.random.default_rng(seed)
+    out = np.zeros((n, n))
+    rows = np.arange(n)[:, None]
+    cols = np.arange(n)[None, :]
+    wander = (fbm(n, n, 3.2, seed + 1) - 0.5) * wander_px     # streaks drift sideways as they run
+    for _ in range(count):
+        cx = r.uniform(0, n)
+        w = r.uniform(*width)
+        top = r.uniform(0, n)
+        ln = r.uniform(*length)
+        st = r.uniform(*strength)
+        dy = (top - rows) % n                                 # distance below the start, wrapping so it tiles
+        along = np.clip(dy / ln, 0, 1)
+        dx = np.abs(((cols - cx - wander + n / 2) % n) - n / 2)
+        # Rounded where it starts, thinning as it runs, ending in a heavier drop.
+        taper = w * (1 - 0.6 * along) * np.sqrt(np.clip(dy / w, 0, 1))
+        drop = w * 0.55 * np.exp(-((ln - dy) / (w * 0.7)) ** 2)
+        taper = np.maximum(taper, drop * (dy < ln + w))
+        body = smoothstep(taper, taper * 0.4, dx) * (dy < ln + w)
+        out = np.maximum(out, body * st * np.maximum((1 - along) ** 0.7, 0.5 * (drop > 0.2 * w)))
+    return out
+
+
+def blood_streams(alb, seed, b):
+    """Blood run down the stone in streams: fresh red in the middle of each, dried dark at the edges and tails, with
+    a few drips and splashes. Returns the albedo and a wetness mask (fresh blood is glossy)."""
+    n = alb.shape[0]
+    field = run_streaks(n, seed + 60, b.get("count", 14), b.get("width", (8, 26)), b.get("length", (250, 900)),
+                        (0.7, 1.0), wander_px=40)
+    field *= 0.8 + 0.2 * fbm(n, n, 2.6, seed + 61)
+    drops = smoothstep(0.9, 0.93, fbm(n, n, 1.2, seed + 62)) * 0.8
+    cover = np.clip(smoothstep(0.08, 0.35, field) + drops, 0, 1) * b.get("amount", 1.0)
+    fresh = smoothstep(0.35, 0.8, field)                      # the core of a stream stays wet and bright
+    colour = lerp(np.broadcast_to(b.get("dried", C(0.17, 0.03, 0.03)), alb.shape),
+                  np.broadcast_to(b.get("fresh", C(0.40, 0.02, 0.03)), alb.shape), fresh)
+    alb = lerp(alb, colour, cover)
+    return alb, cover * fresh
+
+
 def ritual_stains(alb, seed):
     """Sacrificial wear: soot clouding, dark libation streaks running down (texture v runs up the altar's sides,
     and along the steps on their tops), and a few old pooled stains."""
     n = alb.shape[0]
-    r = np.random.default_rng(seed + 40)
     soot = smoothstep(0.55, 0.95, fbm(n, n, 3.0, seed + 30)) * 0.35
-    streaks = np.zeros((n, n))
-    rows = np.arange(n)[:, None]
-    cols = np.arange(n)[None, :]
-    wander = (fbm(n, n, 3.2, seed + 31) - 0.5) * 24          # streaks drift sideways as they run
-    for _ in range(9):
-        cx = r.uniform(0, n)
-        width = r.uniform(6, 18)
-        top = r.uniform(0, n)
-        length = r.uniform(120, 520)
-        strength = r.uniform(0.25, 0.55)
-        dy = (top - rows) % n                                 # distance below the start, wrapping so it tiles
-        along = np.clip(dy / length, 0, 1)
-        dx = np.abs(((cols - cx - wander + n / 2) % n) - n / 2)
-        taper = width * (1 - 0.6 * along)
-        body = smoothstep(taper, 0.0, dx) * (dy < length)
-        streaks = np.maximum(streaks, body * strength * (1 - along) ** 0.7)
+    streaks = run_streaks(n, seed + 40, 9, (6, 18), (120, 520), (0.25, 0.55))
     streaks *= 0.6 + 0.4 * fbm(n, n, 1.4, seed + 32)
     pools = smoothstep(0.78, 0.92, fbm(n, n, 2.6, seed + 33)) * 0.45
     k = STAINS
@@ -241,9 +267,16 @@ def stone_set(s, folder, seed):
     alb, hgt = marble(1024, s, seed)
     alb, hgt, rough = weather(alb, hgt, seed)
     alb = ritual_stains(alb, seed)
+    gloss = s.get("stone_smooth", 0.45) * MATTE_STONE * (0.85 + 0.3 * fbm(1024, 1024, 1.5, seed + 9)) * (1 - rough)
+    if "blood" in s:
+        # The text faces get the same rough stone without the blood (Tablet_*), so the rules stay readable;
+        # the blood runs down the steps and sides only.
+        save("Tablet_Albedo", folder, rgba(alb))
+        save("Tablet_Mask", folder, mask(0.0, gloss))
+        alb, wet = blood_streams(alb, seed, s["blood"])
+        gloss = np.maximum(gloss, wet * 0.55)                 # fresh blood catches the light
     save("Stone_Albedo", folder, rgba(alb))
     save("Stone_Normal", folder, normal_from_height(hgt, s.get("stone_bump", 2.0)))
-    gloss = s.get("stone_smooth", 0.45) * MATTE_STONE * (0.85 + 0.3 * fbm(1024, 1024, 1.5, seed + 9)) * (1 - rough)
     save("Stone_Mask", folder, mask(0.0, gloss))
     # Panel: same stone, pulled toward its average colour so text stays readable.
     mean = alb.reshape(-1, 3).mean(0)
@@ -679,11 +712,13 @@ def relief_set(s, folder, prefix, hgt, wrap_x, seed=11):
     # they get rubbed, while paint survives in the recesses.
     fig_bare = np.broadcast_to(np.clip(stone * 1.12 + 0.03, 0, 1), (h, w, 3))
     gnd_bare = np.broadcast_to(stone * 0.55, (h, w, 3))
-    fig = lerp(fig_paint, fig_bare, np.full((h, w), CARVE))
-    gnd = lerp(gnd_paint, gnd_bare, np.full((h, w), CARVE * 0.6))
+    carve = s.get("carve", CARVE)
+    fig = lerp(fig_paint, fig_bare, np.full((h, w), carve))
+    gnd = lerp(gnd_paint, gnd_bare, np.full((h, w), carve * 0.6))
     flake = smoothstep(0.35, 0.75, fbm(h, w, 2.2, seed + 1))
-    fig_loss = np.clip(PIGMENT_LOSS * 1.3 * flake + 0.15 * smoothstep(0.7, 1.0, hgt), 0, 1)
-    gnd_loss = np.clip(PIGMENT_LOSS * 0.7 * flake, 0, 1)
+    loss = s.get("pigment_loss", PIGMENT_LOSS)
+    fig_loss = np.clip(loss * 1.3 * flake + 0.15 * smoothstep(0.7, 1.0, hgt), 0, 1)
+    gnd_loss = np.clip(loss * 0.7 * flake, 0, 1)
     fig = lerp(fig, fig_bare, fig_loss)
     gnd = lerp(gnd, gnd_bare, gnd_loss)
     # Grime settles in the ground right next to the carving, like ambient occlusion.
@@ -771,10 +806,11 @@ STYLES = {
         trim="lightning", corner="bolt", relief=C(0.80, 0.60, 0.22), relief_hi=C(0.98, 0.84, 0.45), relief_ground=C(0.10, 0.10, 0.13),
         relief_metal=0.45, relief_smooth=0.6, relief_bump=6.0),
     "Aphrodite": dict(
-        stone_dark=C(0.66, 0.38, 0.40), stone_light=C(0.86, 0.62, 0.60), vein=C(0.97, 0.92, 0.88), vein2=C(0.45, 0.10, 0.14),
-        vein_amount=0.8, vein_width=0.08, fine_veins=0.35, warp=1.3, vein_dir=(1, 2), stone_smooth=0.55, panel_calm=0.7,
-        trim="rosettes", corner="rose", relief=C(0.88, 0.62, 0.52), relief_hi=C(0.98, 0.84, 0.76), relief_ground=C(0.38, 0.10, 0.13),
-        relief_metal=0.35, relief_smooth=0.55, relief_bump=6.0),
+        stone_dark=C(0.80, 0.76, 0.71), stone_light=C(0.94, 0.92, 0.88), vein=C(0.58, 0.54, 0.52), vein_amount=0.45,
+        vein_width=0.03, fine_veins=0.3, warp=1.3, vein_dir=(1, 2), stone_smooth=0.5, panel_calm=0.7,
+        blood=dict(count=22, width=(12, 34), length=(300, 1000), amount=1.0), carve=0.1, pigment_loss=0.15,
+        trim="rosettes", corner="rose", relief=C(0.34, 0.02, 0.03), relief_hi=C(0.48, 0.04, 0.05), relief_ground=C(0.04, 0.03, 0.03),
+        relief_metal=0.0, relief_smooth=0.45, relief_bump=6.0),
     "Apollo": dict(
         stone_dark=C(0.80, 0.70, 0.50), stone_light=C(0.94, 0.88, 0.72), vein=C(0.72, 0.55, 0.28), vein_amount=0.5, vein_width=0.05,
         fine_veins=0.3, warp=1.2, vein_dir=(1, 2), stone_smooth=0.5, panel_calm=0.7,

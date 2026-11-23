@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Hestia
   m_EditorClassIdentifier: 
   Stone: {fileID: 2100000, guid: e368b235a95887845b1b4b1fb7be5f67, type: 2}
-  Panel: {fileID: 2100000, guid: b844c4cec0b1b5a488e4e865242b18c1, type: 2}
+  Panel: {fileID: 2100000, guid: e368b235a95887845b1b4b1fb7be5f67, type: 2}
   Trim: {fileID: 2100000, guid: 8e5d853cd3942ad489ed949637eec1bf, type: 2}
   Corner: {fileID: 2100000, guid: b4c82edecf5ff5b4e93036d0e7db2bc3, type: 2}
   TextColor: {r: 0.93, g: 0.89, b: 0.8, a: 1}

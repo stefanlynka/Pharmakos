@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Zeus
   m_EditorClassIdentifier: 
   Stone: {fileID: 2100000, guid: 20eb0c0b00b5adf44b9638c7b9ede5c0, type: 2}
-  Panel: {fileID: 2100000, guid: a69c17b70a246064d9a0b6f7335c50f7, type: 2}
+  Panel: {fileID: 2100000, guid: 20eb0c0b00b5adf44b9638c7b9ede5c0, type: 2}
   Trim: {fileID: 2100000, guid: 77582f606f674b349b0176deed81fad9, type: 2}
   Corner: {fileID: 2100000, guid: a8375e6f9f5008842a9dda2241e12230, type: 2}
   TextColor: {r: 0.93, g: 0.89, b: 0.8, a: 1}

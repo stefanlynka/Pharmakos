@@ -21,8 +21,9 @@ public static class AltarStyleBuilder
     }
 
     /// <summary>
-    /// Re-picks every style's rules text colour (black or cream) from its panel texture. Run it after regenerating
-    /// the textures with a different panel setting; it overwrites the TextColor you see on each style asset.
+    /// Re-picks every style's rules text colour (black or cream) from the texture of the material in its Panel slot.
+    /// Run it after regenerating textures or swapping the panel material; it overwrites the TextColor you see on each
+    /// style asset, so re-apply any hand-picked colours (e.g. Aphrodite's red) afterwards.
     /// </summary>
     [MenuItem("Tools/Altar Kit/Reset Text Colours From Panels")]
     public static void ResetTextColours()
@@ -34,7 +35,7 @@ public static class AltarStyleBuilder
             var style = AssetDatabase.LoadAssetAtPath<AltarStyle>(folder + "/" + god + ".asset");
             if (style == null)
                 continue;
-            Color wanted = TextColourFor(folder);
+            Color wanted = TextColourFor(folder, style);
             if (style.TextColor == wanted)
                 continue;
             Undo.RecordObject(style, "Reset Altar Text Colour");
@@ -44,8 +45,11 @@ public static class AltarStyleBuilder
         AssetDatabase.SaveAssets();
     }
 
+    // Light text unless the panel is genuinely pale: on the rough stone, black only reads on the lightest stones.
     // Pure black, not a dark tint: the altar text's TMP material renders dark tints washed out.
-    static Color TextColourFor(string folder) => PanelIsDark(folder) ? new Color(0.93f, 0.89f, 0.80f) : Color.black;
+    const float DarkTextMinBrightness = 0.62f;
+    static Color TextColourFor(string folder, AltarStyle style) =>
+        PanelBrightness(folder, style) < DarkTextMinBrightness ? new Color(0.93f, 0.89f, 0.80f) : Color.black;
 
     public static AltarStyle Build(string folder)
     {
@@ -59,13 +63,20 @@ public static class AltarStyleBuilder
             style = ScriptableObject.CreateInstance<AltarStyle>();
 
         if (style.Stone == null) style.Stone = MakeMaterial(folder, god, "Stone", "Stone_Albedo", "Stone_Normal", "Stone_Mask", 1f, 0.8f);
-        if (style.Panel == null) style.Panel = MakeMaterial(folder, god, "Panel", "Panel_Albedo", "Stone_Normal", "Stone_Mask", 0.35f, 0.6f);
+        // The text panel uses the Stone material too: the calmer Panel material read too smooth next to the rough
+        // stone. It is still created, so a style can switch back by dragging it into the Panel slot.
+        Material panel = MakeMaterial(folder, god, "Panel", "Panel_Albedo", "Stone_Normal", "Stone_Mask", 0.35f, 0.6f);
+        if (style.Panel == null) style.Panel = style.Stone != null ? style.Stone : panel;
+        // Styles with stains that mustn't run under the rules text (Aphrodite's blood) ship a Tablet texture set:
+        // the same stone without them. Its material copies Stone and takes over the Panel slot from Stone.
+        Material tablet = MakeTablet(folder, god, style.Stone);
+        if (tablet != null && style.Panel == style.Stone) style.Panel = tablet;
         if (style.Trim == null) style.Trim = MakeMaterial(folder, god, "Trim", "Trim_Albedo", "Trim_Normal", "Trim_Mask", 1f, 0.9f);
         if (style.Corner == null) style.Corner = MakeMaterial(folder, god, "Corner", "Corner_Albedo", "Corner_Normal", "Corner_Mask", 1f, 0.9f);
 
         if (isNew)
         {
-            style.TextColor = TextColourFor(folder);
+            style.TextColor = TextColourFor(folder, style);
             AssetDatabase.CreateAsset(style, stylePath);
         }
         EditorUtility.SetDirty(style);
@@ -96,6 +107,24 @@ public static class AltarStyleBuilder
             material.EnableKeyword("_METALLICSPECGLOSSMAP");
         }
         material.SetFloat("_Smoothness", smoothness);
+        AssetDatabase.CreateAsset(material, path);
+        return material;
+    }
+
+    static Material MakeTablet(string folder, string god, Material stone)
+    {
+        Texture2D albedo = Load(folder, "Tablet_Albedo");
+        if (albedo == null || stone == null)
+            return null;
+        string path = folder + "/" + god + "_Tablet.mat";
+        var existing = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (existing != null)
+            return existing;
+        var material = new Material(stone) { name = god + "_Tablet" };
+        material.SetTexture("_BaseMap", albedo);
+        Texture2D maskMap = Load(folder, "Tablet_Mask");
+        if (maskMap != null)
+            material.SetTexture("_MetallicGlossMap", maskMap);
         AssetDatabase.CreateAsset(material, path);
         return material;
     }
@@ -143,17 +172,27 @@ public static class AltarStyleBuilder
         }
     }
 
-    static bool PanelIsDark(string folder)
+    /// <summary>Average brightness of the panel: the Panel material's base map times its colour (Panel_Albedo.png if
+    /// there is no material yet).</summary>
+    public static float PanelBrightness(string folder, AltarStyle style)
     {
         string path = folder + "/Panel_Albedo.png";
+        Color tint = Color.white;
+        if (style != null && style.Panel != null)
+        {
+            Texture baseMap = style.Panel.GetTexture("_BaseMap");
+            if (baseMap != null)
+                path = AssetDatabase.GetAssetPath(baseMap);
+            tint = style.Panel.GetColor("_BaseColor");
+        }
         if (!File.Exists(path))
-            return false;
+            return 1f;
         var texture = new Texture2D(2, 2);
         texture.LoadImage(File.ReadAllBytes(path));
         float sum = 0f;
-        for (int i = 0; i < 16; i++)
-            sum += texture.GetPixelBilinear((i % 4 + 0.5f) / 4f, (i / 4 + 0.5f) / 4f).grayscale;
+        for (int i = 0; i < 64; i++)
+            sum += (texture.GetPixelBilinear((i % 8 + 0.5f) / 8f, (i / 8 + 0.5f) / 8f) * tint).grayscale;
         Object.DestroyImmediate(texture);
-        return sum / 16f < 0.45f;
+        return sum / 64f;
     }
 }

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Apollo
   m_EditorClassIdentifier: 
   Stone: {fileID: 2100000, guid: 68a9bf8e6408e5e4db8e6c672b0253a9, type: 2}
-  Panel: {fileID: 2100000, guid: 5e3a69cc821d36b4984a8ee273f9cebe, type: 2}
+  Panel: {fileID: 2100000, guid: 68a9bf8e6408e5e4db8e6c672b0253a9, type: 2}
   Trim: {fileID: 2100000, guid: 0eed74d33c268714bbc6e4a7c13681ff, type: 2}
   Corner: {fileID: 2100000, guid: b0979fbdb62ed9941a468d8131c43ace, type: 2}
   TextColor: {r: 0, g: 0, b: 0, a: 1}
