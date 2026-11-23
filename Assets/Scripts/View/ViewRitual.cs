@@ -420,8 +420,12 @@ public class ViewRitual : ViewTarget
 
         if (spotlightPhase == SpotlightPhase.Hold)
         {
+            // Re-apply while unusable too: the resting profile set on Awake/OnEnable can be the display
+            // one if View wasn't ready yet, and Hold would otherwise never correct it.
             if (spotlightIsUsable)
                 UpdateUsablePulse();
+            else
+                ApplySpotlight(UnusableSpotlight());
             return;
         }
 
