@@ -1205,7 +1205,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2736570632344991359, guid: ff3e69b4be619bf43817ab6cc61454ab, type: 2}
+  - {fileID: 2100000, guid: e83d3afdee9334e46adf4fa13dd090dc, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1250,7 +1250,7 @@ MonoBehaviour:
   m_text: Summon the Cetus
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ff3e69b4be619bf43817ab6cc61454ab, type: 2}
-  m_sharedMaterial: {fileID: 2736570632344991359, guid: ff3e69b4be619bf43817ab6cc61454ab, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: e83d3afdee9334e46adf4fa13dd090dc, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1845,7 +1845,7 @@ Light:
   serializedVersion: 10
   m_Type: 0
   m_Shape: 0
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.88, b: 0.72, a: 1}
   m_Intensity: 150
   m_Range: 25
   m_SpotAngle: 55
@@ -5322,7 +5322,7 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: 33e4c4b85cd7bf8438e3aa1e47d1e548, type: 3}
       propertyPath: m_Materials.Array.data[1]
       value: 
-      objectReference: {fileID: 2100000, guid: 21e84e2c91ac4db44b7e1c123c2346b2, type: 2}
+      objectReference: {fileID: 2100000, guid: d6514960397863540828890c14946c82, type: 2}
     - target: {fileID: -7511558181221131132, guid: 33e4c4b85cd7bf8438e3aa1e47d1e548, type: 3}
       propertyPath: m_Materials.Array.data[2]
       value: 
@@ -5331,6 +5331,10 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[3]
       value: 
       objectReference: {fileID: 2100000, guid: 7db84bd1be2130747915c691bf88934b, type: 2}
+    - target: {fileID: -7511558181221131132, guid: 33e4c4b85cd7bf8438e3aa1e47d1e548, type: 3}
+      propertyPath: m_Materials.Array.data[4]
+      value: 
+      objectReference: {fileID: 2100000, guid: d6514960397863540828890c14946c82, type: 2}
     - target: {fileID: -5754084199372789682, guid: 33e4c4b85cd7bf8438e3aa1e47d1e548, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -5352,6 +5356,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 33e4c4b85cd7bf8438e3aa1e47d1e548, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5095799521245651593}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 33e4c4b85cd7bf8438e3aa1e47d1e548, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6879854209072229248}
   m_SourcePrefab: {fileID: 100100000, guid: 33e4c4b85cd7bf8438e3aa1e47d1e548, type: 3}
 --- !u!1 &1280651054268714563 stripped
 GameObject:
@@ -5388,6 +5395,22 @@ MonoBehaviour:
   Intensity: 1
   FadeSpeed: 3
   PreviewInEditor: 0
+--- !u!114 &6879854209072229248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1280651054268714563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67d0adaa4d7380141a1fb42b9cac3352, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Material: {fileID: 2100000, guid: 723888ba30515aa489b5cf73eadd2aad, type: 2}
+  Spread: 0.22
+  Inset: 0.03
+  Lift: 0.002
 --- !u!4 &1913495435366552825 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 33e4c4b85cd7bf8438e3aa1e47d1e548, type: 3}

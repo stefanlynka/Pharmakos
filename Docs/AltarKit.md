@@ -6,11 +6,15 @@ Every ritual altar uses one generated mesh, `Assets/Resources/Models/Meshes/Alta
 | Slot | Covers | Texture layout |
 |---|---|---|
 | 0 Stone | body, steps, slab sides | tileable square (repeats every ~0.55 altar units) |
-| 1 Panel | the two faces that carry the rules text and costs | tileable square; keep it calm so text reads |
+| 1 Panel | the table top that carries the rules text | tileable square (styles use their Stone material here) |
 | 2 Trim | raised border strips round both faces | 4:1 strip, tiles left–right; bottom edge of the image is the outer edge of the altar |
 | 3 Corner | raised corner blocks | square, no tiling |
+| 4 Ramp | the sloped face that carries the costs | tileable square, v runs up the slope; the style's `Ramp` field, empty = Panel |
 
-A god's look is an **AltarStyle** asset: those four materials plus the colour of the rules text.
+A god's look is an **AltarStyle** asset: those materials plus the colour of the rules text.
+
+The rules text uses its own material, `Assets/Fonts/AlegreyaSans/AlegreyaSans-Regular Altar.mat` (face dilate 0.2 and a
+thin dark outline), so it stays legible on the rough stone; change it there, not on the shared font material.
 
 - Styles live in `Assets/Resources/Content/AltarStyles/<God>/<God>.asset`, next to their textures and materials.
 - The god comes from the ritual's class name (`AphroditeMajor` → `Aphrodite`, see `Ritual.God`).
@@ -21,7 +25,7 @@ Styles (every god in `Rituals.txt` has one; Default is the fallback):
 
 | God | Stone (body) | Border | Corner |
 |---|---|---|---|
-| Aphrodite | pale white marble, blood running down the steps (red text) | blood-red roses on black | rose |
+| Aphrodite | pale white marble, blood running down the steps and ramp (red text) | blood-red roses on black | rose |
 | Apollo | sunlit gold marble | gold sun rays | sun |
 | Ares | oxblood jasper | black spears on terracotta | round shield |
 | Athena | grey-green stone | silver olive branch | owl |
@@ -138,6 +142,10 @@ blender -b --factory-startup --python Tools/Blender/build_altar_kit.py -- Assets
   `STEPS` and `STEP_INSET`.
 - **Rounded edges:** every block (steps, slab, ramp, border strips, corners) is built with shared vertices and bevelled. The widths are the `BEVEL_*` constants. `SMOOTH_ANGLE` keeps the bevels smooth-shaded and the real corners sharp.
 - **Ramp and slab:** the ramp stops at the slab's front face and below its top, so the ramp's border can't poke into the slab.
+- **Slot order:** Unity orders an FBX's submeshes by the first face that uses each material, not by slot index, so
+  the script sorts faces by slot before export. Without that a new slot (Ramp) lands mid-list and every material after
+  it shifts.
+- **Read/Write is on** in the import settings: the Linework outline bakes smoothed normals into UV8 at runtime.
 - **Reference mesh:** the old Meshy altar (`Altar2.fbx`) is only read for its transform, so the new mesh lands in the
   same space and the cost badges and text stay put. Keep that file.
 - **Unity import settings:**

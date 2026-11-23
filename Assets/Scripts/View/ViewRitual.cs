@@ -192,8 +192,8 @@ public class ViewRitual : ViewTarget
         ScrollsText.text = Ritual.GetCost(OfferingType.Scroll).ToString();
     }
 
-    // Dresses the altar in its god's style (AltarStyle): the four materials of the altar kit mesh and the colour of the
-    // rules text. Altars that aren't the kit mesh (four material slots) are left as authored.
+    // Dresses the altar in its god's style (AltarStyle): the materials of the altar kit mesh and the colour of the
+    // rules text. Altars that aren't the kit mesh (same slot count as the style) are left as authored.
     void ApplyAltarStyle()
     {
         AltarStyle style = AltarStyle.For(Ritual);

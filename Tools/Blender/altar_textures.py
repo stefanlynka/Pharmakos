@@ -808,7 +808,7 @@ STYLES = {
     "Aphrodite": dict(
         stone_dark=C(0.80, 0.76, 0.71), stone_light=C(0.94, 0.92, 0.88), vein=C(0.58, 0.54, 0.52), vein_amount=0.45,
         vein_width=0.03, fine_veins=0.3, warp=1.3, vein_dir=(1, 2), stone_smooth=0.5, panel_calm=0.7,
-        blood=dict(count=22, width=(12, 34), length=(300, 1000), amount=1.0), carve=0.1, pigment_loss=0.15,
+        blood=dict(count=11, width=(10, 26), length=(300, 900), amount=1.0), carve=0.1, pigment_loss=0.15,
         trim="rosettes", corner="rose", relief=C(0.34, 0.02, 0.03), relief_hi=C(0.48, 0.04, 0.05), relief_ground=C(0.04, 0.03, 0.03),
         relief_metal=0.0, relief_smooth=0.45, relief_bump=6.0),
     "Apollo": dict(

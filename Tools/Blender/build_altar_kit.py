@@ -2,10 +2,11 @@
 
 The altar is generated, not sculpted, so every face has clean UVs and a known material slot:
   0 Stone   body, steps and slab sides  (world-scale tiling UVs, 1 texture repeat per STONE_TILE units)
-  1 Panel   the two text faces (table top, ramp)  (world-scale tiling UVs)
+  1 Panel   the table top that carries the rules text  (world-scale tiling UVs)
   2 Trim    the raised border strips round each text face  (u runs along the strip in repeats, v = 0 outer edge .. 1 inner edge)
   3 Corner  the raised corner blocks  (0..1 square)
-Each god's look is then just four materials (see AltarStyle.cs). Dimensions match the old Meshy altar
+  4 Ramp    the sloped face that carries the costs  (tiling UVs; v runs up the slope)
+Each god's look is then just these materials (see AltarStyle.cs; Ramp falls back to Panel). Dimensions match the old Meshy altar
 (Altar2.fbx) so the cost badges and rules text that sit on it stay in place.
 
 Usage:
@@ -55,7 +56,7 @@ BEVEL_CORNER = 0.004
 BEVEL_SEGMENTS = 3
 SMOOTH_ANGLE = 40      # degrees; bevel facets (30 deg apart) shade smooth, the blocks' real corners stay sharp
 
-STONE, PANEL, TRIM, CORNER = 0, 1, 2, 3
+STONE, PANEL, TRIM, CORNER, RAMP = 0, 1, 2, 3, 4
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.fbx(filepath=ref_path)
@@ -150,7 +151,7 @@ def box(x0, x1, y0, y1, z0, z1, top=True, bottom=False):
     quad([(x1, y0, z0), (x1, y1, z0), (x1, y1, z1), (x1, y0, z1)], c)   # right (+X)
 
 
-def framed_face(origin, u_axis, v_axis, width, height):
+def framed_face(origin, u_axis, v_axis, width, height, panel_slot=PANEL):
     """A text face with a raised border: inner Panel, four Trim strips, four Corner blocks.
     origin is the face's bottom-left corner; u_axis/v_axis are unit vectors across and up the face."""
     o, U, V = Vector(origin), Vector(u_axis), Vector(v_axis)
@@ -166,7 +167,7 @@ def framed_face(origin, u_axis, v_axis, width, height):
 
     # Panel
     corners = [(w, w), (width - w, w), (width - w, height - w), (w, height - w)]
-    add_face([P(u, v) for u, v in corners], PANEL, [world_uv(u, v) for u, v in corners], N)
+    add_face([P(u, v) for u, v in corners], panel_slot, [world_uv(u, v) for u, v in corners], N)
 
     def raised_rect(u0, v0, u1, v1, h, material, top_uvs, side_material=STONE):
         begin_solid()
@@ -229,15 +230,19 @@ quad([(-RAMP_X, RAMP_BACK, Z0), (RAMP_X, RAMP_BACK, Z0), (RAMP_X, RAMP_BACK, RAM
 end_solid(BEVEL_SLAB)
 slope = (bt - ft)
 slope_len = slope.length
-framed_face((-RAMP_X, RAMP_FRONT, RAMP_FRONT_TOP), (1, 0, 0), tuple(slope.normalized()), 2 * RAMP_X, slope_len)
+framed_face((-RAMP_X, RAMP_FRONT, RAMP_FRONT_TOP), (1, 0, 0), tuple(slope.normalized()), 2 * RAMP_X, slope_len, RAMP)
 
 # --- Finish ------------------------------------------------------------------
 mesh = bpy.data.meshes.new("AltarKit")
+# Unity orders submeshes by the first face that uses each material, not by slot index, so sort the faces by slot:
+# otherwise a slot added later (Ramp) can land in the middle and every material after it shifts.
+bm.faces.sort(key=lambda f: f.material_index)
+bm.faces.index_update()
 bm.to_mesh(mesh)
 bm.free()
 mesh.shade_smooth()
 mesh.set_sharp_from_angle(angle=math.radians(SMOOTH_ANGLE))
-for name in ("Stone", "Panel", "Trim", "Corner"):
+for name in ("Stone", "Panel", "Trim", "Corner", "Ramp"):
     mesh.materials.append(bpy.data.materials.new(name))
 
 obj = bpy.data.objects.new("AltarKit", mesh)
@@ -256,7 +261,7 @@ if preview_path:
     scene.display.shading.light = 'STUDIO'
     scene.display.shading.color_type = 'MATERIAL'
     scene.display.shading.show_backface_culling = True   # holes show up here exactly as in Unity
-    colors = {"Stone": (0.75, 0.72, 0.66, 1), "Panel": (0.9, 0.88, 0.8, 1), "Trim": (0.7, 0.5, 0.25, 1), "Corner": (0.3, 0.5, 0.6, 1)}
+    colors = {"Stone": (0.75, 0.72, 0.66, 1), "Panel": (0.9, 0.88, 0.8, 1), "Trim": (0.7, 0.5, 0.25, 1), "Corner": (0.3, 0.5, 0.6, 1), "Ramp": (0.8, 0.85, 0.9, 1)}
     for m in mesh.materials:
         m.diffuse_color = colors[m.name]
     cam = bpy.data.cameras.new("cam")
