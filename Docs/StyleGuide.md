@@ -101,3 +101,4 @@ Targeting arrows are black with orange edges; the edges glow ember (emission mas
 - 3D props (trinkets, braziers, lyre) are lit warm from firelight; avoid cool rim light and glossy plastic specular.
 - VFX use the palette: embers and fire in Terracotta/Gold, offerings in their offering colour. Particles must be large enough to read at 1080p.
 - Nothing important is cut off by the screen edge.
+- **Post-processing (proposed):** grade the world, never the UI. UI keeps its palette exactly (combat UI on a post-free overlay camera); the world gets Neutral tonemapping (not ACES: it crushes the dark board), a midtone lift so the board's carving reads, a gentle vignette and fine grain. Gameplay pulses (damage, ritual) may tint the edges briefly. Options and reasoning: `Docs/PostProcessing.md`.
