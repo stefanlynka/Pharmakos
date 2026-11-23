@@ -42,24 +42,32 @@ Major and Minor rituals of the same god share a style.
 
 ## Board-wide rules (cohesion)
 
-The styles follow shared rules so fifteen different altars still read as one set that sits with the pottery board.
-They live as constants at the top of `altar_textures.py`, so every style follows them:
+The styles follow shared rules so fifteen different altars still read as one set of old, used, carved stone that
+sits with the dark board. They live as constants at the top of `altar_textures.py`, so every style follows them.
+The ones marked (env) can also be set per run with an environment variable of the same name prefixed `ALTAR_`.
 
+- **One material.** The text panel is a calmer version of the god's own stone (`PANEL_LIFT_MAX` 0 (env
+  `ALTAR_PANEL_LIFT`); raise it toward 1 to pull panels toward a shared cream, `PANEL_TINT` sets how much god hue
+  that cream keeps). After changing it, run **Tools → Altar Kit → Reset Text Colours From Panels**.
+- **Muted, aged colour** (`STONE_SAT` 0.7, env): every stone loses some saturation.
 - **Matte, weathered stone** (`MATTE_STONE`, `MATTE_RELIEF`, `WEATHER`): low smoothness like the terracotta, grime
   patches, pitting, grime in the recesses beside the carving and rubbed-light highs on the motifs.
-- **A light text panel.** A dark or strongly coloured stone's text panel is pulled toward a shared cream
-  (`PANEL_CREAM`) while keeping some of the god's hue. This one dial sets the balance between cohesion and individuality:
-  - `PANEL_LIFT_MAX` (0 = the god's own stone, 1 = plain cream) and `PANEL_TINT` (how much god hue the cream keeps).
-  - Current: lift 0.45, tint 0.3. A plainer, more uniform set: lift 0.75, tint 0.15. Set them per run with the
-    `ALTAR_PANEL_LIFT` / `ALTAR_PANEL_TINT` environment variables, or per style with `panel_lift` / `panel_tint`.
-  - After changing it, run **Tools → Altar Kit → Reset Text Colours From Panels** to re-pick black or cream text.
-- **Bold borders.** The motif's colour fills its whole carving, so the border reads as a coloured band (figure and
-  ground, like pottery) at board distance. The band is the god's main signal on the board; the body stone mostly shows on
-  the steps.
-- **Warm palette.** Prefer warm stones; a cool god's colour goes on the body or the border ground, muted.
+- **Carved ornament, not painted bands.** The border is still the god's main signal on the board, but it reads as
+  relief with the remains of paint or gilding:
+  - `CARVE` 0.35 (env): how far border colours move toward the stone's own colour. Higher is more tone-on-tone and
+    gritty but less distinguishable at board distance (0.6 was too far: gods blurred together).
+  - `PIGMENT_LOSS` 0.4 (env): how much paint or gilding has flaked off, more on the raised parts.
+  - `WOBBLE`, `CHIPS`: hand-cut irregularity (no two repeats alike), eroded patches and chips; corner rims break
+    unevenly.
+  - `RELIEF_DEPTH` 1.5: deeper normal maps, so the carving reads by light.
+- **Sacrificial wear** (`STAINS` 1, env): soot clouding, dark libation streaks running down the sides and along the
+  steps, old stains pooled in the recesses.
+- **Warm palette.** Prefer warm stones; a cool god's colour is muted onto the body and border ground.
 - **Warm light, grounded.** The altar spotlight is warm (`ViewRitual3` → `Spot Light`, colour ≈ `#FFE0B8`) and
   `AltarContactShadow` on `Altar2` draws a soft shadow round the footprint (Graphics.DrawMesh, shape from the
   `AltarFlame` footprint; look on `Models/Materials/AltarContactShadow.mat`).
+- **Tried and dropped:** a cream text panel on every altar (readable, but looked like a label stuck on the block);
+  carved-looking rules text via a TMP underlay (invisible on dark stone, reads as raised on light stone).
 
 ## Tuning a style
 

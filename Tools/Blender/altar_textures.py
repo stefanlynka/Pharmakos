@@ -34,8 +34,16 @@ WEATHER = 1.0          # grime patches, pitting and worn edges; 0 = clean stone
 PANEL_CREAM = np.array((0.86, 0.81, 0.71))   # the shared tablet colour dark stones are lifted toward
 # The one dial between cohesion and individuality: how far a dark or coloured text panel is pulled toward the shared
 # cream tablet (0 = the god's own stone, 1 = plain cream), and how much of the god's hue the cream keeps.
-PANEL_LIFT_MAX = float(os.environ.get("ALTAR_PANEL_LIFT", 0.45))
+PANEL_LIFT_MAX = float(os.environ.get("ALTAR_PANEL_LIFT", 0.0))
 PANEL_TINT = float(os.environ.get("ALTAR_PANEL_TINT", 0.3))
+# Carved, aged ornament instead of clean painted bands.
+CARVE = float(os.environ.get("ALTAR_CARVE", 0.35))         # how far border colours move toward the stone's own colour
+PIGMENT_LOSS = float(os.environ.get("ALTAR_PIGMENT_LOSS", 0.4))  # how much of the old paint/gilding has flaked off
+WOBBLE = 1.0           # hand-cut irregularity in the motif lines (0 = geometric)
+CHIPS = 1.0            # chips and erosion breaking the carving
+RELIEF_DEPTH = 1.5     # scales every style's relief_bump: deeper carving, read by light rather than colour
+STAINS = float(os.environ.get("ALTAR_STAINS", 1.0))        # soot, libation streaks and old stains; 0 = none
+STONE_SAT = float(os.environ.get("ALTAR_STONE_SAT", 0.7))  # saturation kept by every stone (1 = as authored)
 
 
 # ---------------------------------------------------------------- helpers ---
@@ -178,6 +186,9 @@ def marble(size, s, seed):
         alb = lerp(alb, s["vein2"], np.exp(-(np.sin(p3) / (width * 0.35)) ** 2) * 0.6 * fade)
     grain = fbm(h, w, 2.0, seed + 3)
     alb = alb * (0.96 + 0.08 * grain[..., None])
+    # Muted, aged colour: every stone loses some saturation so the gods share one weathered palette.
+    grey = (alb @ np.array((0.3, 0.59, 0.11)))[..., None]
+    alb = grey + (alb - grey) * STONE_SAT
     height = 0.7 * cloud + 0.3 * grain - 0.15 * v
     return alb, height
 
@@ -196,9 +207,40 @@ def weather(alb, hgt, seed):
     return alb, hgt, rough
 
 
+def ritual_stains(alb, seed):
+    """Sacrificial wear: soot clouding, dark libation streaks running down (texture v runs up the altar's sides,
+    and along the steps on their tops), and a few old pooled stains."""
+    n = alb.shape[0]
+    r = np.random.default_rng(seed + 40)
+    soot = smoothstep(0.55, 0.95, fbm(n, n, 3.0, seed + 30)) * 0.35
+    streaks = np.zeros((n, n))
+    rows = np.arange(n)[:, None]
+    cols = np.arange(n)[None, :]
+    wander = (fbm(n, n, 3.2, seed + 31) - 0.5) * 24          # streaks drift sideways as they run
+    for _ in range(9):
+        cx = r.uniform(0, n)
+        width = r.uniform(6, 18)
+        top = r.uniform(0, n)
+        length = r.uniform(120, 520)
+        strength = r.uniform(0.25, 0.55)
+        dy = (top - rows) % n                                 # distance below the start, wrapping so it tiles
+        along = np.clip(dy / length, 0, 1)
+        dx = np.abs(((cols - cx - wander + n / 2) % n) - n / 2)
+        taper = width * (1 - 0.6 * along)
+        body = smoothstep(taper, 0.0, dx) * (dy < length)
+        streaks = np.maximum(streaks, body * strength * (1 - along) ** 0.7)
+    streaks *= 0.6 + 0.4 * fbm(n, n, 1.4, seed + 32)
+    pools = smoothstep(0.78, 0.92, fbm(n, n, 2.6, seed + 33)) * 0.45
+    k = STAINS
+    alb = lerp(alb, alb * C(0.12, 0.09, 0.08), k * soot)
+    alb = lerp(alb, alb * C(0.50, 0.30, 0.24), k * np.maximum(streaks, pools))
+    return alb
+
+
 def stone_set(s, folder, seed):
     alb, hgt = marble(1024, s, seed)
     alb, hgt, rough = weather(alb, hgt, seed)
+    alb = ritual_stains(alb, seed)
     save("Stone_Albedo", folder, rgba(alb))
     save("Stone_Normal", folder, normal_from_height(hgt, s.get("stone_bump", 2.0)))
     gloss = s.get("stone_smooth", 0.45) * MATTE_STONE * (0.85 + 0.3 * fbm(1024, 1024, 1.5, seed + 9)) * (1 - rough)
@@ -622,26 +664,56 @@ CORNERS.update({"sun": corner_sun, "shield": corner_shield, "owl": corner_owl, "
                 "flame": corner_flame, "peacock": corner_peacock, "coil": corner_coil})
 
 
-def relief_set(s, folder, prefix, hgt, wrap_x):
-    """Shared colouring for trims and corners: raised motif in the relief colour over a recessed ground."""
-    noise = fbm(hgt.shape[0], hgt.shape[1], 1.6, 11)
-    # Low threshold: the motif's colour spreads to the full width of its carving, so it reads as a bold figure
-    # against the ground at board distance (pottery-style figure and ground) rather than a thin highlight.
+def relief_set(s, folder, prefix, hgt, wrap_x, seed=11):
+    """Shared colouring for trims and corners: carved stone with the remains of old paint or gilding. The god's colours
+    survive as faded pigment (mostly in the recesses); where it has flaked off, the bare stone shows."""
+    h, w = hgt.shape
+    noise = fbm(h, w, 1.6, seed)
+    stone = (s["stone_dark"] + s["stone_light"]) / 2
     raised = smoothstep(0.04, 0.3, hgt)
-    ground = lerp(s["relief_ground"], s["relief_ground"] * 0.75, noise)
+    fig_paint = lerp(s["relief"], s["relief_hi"], smoothstep(0.6, 1.0, hgt) * (0.6 + 0.4 * noise))
+    if "patina" in s:
+        fig_paint = lerp(fig_paint, s["patina"], np.clip(smoothstep(0.55, 0.8, noise) * (1 - smoothstep(0.7, 1.0, hgt)), 0, 1) * 0.8)
+    gnd_paint = lerp(s["relief_ground"], s["relief_ground"] * 0.75, noise)
+    # Pull the paint toward the stone (CARVE), then flake it off in patches (PIGMENT_LOSS). Raised parts lose more:
+    # they get rubbed, while paint survives in the recesses.
+    fig_bare = np.broadcast_to(np.clip(stone * 1.12 + 0.03, 0, 1), (h, w, 3))
+    gnd_bare = np.broadcast_to(stone * 0.55, (h, w, 3))
+    fig = lerp(fig_paint, fig_bare, np.full((h, w), CARVE))
+    gnd = lerp(gnd_paint, gnd_bare, np.full((h, w), CARVE * 0.6))
+    flake = smoothstep(0.35, 0.75, fbm(h, w, 2.2, seed + 1))
+    fig_loss = np.clip(PIGMENT_LOSS * 1.3 * flake + 0.15 * smoothstep(0.7, 1.0, hgt), 0, 1)
+    gnd_loss = np.clip(PIGMENT_LOSS * 0.7 * flake, 0, 1)
+    fig = lerp(fig, fig_bare, fig_loss)
+    gnd = lerp(gnd, gnd_bare, gnd_loss)
     # Grime settles in the ground right next to the carving, like ambient occlusion.
     near = blur(hgt, 10, wrap_x)
-    ground = ground * (1 - WEATHER * 0.45 * np.clip(near - hgt, 0, 1) * 2)[..., None]
-    top = lerp(s["relief"], s["relief_hi"], smoothstep(0.6, 1.0, hgt) * (0.6 + 0.4 * noise))
-    if "patina" in s:
-        top = lerp(top, s["patina"], np.clip(smoothstep(0.55, 0.8, noise) * (1 - smoothstep(0.7, 1.0, hgt)), 0, 1) * 0.8)
+    gnd = gnd * (1 - WEATHER * 0.55 * np.clip(near - hgt, 0, 1) * 2)[..., None]
     # Worn highs: the very tops of the carving rubbed a little lighter.
-    top = lerp(top, np.minimum(top * 1.15 + 0.05, 1.0), WEATHER * smoothstep(0.85, 1.0, hgt) * smoothstep(0.4, 0.8, noise))
-    alb = lerp(ground, top, raised)
+    fig = lerp(fig, np.minimum(fig * 1.12 + 0.04, 1.0), WEATHER * smoothstep(0.85, 1.0, hgt) * smoothstep(0.4, 0.8, noise))
+    alb = lerp(gnd, fig, raised)
+    # Old stains pooled in the recesses, and a little soot over everything.
+    pool = smoothstep(0.72, 0.9, fbm(h, w, 2.4, seed + 2)) * (1 - raised) * 0.55
+    alb = lerp(alb, alb * C(0.40, 0.15, 0.11), STAINS * pool)
+    alb = lerp(alb, alb * C(0.25, 0.2, 0.18), STAINS * smoothstep(0.6, 0.95, fbm(h, w, 2.8, seed + 3)) * 0.3)
     save(prefix + "_Albedo", folder, rgba(alb))
-    save(prefix + "_Normal", folder, normal_from_height(hgt, s.get("relief_bump", 6.0), wrap_x=wrap_x, wrap_y=False))
+    save(prefix + "_Normal", folder, normal_from_height(hgt, s.get("relief_bump", 6.0) * RELIEF_DEPTH, wrap_x=wrap_x, wrap_y=False))
     smooth = (s.get("ground_smooth", 0.25) * (1 - raised) + s.get("relief_smooth", 0.5) * raised) * MATTE_RELIEF
-    save(prefix + "_Mask", folder, mask(s.get("relief_metal", 0.0) * raised, smooth))
+    metal = s.get("relief_metal", 0.0) * raised * (1 - fig_loss)          # gilding only where it survives
+    save(prefix + "_Mask", folder, mask(metal, smooth * (1 - 0.5 * fig_loss)))
+
+
+def hand_cut(hgt, seed):
+    """Break the geometric perfection: uneven depth (so strokes vary in width once thresholded), eroded patches and
+    chips knocked out of the carving."""
+    h, w = hgt.shape
+    depth = 0.8 + 0.4 * fbm(h, w, 2.5, seed + 4)
+    erosion = smoothstep(0.55, 0.88, fbm(h, w, 1.9, seed + 5))
+    chips = smoothstep(0.80, 0.86, fbm(h, w, 2.1, seed + 6))
+    out = hgt * (WOBBLE * depth + (1 - WOBBLE))
+    out = out * (1 - CHIPS * 0.4 * erosion)
+    out = out * (1 - CHIPS * 0.9 * chips) - CHIPS * 0.05 * chips
+    return np.clip(out, -0.05, 1)
 
 
 def blur(a, passes, wrap_x):
@@ -658,18 +730,27 @@ def blur(a, passes, wrap_x):
     return out
 
 
-def trim_set(s, folder):
+def trim_set(s, folder, seed):
     x, y = trim_grid()
+    h, w = x.shape
+    # Hand-cut wobble: the noise spans the whole strip (all four repeats), so no two repeats are quite alike.
+    x = x + WOBBLE * 0.035 * (fbm(h, w, 3.2, seed + 7) - 0.5) * 2
+    y = y + WOBBLE * 0.025 * (fbm(h, w, 3.2, seed + 8) - 0.5) * 2
     motif = MOTIFS[s["trim"]]
     hgt = np.maximum(wrapped(motif, x, y), fillets(y))
-    relief_set(s, folder, "Trim", hgt, True)
+    relief_set(s, folder, "Trim", hand_cut(hgt, seed), True, seed)
 
 
-def corner_set(s, folder):
+def corner_set(s, folder, seed):
     x, y = corner_grid()
-    rim = np.maximum(smoothstep(0.1, 0.05, np.minimum.reduce([x, y, 1 - x, 1 - y])), 0)
+    h, w = x.shape
+    x = x + WOBBLE * 0.012 * (fbm(h, w, 3.0, seed + 9) - 0.5) * 2
+    y = y + WOBBLE * 0.012 * (fbm(h, w, 3.0, seed + 10) - 0.5) * 2
+    # The rim breaks unevenly, so the block's edges read as chipped rather than machined.
+    edge = np.minimum.reduce([x, y, 1 - x, 1 - y]) - CHIPS * 0.03 * fbm(h, w, 1.8, seed + 11)
+    rim = np.maximum(smoothstep(0.1, 0.05, edge), 0)
     hgt = np.maximum(CORNERS[s["corner"]](x, y), rim * 0.8)
-    relief_set(s, folder, "Corner", hgt, False)
+    relief_set(s, folder, "Corner", hand_cut(hgt, seed + 20), False, seed + 50)
 
 
 # ---------------------------------------------------------------- styles ---
@@ -762,6 +843,6 @@ for i, (name, style) in enumerate(STYLES.items()):
     folder = os.path.join(OUT, name)
     os.makedirs(folder, exist_ok=True)
     stone_set(style, folder, 100 + i * 10)
-    trim_set(style, folder)
-    corner_set(style, folder)
+    trim_set(style, folder, 200 + i * 10)
+    corner_set(style, folder, 300 + i * 10)
     print("altar style", name, "->", folder)
