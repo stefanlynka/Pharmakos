@@ -230,7 +230,7 @@ public class OverworldMapNode : MonoBehaviour
 
     /// <summary>
     /// Floor = axial <see cref="R"/>: 0,1,2,….
-    /// One shop on R=0, two on R=4 and R=7. From R≥2, one temple per floor except R=7.
+    /// One shop on R=0, two on R=4 and R=7. From R≥2, one temple per floor except R=7 (none) and R=6 (two).
     /// Among remaining nodes, one event per floor (none on R=4, two on R=6); the rest combat.
     /// </summary>
     public static void AssignEncountersByFloorRules(OverworldMapNode[] nodes, CustomRandom rng)
@@ -309,8 +309,9 @@ public class OverworldMapNode : MonoBehaviour
         int templeTarget = 0;
         if (floor >= 2 && floor != 7)
         {
-            templeTarget = 1;
-            
+            // The floor before the second set of shops gets an extra temple.
+            templeTarget = floor == 6 ? 2 : 1;
+
             // bool oddFloor = (r & 1) != 0;
             // templeTarget = oddFloor
             //     ? Mathf.CeilToInt(nTotal / 3f)
