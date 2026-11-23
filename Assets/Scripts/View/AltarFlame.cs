@@ -104,20 +104,31 @@ public class AltarFlame : MonoBehaviour
     {
         if (mesh == null)
             mesh = new Mesh { name = "AltarFlame", hideFlags = HideFlags.DontSave };
+        BuildRing(mesh, Footprint, SegmentLength, -Inset, BaseHeight, Lean, BaseHeight + Height);
+    }
 
-        int n = Footprint.Length;
+    /// <summary>
+    /// Builds a ring of quads round a footprint outline (local x/z): the inner edge sits at <paramref name="innerOffset"/>
+    /// outward from the outline at height <paramref name="innerHeight"/>, the outer edge at <paramref name="outerOffset"/>
+    /// and <paramref name="outerHeight"/>. Corners are mitred so neighbouring sides meet without gaps.
+    /// uv.x runs along the outline in local units, uv.y is 0 on the inner edge and 1 on the outer edge.
+    /// </summary>
+    public static void BuildRing(Mesh mesh, Vector2[] footprint, float segmentLength, float innerOffset, float innerHeight,
+        float outerOffset, float outerHeight)
+    {
+        int n = footprint.Length;
         // Outward normal per edge; flip all of them if the outline runs the other way round.
         float area = 0f;
         for (int i = 0; i < n; i++)
         {
-            Vector2 a = Footprint[i], b = Footprint[(i + 1) % n];
+            Vector2 a = footprint[i], b = footprint[(i + 1) % n];
             area += a.x * b.y - b.x * a.y;
         }
         float side = area > 0f ? 1f : -1f;
         var edgeNormals = new Vector2[n];
         for (int i = 0; i < n; i++)
         {
-            Vector2 d = (Footprint[(i + 1) % n] - Footprint[i]).normalized;
+            Vector2 d = (footprint[(i + 1) % n] - footprint[i]).normalized;
             edgeNormals[i] = new Vector2(d.y, -d.x) * side;
         }
         // Mitred normal at each corner, so neighbouring sides meet without gaps.
@@ -135,9 +146,9 @@ public class AltarFlame : MonoBehaviour
         float u = 0f;
         for (int i = 0; i < n; i++)
         {
-            Vector2 a = Footprint[i], b = Footprint[(i + 1) % n];
+            Vector2 a = footprint[i], b = footprint[(i + 1) % n];
             float length = Vector2.Distance(a, b);
-            int segments = Mathf.Max(1, Mathf.CeilToInt(length / Mathf.Max(SegmentLength, 0.005f)));
+            int segments = Mathf.Max(1, Mathf.CeilToInt(length / Mathf.Max(segmentLength, 0.005f)));
             for (int s = 0; s <= segments; s++)
             {
                 float t = s / (float)segments;
@@ -146,10 +157,10 @@ public class AltarFlame : MonoBehaviour
                 float cornerWeight = Mathf.Max(1f - t * 4f, (t - 0.75f) * 4f, 0f);
                 Vector2 corner = t < 0.5f ? cornerNormals[i] : cornerNormals[(i + 1) % n];
                 Vector2 normal = Vector2.Lerp(edgeNormals[i], corner, cornerWeight);
-                Vector2 basePoint = p - normal * Inset;
-                Vector2 tipPoint = p + normal * Lean;
-                vertices.Add(new Vector3(basePoint.x, BaseHeight, basePoint.y));
-                vertices.Add(new Vector3(tipPoint.x, BaseHeight + Height, tipPoint.y));
+                Vector2 basePoint = p + normal * innerOffset;
+                Vector2 tipPoint = p + normal * outerOffset;
+                vertices.Add(new Vector3(basePoint.x, innerHeight, basePoint.y));
+                vertices.Add(new Vector3(tipPoint.x, outerHeight, tipPoint.y));
                 float uu = u + length * t;
                 uvs.Add(new Vector2(uu, 0f));
                 uvs.Add(new Vector2(uu, 1f));

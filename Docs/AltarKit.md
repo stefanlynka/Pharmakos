@@ -1,7 +1,7 @@
 # Altar kit
 
 Every ritual altar uses one generated mesh, `Assets/Resources/Models/Meshes/AltarKit.fbx` (120 faces, built by
-`Tools/Blender/build_altar_kit.py`). It has four material slots:
+`Tools/Blender/build_altar_kit.py`). It has four material slots (border strips are `TRIM_W` 0.09 wide, corner blocks `CORNER_W` 0.12):
 
 | Slot | Covers | Texture layout |
 |---|---|---|
@@ -19,26 +19,47 @@ A god's look is an **AltarStyle** asset: those four materials plus the colour of
 
 Styles (every god in `Rituals.txt` has one; Default is the fallback):
 
-| God | Stone | Border | Corner |
+| God | Stone (body) | Border | Corner |
 |---|---|---|---|
 | Aphrodite | rose marble | rosette vine on wine red | rose |
 | Apollo | sunlit gold marble | gold sun rays | sun |
-| Ares | oxblood jasper | iron spear | round shield |
+| Ares | oxblood jasper | black spears on terracotta | round shield |
 | Athena | grey-green stone | silver olive branch | owl |
 | Demeter | wheat sandstone | golden wheat ear on green | wheat ear |
-| Dionysus | amethyst marble | grapevine | grape cluster |
-| Hades | black basalt, violet veins | bones | skull |
+| Dionysus | wine-red marble | green-gold vine on black | grape cluster |
+| Hades | black basalt | bones | skull |
 | Hephaestus | forge-iron grey, molten cracks | bronze chain | hammer |
-| Hera | lapis blue, gold flecks | peacock feathers | peacock feather |
-| Hermes | sky-blue marble | silver wing feathers | caduceus |
+| Hera | muted lapis, gold veins | gold peacock feathers on lapis | peacock feather |
+| Hermes | weathered sky slate | cream wing feathers on blue | caduceus |
 | Hestia | hearth terracotta | hearth fires | fire on a hearth |
 | Muse | ivory, ink veins | dark egg-and-dart | lyre |
-| Old Ones | serpentine green | coiling serpent | serpent coil |
+| Old Ones | dark umber stone | verdigris serpent | serpent coil |
 | Poseidon | teal marble | bronze wave scroll | trident |
 | Zeus | storm slate | gold lightning | thunderbolt |
 | Default | cream marble | carved key | rosette |
 
 Major and Minor rituals of the same god share a style.
+
+## Board-wide rules (cohesion)
+
+The styles follow shared rules so fifteen different altars still read as one set that sits with the pottery board.
+They live as constants at the top of `altar_textures.py`, so every style follows them:
+
+- **Matte, weathered stone** (`MATTE_STONE`, `MATTE_RELIEF`, `WEATHER`): low smoothness like the terracotta, grime
+  patches, pitting, grime in the recesses beside the carving and rubbed-light highs on the motifs.
+- **A light text panel.** A dark or strongly coloured stone's text panel is pulled toward a shared cream
+  (`PANEL_CREAM`) while keeping some of the god's hue. This one dial sets the balance between cohesion and individuality:
+  - `PANEL_LIFT_MAX` (0 = the god's own stone, 1 = plain cream) and `PANEL_TINT` (how much god hue the cream keeps).
+  - Current: lift 0.45, tint 0.3. A plainer, more uniform set: lift 0.75, tint 0.15. Set them per run with the
+    `ALTAR_PANEL_LIFT` / `ALTAR_PANEL_TINT` environment variables, or per style with `panel_lift` / `panel_tint`.
+  - After changing it, run **Tools → Altar Kit → Reset Text Colours From Panels** to re-pick black or cream text.
+- **Bold borders.** The motif's colour fills its whole carving, so the border reads as a coloured band (figure and
+  ground, like pottery) at board distance. The band is the god's main signal on the board; the body stone mostly shows on
+  the steps.
+- **Warm palette.** Prefer warm stones; a cool god's colour goes on the body or the border ground, muted.
+- **Warm light, grounded.** The altar spotlight is warm (`ViewRitual3` → `Spot Light`, colour ≈ `#FFE0B8`) and
+  `AltarContactShadow` on `Altar2` draws a soft shadow round the footprint (Graphics.DrawMesh, shape from the
+  `AltarFlame` footprint; look on `Models/Materials/AltarContactShadow.mat`).
 
 ## Tuning a style
 
@@ -65,8 +86,11 @@ Edit its four materials and the style asset in the inspector. That is the source
 Placeholder textures can be generated procedurally:
 
 ```
-blender -b --factory-startup --python Tools/Blender/altar_textures.py -- Assets/Resources/Content/AltarStyles <God>
+blender -b --factory-startup --python Tools/Blender/altar_textures.py -- <absolute path to Assets/Resources/Content/AltarStyles> [<God> ...]
 ```
+
+The output folder must be an absolute path: with a relative one Blender writes somewhere else and nothing changes.
+After regenerating, Unity may need a forced reimport of the folder before the new textures show.
 
 To add a god there, add an entry to `STYLES` in the script (colours, a trim motif and a corner motif).
 

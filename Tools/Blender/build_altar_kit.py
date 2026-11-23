@@ -25,10 +25,10 @@ ref_path, out_path = argv[0], argv[1]
 preview_path = argv[2] if len(argv) > 2 else None
 
 STONE_TILE = 0.55      # stone texture repeats every this many units
-TRIM_W = 0.068         # width of the raised border strips
-TRIM_REPEAT = 0.272    # length of one repeat of the trim pattern (texture is 4:1, so 4 x TRIM_W)
+TRIM_W = 0.09          # width of the raised border strips
+TRIM_REPEAT = 0.36     # length of one repeat of the trim pattern (texture is 4:1, so 4 x TRIM_W)
 TRIM_H = 0.006         # trim height above the panel
-CORNER_W = 0.09        # corner blocks are a little larger than the trim width
+CORNER_W = 0.12        # corner blocks are a little larger than the trim width
 CORNER_H = 0.012       # corner block height above the panel
 
 # Footprint (Blender world, Z up, ramp at -Y), matched to Altar2.fbx.

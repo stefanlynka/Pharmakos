@@ -20,6 +20,33 @@ public static class AltarStyleBuilder
         AssetDatabase.SaveAssets();
     }
 
+    /// <summary>
+    /// Re-picks every style's rules text colour (black or cream) from its panel texture. Run it after regenerating
+    /// the textures with a different panel setting; it overwrites the TextColor you see on each style asset.
+    /// </summary>
+    [MenuItem("Tools/Altar Kit/Reset Text Colours From Panels")]
+    public static void ResetTextColours()
+    {
+        foreach (string dir in Directory.GetDirectories(Root))
+        {
+            string folder = dir.Replace('\\', '/');
+            string god = Path.GetFileName(folder);
+            var style = AssetDatabase.LoadAssetAtPath<AltarStyle>(folder + "/" + god + ".asset");
+            if (style == null)
+                continue;
+            Color wanted = TextColourFor(folder);
+            if (style.TextColor == wanted)
+                continue;
+            Undo.RecordObject(style, "Reset Altar Text Colour");
+            style.TextColor = wanted;
+            EditorUtility.SetDirty(style);
+        }
+        AssetDatabase.SaveAssets();
+    }
+
+    // Pure black, not a dark tint: the altar text's TMP material renders dark tints washed out.
+    static Color TextColourFor(string folder) => PanelIsDark(folder) ? new Color(0.93f, 0.89f, 0.80f) : Color.black;
+
     public static AltarStyle Build(string folder)
     {
         string god = Path.GetFileName(folder);
@@ -38,8 +65,7 @@ public static class AltarStyleBuilder
 
         if (isNew)
         {
-            // Pure black, not a dark tint: the altar text's TMP material renders dark tints washed out.
-            style.TextColor = PanelIsDark(folder) ? new Color(0.93f, 0.89f, 0.80f) : Color.black;
+            style.TextColor = TextColourFor(folder);
             AssetDatabase.CreateAsset(style, stylePath);
         }
         EditorUtility.SetDirty(style);

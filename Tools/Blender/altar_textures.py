@@ -11,7 +11,8 @@ These are procedural placeholders. Any of them can be replaced with painted or A
 (e.g. from Gemini) without touching the mesh or code.
 
 Usage:
-  blender -b --factory-startup --python Tools/Blender/altar_textures.py -- <out dir> [Style ...]
+  blender -b --factory-startup --python Tools/Blender/altar_textures.py -- <absolute out dir> [Style ...]
+  (the out dir must be absolute: Blender resolves a relative one somewhere else and the textures silently don't update)
 """
 import math
 import os
@@ -25,6 +26,16 @@ OUT = argv[0]
 ONLY = set(argv[1:])
 
 rng = np.random.default_rng(7)
+
+# Board-wide finish, so every altar sits with the matte terracotta and rugs instead of looking polished.
+MATTE_STONE = 0.45     # scales each style's stone smoothness
+MATTE_RELIEF = 0.6     # scales trim/corner smoothness (metal inlays keep a little more sheen via relief_metal)
+WEATHER = 1.0          # grime patches, pitting and worn edges; 0 = clean stone
+PANEL_CREAM = np.array((0.86, 0.81, 0.71))   # the shared tablet colour dark stones are lifted toward
+# The one dial between cohesion and individuality: how far a dark or coloured text panel is pulled toward the shared
+# cream tablet (0 = the god's own stone, 1 = plain cream), and how much of the god's hue the cream keeps.
+PANEL_LIFT_MAX = float(os.environ.get("ALTAR_PANEL_LIFT", 0.45))
+PANEL_TINT = float(os.environ.get("ALTAR_PANEL_TINT", 0.3))
 
 
 # ---------------------------------------------------------------- helpers ---
@@ -171,15 +182,38 @@ def marble(size, s, seed):
     return alb, height
 
 
+def weather(alb, hgt, seed):
+    """Age the stone: soft grime patches, fine pitting and a dusty lift, so it reads as old carved stone."""
+    n = alb.shape[0]
+    grime = smoothstep(0.45, 0.9, fbm(n, n, 2.6, seed + 20)) * 0.22
+    pits = smoothstep(0.80, 0.93, fbm(n, n, 0.6, seed + 21)) * 0.35
+    dust = smoothstep(0.55, 0.95, fbm(n, n, 2.2, seed + 22)) * 0.05
+    k = WEATHER
+    alb = alb * (1 - k * (grime + pits))[..., None]
+    alb = lerp(alb, np.broadcast_to(np.array((0.70, 0.62, 0.50)), alb.shape), k * dust)
+    hgt = hgt - k * pits * 0.6
+    rough = k * (grime + pits)        # dirty and pitted areas are duller
+    return alb, hgt, rough
+
+
 def stone_set(s, folder, seed):
     alb, hgt = marble(1024, s, seed)
+    alb, hgt, rough = weather(alb, hgt, seed)
     save("Stone_Albedo", folder, rgba(alb))
     save("Stone_Normal", folder, normal_from_height(hgt, s.get("stone_bump", 2.0)))
-    gloss = s.get("stone_smooth", 0.45) * (0.85 + 0.3 * fbm(1024, 1024, 1.5, seed + 9))
+    gloss = s.get("stone_smooth", 0.45) * MATTE_STONE * (0.85 + 0.3 * fbm(1024, 1024, 1.5, seed + 9)) * (1 - rough)
     save("Stone_Mask", folder, mask(0.0, gloss))
     # Panel: same stone, pulled toward its average colour so text stays readable.
     mean = alb.reshape(-1, 3).mean(0)
     calm = lerp(alb, np.broadcast_to(mean, alb.shape) * s.get("panel_tone", 1.0), np.full(alb.shape[:2], s.get("panel_calm", 0.7)))
+    # Every altar gets a light tablet (the text faces), like a cream marble inlay set into the god's stone. This is
+    # what ties the set together and keeps the rules text dark-on-light everywhere; the god's colour stays on the body.
+    lum = float(mean @ C(0.3, 0.59, 0.11))
+    lift = min(s.get("panel_lift", float(np.clip((0.62 - lum) / 0.4, 0, 1))), PANEL_LIFT_MAX)
+    if lift > 0:
+        hue = mean / max(mean.mean(), 1e-3)
+        cream = PANEL_CREAM * (1 + (hue - 1) * s.get("panel_tint", PANEL_TINT))
+        calm = lerp(calm, np.broadcast_to(cream, calm.shape), np.full(calm.shape[:2], lift))
     save("Panel_Albedo", folder, rgba(calm))
 
 
@@ -591,16 +625,37 @@ CORNERS.update({"sun": corner_sun, "shield": corner_shield, "owl": corner_owl, "
 def relief_set(s, folder, prefix, hgt, wrap_x):
     """Shared colouring for trims and corners: raised motif in the relief colour over a recessed ground."""
     noise = fbm(hgt.shape[0], hgt.shape[1], 1.6, 11)
-    raised = smoothstep(0.15, 0.6, hgt)
+    # Low threshold: the motif's colour spreads to the full width of its carving, so it reads as a bold figure
+    # against the ground at board distance (pottery-style figure and ground) rather than a thin highlight.
+    raised = smoothstep(0.04, 0.3, hgt)
     ground = lerp(s["relief_ground"], s["relief_ground"] * 0.75, noise)
+    # Grime settles in the ground right next to the carving, like ambient occlusion.
+    near = blur(hgt, 10, wrap_x)
+    ground = ground * (1 - WEATHER * 0.45 * np.clip(near - hgt, 0, 1) * 2)[..., None]
     top = lerp(s["relief"], s["relief_hi"], smoothstep(0.6, 1.0, hgt) * (0.6 + 0.4 * noise))
     if "patina" in s:
         top = lerp(top, s["patina"], np.clip(smoothstep(0.55, 0.8, noise) * (1 - smoothstep(0.7, 1.0, hgt)), 0, 1) * 0.8)
+    # Worn highs: the very tops of the carving rubbed a little lighter.
+    top = lerp(top, np.minimum(top * 1.15 + 0.05, 1.0), WEATHER * smoothstep(0.85, 1.0, hgt) * smoothstep(0.4, 0.8, noise))
     alb = lerp(ground, top, raised)
     save(prefix + "_Albedo", folder, rgba(alb))
     save(prefix + "_Normal", folder, normal_from_height(hgt, s.get("relief_bump", 6.0), wrap_x=wrap_x, wrap_y=False))
-    smooth = s.get("ground_smooth", 0.25) * (1 - raised) + s.get("relief_smooth", 0.5) * raised
+    smooth = (s.get("ground_smooth", 0.25) * (1 - raised) + s.get("relief_smooth", 0.5) * raised) * MATTE_RELIEF
     save(prefix + "_Mask", folder, mask(s.get("relief_metal", 0.0) * raised, smooth))
+
+
+def blur(a, passes, wrap_x):
+    """Cheap soft blur (repeated 3x3 box); wraps along x for trims so the tile stays seamless."""
+    out = a.copy()
+    for _ in range(passes):
+        if wrap_x:
+            hx = (np.roll(out, 1, 1) + out + np.roll(out, -1, 1)) / 3
+        else:
+            p = np.pad(out, ((0, 0), (1, 1)), mode="edge")
+            hx = (p[:, :-2] + p[:, 1:-1] + p[:, 2:]) / 3
+        p = np.pad(hx, ((1, 1), (0, 0)), mode="edge")
+        out = (p[:-2] + p[1:-1] + p[2:]) / 3
+    return out
 
 
 def trim_set(s, folder):
@@ -645,10 +700,10 @@ STYLES = {
         trim="rays", corner="sun", relief=C(0.86, 0.64, 0.24), relief_hi=C(1.0, 0.88, 0.52), relief_ground=C(0.55, 0.40, 0.18),
         relief_metal=0.5, relief_smooth=0.6, relief_bump=6.0),
     "Ares": dict(
-        stone_dark=C(0.22, 0.05, 0.04), stone_light=C(0.40, 0.10, 0.07), vein=C(0.10, 0.03, 0.02), vein_amount=0.7, vein_width=0.07,
-        fine_veins=0.4, warp=1.6, vein_dir=(2, 1), stone_smooth=0.45, panel_calm=0.75, panel_tone=0.9,
-        trim="spears", corner="shield", relief=C(0.42, 0.40, 0.40), relief_hi=C(0.66, 0.64, 0.62), relief_ground=C(0.10, 0.03, 0.03),
-        relief_metal=0.6, relief_smooth=0.45, relief_bump=6.0),
+        stone_dark=C(0.30, 0.08, 0.06), stone_light=C(0.50, 0.15, 0.10), vein=C(0.14, 0.04, 0.03), vein_amount=0.65, vein_width=0.07,
+        fine_veins=0.4, warp=1.6, vein_dir=(2, 1), stone_smooth=0.45, panel_calm=0.75, panel_tone=0.9, panel_tint=0.05,
+        trim="spears", corner="shield", relief=C(0.12, 0.10, 0.09), relief_hi=C(0.26, 0.22, 0.20), relief_ground=C(0.62, 0.30, 0.18),
+        relief_metal=0.3, relief_smooth=0.45, relief_bump=6.0),
     "Athena": dict(
         stone_dark=C(0.30, 0.33, 0.30), stone_light=C(0.48, 0.51, 0.46), vein=C(0.78, 0.80, 0.74), vein_amount=0.55, vein_width=0.05,
         fine_veins=0.3, warp=1.0, vein_dir=(1, 1), stone_smooth=0.45, panel_calm=0.75, panel_tone=0.9,
@@ -660,14 +715,14 @@ STYLES = {
         trim="wheat", corner="wheat", relief=C(0.88, 0.72, 0.36), relief_hi=C(0.98, 0.88, 0.58), relief_ground=C(0.34, 0.38, 0.16),
         relief_metal=0.2, relief_smooth=0.4, relief_bump=6.0),
     "Dionysus": dict(
-        stone_dark=C(0.20, 0.07, 0.24), stone_light=C(0.36, 0.14, 0.40), vein=C(0.82, 0.70, 0.88), vein_amount=0.7, vein_width=0.07,
-        fine_veins=0.4, warp=1.3, vein_dir=(1, 2), stone_smooth=0.55, panel_calm=0.75, panel_tone=0.9,
-        trim="vine", corner="grapes", relief=C(0.52, 0.62, 0.30), relief_hi=C(0.74, 0.82, 0.46), relief_ground=C(0.12, 0.04, 0.14),
-        relief_metal=0.2, relief_smooth=0.5, relief_bump=6.0),
+        stone_dark=C(0.24, 0.08, 0.14), stone_light=C(0.40, 0.15, 0.24), vein=C(0.62, 0.40, 0.48), vein_amount=0.55, vein_width=0.06,
+        fine_veins=0.35, warp=1.3, vein_dir=(1, 2), stone_smooth=0.5, panel_calm=0.75, panel_tone=0.9, panel_tint=0.05,
+        trim="vine", corner="grapes", relief=C(0.62, 0.64, 0.34), relief_hi=C(0.80, 0.80, 0.50), relief_ground=C(0.10, 0.03, 0.06),
+        relief_metal=0.0, relief_smooth=0.4, relief_bump=6.0),
     "Hades": dict(
-        stone_dark=C(0.05, 0.05, 0.06), stone_light=C(0.13, 0.12, 0.15), vein=C(0.36, 0.30, 0.42), vein_amount=0.6, vein_width=0.04,
+        stone_dark=C(0.09, 0.08, 0.08), stone_light=C(0.20, 0.18, 0.18), vein=C(0.42, 0.36, 0.32), vein_amount=0.55, vein_width=0.04,
         fine_veins=0.3, warp=1.0, vein_dir=(2, 1), stone_smooth=0.65, panel_calm=0.8, panel_tone=1.1,
-        trim="bones", corner="skull", relief=C(0.78, 0.74, 0.64), relief_hi=C(0.92, 0.89, 0.80), relief_ground=C(0.04, 0.04, 0.05),
+        trim="bones", corner="skull", relief=C(0.82, 0.77, 0.66), relief_hi=C(0.95, 0.91, 0.82), relief_ground=C(0.05, 0.04, 0.04),
         relief_metal=0.0, relief_smooth=0.35, relief_bump=6.0),
     "Hephaestus": dict(
         stone_dark=C(0.24, 0.23, 0.23), stone_light=C(0.40, 0.38, 0.37), vein=C(0.95, 0.42, 0.08), vein_amount=1.0, vein_width=0.06,
@@ -675,10 +730,10 @@ STYLES = {
         trim="chain", corner="hammer", relief=C(0.62, 0.42, 0.22), relief_hi=C(0.86, 0.64, 0.38), relief_ground=C(0.08, 0.06, 0.05),
         relief_metal=0.7, relief_smooth=0.4, relief_bump=6.0),
     "Hermes": dict(
-        stone_dark=C(0.58, 0.66, 0.74), stone_light=C(0.78, 0.84, 0.90), vein=C(0.95, 0.97, 1.0), vein_amount=0.6, vein_width=0.06,
-        fine_veins=0.4, warp=1.8, vein_dir=(2, 1), stone_smooth=0.5, panel_calm=0.7,
-        trim="feathers", corner="caduceus", relief=C(0.80, 0.82, 0.86), relief_hi=C(0.96, 0.97, 1.0), relief_ground=C(0.30, 0.38, 0.48),
-        relief_metal=0.55, relief_smooth=0.6, relief_bump=6.0),
+        stone_dark=C(0.34, 0.42, 0.48), stone_light=C(0.50, 0.58, 0.63), vein=C(0.82, 0.84, 0.82), vein_amount=0.5, vein_width=0.05,
+        fine_veins=0.35, warp=1.8, vein_dir=(2, 1), stone_smooth=0.45, panel_calm=0.7, panel_lift=0.65,
+        trim="feathers", corner="caduceus", relief=C(0.92, 0.88, 0.78), relief_hi=C(1.0, 0.97, 0.90), relief_ground=C(0.16, 0.28, 0.40),
+        relief_metal=0.0, relief_smooth=0.45, relief_bump=6.0),
     "Muse": dict(
         stone_dark=C(0.84, 0.78, 0.66), stone_light=C(0.95, 0.91, 0.82), vein=C(0.20, 0.16, 0.14), vein_amount=0.45, vein_width=0.025,
         fine_veins=0.25, warp=1.1, vein_dir=(1, 2), stone_smooth=0.4, panel_calm=0.75,
@@ -690,15 +745,15 @@ STYLES = {
         trim="flames", corner="flame", relief=C(0.92, 0.80, 0.60), relief_hi=C(1.0, 0.92, 0.78), relief_ground=C(0.30, 0.14, 0.08),
         relief_metal=0.0, relief_smooth=0.35, relief_bump=6.0),
     "Hera": dict(
-        stone_dark=C(0.06, 0.12, 0.38), stone_light=C(0.12, 0.22, 0.56), vein=C(0.90, 0.76, 0.40), vein_amount=0.5, vein_width=0.025,
-        fine_veins=0.45, warp=1.4, vein_dir=(1, 2), stone_smooth=0.6, panel_calm=0.75, panel_tone=0.9,
-        trim="peacock", corner="peacock", relief=C(0.82, 0.64, 0.26), relief_hi=C(0.98, 0.84, 0.48), relief_ground=C(0.05, 0.22, 0.26),
+        stone_dark=C(0.10, 0.15, 0.30), stone_light=C(0.18, 0.25, 0.44), vein=C(0.82, 0.64, 0.32), vein_amount=0.5, vein_width=0.025,
+        fine_veins=0.45, warp=1.4, vein_dir=(1, 2), stone_smooth=0.5, panel_calm=0.75, panel_tone=0.9,
+        trim="peacock", corner="peacock", relief=C(0.84, 0.64, 0.26), relief_hi=C(0.98, 0.84, 0.48), relief_ground=C(0.06, 0.12, 0.30),
         relief_metal=0.5, relief_smooth=0.6, relief_bump=6.0),
     "OldOnes": dict(
-        stone_dark=C(0.05, 0.12, 0.08), stone_light=C(0.12, 0.24, 0.16), vein=C(0.45, 0.62, 0.36), vein_amount=0.7, vein_width=0.06,
-        fine_veins=0.5, warp=2.0, vein_dir=(1, 1), stone_smooth=0.6, panel_calm=0.8, panel_tone=1.0,
-        trim="serpent", corner="coil", relief=C(0.46, 0.52, 0.34), relief_hi=C(0.66, 0.72, 0.48), relief_ground=C(0.03, 0.07, 0.05),
-        relief_metal=0.2, relief_smooth=0.55, relief_bump=6.0),
+        stone_dark=C(0.20, 0.17, 0.12), stone_light=C(0.34, 0.30, 0.22), vein=C(0.12, 0.10, 0.07), vein_amount=0.6, vein_width=0.06,
+        fine_veins=0.5, warp=2.0, vein_dir=(1, 1), stone_smooth=0.5, panel_calm=0.8, panel_tone=1.0,
+        trim="serpent", corner="coil", relief=C(0.36, 0.56, 0.44), relief_hi=C(0.56, 0.74, 0.60), relief_ground=C(0.07, 0.06, 0.04),
+        relief_metal=0.3, relief_smooth=0.5, relief_bump=6.0),
 }
 
 for i, (name, style) in enumerate(STYLES.items()):
