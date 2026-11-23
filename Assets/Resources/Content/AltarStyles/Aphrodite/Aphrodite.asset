@@ -17,4 +17,4 @@ MonoBehaviour:
   Trim: {fileID: 2100000, guid: c3611c69044ddb3419658f40ef2779cb, type: 2}
   Corner: {fileID: 2100000, guid: 8c8bd90998bccce46b7ef005d237a120, type: 2}
   Ramp: {fileID: 2100000, guid: 3665caccab48fdd478781865b43b48f4, type: 2}
-  TextColor: {r: 0.8, g: 0, b: 0, a: 1}
+  TextColor: {r: 0.24705882, g: 0, b: 0, a: 1}
