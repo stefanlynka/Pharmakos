@@ -61,7 +61,7 @@ Hermes Major
 
 Hermes Minor
   Blitz cost: Scroll 2
-  Effect: Steal a card from your opponent's deck. It costs 1 less.
+  Effect: Copy a card from your opponent's deck. It costs 1 less.
 
 Muse Minor
   Blitz cost: Scroll 2

@@ -38770,6 +38770,8 @@ MonoBehaviour:
   RumbleStartTime: 5
   MusicFadeDuration: 1.5
   MusicFadedVolume: 0.5
+  CombatMusicFadeOutDuration: 2.5
+  MenuMusicFadeInDuration: 3
 --- !u!82 &1293055348
 AudioSource:
   m_ObjectHideFlags: 0

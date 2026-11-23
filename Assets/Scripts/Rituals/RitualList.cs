@@ -1202,13 +1202,13 @@ public class HermesMajorEffectDef : StaticPlayerEffect
     }
 }
 
-// Steal a card from your opponent's deck. It costs 1 less.
+// Copy a card from your opponent's deck. It costs 1 less.
 public class HermesMinor : Ritual
 {
     public HermesMinor()
     {
         Name = "Hermes\nMinor";
-        Description = "Steal a card from your opponent's deck. It costs 1 less.";
+        Description = "Copy a card from your opponent's deck. It costs 1 less.";
         
         if (Controller.BlitzMode)
         {
