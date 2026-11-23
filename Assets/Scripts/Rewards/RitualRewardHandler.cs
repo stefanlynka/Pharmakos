@@ -57,6 +57,10 @@ public class RitualRewardHandler : MonoBehaviour
         CurrentTopRitual.Load(topRitual, RitualPressed);
         CurrentBottomRitual.Load(bottomRitual, RitualPressed);
 
+        ProgressionHandler progression = Controller.Instance.ProgressionHandler;
+        progression.MarkRitualSeen(topRitual);
+        progression.MarkRitualSeen(bottomRitual);
+
         if (offeredTopReward != null && offeredBottomReward != null)
         {
             TopRitualReward.Load(offeredTopReward, RitualPressed);
@@ -66,19 +70,43 @@ public class RitualRewardHandler : MonoBehaviour
         {
             System.Type type1 = topRitual != null ? topRitual.GetType() : null;
             System.Type type2 = bottomRitual != null ? bottomRitual.GetType() : null;
-            possibleRewards = Controller.Instance.ProgressionHandler.GetPossibleRitualRewards(); //CardHandler.GetPossibleRitualRewards(levelCompleted);
+            possibleRewards = progression.GetPossibleRitualRewards(); //CardHandler.GetPossibleRitualRewards(levelCompleted);
             possibleRewards.RemoveAll(ritual => ritual.GetType() == type1 || ritual.GetType() == type2);
 
-            int randomIndex = Controller.Instance.MetaRNG.Next(0, possibleRewards.Count);
-            TopRitualReward.Load(possibleRewards[randomIndex], RitualPressed);
-            possibleRewards.RemoveAt(randomIndex);
-
-            randomIndex = Controller.Instance.MetaRNG.Next(0, possibleRewards.Count);
-            BottomRitualReward.Load(possibleRewards[randomIndex], RitualPressed);
-            possibleRewards.RemoveAt(randomIndex);
+            Ritual first = TakeRandomReward(progression);
+            Ritual second = TakeRandomReward(progression);
+            TopRitualReward.Load(first, RitualPressed);
+            BottomRitualReward.Load(second, RitualPressed);
+            offeredTopReward = first;
+            offeredBottomReward = second;
         }
 
+        progression.MarkRitualSeen(offeredTopReward);
+        progression.MarkRitualSeen(offeredBottomReward);
+
         ActivateMenuSelection();
+    }
+
+    /// <summary>
+    /// Picks and removes a random ritual from possibleRewards, preferring ones not yet seen this run.
+    /// Falls back to seen rituals when no unseen ones remain, so the screen always offers two.
+    /// </summary>
+    Ritual TakeRandomReward(ProgressionHandler progression)
+    {
+        List<int> unseen = new List<int>();
+        for (int i = 0; i < possibleRewards.Count; i++)
+        {
+            if (!progression.HasSeenRitual(possibleRewards[i]))
+                unseen.Add(i);
+        }
+
+        int index = unseen.Count > 0
+            ? unseen[Controller.Instance.MetaRNG.Next(0, unseen.Count)]
+            : Controller.Instance.MetaRNG.Next(0, possibleRewards.Count);
+
+        Ritual ritual = possibleRewards[index];
+        possibleRewards.RemoveAt(index);
+        return ritual;
     }
 
     void ActivateMenuSelection()

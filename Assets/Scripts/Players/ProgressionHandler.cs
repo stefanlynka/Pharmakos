@@ -105,6 +105,10 @@ public class ProgressionHandler
 
     List<Ritual> ritualRewards = new List<Ritual>();
 
+    // Rituals the player has been offered (or held) this run. Reward screens prefer rituals not in here.
+    // In memory only: a resumed save starts with an empty set (persisting it would change the save format).
+    readonly HashSet<Type> seenRituals = new HashSet<Type>();
+
     List<StarterBundle> starterBundles = new List<StarterBundle>();
 
     List<Trinket> availableTrinkets = new List<Trinket>();
@@ -2103,6 +2107,17 @@ public class ProgressionHandler
         }
 
         return ritualRewards;
+    }
+
+    public void MarkRitualSeen(Ritual ritual)
+    {
+        if (ritual != null)
+            seenRituals.Add(ritual.GetType());
+    }
+
+    public bool HasSeenRitual(Ritual ritual)
+    {
+        return ritual != null && seenRituals.Contains(ritual.GetType());
     }
 
     public List<Card> GetPossibleCardRewards()
