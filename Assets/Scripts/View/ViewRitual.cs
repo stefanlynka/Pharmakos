@@ -18,14 +18,11 @@ public class ViewRitual : ViewTarget
     public Light Spotlight;
 
     [Header("Spotlight")]
-    [SerializeField] float unusableInnerAngle = 40f;
-    [SerializeField] float unusableOuterAngle = 55f;
+    [Tooltip("The Spotlight's own Inner/Outer angles are the resting cone. The flare widens them by these amounts.")]
+    [SerializeField] float flareInnerIncrease = 10f;
+    [SerializeField] float flareOuterIncrease = 15f;
     [SerializeField] float unusableIntensity = 150f;
-    [SerializeField] float flareInnerAngle = 50f;
-    [SerializeField] float flareOuterAngle = 70f;
     [SerializeField] float flareIntensity = 500f;
-    [SerializeField] float usableInnerAngle = 40f;
-    [SerializeField] float usableOuterAngle = 55f;
     [SerializeField] float usableIntensity = 250f;
     [Tooltip("While usable and not selected, intensity oscillates between Usable Intensity and this value.")]
     [SerializeField] float usablePulseIntensity = 350f;
@@ -112,8 +109,18 @@ public class ViewRitual : ViewTarget
     float usePulseBaseIntensity;
     bool restoreUsePulseIntensity;
 
+    // The Spotlight's authored cone, read once before any state animation touches it.
+    float baseInnerAngle;
+    float baseOuterAngle;
+
     void Awake()
     {
+        if (Spotlight != null)
+        {
+            baseInnerAngle = Spotlight.innerSpotAngle;
+            baseOuterAngle = Spotlight.spotAngle;
+        }
+
         defaultLocalScale = transform.localScale;
         EnsureMeshHighlight();
         SetHighlight(false);
@@ -318,8 +325,8 @@ public class ViewRitual : ViewTarget
     {
         return new SpotlightProfile
         {
-            Inner = unusableInnerAngle,
-            Outer = unusableOuterAngle,
+            Inner = baseInnerAngle,
+            Outer = baseOuterAngle,
             Intensity = unusableIntensity,
         };
     }
@@ -328,8 +335,8 @@ public class ViewRitual : ViewTarget
     {
         return new SpotlightProfile
         {
-            Inner = flareInnerAngle,
-            Outer = flareOuterAngle,
+            Inner = baseInnerAngle + flareInnerIncrease,
+            Outer = baseOuterAngle + flareOuterIncrease,
             Intensity = flareIntensity,
         };
     }
@@ -338,8 +345,8 @@ public class ViewRitual : ViewTarget
     {
         return new SpotlightProfile
         {
-            Inner = usableInnerAngle,
-            Outer = usableOuterAngle,
+            Inner = baseInnerAngle,
+            Outer = baseOuterAngle,
             Intensity = usableIntensity,
         };
     }
