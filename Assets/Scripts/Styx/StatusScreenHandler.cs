@@ -94,8 +94,11 @@ public class StatusScreenHandler : MonoBehaviour
     public void Open()
     {
         isOpen = true;
-        // Once crossed, nothing more waits at the Styx this run
-        StyxTabButton.gameObject.SetActive(!Controller.Instance.StyxRunState.HasCrossed);
+        // Once crossed, nothing more waits at the Styx this run. The Current tab would then be a lone tab
+        // with nothing to switch to, so the whole tab row goes.
+        bool crossed = Controller.Instance.StyxRunState.HasCrossed;
+        StyxTabButton.gameObject.SetActive(!crossed);
+        CurrentTabButton.gameObject.SetActive(!crossed);
         ShowTab(false);
     }
 
