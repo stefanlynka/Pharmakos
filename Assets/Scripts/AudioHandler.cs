@@ -72,6 +72,17 @@ public class AudioHandler : MonoBehaviour
     private float musicFadeTarget = 1.0f;
     AudioClip menuMusicClip;
 
+    [Header("After Combat")]
+    [Tooltip("Seconds for the combat track to fade to silence when a combat ends.")]
+    public float CombatMusicFadeOutDuration = 2.5f;
+    [Tooltip("Seconds for the menu track to fade in once the combat track is silent.")]
+    public float MenuMusicFadeInDuration = 3f;
+
+    enum MusicHandover { None, CombatFadingOut, MenuFadingIn }
+    MusicHandover musicHandover = MusicHandover.None;
+    // Separate from musicFadeMultiplier (the ritual-aim duck) so the two never fight over one value.
+    float handoverMultiplier = 1f;
+
     bool rumbleFadeActive;
     float rumbleFadeFrom = 1f;
     float rumbleFadeTarget = 1f;
@@ -295,15 +306,74 @@ public class AudioHandler : MonoBehaviour
         ApplyMusicVolume();
     }
 
+    /// <summary>
+    /// Ends combat music: the combat track fades to silence, then the menu track fades in and keeps playing
+    /// (through overworld, events, shops and temples) until the next PlayMusic starts a combat.
+    /// </summary>
+    public void FadeToMenuMusicAfterCombat()
+    {
+        if (MusicSource == null || menuMusicClip == null)
+            return;
+        if (musicHandover != MusicHandover.None)
+            return;
+
+        if (!MusicSource.isPlaying)
+            return;
+
+        if (MusicSource.clip == menuMusicClip)
+            return;
+
+        musicHandover = MusicHandover.CombatFadingOut;
+    }
+
+    void CancelMusicHandover()
+    {
+        musicHandover = MusicHandover.None;
+        handoverMultiplier = 1f;
+    }
+
+    private void UpdateMusicHandover()
+    {
+        if (musicHandover == MusicHandover.None || MusicSource == null)
+            return;
+
+        if (musicHandover == MusicHandover.CombatFadingOut)
+        {
+            float step = CombatMusicFadeOutDuration > 0f ? Time.unscaledDeltaTime / CombatMusicFadeOutDuration : 1f;
+            handoverMultiplier = Mathf.MoveTowards(handoverMultiplier, 0f, step);
+            ApplyMusicVolume();
+            if (handoverMultiplier > 0f)
+                return;
+
+            // Silent: swap to the menu track at zero and bring it up.
+            currentMusicMultiplier = 1f;
+            musicFadeMultiplier = 1f;
+            musicFadeTarget = 1f;
+            MusicSource.clip = menuMusicClip;
+            MusicSource.loop = true;
+            ApplyMusicVolume();
+            MusicSource.Play();
+            musicHandover = MusicHandover.MenuFadingIn;
+            return;
+        }
+
+        float inStep = MenuMusicFadeInDuration > 0f ? Time.unscaledDeltaTime / MenuMusicFadeInDuration : 1f;
+        handoverMultiplier = Mathf.MoveTowards(handoverMultiplier, 1f, inStep);
+        ApplyMusicVolume();
+        if (handoverMultiplier >= 1f)
+            musicHandover = MusicHandover.None;
+    }
+
     private void ApplyMusicVolume()
     {
         if (MusicSource != null)
-            MusicSource.volume = baseMusicVolume * userMusicVolume * currentMusicMultiplier * musicFadeMultiplier;
+            MusicSource.volume = baseMusicVolume * userMusicVolume * currentMusicMultiplier * musicFadeMultiplier * handoverMultiplier;
     }
 
     private void LateUpdate()
     {
         UpdateMusicFade();
+        UpdateMusicHandover();
         UpdateRumbleFade();
         UpdateRitualFlame();
 
@@ -355,6 +425,7 @@ public class AudioHandler : MonoBehaviour
 
     public void StopMusic()
     {
+        CancelMusicHandover();
         if (MusicSource != null)
             MusicSource.Stop();
     }
@@ -367,9 +438,13 @@ public class AudioHandler : MonoBehaviour
         if (MusicSource == null || menuMusicClip == null)
             return;
 
+        // Already playing, or already on its way in after a combat: leave it alone.
         if (MusicSource.isPlaying && MusicSource.clip == menuMusicClip)
             return;
+        if (musicHandover == MusicHandover.CombatFadingOut)
+            return;
 
+        CancelMusicHandover();
         currentMusicMultiplier = 1f;
         musicFadeMultiplier = 1f;
         musicFadeTarget = 1f;
@@ -388,6 +463,7 @@ public class AudioHandler : MonoBehaviour
             AudioClip audioClip = MusicByName[name];
             if (audioClip != null)
             {
+                CancelMusicHandover();
                 MusicSource.clip = audioClip;
 
                 if (MusicMultipliers.ContainsKey(name))

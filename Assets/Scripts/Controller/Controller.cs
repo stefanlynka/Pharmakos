@@ -977,6 +977,7 @@ public class Controller : MonoBehaviour
         {
             ClearLevel();
             GameRunning = false;
+            FadeOutCombatMusic();
 
             GoToGameOverScreen();
             Player1.Health = 1;
@@ -1010,6 +1011,13 @@ public class Controller : MonoBehaviour
         HoldCombatCardRemoval = false;
     }
 
+    // The combat track fades out; the menu track fades in after it and plays until the next combat.
+    void FadeOutCombatMusic()
+    {
+        if (View.Instance != null && View.Instance.AudioHandler != null)
+            View.Instance.AudioHandler.FadeToMenuMusicAfterCombat();
+    }
+
     // Starts the fade as soon as the killing blow's flames do. The board stays up until the overlay is black.
     public void BeginOpponentDefeatFade()
     {
@@ -1025,6 +1033,7 @@ public class Controller : MonoBehaviour
         opponentDefeatFadeStarted = true;
         HoldCombatCardRemoval = true;
         GameRunning = false;
+        FadeOutCombatMusic();
         Player2.Health = 1;
         View.Instance.TurnIsEnding = false;
         View.Instance.WaitingForTurnBanner = false;
