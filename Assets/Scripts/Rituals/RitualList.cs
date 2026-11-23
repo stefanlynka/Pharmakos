@@ -988,14 +988,14 @@ public class HadesMajorEffectDef : StaticPlayerEffect
     }
 }
 
-// When one of target Player's Followers dies, get a copy of every spell that Player cast on on it. The copies costs 1 less.
+// When one of target Player's Followers dies, get a copy of every spell that Player cast on on it. The copies cost 1 less.
 public class HephaestusMajor : Ritual
 {
     public HephaestusMajor()
     {
         Name = "Hephaestus\nMajor";
-        Description = "When one of your Followers dies, get a copy of every spell you cast on it. The copies costs 1 less.";
-        //Description = "When one of target Player's Followers dies, get a copy of every spell that Player cast on on it. The copies costs 1 less.";
+        Description = "When one of your Followers dies, get a copy of every spell you cast on it. The copies cost 1 less.";
+        //Description = "When one of target Player's Followers dies, get a copy of every spell that Player cast on on it. The copies cost 1 less.";
         
         if (Controller.BlitzMode)
         {
@@ -1093,7 +1093,7 @@ public class HephaestusMajorEffectDef : StaticPlayerEffect
     }
     protected override string GetDescription()
     {
-        return "When one of your Followers dies, you get a copy of every spell you've cast on it. The copies costs 1 less.";
+        return "When one of your Followers dies, you get a copy of every spell you've cast on it. The copies cost 1 less.";
     }
 }
 

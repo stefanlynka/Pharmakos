@@ -47,7 +47,7 @@ public class EventHandler : MonoBehaviour
         var pool = new List<EventDefinition>();
         foreach (var e in Events)
         {
-            if (e != null && !encountered.Contains(e))
+            if (e != null && !encountered.Contains(e) && IsEventAvailable(e))
                 pool.Add(e);
         }
 
@@ -62,6 +62,30 @@ public class EventHandler : MonoBehaviour
         var def = pool[idx];
         encountered.Add(def);
         BeginEvent(def, onEventComplete);
+    }
+
+    /// <summary>
+    /// Events offering "become enemy from previous combat" (Pygmalion) need a recorded
+    /// non-tutorial combat this run.
+    /// </summary>
+    static bool IsEventAvailable(EventDefinition definition)
+    {
+        if (!RequiresPreviousCombat(definition))
+            return true;
+
+        ProgressionHandler progression = Controller.Instance.ProgressionHandler;
+        return progression != null && progression.HasLastFoughtEnemy;
+    }
+
+    static bool RequiresPreviousCombat(EventDefinition definition)
+    {
+        if (definition.Options == null) return false;
+        foreach (EventOptionData option in definition.Options)
+        {
+            if (option?.Outcome != null && option.Outcome.OutcomeType == EventOutcomeType.BecomeLastEnemy)
+                return true;
+        }
+        return false;
     }
 
     public void BeginEvent(EventDefinition eventDefinition, System.Action onEventComplete)

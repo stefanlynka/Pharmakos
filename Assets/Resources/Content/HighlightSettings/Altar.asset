@@ -17,24 +17,24 @@ MonoBehaviour:
   outerColor: {r: 1, g: 0.5712824, b: 0, a: 1}
   outerShellGlowColor: {r: 1, g: 0.108384065, b: 0, a: 1}
   outerShellOuterColor: {r: 1, g: 0.16288736, b: 0, a: 1}
-  coreFlameExtent: 1.02
+  coreFlameExtent: 0.35
   coreFlameExtentMin: 0.08
-  outerFlameExtent: 0
-  outerFlameExtentMin: 0
-  edgeMode: 2
+  outerFlameExtent: 0.6
+  outerFlameExtentMin: 0.07
+  edgeMode: 1
   geomEdgeWidth: 0.1
-  geomEdgeStrength: 0.4
+  geomEdgeStrength: 1
   hybridBlend: 0.45
   topFaceSuppress: 1
   edgePower: 1
   outerEdgePower: 1
   edgeMin: 0.35
-  riseStrength: 0.35
+  riseStrength: 1.64
   coreTongueThreshold: 0.46
   outerTongueThreshold: 0.58
-  tongueSharpness: 0.11
-  tipFalloff: 0.1
-  outerTipFalloff: 0.1
+  tongueSharpness: 0.23
+  tipFalloff: 0.18
+  outerTipFalloff: 0.75
   noiseScale: 2.24
   noiseSpeed: 0.1
   coreNoiseStrength: 1.15

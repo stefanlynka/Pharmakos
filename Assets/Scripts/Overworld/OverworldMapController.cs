@@ -24,7 +24,11 @@ public class OverworldMapController : MonoBehaviour
     public float CameraPanDeceleration = 55f;
 
     [Tooltip("Pixels in from each screen edge where the cursor pans the camera the same way WASD does. 0 disables edge panning.")]
-    public float CameraEdgePanMargin = 36f;
+    public float CameraEdgePanMargin = 72f;
+
+    [Tooltip("Edge panning moves at this fraction of the WASD max speed (1 = same speed as WASD).")]
+    [Range(0f, 1f)]
+    public float CameraEdgePanSpeedScale = 0.5f;
 
     [Tooltip("Multiplier for mouse wheel movement on local Y (per scroll unit).")]
     public float CameraScrollZoomSpeed = 30f;
@@ -570,9 +574,12 @@ public class OverworldMapController : MonoBehaviour
 
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
-        var input = new Vector2(h, v) + ReadScreenEdgePan();
+        var input = new Vector2(h, v);
         if (input.sqrMagnitude > 1f)
             input.Normalize();
+        // Edge pan only applies when the keys aren't held, at its own (slower) speed.
+        if (input.sqrMagnitude < 1e-6f)
+            input = ReadScreenEdgePan().normalized * CameraEdgePanSpeedScale;
 
         bool hasInput = input.sqrMagnitude > 1e-6f;
         var targetVel = hasInput ? input * CameraPanMaxSpeed : Vector2.zero;

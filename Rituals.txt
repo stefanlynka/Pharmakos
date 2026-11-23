@@ -53,7 +53,7 @@ Hades Major
 
 Hephaestus Major
   Blitz cost: Bone 3, Scroll 3
-  Effect: When one of target Player's Followers dies, get a copy of every spell that Player cast on on it. The copies costs 1 less.
+  Effect: When one of target Player's Followers dies, get a copy of every spell that Player cast on on it. The copies cost 1 less.
 
 Hermes Major
   Blitz cost: Scroll 5

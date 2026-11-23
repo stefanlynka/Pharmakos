@@ -63,6 +63,8 @@ public class ViewRitual : ViewTarget
 
     bool isHighlightActive;
     Vector3 defaultLocalScale;
+    Transform hoverScaleTarget;
+    Vector3 hoverScaleTargetDefault;
     bool isHoverSummaryShown;
 
     public Transform rattleTarget;
@@ -178,6 +180,7 @@ public class ViewRitual : ViewTarget
             Title.text = "";
             Description.text = "";
             transform.localScale = defaultLocalScale;
+            ResetHoverScale();
             HideHoverSummary();
             return;
         }
@@ -547,7 +550,7 @@ public class ViewRitual : ViewTarget
         usePulseWeight = 0f;
 
         if (wasPulsing)
-            transform.localScale = defaultLocalScale;
+            ResetHoverScale();
 
         if (restoreUsePulseIntensity && Spotlight != null)
             Spotlight.intensity = usePulseBaseIntensity;
@@ -602,7 +605,33 @@ public class ViewRitual : ViewTarget
 
         float scaleFactor = IsHoveredAndUsable() ? hoverScaleMultiplier : 1f;
         scaleFactor *= Mathf.Lerp(1f, usePulseScale, usePulseWeight);
-        transform.localScale = defaultLocalScale * scaleFactor;
+
+        Transform target = EnsureHoverScaleTarget();
+        target.localScale = HoverScaleBase() * scaleFactor;
+    }
+
+    /// <summary>
+    /// Hover and use-pulse scaling apply to the altar only, so the spotlight, name plate and
+    /// description stay put (scaling the root pushed the spotlight away and dimmed it).
+    /// </summary>
+    Transform EnsureHoverScaleTarget()
+    {
+        if (hoverScaleTarget == null)
+        {
+            Transform altar = ResolveAltarRoot();
+            hoverScaleTarget = altar != null ? altar : transform;
+            hoverScaleTargetDefault = hoverScaleTarget.localScale;
+        }
+        return hoverScaleTarget;
+    }
+
+    // The root's resting scale can change via SetDisplayScale; the altar's is fixed by the prefab.
+    Vector3 HoverScaleBase() => hoverScaleTarget == transform ? defaultLocalScale : hoverScaleTargetDefault;
+
+    void ResetHoverScale()
+    {
+        if (hoverScaleTarget != null)
+            hoverScaleTarget.localScale = HoverScaleBase();
     }
 
     bool IsHoveredAndUsable()

@@ -60,6 +60,18 @@ public class ProgressionHandler
     public DeckName CurrentEnemy = DeckName.None;
     public DeckName LastFoughtEnemyDeckName = DeckName.None;
     public int LastFoughtEnemyPoolNum = 0;
+    /// <summary>
+    /// Rituals the last fought enemy actually had, as class names ("" = none). Some enemies
+    /// (Archiereus) roll their rituals at fight time, so the details dictionary can't be trusted
+    /// to still hold them later (it's rebuilt on load and re-rolled on the next fight).
+    /// </summary>
+    public bool LastFoughtRitualsRecorded = false;
+    public string LastFoughtMajorRitualName = "";
+    public string LastFoughtMinorRitualName = "";
+
+    /// <summary>True once the run has had a real (non-tutorial, non-test) combat that Pygmalion can copy.</summary>
+    public bool HasLastFoughtEnemy => LastFoughtEnemyDeckName != DeckName.None;
+
     public int CurrentPool =>
         CurrentEnemy != DeckName.None && DetailsByDeckName.TryGetValue(CurrentEnemy, out PlayerDetails currentDetails)
             ? GetDetailsPool(currentDetails)
@@ -2114,6 +2126,7 @@ public class ProgressionHandler
         CurrentFightNumber = 0;
         LastFoughtEnemyDeckName = DeckName.None;
         LastFoughtEnemyPoolNum = 0;
+        ClearLastFoughtRituals();
         hasSetupFirstCombat = false;
     }
 
@@ -2155,13 +2168,56 @@ public class ProgressionHandler
         return deckName;
     }
 
+    /// <summary>
+    /// Remembers the current enemy for Pygmalion's "become enemy from previous combat".
+    /// Tutorial-run and test-chamber fights don't count. Call after <see cref="LoadEnemy"/> so
+    /// fight-time rolled rituals (Archiereus) are captured.
+    /// </summary>
     public void RecordLastFoughtEnemy()
     {
-        if (CurrentEnemy == DeckName.None)
+        if (CurrentEnemy == DeckName.None
+            || CurrentEnemy == DeckName.TestEnemy
+            || CurrentEnemy == DeckName.TutorialCombat1
+            || CurrentEnemy == DeckName.TutorialCombat2)
+            return;
+
+        Controller controller = Controller.Instance;
+        if (controller != null && (controller.IsTutorialRun || controller.IsTestChamber))
             return;
 
         LastFoughtEnemyDeckName = CurrentEnemy;
         LastFoughtEnemyPoolNum = CurrentPool;
+
+        ClearLastFoughtRituals();
+        if (DetailsByDeckName.TryGetValue(CurrentEnemy, out PlayerDetails details))
+        {
+            LastFoughtRitualsRecorded = true;
+            LastFoughtMajorRitualName = RitualTypeName(details.MajorRituals, LastFoughtEnemyPoolNum);
+            LastFoughtMinorRitualName = RitualTypeName(details.MinorRituals, LastFoughtEnemyPoolNum);
+        }
+    }
+
+    void ClearLastFoughtRituals()
+    {
+        LastFoughtRitualsRecorded = false;
+        LastFoughtMajorRitualName = "";
+        LastFoughtMinorRitualName = "";
+    }
+
+    static string RitualTypeName(Dictionary<int, Ritual> rituals, int pool) =>
+        rituals != null && rituals.TryGetValue(pool, out Ritual ritual) && ritual != null
+            ? ritual.GetType().Name
+            : "";
+
+    /// <summary>The last fought enemy's ritual: the recorded one if available, else the details' one for that pool.</summary>
+    Ritual GetLastFoughtRitual(Dictionary<int, Ritual> detailsRituals, string recordedName)
+    {
+        if (LastFoughtRitualsRecorded)
+            return RunContent.CreateRitual(recordedName);
+
+        return detailsRituals.TryGetValue(LastFoughtEnemyPoolNum, out Ritual ritual) && ritual != null
+            ? ritual.MakeBaseCopy()
+            : null;
     }
 
     public bool ApplyBecomeLastEnemy()
@@ -2200,15 +2256,8 @@ public class ProgressionHandler
             newDeck.Add(card.MakeBaseCopy());
         playerDetails.DeckBlueprint[0] = newDeck;
 
-        if (enemyDetails.MinorRituals.TryGetValue(pool, out Ritual minorRitual) && minorRitual != null)
-            playerDetails.MinorRituals[0] = minorRitual.MakeBaseCopy();
-        else
-            playerDetails.MinorRituals[0] = null;
-
-        if (enemyDetails.MajorRituals.TryGetValue(pool, out Ritual majorRitual) && majorRitual != null)
-            playerDetails.MajorRituals[0] = majorRitual.MakeBaseCopy();
-        else
-            playerDetails.MajorRituals[0] = null;
+        playerDetails.MinorRituals[0] = GetLastFoughtRitual(enemyDetails.MinorRituals, LastFoughtMinorRitualName);
+        playerDetails.MajorRituals[0] = GetLastFoughtRitual(enemyDetails.MajorRituals, LastFoughtMajorRitualName);
 
         if (!playerDetails.Trinkets.ContainsKey(0))
             playerDetails.Trinkets[0] = new List<Trinket>();
@@ -2659,6 +2708,9 @@ public class ProgressionHandler
         save.hasSetupFirstCombat = hasSetupFirstCombat;
         save.lastFoughtEnemy = LastFoughtEnemyDeckName.ToString();
         save.lastFoughtPool = LastFoughtEnemyPoolNum;
+        save.lastFoughtRitualsRecorded = LastFoughtRitualsRecorded;
+        save.lastFoughtMajorRitual = LastFoughtMajorRitualName ?? "";
+        save.lastFoughtMinorRitual = LastFoughtMinorRitualName ?? "";
         save.enemyPool = DeckNamesToStrings(EnemyPool);
         save.bossPool = DeckNamesToStrings(BossPool);
         save.trinketPool = new List<string>();
@@ -2685,6 +2737,9 @@ public class ProgressionHandler
         }
 
         LastFoughtEnemyPoolNum = save.lastFoughtPool;
+        LastFoughtRitualsRecorded = save.lastFoughtRitualsRecorded;
+        LastFoughtMajorRitualName = save.lastFoughtMajorRitual ?? "";
+        LastFoughtMinorRitualName = save.lastFoughtMinorRitual ?? "";
         EnemyPool = StringsToDeckNames(save.enemyPool);
         BossPool = StringsToDeckNames(save.bossPool);
         availableTrinkets = new List<Trinket>();

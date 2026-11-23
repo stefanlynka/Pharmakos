@@ -34,6 +34,10 @@ public class RunSaveData
     public bool hasSetupFirstCombat;
     public string lastFoughtEnemy = "";
     public int lastFoughtPool;
+    // Added after v1; absent in older saves (false/"" -> fall back to the enemy's details).
+    public bool lastFoughtRitualsRecorded;
+    public string lastFoughtMajorRitual = "";
+    public string lastFoughtMinorRitual = "";
     public List<string> enemyPool = new List<string>();
     public List<string> bossPool = new List<string>();
     public List<string> trinketPool = new List<string>();

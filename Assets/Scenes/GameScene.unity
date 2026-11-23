@@ -6308,7 +6308,8 @@ MonoBehaviour:
   CameraPanMaxSpeed: 10
   CameraPanAcceleration: 30
   CameraPanDeceleration: 40
-  CameraEdgePanMargin: 36
+  CameraEdgePanMargin: 72
+  CameraEdgePanSpeedScale: 0.5
   CameraScrollZoomSpeed: 5
   CameraScrollSmoothTime: 0.12
   CameraMinX: -10
@@ -12915,7 +12916,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3011876531552526561, guid: 9d15120f3f23d5c45af392efeb7a02a2, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 40.6
+      value: 39.8
       objectReference: {fileID: 0}
     - target: {fileID: 3011876531552526561, guid: 9d15120f3f23d5c45af392efeb7a02a2, type: 3}
       propertyPath: m_LocalRotation.w
@@ -19861,7 +19862,7 @@ MonoBehaviour:
   EyeLight: {fileID: 1954866824}
   maxEyeLightIntensity: 3000
   defaultLightIntensity: 250
-  dimLightIntensity: 0
+  dimLightIntensity: 100
 --- !u!1001 &503549937
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37533,7 +37534,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 32.64
+      value: 34.3
       objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_LocalPosition.y
@@ -39306,7 +39307,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 9.28
+      value: 10.9
       objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_LocalPosition.z
@@ -73522,11 +73523,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3011876531552526561, guid: 9d15120f3f23d5c45af392efeb7a02a2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -16.4
+      value: -17
       objectReference: {fileID: 0}
     - target: {fileID: 3011876531552526561, guid: 9d15120f3f23d5c45af392efeb7a02a2, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 40.6
+      value: 39.88
       objectReference: {fileID: 0}
     - target: {fileID: 3011876531552526561, guid: 9d15120f3f23d5c45af392efeb7a02a2, type: 3}
       propertyPath: m_LocalRotation.w
