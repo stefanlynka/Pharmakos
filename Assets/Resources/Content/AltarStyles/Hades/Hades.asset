@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53174c69a9d5a5b4e884cede34d66799, type: 3}
+  m_Name: Hades
+  m_EditorClassIdentifier: 
+  Stone: {fileID: 2100000, guid: d226b29674026da449e876e0c95e5b3b, type: 2}
+  Panel: {fileID: 2100000, guid: c999da8a6bb9a734a9f97bac19957809, type: 2}
+  Trim: {fileID: 2100000, guid: ad8006d80aa764349afc6193fb2fbea9, type: 2}
+  Corner: {fileID: 2100000, guid: 286b4655bfceded4ba67e90d7a617238, type: 2}
+  TextColor: {r: 0.93, g: 0.89, b: 0.8, a: 1}

@@ -17,8 +17,28 @@ A god's look is an **AltarStyle** asset: those four materials plus the colour of
 - Rituals with no style for their god use `Default`.
 - `ViewRitual.Refresh` applies the style, so it works on the board, in rewards, in starter bundles and in events.
 
-Styles so far: **Default** (cream marble, carved key), **Poseidon** (teal marble, bronze wave scroll, tridents),
-**Zeus** (storm slate, gold lightning, thunderbolts), **Aphrodite** (rose marble, rosette vine on wine red, roses).
+Styles (every god in `Rituals.txt` has one; Default is the fallback):
+
+| God | Stone | Border | Corner |
+|---|---|---|---|
+| Aphrodite | rose marble | rosette vine on wine red | rose |
+| Apollo | sunlit gold marble | gold sun rays | sun |
+| Ares | oxblood jasper | iron spear | round shield |
+| Athena | grey-green stone | silver olive branch | owl |
+| Demeter | wheat sandstone | golden wheat ear on green | wheat ear |
+| Dionysus | amethyst marble | grapevine | grape cluster |
+| Hades | black basalt, violet veins | bones | skull |
+| Hephaestus | forge-iron grey, molten cracks | bronze chain | hammer |
+| Hera | lapis blue, gold flecks | peacock feathers | peacock feather |
+| Hermes | sky-blue marble | silver wing feathers | caduceus |
+| Hestia | hearth terracotta | hearth fires | fire on a hearth |
+| Muse | ivory, ink veins | dark egg-and-dart | lyre |
+| Old Ones | serpentine green | coiling serpent | serpent coil |
+| Poseidon | teal marble | bronze wave scroll | trident |
+| Zeus | storm slate | gold lightning | thunderbolt |
+| Default | cream marble | carved key | rosette |
+
+Major and Minor rituals of the same god share a style.
 
 ## Tuning a style
 

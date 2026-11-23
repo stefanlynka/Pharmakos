@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53174c69a9d5a5b4e884cede34d66799, type: 3}
+  m_Name: Demeter
+  m_EditorClassIdentifier: 
+  Stone: {fileID: 2100000, guid: 262a3c79acec9f848a12ff16d77ee1d5, type: 2}
+  Panel: {fileID: 2100000, guid: 2eadd4b2bc8bac341a6f37b57c8860b1, type: 2}
+  Trim: {fileID: 2100000, guid: aa35444d13a438d4797721ea53e91f3c, type: 2}
+  Corner: {fileID: 2100000, guid: 61dfa6d081ced4d42a1848d596ba46ac, type: 2}
+  TextColor: {r: 0, g: 0, b: 0, a: 1}

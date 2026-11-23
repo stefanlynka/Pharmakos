@@ -256,6 +256,205 @@ def motif_key(x, y):
 MOTIFS = {"waves": motif_waves, "lightning": motif_lightning, "rosettes": motif_rosettes, "key": motif_key}
 
 
+# ------------------------------------------------------- shape helpers ---
+def ellipse_height(x, y, cx, cy, rx, ry, ang=0.0):
+    """Soft dome filling an ellipse (1 at the centre, 0 at the rim)."""
+    dx, dy = x - cx, y - cy
+    u = dx * math.cos(ang) + dy * math.sin(ang)
+    v = -dx * math.sin(ang) + dy * math.cos(ang)
+    r = np.sqrt((u / rx) ** 2 + (v / ry) ** 2)
+    return np.sqrt(np.clip(1 - r * r, 0, 1)) ** 0.5
+
+
+def ring_height(x, y, cx, cy, rx, ry, thickness, ang=0.0):
+    dx, dy = x - cx, y - cy
+    u = dx * math.cos(ang) + dy * math.sin(ang)
+    v = -dx * math.sin(ang) + dy * math.cos(ang)
+    d = np.abs(np.sqrt((u / rx) ** 2 + (v / ry) ** 2) - 1) * min(rx, ry)
+    return stroke_height(d, thickness)
+
+
+def leaf(x, y, cx, cy, length, width, ang):
+    return ellipse_height(x, y, cx, cy, length, width, ang)
+
+
+def polygon(x, y, pts, soft=0.04):
+    return filled_polygon_height(x, y, pts, soft)
+
+
+def flame_points(cx, by, w, h, lean=0.0, n=24):
+    """A flame tongue: base centre (cx, by), width w, height h, tip leaning by lean.
+    Widest low down, tapering in an S-curve to a sharp tip."""
+    left, right = [], []
+    for i in range(n + 1):
+        t = i / n
+        half = w * 0.5 * min(1.0, t * 6.0) * (1 - t) ** 1.3
+        mid = cx + lean * t * t + 0.18 * w * math.sin(t * math.pi * 1.6) * t
+        left.append((mid - half, by + h * t))
+        right.append((mid + half, by + h * t))
+    return left + right[::-1]
+
+
+def teardrop_points(cx, cy, r, h, n=32):
+    """Round at the bottom (centre cx, cy, radius r), pointed at the top (h above the centre)."""
+    pts = [(cx, cy + h)]
+    for i in range(n + 1):
+        a = math.radians(30 - i / n * 240)   # from upper right, down round the bottom, to upper left
+        pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+    return pts
+
+
+# ----------------------------------------------------- more trim motifs ---
+def motif_rays(x, y):
+    h = np.zeros_like(x)
+    for k in range(8):
+        cx = 0.25 + 0.5 * k
+        tall = 0.8 if k % 2 == 0 else 0.52
+        h = np.maximum(h, polygon(x, y, [(cx - 0.17, 0.14), (cx + 0.17, 0.14), (cx, tall)]))
+    return h
+
+
+def motif_spears(x, y):
+    shaft = stroke_height(poly_dist(x, y, [(0.15, 0.5), (3.05, 0.5)]), 0.045)
+    head = polygon(x, y, [(3.0, 0.5), (3.25, 0.7), (3.88, 0.5), (3.25, 0.3)])
+    butt = polygon(x, y, [(0.04, 0.5), (0.25, 0.6), (0.25, 0.4)])
+    return np.maximum.reduce([shaft, head, butt])
+
+
+def motif_olive(x, y):
+    stem_pts = [(i / 40 * 4, 0.5 + 0.08 * math.sin(i / 40 * 4 * math.pi)) for i in range(41)]
+    h = stroke_height(poly_dist(x, y, stem_pts), 0.035) * 0.8
+    for k in range(8):
+        cx = 0.25 + 0.5 * k
+        up = k % 2 == 0
+        cy = 0.5 + (0.17 if up else -0.17)
+        h = np.maximum(h, leaf(x, y, cx + 0.08, cy, 0.24, 0.07, 0.55 if up else -0.55) * 0.85)
+    for ox in (1.0, 3.0):
+        h = np.maximum(h, ellipse_height(x, y, ox, 0.3, 0.07, 0.09))
+    return h
+
+
+def motif_wheat(x, y):
+    h = stroke_height(poly_dist(x, y, [(0.0, 0.5), (4.0, 0.5)]), 0.03) * 0.8
+    for k in range(13):
+        gx = 0.15 + 0.3 * k
+        h = np.maximum(h, leaf(x, y, gx, 0.6, 0.13, 0.055, 0.6))
+        h = np.maximum(h, leaf(x, y, gx, 0.4, 0.13, 0.055, -0.6))
+    return h
+
+
+def motif_vine(x, y):
+    stem_pts = [(i / 40 * 4, 0.5 + 0.16 * math.sin(i / 40 * 4 * math.pi + 1.0)) for i in range(41)]
+    h = stroke_height(poly_dist(x, y, stem_pts), 0.035) * 0.8
+    for gx, gy in [(1.1, 0.3), (3.1, 0.3)]:
+        for dx, dy in [(-0.12, 0.08), (0.0, 0.08), (0.12, 0.08), (-0.06, -0.03), (0.06, -0.03), (0.0, -0.13)]:
+            h = np.maximum(h, ellipse_height(x, y, gx + dx, gy + dy, 0.065, 0.065) * 0.95)
+    for lx, ly in [(0.25, 0.72), (2.25, 0.72)]:
+        h = np.maximum(h, rosette_height(x, y, lx, ly, 0.24, petals=5) * 0.75)
+    return h
+
+
+def bone(x, y, x0, x1, cy):
+    shaft = stroke_height(poly_dist(x, y, [(x0, cy), (x1, cy)]), 0.06)
+    knobs = np.maximum.reduce([ellipse_height(x, y, x0, cy + dy, 0.08, 0.08) for dy in (-0.07, 0.07)] +
+                              [ellipse_height(x, y, x1, cy + dy, 0.08, 0.08) for dy in (-0.07, 0.07)])
+    return np.maximum(shaft, knobs)
+
+
+def motif_bones(x, y):
+    return np.maximum(bone(x, y, 0.3, 1.7, 0.5), bone(x, y, 2.3, 3.7, 0.5))
+
+
+def motif_chain(x, y):
+    h = np.zeros_like(x)
+    for k in range(4):
+        cx = 0.5 + k
+        ry = 0.22 if k % 2 == 0 else 0.08
+        h = np.maximum(h, ring_height(x, y, cx, 0.5, 0.42, ry, 0.05))
+    return h
+
+
+def feather(x, y, cx, cy, length, width, ang):
+    """A feather: leaf-shaped vane with angled barb grooves and a raised quill."""
+    vane = leaf(x, y, cx, cy, length, width, ang)
+    dx, dy = x - cx, y - cy
+    u = dx * math.cos(ang) + dy * math.sin(ang)
+    v = -dx * math.sin(ang) + dy * math.cos(ang)
+    barbs = 0.75 + 0.25 * np.cos((u - np.abs(v) * 1.2) * 70)
+    quill = stroke_height(np.abs(v) + np.where(np.abs(u) < length * 0.95, 0, 1), 0.012)
+    return np.maximum(vane * barbs * 0.85, quill * (vane > 0.05))
+
+
+def motif_feathers(x, y):
+    # Wing feathers laid in a row, each tilted and overlapping the next.
+    h = np.zeros_like(x)
+    for k in range(5):
+        h = np.maximum(h, feather(x, y, 0.4 + 0.8 * k, 0.5, 0.48, 0.16, 0.3))
+    return h
+
+
+def motif_eggdart(x, y):
+    h = np.zeros_like(x)
+    for k in range(4):
+        cx = 0.5 + k
+        h = np.maximum(h, ring_height(x, y, cx, 0.5, 0.33, 0.3, 0.035) * 0.8)
+        h = np.maximum(h, ellipse_height(x, y, cx, 0.5, 0.24, 0.22))
+        h = np.maximum(h, polygon(x, y, [(cx + 0.5, 0.82), (cx + 0.45, 0.4), (cx + 0.5, 0.2), (cx + 0.55, 0.4)], 0.02))
+    return h
+
+
+def fire(x, y, cx, by, w, h):
+    """A hearth fire: a tall wavy central tongue flanked by two shorter tongues curling outward."""
+    centre = polygon(x, y, flame_points(cx, by, w * 0.55, h, 0.05))
+    left = polygon(x, y, flame_points(cx - w * 0.3, by, w * 0.4, h * 0.62, -w * 0.25))
+    right = polygon(x, y, flame_points(cx + w * 0.3, by, w * 0.4, h * 0.62, w * 0.25))
+    return np.maximum.reduce([centre, left * 0.85, right * 0.85])
+
+
+def motif_flames(x, y):
+    h = np.zeros_like(x)
+    for k in range(4):
+        h = np.maximum(h, fire(x, y, 0.5 + k, 0.14, 0.62, 0.72))
+    return h
+
+
+def peacock_eye(x, y, cx, cy, r, h):
+    outer = filled_polygon_height(x, y, teardrop_points(cx, cy, r, h), 0.03) * 0.55
+    ring = ring_height(x, y, cx, cy, r * 0.62, r * 0.62, 0.03)
+    dot = ellipse_height(x, y, cx, cy, r * 0.32, r * 0.32)
+    return np.maximum.reduce([outer, ring, dot])
+
+
+def peacock_feather(x, y, cx, cy, r, h):
+    """Eye on a quill with fine barbs fanning off it, so it reads as a feather, not a drop."""
+    eye = peacock_eye(x, y, cx, cy, r, h)
+    quill = stroke_height(poly_dist(x, y, [(cx, cy - r), (cx, 0.1)]), 0.015) * 0.8
+    barbs = np.zeros_like(x)
+    for k in range(4):
+        yy = cy - r - 0.05 - k * 0.06
+        if yy < 0.12:
+            break
+        for sgn in (-1, 1):
+            barbs = np.maximum(barbs, stroke_height(poly_dist(x, y, [(cx, yy), (cx + sgn * 0.16, yy + 0.07)]), 0.01) * 0.55)
+    return np.maximum.reduce([eye, quill, barbs])
+
+
+def motif_peacock(x, y):
+    return np.maximum.reduce([peacock_feather(x, y, 0.5 + k, 0.5, 0.17, 0.34) for k in range(4)])
+
+
+def motif_serpent(x, y):
+    pts = [(i / 60 * 4, 0.5 + 0.22 * math.sin(i / 60 * 4 * math.pi)) for i in range(61)]
+    body = stroke_height(poly_dist(x, y, pts), 0.11)
+    scales = 0.85 + 0.15 * np.sin(x * 40) * np.sin(y * 40)
+    return body * scales
+
+
+MOTIFS.update({"rays": motif_rays, "spears": motif_spears, "olive": motif_olive, "wheat": motif_wheat, "vine": motif_vine,
+               "bones": motif_bones, "chain": motif_chain, "feathers": motif_feathers, "eggdart": motif_eggdart,
+               "flames": motif_flames, "peacock": motif_peacock, "serpent": motif_serpent})
+
+
 def corner_grid():
     n = 256
     y, x = np.mgrid[0:n, 0:n].astype(float)
@@ -288,6 +487,105 @@ def corner_boss(x, y):
 
 
 CORNERS = {"trident": corner_trident, "bolt": corner_bolt, "rose": corner_rose, "boss": corner_boss}
+
+
+# --------------------------------------------------- more corner emblems ---
+def corner_sun(x, y):
+    h = ellipse_height(x, y, 0.5, 0.5, 0.16, 0.16)
+    for k in range(8):
+        a = k / 8 * 2 * math.pi
+        tip = (0.5 + 0.37 * math.cos(a), 0.5 + 0.37 * math.sin(a))
+        l = (0.5 + 0.2 * math.cos(a - 0.3), 0.5 + 0.2 * math.sin(a - 0.3))
+        r = (0.5 + 0.2 * math.cos(a + 0.3), 0.5 + 0.2 * math.sin(a + 0.3))
+        h = np.maximum(h, polygon(x, y, [l, tip, r], 0.03) * 0.85)
+    return h
+
+
+def corner_shield(x, y):
+    return np.maximum.reduce([ring_height(x, y, 0.5, 0.5, 0.3, 0.3, 0.05), ellipse_height(x, y, 0.5, 0.5, 0.12, 0.12),
+                              ring_height(x, y, 0.5, 0.5, 0.2, 0.2, 0.02) * 0.6])
+
+
+def corner_owl(x, y):
+    head = ellipse_height(x, y, 0.5, 0.48, 0.32, 0.3) * 0.45
+    eyes = np.maximum(ring_height(x, y, 0.37, 0.55, 0.1, 0.1, 0.035), ring_height(x, y, 0.63, 0.55, 0.1, 0.1, 0.035))
+    pupils = np.maximum(ellipse_height(x, y, 0.37, 0.55, 0.045, 0.045), ellipse_height(x, y, 0.63, 0.55, 0.045, 0.045))
+    beak = polygon(x, y, [(0.45, 0.42), (0.55, 0.42), (0.5, 0.3)], 0.02)
+    ears = np.maximum(polygon(x, y, [(0.2, 0.7), (0.32, 0.72), (0.22, 0.86)], 0.02), polygon(x, y, [(0.8, 0.7), (0.68, 0.72), (0.78, 0.86)], 0.02))
+    return np.maximum.reduce([head, eyes, pupils, beak, ears])
+
+
+def corner_wheat(x, y):
+    h = stroke_height(poly_dist(x, y, [(0.5, 0.12), (0.5, 0.88)]), 0.03)
+    for k in range(5):
+        gy = 0.42 + 0.1 * k
+        h = np.maximum(h, leaf(x, y, 0.43, gy, 0.1, 0.045, 1.0))
+        h = np.maximum(h, leaf(x, y, 0.57, gy, 0.1, 0.045, -1.0))
+    return h
+
+
+def corner_grapes(x, y):
+    h = stroke_height(poly_dist(x, y, [(0.5, 0.72), (0.56, 0.86)]), 0.025)
+    h = np.maximum(h, leaf(x, y, 0.66, 0.78, 0.13, 0.06, 0.4) * 0.8)
+    for row, n in enumerate([4, 3, 2, 1]):
+        for i in range(n):
+            h = np.maximum(h, ellipse_height(x, y, 0.5 + (i - (n - 1) / 2) * 0.13, 0.62 - row * 0.12, 0.065, 0.065))
+    return h
+
+
+def corner_skull(x, y):
+    cranium = ellipse_height(x, y, 0.5, 0.56, 0.26, 0.24)
+    jaw = polygon(x, y, [(0.36, 0.4), (0.64, 0.4), (0.6, 0.22), (0.4, 0.22)], 0.03)
+    holes = np.maximum.reduce([ellipse_height(x, y, 0.41, 0.55, 0.075, 0.065), ellipse_height(x, y, 0.59, 0.55, 0.075, 0.065),
+                               polygon(x, y, [(0.47, 0.46), (0.53, 0.46), (0.5, 0.39)], 0.01)])
+    return np.maximum(cranium, jaw) * (1 - 0.85 * smoothstep(0.05, 0.3, holes))
+
+
+def corner_hammer(x, y):
+    handle = stroke_height(poly_dist(x, y, [(0.26, 0.18), (0.62, 0.66)]), 0.045)
+    c, s = math.cos(-0.93), math.sin(-0.93)
+    hx, hy = 0.64, 0.68
+    head = [(hx + dx * c - dy * s, hy + dx * s + dy * c) for dx, dy in [(-0.24, -0.08), (0.24, -0.08), (0.24, 0.08), (-0.24, 0.08)]]
+    return np.maximum(handle, polygon(x, y, head, 0.03))
+
+
+def corner_caduceus(x, y):
+    staff = stroke_height(poly_dist(x, y, [(0.5, 0.12), (0.5, 0.84)]), 0.03)
+    s1 = [(0.5 + 0.13 * math.sin(t / 30 * 2.5 * math.pi), 0.18 + 0.55 * t / 30) for t in range(31)]
+    s2 = [(0.5 - 0.13 * math.sin(t / 30 * 2.5 * math.pi), 0.18 + 0.55 * t / 30) for t in range(31)]
+    snakes = np.maximum(stroke_height(poly_dist(x, y, s1), 0.03), stroke_height(poly_dist(x, y, s2), 0.03))
+    wings = np.maximum(polygon(x, y, [(0.5, 0.8), (0.16, 0.9), (0.3, 0.75)], 0.02), polygon(x, y, [(0.5, 0.8), (0.84, 0.9), (0.7, 0.75)], 0.02))
+    return np.maximum.reduce([staff, snakes, wings])
+
+
+def corner_lyre(x, y):
+    left = [(0.38, 0.22), (0.26, 0.4), (0.26, 0.6), (0.34, 0.76), (0.26, 0.86)]
+    right = [(0.62, 0.22), (0.74, 0.4), (0.74, 0.6), (0.66, 0.76), (0.74, 0.86)]
+    frame = np.maximum.reduce([stroke_height(poly_dist(x, y, left), 0.04), stroke_height(poly_dist(x, y, right), 0.04),
+                               stroke_height(poly_dist(x, y, [(0.36, 0.22), (0.64, 0.22)]), 0.04),
+                               stroke_height(poly_dist(x, y, [(0.3, 0.72), (0.7, 0.72)]), 0.035)])
+    strings = np.maximum.reduce([stroke_height(poly_dist(x, y, [(sx, 0.24), (sx, 0.7)]), 0.012) * 0.7 for sx in (0.42, 0.5, 0.58)])
+    return np.maximum(frame, strings)
+
+
+def corner_flame(x, y):
+    # A fire on a small hearth ledge.
+    ledge = polygon(x, y, [(0.22, 0.16), (0.78, 0.16), (0.74, 0.24), (0.26, 0.24)], 0.02) * 0.8
+    return np.maximum(ledge, fire(x, y, 0.5, 0.24, 0.5, 0.62))
+
+
+def corner_peacock(x, y):
+    return peacock_feather(x, y, 0.5, 0.55, 0.2, 0.34)
+
+
+def corner_coil(x, y):
+    body = stroke_height(poly_dist(x, y, spiral(0.5, 0.5, 0.32, 0.06, 2.2, 0.0, clockwise=True)), 0.06)
+    return np.maximum(body, ellipse_height(x, y, 0.83, 0.5, 0.07, 0.05))
+
+
+CORNERS.update({"sun": corner_sun, "shield": corner_shield, "owl": corner_owl, "wheat": corner_wheat, "grapes": corner_grapes,
+                "skull": corner_skull, "hammer": corner_hammer, "caduceus": corner_caduceus, "lyre": corner_lyre,
+                "flame": corner_flame, "peacock": corner_peacock, "coil": corner_coil})
 
 
 def relief_set(s, folder, prefix, hgt, wrap_x):
@@ -341,6 +639,66 @@ STYLES = {
         vein_amount=0.8, vein_width=0.08, fine_veins=0.35, warp=1.3, vein_dir=(1, 2), stone_smooth=0.55, panel_calm=0.7,
         trim="rosettes", corner="rose", relief=C(0.88, 0.62, 0.52), relief_hi=C(0.98, 0.84, 0.76), relief_ground=C(0.38, 0.10, 0.13),
         relief_metal=0.35, relief_smooth=0.55, relief_bump=6.0),
+    "Apollo": dict(
+        stone_dark=C(0.80, 0.70, 0.50), stone_light=C(0.94, 0.88, 0.72), vein=C(0.72, 0.55, 0.28), vein_amount=0.5, vein_width=0.05,
+        fine_veins=0.3, warp=1.2, vein_dir=(1, 2), stone_smooth=0.5, panel_calm=0.7,
+        trim="rays", corner="sun", relief=C(0.86, 0.64, 0.24), relief_hi=C(1.0, 0.88, 0.52), relief_ground=C(0.55, 0.40, 0.18),
+        relief_metal=0.5, relief_smooth=0.6, relief_bump=6.0),
+    "Ares": dict(
+        stone_dark=C(0.22, 0.05, 0.04), stone_light=C(0.40, 0.10, 0.07), vein=C(0.10, 0.03, 0.02), vein_amount=0.7, vein_width=0.07,
+        fine_veins=0.4, warp=1.6, vein_dir=(2, 1), stone_smooth=0.45, panel_calm=0.75, panel_tone=0.9,
+        trim="spears", corner="shield", relief=C(0.42, 0.40, 0.40), relief_hi=C(0.66, 0.64, 0.62), relief_ground=C(0.10, 0.03, 0.03),
+        relief_metal=0.6, relief_smooth=0.45, relief_bump=6.0),
+    "Athena": dict(
+        stone_dark=C(0.30, 0.33, 0.30), stone_light=C(0.48, 0.51, 0.46), vein=C(0.78, 0.80, 0.74), vein_amount=0.55, vein_width=0.05,
+        fine_veins=0.3, warp=1.0, vein_dir=(1, 1), stone_smooth=0.45, panel_calm=0.75, panel_tone=0.9,
+        trim="olive", corner="owl", relief=C(0.70, 0.72, 0.70), relief_hi=C(0.90, 0.92, 0.90), relief_ground=C(0.18, 0.22, 0.18),
+        relief_metal=0.55, relief_smooth=0.55, relief_bump=6.0),
+    "Demeter": dict(
+        stone_dark=C(0.70, 0.55, 0.30), stone_light=C(0.86, 0.74, 0.48), vein=C(0.55, 0.40, 0.18), vein_amount=0.35, vein_width=0.05,
+        fine_veins=0.2, warp=1.4, vein_dir=(1, 3), stone_smooth=0.3, panel_calm=0.7,
+        trim="wheat", corner="wheat", relief=C(0.88, 0.72, 0.36), relief_hi=C(0.98, 0.88, 0.58), relief_ground=C(0.34, 0.38, 0.16),
+        relief_metal=0.2, relief_smooth=0.4, relief_bump=6.0),
+    "Dionysus": dict(
+        stone_dark=C(0.20, 0.07, 0.24), stone_light=C(0.36, 0.14, 0.40), vein=C(0.82, 0.70, 0.88), vein_amount=0.7, vein_width=0.07,
+        fine_veins=0.4, warp=1.3, vein_dir=(1, 2), stone_smooth=0.55, panel_calm=0.75, panel_tone=0.9,
+        trim="vine", corner="grapes", relief=C(0.52, 0.62, 0.30), relief_hi=C(0.74, 0.82, 0.46), relief_ground=C(0.12, 0.04, 0.14),
+        relief_metal=0.2, relief_smooth=0.5, relief_bump=6.0),
+    "Hades": dict(
+        stone_dark=C(0.05, 0.05, 0.06), stone_light=C(0.13, 0.12, 0.15), vein=C(0.36, 0.30, 0.42), vein_amount=0.6, vein_width=0.04,
+        fine_veins=0.3, warp=1.0, vein_dir=(2, 1), stone_smooth=0.65, panel_calm=0.8, panel_tone=1.1,
+        trim="bones", corner="skull", relief=C(0.78, 0.74, 0.64), relief_hi=C(0.92, 0.89, 0.80), relief_ground=C(0.04, 0.04, 0.05),
+        relief_metal=0.0, relief_smooth=0.35, relief_bump=6.0),
+    "Hephaestus": dict(
+        stone_dark=C(0.24, 0.23, 0.23), stone_light=C(0.40, 0.38, 0.37), vein=C(0.95, 0.42, 0.08), vein_amount=1.0, vein_width=0.06,
+        fine_veins=0.6, warp=1.8, vein_dir=(1, 2), stone_smooth=0.35, panel_calm=0.55, panel_tone=0.85,
+        trim="chain", corner="hammer", relief=C(0.62, 0.42, 0.22), relief_hi=C(0.86, 0.64, 0.38), relief_ground=C(0.08, 0.06, 0.05),
+        relief_metal=0.7, relief_smooth=0.4, relief_bump=6.0),
+    "Hermes": dict(
+        stone_dark=C(0.58, 0.66, 0.74), stone_light=C(0.78, 0.84, 0.90), vein=C(0.95, 0.97, 1.0), vein_amount=0.6, vein_width=0.06,
+        fine_veins=0.4, warp=1.8, vein_dir=(2, 1), stone_smooth=0.5, panel_calm=0.7,
+        trim="feathers", corner="caduceus", relief=C(0.80, 0.82, 0.86), relief_hi=C(0.96, 0.97, 1.0), relief_ground=C(0.30, 0.38, 0.48),
+        relief_metal=0.55, relief_smooth=0.6, relief_bump=6.0),
+    "Muse": dict(
+        stone_dark=C(0.84, 0.78, 0.66), stone_light=C(0.95, 0.91, 0.82), vein=C(0.20, 0.16, 0.14), vein_amount=0.45, vein_width=0.025,
+        fine_veins=0.25, warp=1.1, vein_dir=(1, 2), stone_smooth=0.4, panel_calm=0.75,
+        trim="eggdart", corner="lyre", relief=C(0.22, 0.18, 0.16), relief_hi=C(0.38, 0.32, 0.28), relief_ground=C(0.74, 0.66, 0.52),
+        relief_metal=0.0, relief_smooth=0.4, relief_bump=5.0),
+    "Hestia": dict(
+        stone_dark=C(0.55, 0.30, 0.18), stone_light=C(0.72, 0.46, 0.30), vein=C(0.90, 0.74, 0.56), vein_amount=0.35, vein_width=0.05,
+        fine_veins=0.2, warp=1.6, vein_dir=(1, 1), stone_smooth=0.3, panel_calm=0.7,
+        trim="flames", corner="flame", relief=C(0.92, 0.80, 0.60), relief_hi=C(1.0, 0.92, 0.78), relief_ground=C(0.30, 0.14, 0.08),
+        relief_metal=0.0, relief_smooth=0.35, relief_bump=6.0),
+    "Hera": dict(
+        stone_dark=C(0.06, 0.12, 0.38), stone_light=C(0.12, 0.22, 0.56), vein=C(0.90, 0.76, 0.40), vein_amount=0.5, vein_width=0.025,
+        fine_veins=0.45, warp=1.4, vein_dir=(1, 2), stone_smooth=0.6, panel_calm=0.75, panel_tone=0.9,
+        trim="peacock", corner="peacock", relief=C(0.82, 0.64, 0.26), relief_hi=C(0.98, 0.84, 0.48), relief_ground=C(0.05, 0.22, 0.26),
+        relief_metal=0.5, relief_smooth=0.6, relief_bump=6.0),
+    "OldOnes": dict(
+        stone_dark=C(0.05, 0.12, 0.08), stone_light=C(0.12, 0.24, 0.16), vein=C(0.45, 0.62, 0.36), vein_amount=0.7, vein_width=0.06,
+        fine_veins=0.5, warp=2.0, vein_dir=(1, 1), stone_smooth=0.6, panel_calm=0.8, panel_tone=1.0,
+        trim="serpent", corner="coil", relief=C(0.46, 0.52, 0.34), relief_hi=C(0.66, 0.72, 0.48), relief_ground=C(0.03, 0.07, 0.05),
+        relief_metal=0.2, relief_smooth=0.55, relief_bump=6.0),
 }
 
 for i, (name, style) in enumerate(STYLES.items()):

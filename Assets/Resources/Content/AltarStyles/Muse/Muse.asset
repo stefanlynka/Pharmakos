@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53174c69a9d5a5b4e884cede34d66799, type: 3}
+  m_Name: Muse
+  m_EditorClassIdentifier: 
+  Stone: {fileID: 2100000, guid: 5afd11eafcc5ff3489e0f64b8a80daa9, type: 2}
+  Panel: {fileID: 2100000, guid: db5ac42cfb91b4040a200120828ccfd1, type: 2}
+  Trim: {fileID: 2100000, guid: 42a618409dca0b2458e139023fe35b2e, type: 2}
+  Corner: {fileID: 2100000, guid: ec45edfeb748a0246b86218c2a9891bf, type: 2}
+  TextColor: {r: 0, g: 0, b: 0, a: 1}
