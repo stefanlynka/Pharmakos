@@ -15,6 +15,9 @@ A god's look is an **AltarStyle** asset: those materials plus the colour of the 
 
 The rules text uses its own material, `Assets/Fonts/AlegreyaSans/AlegreyaSans-Regular Altar.mat` (face dilate 0.2 and a
 thin dark outline), so it stays legible on the rough stone; change it there, not on the shared font material.
+Dark text reads thinner than light text on stone (and the dark outline adds nothing to it), so dark-text styles set
+**Text Material** to `AlegreyaSans-Regular Altar Dark.mat` (heavier face, faint light rim): Aphrodite, Apollo, Muse,
+Default. Empty uses the prefab's material.
 
 - Styles live in `Assets/Resources/Content/AltarStyles/<God>/<God>.asset`, next to their textures and materials.
 - The god comes from the ritual's class name (`AphroditeMajor` → `Aphrodite`, see `Ritual.God`).
@@ -57,7 +60,7 @@ The ones marked (env) can also be set per run with an environment variable of th
     `<God>_Tablet.mat` from them (a copy of Stone) and puts it in the Panel slot.
   - Text colour: run **Tools → Altar Kit → Reset Text Colours From Panels**. It reads the texture of whatever
     material is in the Panel slot; light text unless the panel is genuinely pale (brightness ≥ 0.62 gets black).
-    It overwrites hand-picked colours, so re-apply them afterwards (Aphrodite: red, 0.8, 0, 0).
+    It overwrites hand-picked colours, so re-apply them afterwards (Aphrodite: #3F0000 with the Dark text material).
   - `PANEL_LIFT_MAX` / `PANEL_TINT` (env `ALTAR_PANEL_LIFT`) only affect the unused Panel textures now.
 - **Muted, aged colour** (`STONE_SAT` 0.7, env): every stone loses some saturation.
 - **Matte, weathered stone** (`MATTE_STONE`, `MATTE_RELIEF`, `WEATHER`): low smoothness like the terracotta, grime

@@ -207,8 +207,18 @@ public class ViewRitual : ViewTarget
 
         altarRenderer.sharedMaterials = style.Materials;
         if (Description != null)
+        {
+            // The prefab's text material is the default; a style can swap in its own (e.g. heavier for dark text).
+            if (defaultTextMaterial == null)
+                defaultTextMaterial = Description.fontSharedMaterial;
+            Material textMaterial = style.TextMaterial != null ? style.TextMaterial : defaultTextMaterial;
+            if (Description.fontSharedMaterial != textMaterial)
+                Description.fontSharedMaterial = textMaterial;
             Description.color = style.TextColor;
+        }
     }
+
+    Material defaultTextMaterial;
 
     public void SetHighlight(bool active)
     {

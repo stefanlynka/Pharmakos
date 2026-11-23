@@ -16,4 +16,6 @@ MonoBehaviour:
   Panel: {fileID: 2100000, guid: d6514960397863540828890c14946c82, type: 2}
   Trim: {fileID: 2100000, guid: 0d2a0bcfd3fa1ee4781fcad5c19c9dd2, type: 2}
   Corner: {fileID: 2100000, guid: 7db84bd1be2130747915c691bf88934b, type: 2}
+  Ramp: {fileID: 0}
   TextColor: {r: 0, g: 0, b: 0, a: 1}
+  TextMaterial: {fileID: 2100000, guid: 724a138751a705340b08e69400ca0ce0, type: 2}

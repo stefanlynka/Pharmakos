@@ -11,6 +11,7 @@ using UnityEngine;
 public static class AltarStyleBuilder
 {
     const string Root = "Assets/Resources/Content/AltarStyles";
+    const string DarkTextMaterialPath = "Assets/Fonts/AlegreyaSans/AlegreyaSans-Regular Altar Dark.mat";
 
     [MenuItem("Tools/Altar Kit/Build Missing Altar Styles")]
     public static void BuildAll()
@@ -23,7 +24,8 @@ public static class AltarStyleBuilder
     /// <summary>
     /// Re-picks every style's rules text colour (black or cream) from the texture of the material in its Panel slot.
     /// Run it after regenerating textures or swapping the panel material; it overwrites the TextColor you see on each
-    /// style asset, so re-apply any hand-picked colours (e.g. Aphrodite's red) afterwards.
+    /// style asset, so re-apply any hand-picked colours (e.g. Aphrodite's red, #3F0000, with the Dark text material)
+    /// afterwards. Black text also gets the heavier "Altar Dark" text material.
     /// </summary>
     [MenuItem("Tools/Altar Kit/Reset Text Colours From Panels")]
     public static void ResetTextColours()
@@ -36,10 +38,14 @@ public static class AltarStyleBuilder
             if (style == null)
                 continue;
             Color wanted = TextColourFor(folder, style);
-            if (style.TextColor == wanted)
+            // Dark text reads thinner than light text on the rough stone, so it gets the heavier text material.
+            var darkText = AssetDatabase.LoadAssetAtPath<Material>(DarkTextMaterialPath);
+            Material wantedMaterial = wanted == Color.black ? darkText : (style.TextMaterial == darkText ? null : style.TextMaterial);
+            if (style.TextColor == wanted && style.TextMaterial == wantedMaterial)
                 continue;
             Undo.RecordObject(style, "Reset Altar Text Colour");
             style.TextColor = wanted;
+            style.TextMaterial = wantedMaterial;
             EditorUtility.SetDirty(style);
         }
         AssetDatabase.SaveAssets();

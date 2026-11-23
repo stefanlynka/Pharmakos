@@ -26,6 +26,9 @@ public class AltarStyle : ScriptableObject
 
     [Tooltip("Colour of the rules text printed on the altar. Light on dark stone, dark on pale stone.")]
     public Color TextColor = Color.black;
+    [Tooltip("Optional material for the rules text; empty uses the altar prefab's. Dark text reads thinner than light " +
+             "text on the rough stone, so dark-text styles use the heavier 'AlegreyaSans-Regular Altar Dark'.")]
+    public Material TextMaterial;
 
     static readonly Dictionary<string, AltarStyle> cache = new Dictionary<string, AltarStyle>();
     Material[] materials;
