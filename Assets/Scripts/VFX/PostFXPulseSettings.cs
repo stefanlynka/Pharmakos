@@ -15,10 +15,10 @@ public class PostFXPulseSettings : ScriptableObject
         public float Duration = 0.5f;
         [Tooltip("Seconds to reach full strength; the rest of Duration fades out.")]
         public float AttackTime = 0.06f;
-        public Color VignetteColor = new Color(0.45f, 0f, 0f);
-        [Range(0f, 1f)] public float VignetteIntensity = 0.45f;
+        public Color VignetteColor = new Color(0.6f, 0f, 0f);
+        [Range(0f, 1f)] public float VignetteIntensity = 0.5f;
         [Range(0.01f, 1f)] public float VignetteSmoothness = 0.6f;
-        [Range(0f, 1f)] public float ChromaticAberration = 0.25f;
+        [Range(0f, 1f)] public float ChromaticAberration = 0.15f;
         [Tooltip("Post exposure in stops at full strength (negative darkens).")]
         public float Exposure = 0f;
         [Tooltip("Saturation offset at full strength (-100..100).")]
@@ -41,7 +41,7 @@ public class PostFXPulseSettings : ScriptableObject
         VignetteColor = new Color(0.05f, 0.02f, 0f),
         VignetteIntensity = 0.5f,
         VignetteSmoothness = 0.5f,
-        ChromaticAberration = 0.15f,
+        ChromaticAberration = 0.1f,
         Exposure = 0f,
         Saturation = 10f,
     };
