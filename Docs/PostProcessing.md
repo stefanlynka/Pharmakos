@@ -22,7 +22,7 @@ stair-stepping on 3D edges (trinket rims, altars, lanes, portrait frame) without
 (per-camera, post) was also tried: it smooths edges too but softens the small card text slightly. FXAA was not
 considered (softer still).
 
-## Look options (profiles, not applied)
+## Look options (D applied)
 
 Built by **Tools → Post FX → Build Option Profiles** (`Assets/Scripts/Editor/PostFXProfileBuilder.cs`) into
 `Assets/Settings/PostFX/`. To try one, drag it into the `Global Post Processing Volume`'s Profile. Rebuilding overwrites
@@ -33,7 +33,7 @@ the PostFX_* assets in place (same GUIDs), so after hand-tuning one, don't rebui
 | A Subtle | Current bloom + gentle vignette, +8 contrast, +4 saturation. No tonemapping. | Closest to today. |
 | B Graded | Neutral tonemapping, +0.35 exposure, +14 contrast, warm-highlight / cool-violet-shadow split toning, vignette, fine grain. | Shadows read a little purple. |
 | C Cinematic | Neutral tonemapping, +14 contrast, heavier vignette, warm bloom tint, medium grain, a touch of chromatic aberration. | Moodiest. |
-| **D Balanced** | Neutral tonemapping (+0.3 exposure), midtone lift (gamma +0.12) so the board's carved skulls and bones come up out of the black, +6 contrast, slight warm gain, vignette 0.25, fine grain 0.1. | **Recommended.** |
+| **D Balanced** (in use) | Neutral tonemapping (+0.3 exposure), midtone lift (gamma +0.12) so the board's carved skulls and bones come up out of the black, +6 contrast, slight warm gain, vignette 0.25, fine grain 0.1. | **Recommended.** |
 
 Lessons from building them:
 - **ACES tonemapping is wrong for this game:** its toe crushes the mostly-dark board to pure black. Use Neutral.
@@ -43,7 +43,7 @@ Lessons from building them:
 - SSAO was tried (runtime-added feature) and broke rendering. If wanted, add *Screen Space Ambient Occlusion* to the
   renderer asset in the editor (needs depth normals); most of the board is sprites, so expect little benefit.
 
-## Keep combat UI out of post (recommended with any grade)
+## Keep combat UI out of post (applied)
 
 With a vignette or grade, the corner UI (End Turn, Discard All) darkens and shifts colour: End Turn's red drops from
 178 to 130 under profile B. **Tools → Post FX → Add UI Camera (keep combat UI out of post)** adds an Overlay camera
