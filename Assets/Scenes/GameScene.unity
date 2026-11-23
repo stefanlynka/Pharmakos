@@ -65820,6 +65820,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2099432155}
     m_Modifications:
+    - target: {fileID: 996401740309907323, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 996888550314395957, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -65829,6 +65833,10 @@ PrefabInstance:
       value: ViewPlayerAI
       objectReference: {fileID: 0}
     - target: {fileID: 1754687165185083693, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2117582932328419691, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -65964,6 +65972,10 @@ PrefabInstance:
       propertyPath: m_LocalScale.z
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5631807075360863647, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5929293917982535446, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -65977,6 +65989,10 @@ PrefabInstance:
       value: -2
       objectReference: {fileID: 0}
     - target: {fileID: 6727119838430249782, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7079183780274839422, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -66032,6 +66048,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7177295461411717972, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7672101218743247798, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_LocalPosition.z
       value: -0.09
@@ -66040,8 +66060,20 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7997253387403181496, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8350421998293339217, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9023446881402631032, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9065821405240400015, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9108909553890566494, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
@@ -68019,6 +68051,18 @@ PrefabInstance:
       propertyPath: CenterLight
       value: 
       objectReference: {fileID: 851778196}
+    - target: {fileID: 6057529975489627828, guid: d175c7958802cf748b70178b9d68eba3, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6057529975489627828, guid: d175c7958802cf748b70178b9d68eba3, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6057529975489627828, guid: d175c7958802cf748b70178b9d68eba3, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 6853595859686268686, guid: d175c7958802cf748b70178b9d68eba3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 493
@@ -70955,6 +70999,10 @@ PrefabInstance:
     - target: {fileID: 335579056603460647, guid: ff9303ef19efef345b8ca565cae012ab, type: 3}
       propertyPath: m_Name
       value: ShopArea
+      objectReference: {fileID: 0}
+    - target: {fileID: 995751839352384040, guid: ff9303ef19efef345b8ca565cae012ab, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.8297
       objectReference: {fileID: 0}
     - target: {fileID: 5822564076353932252, guid: ff9303ef19efef345b8ca565cae012ab, type: 3}
       propertyPath: CenterLight

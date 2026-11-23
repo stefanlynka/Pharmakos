@@ -947,7 +947,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4268815450305642937, guid: a80295f0f242bfc4c87aa9ebe945fda2, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.15
+      value: -0.51
       objectReference: {fileID: 0}
     - target: {fileID: 4268815450305642937, guid: a80295f0f242bfc4c87aa9ebe945fda2, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1301,7 +1301,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6718831043198805541, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_fontSize
-      value: 35.5
+      value: 41.4
       objectReference: {fileID: 0}
     - target: {fileID: 6718831043198805541, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_characterSpacing
