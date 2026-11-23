@@ -2734,6 +2734,10 @@ public class ProgressionHandler
             if (trinket != null)
                 save.trinketPool.Add(trinket.GetType().Name);
         }
+
+        save.seenRituals = new List<string>();
+        foreach (Type ritualType in seenRituals)
+            save.seenRituals.Add(ritualType.Name);
     }
 
     public void ReadRunProgress(RunSaveData save)
@@ -2757,6 +2761,18 @@ public class ProgressionHandler
         LastFoughtMinorRitualName = save.lastFoughtMinorRitual ?? "";
         EnemyPool = StringsToDeckNames(save.enemyPool);
         BossPool = StringsToDeckNames(save.bossPool);
+
+        seenRituals.Clear();
+        if (save.seenRituals != null)
+        {
+            foreach (string typeName in save.seenRituals)
+            {
+                Type ritualType = RunContent.FindRitualType(typeName);
+                if (ritualType != null)
+                    seenRituals.Add(ritualType);
+            }
+        }
+
         availableTrinkets = new List<Trinket>();
         if (save.trinketPool == null) return;
 

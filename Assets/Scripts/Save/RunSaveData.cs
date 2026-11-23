@@ -41,6 +41,8 @@ public class RunSaveData
     public List<string> enemyPool = new List<string>();
     public List<string> bossPool = new List<string>();
     public List<string> trinketPool = new List<string>();
+    // Added after v1; absent in older saves (empty -> ritual rewards just start with nothing marked seen).
+    public List<string> seenRituals = new List<string>();
     public int currentQ;
     public int currentR;
     public List<MapNodeSave> nodes = new List<MapNodeSave>();

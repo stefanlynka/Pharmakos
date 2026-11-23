@@ -59,6 +59,13 @@ public static class RunContent
         return null;
     }
 
+    /// <summary>Resolves a saved ritual class name to its type without instantiating it; null if unknown.</summary>
+    public static Type FindRitualType(string typeName)
+    {
+        Type type = FindType(typeName);
+        return type != null && typeof(Ritual).IsAssignableFrom(type) ? type : null;
+    }
+
     static Type FindType(string typeName)
     {
         if (string.IsNullOrEmpty(typeName)) return null;
