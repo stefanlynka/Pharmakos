@@ -60,7 +60,7 @@ All gameplay code is in `Assets/Scripts` (default `Assembly-CSharp`, no asmdefs,
 
 ## Saves — don't break them
 
-Run saves (`Save/RunSave.cs`, JSON in `Application.persistentDataPath/run-save.json`) store cards, rituals and trinkets **by class name** and are rebuilt by reflection in `RunContent`. Renaming or removing one of those classes breaks existing saves. If save format changes, bump `RunSaveData.CurrentVersion`. Permanent unlocks live in `PlayerPrefs` (`StyxUnlocks`). Tutorial runs must stay save-compatible.
+Run saves (`Save/RunSave.cs`, JSON in `Application.persistentDataPath/run-save.json`) store cards, rituals and trinkets **by class name** and are rebuilt by reflection in `RunContent`. Renaming or removing one of those classes breaks existing saves. Adding a field to `RunSaveData` is safe (older saves load it as its default), so don't bump `RunSaveData.CurrentVersion` for that: `RunSave.TryLoad` rejects any version mismatch, so a bump makes every existing save un-continuable. Bump only for changes old data can't survive (renamed/retyped fields, changed meaning), ideally with a migration; see `Assets/Scripts/Save/CLAUDE.md`. Permanent unlocks live in `PlayerPrefs` (`StyxUnlocks`). Tutorial runs must stay save-compatible.
 
 ## Debugging
 
