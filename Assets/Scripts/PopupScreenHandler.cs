@@ -43,6 +43,7 @@ public class PopupScreenHandler : MonoBehaviour
     RitualPopup _activeRitualPopup;
     Transform _ritualHoverAnchor;
     readonly List<Card> _ritualReferenceCards = new List<Card>();
+    readonly PopupGroupLayout _ritualGroup = new PopupGroupLayout();
     Transform _ritualReferenceAnchor;
     int _ritualReferenceKey;
     readonly List<Card> _followerReferenceCards = new List<Card>();
@@ -204,7 +205,7 @@ public class PopupScreenHandler : MonoBehaviour
         popup.SetRaycastTargets(false);
 
         PositionNearTarget(popup.RectTransform, anchor, position, worldCamera);
-        ShowRitualReferenceCards(ritual, anchor, worldCamera);
+        ShowRitualReferenceCards(ritual, anchor, position, worldCamera);
     }
 
     /// <summary>Hides the ritual summary popup only if it was shown for <paramref name="anchor"/>.</summary>
@@ -236,7 +237,7 @@ public class PopupScreenHandler : MonoBehaviour
         HideRitualReferenceCards(anchor);
     }
 
-    void ShowRitualReferenceCards(Ritual ritual, Transform anchor, Camera worldCamera)
+    void ShowRitualReferenceCards(Ritual ritual, Transform anchor, PopupPosition position, Camera worldCamera)
     {
         _ritualReferenceCards.Clear();
         if (ritual != null)
@@ -273,8 +274,6 @@ public class PopupScreenHandler : MonoBehaviour
         if (count == 0)
             return;
 
-        PlaceRitualReferenceCards(anchor, worldCamera, count);
-
         for (int i = 0; i < count; i++)
         {
             if (_ritualReferenceCards[i] is not Follower follower)
@@ -283,7 +282,136 @@ public class PopupScreenHandler : MonoBehaviour
             PopupSlot slot = i == 0 ? PopupSlot.One : PopupSlot.Two;
             SetKeywordSource(slot, KeywordReminderSource.ImagePopup);
             ShowStaticEffectReminders(slot, follower, anchor, worldCamera, besidePopup: true);
-            RepositionRitualReminders(slot);
+        }
+
+        LayoutRitualHoverGroup(anchor, position, worldCamera, count);
+    }
+
+    /// <summary>
+    /// Lays out the summary, its referenced cards and their keyword reminders as one block:
+    /// summary next to the altar, cards stacked beyond it, each card's reminders beyond that.
+    /// The block flips to whichever side of the altar it fits on as a whole.
+    /// </summary>
+    void LayoutRitualHoverGroup(Transform anchor, PopupPosition position, Camera worldCamera, int count)
+    {
+        if (_activeRitualPopup == null)
+            return;
+
+        RectTransform summary = _activeRitualPopup.RectTransform;
+        LayoutRebuilder.ForceRebuildLayoutImmediate(summary);
+        Rect summaryRect = GetRectInContainer(summary);
+        Rect altarRect = GetAnchorRectInContainer(anchor, ResolveWorldCamera(worldCamera));
+        Rect screenBounds = GetContainerLocalScreenBounds();
+        if (summaryRect.width <= 0f || summaryRect.height <= 0f || screenBounds.width <= 0f)
+            return;
+
+        // No visible altar to measure: anchor on the point just inside the summary's near edge,
+        // so the group still lays out as one block instead of leaving cards stacked.
+        if (altarRect.width <= 0f || altarRect.height <= 0f)
+            altarRect = new Rect(summaryRect.xMin - TargetGap, summaryRect.center.y, 0f, 0f);
+
+        _ritualGroup.Clear();
+        int summaryIndex = _ritualGroup.Add(new Rect(0f, -summaryRect.height * 0.5f, summaryRect.width, summaryRect.height));
+
+        // Measure each card's visible face (the capture texture has padding) and its reminders.
+        RectTransform[] cards = new RectTransform[count];
+        Rect[] faces = new Rect[count];
+        Vector2[] faceOffsets = new Vector2[count];
+        List<KeywordReminderPopup>[] reminders = new List<KeywordReminderPopup>[count];
+        int[] reminderCounts = new int[count];
+        float[] unitHeights = new float[count];
+        float cardWidth = 0f;
+        float columnHeight = 0f;
+        int units = 0;
+
+        for (int i = 0; i < count; i++)
+        {
+            PopupSlot slot = i == 0 ? PopupSlot.One : PopupSlot.Two;
+            RectTransform popup = GetImagePopup(slot);
+            if (popup == null || !popup.gameObject.activeSelf || GetImageAnchor(slot) != anchor)
+                continue;
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(popup);
+            Rect imageRect = GetRectInContainer(popup);
+            Rect face = GetVisiblePopupCardRect(slot, popup);
+            if (face.width <= 1f || face.height <= 1f)
+                face = imageRect;
+            if (face.width <= 0f || face.height <= 0f)
+                continue;
+
+            cards[i] = popup;
+            faces[i] = face;
+            faceOffsets[i] = face.center - imageRect.center;
+            cardWidth = Mathf.Max(cardWidth, face.width);
+
+            float remindersHeight = 0f;
+            if (GetKeywordSource(slot) == KeywordReminderSource.ImagePopup)
+            {
+                reminders[i] = GetKeywordReminders(slot);
+                reminderCounts[i] = ActiveReminderCount(reminders[i]);
+                for (int r = 0; r < reminderCounts[i]; r++)
+                    remindersHeight += reminders[i][r].RectTransform.rect.height + (r > 0 ? KeywordReminderGap : 0f);
+            }
+
+            unitHeights[i] = Mathf.Max(face.height, remindersHeight);
+            columnHeight += unitHeights[i] + (units > 0 ? KeywordReminderPopupGap : 0f);
+            units++;
+        }
+
+        int[] cardIndices = new int[count];
+        int[][] reminderIndices = new int[count][];
+        float cardX = summaryRect.width + KeywordReminderPopupGap;
+        float reminderX = cardX + cardWidth + KeywordReminderPopupGap;
+        float top = columnHeight * 0.5f;
+
+        for (int i = 0; i < count; i++)
+        {
+            if (cards[i] == null)
+                continue;
+
+            cardIndices[i] = _ritualGroup.Add(new Rect(cardX, top - faces[i].height, faces[i].width, faces[i].height));
+
+            reminderIndices[i] = new int[reminderCounts[i]];
+            float y = top;
+            for (int r = 0; r < reminderCounts[i]; r++)
+            {
+                Vector2 size = reminders[i][r].RectTransform.rect.size;
+                reminderIndices[i][r] = _ritualGroup.Add(new Rect(reminderX, y - size.y, size.x, size.y));
+                y -= size.y + KeywordReminderGap;
+            }
+
+            top -= unitHeights[i] + KeywordReminderPopupGap;
+        }
+
+        if (!_ritualGroup.Place(altarRect, screenBounds, position, TargetGap))
+            return;
+
+        MovePopupToContainerPoint(summary, _ritualGroup.GetPlaced(summaryIndex).center);
+        summary.SetAsLastSibling();
+
+        for (int i = 0; i < count; i++)
+        {
+            if (cards[i] == null)
+                continue;
+
+            MovePopupToContainerPoint(cards[i], _ritualGroup.GetPlaced(cardIndices[i]).center - faceOffsets[i]);
+            cards[i].SetAsLastSibling();
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            if (cards[i] == null)
+                continue;
+
+            for (int r = 0; r < reminderCounts[i]; r++)
+            {
+                RectTransform rect = reminders[i][r].RectTransform;
+                rect.anchorMin = new Vector2(0.5f, 0.5f);
+                rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = _ritualGroup.GetPlaced(reminderIndices[i][r]).center;
+                rect.SetAsLastSibling();
+            }
         }
     }
 
@@ -296,176 +424,6 @@ public class PopupScreenHandler : MonoBehaviour
             HideImagePopup(PopupSlot.One);
         if (GetImageAnchor(PopupSlot.Two) == anchor)
             HideImagePopup(PopupSlot.Two);
-    }
-
-    void PlaceRitualReferenceCards(Transform anchor, Camera worldCamera, int count)
-    {
-        if (_activeRitualPopup == null)
-            return;
-
-        RectTransform ritualPopup = _activeRitualPopup.RectTransform;
-        LayoutRebuilder.ForceRebuildLayoutImmediate(ritualPopup);
-        Rect ritualRect = GetRectInContainer(ritualPopup);
-        if (ritualRect.width <= 0f || ritualRect.height <= 0f)
-            return;
-
-        worldCamera = ResolveWorldCamera(worldCamera);
-        Rect altarRect = GetAnchorRectInContainer(anchor, worldCamera);
-        Rect screenBounds = GetContainerLocalScreenBounds();
-
-        RectTransform[] popups = new RectTransform[count];
-        Vector2[] sizes = new Vector2[count];
-        for (int i = 0; i < count; i++)
-        {
-            PopupSlot slot = i == 0 ? PopupSlot.One : PopupSlot.Two;
-            RectTransform popup = GetImagePopup(slot);
-            popups[i] = popup;
-            if (popup == null)
-                continue;
-
-            LayoutRebuilder.ForceRebuildLayoutImmediate(popup);
-            sizes[i] = GetRectInContainer(popup).size;
-        }
-
-        // The summary already occupies the open side of the altar. Referenced cards stay on
-        // that side. A screen clamp used to slide them back across the summary, and covering
-        // the altar was scored cheaply enough that the cards then landed on the ritual.
-        bool outerOnRight = altarRect.width <= 0f || altarRect.height <= 0f
-            || ritualRect.center.x >= altarRect.center.x;
-
-        float bestScore = float.MaxValue;
-        Vector2[] bestPositions = null;
-
-        void Consider(System.Action place)
-        {
-            place();
-            ClampRitualCardsIntoBounds(popups, count, screenBounds, ritualRect, altarRect);
-            float score = RitualCardScore(popups, count, ritualRect, altarRect, screenBounds);
-            if (score >= bestScore)
-                return;
-
-            bestScore = score;
-            bestPositions = SnapshotPopupPositions(popups, count);
-        }
-
-        Consider(() => PlaceRitualCards(popups, sizes, count, ritualRect, outerOnRight));
-        Consider(() => PlaceRitualCardColumn(popups, sizes, count, ritualRect, altarRect, true, outerOnRight));
-        Consider(() => PlaceRitualCardColumn(popups, sizes, count, ritualRect, altarRect, false, outerOnRight));
-        // Other side of the summary only. Covering the altar loses to staying on the open side.
-        Consider(() => PlaceRitualCards(popups, sizes, count, ritualRect, !outerOnRight));
-
-        if (bestPositions != null)
-            RestorePopupPositions(popups, bestPositions, count);
-    }
-
-    void PlaceRitualCards(RectTransform[] popups, Vector2[] sizes, int count, Rect ritualRect, bool placeOnRight)
-    {
-        float totalHeight = 0f;
-        int placed = 0;
-        for (int i = 0; i < count; i++)
-        {
-            if (popups[i] == null || sizes[i].y <= 0f)
-                continue;
-
-            if (placed > 0)
-                totalHeight += KeywordReminderPopupGap;
-            totalHeight += sizes[i].y;
-            placed++;
-        }
-
-        float y = ritualRect.center.y + totalHeight * 0.5f;
-        for (int i = 0; i < count; i++)
-        {
-            if (popups[i] == null || sizes[i].y <= 0f)
-                continue;
-
-            float width = sizes[i].x;
-            float height = sizes[i].y;
-            float x = placeOnRight
-                ? ritualRect.xMax + KeywordReminderPopupGap + width * 0.5f
-                : ritualRect.xMin - KeywordReminderPopupGap - width * 0.5f;
-            MovePopupToContainerPoint(popups[i], new Vector2(x, y - height * 0.5f));
-            popups[i].SetAsLastSibling();
-            y -= height + KeywordReminderPopupGap;
-        }
-    }
-
-    void PlaceRitualCardColumn(RectTransform[] popups, Vector2[] sizes, int count, Rect ritualRect, Rect altarRect, bool upward, bool outerOnRight)
-    {
-        float centerX = ritualRect.center.x;
-        float edgeY = upward
-            ? ritualRect.yMax + KeywordReminderPopupGap
-            : ritualRect.yMin - KeywordReminderPopupGap;
-        float cursor = edgeY;
-
-        for (int i = 0; i < count; i++)
-        {
-            if (popups[i] == null || sizes[i].y <= 0f)
-                continue;
-
-            float height = sizes[i].y;
-            float centerY = upward ? cursor + height * 0.5f : cursor - height * 0.5f;
-            MovePopupToContainerPoint(popups[i], new Vector2(centerX, centerY));
-            popups[i].SetAsLastSibling();
-            float step = height + KeywordReminderPopupGap;
-            cursor = upward ? cursor + step : cursor - step;
-        }
-
-        NudgePopupsOffRect(popups, count, altarRect, outerOnRight);
-    }
-
-    void NudgePopupsOffRect(RectTransform[] popups, int count, Rect blocked, bool nudgeRight)
-    {
-        if (blocked.width <= 0f || blocked.height <= 0f)
-            return;
-
-        GetPopupUnion(popups, count, out float xMin, out float xMax, out float yMin, out float yMax);
-        if (xMin == float.MaxValue)
-            return;
-
-        Rect union = Rect.MinMaxRect(xMin, yMin, xMax, yMax);
-        if (OverlapArea(union, blocked) <= 0f)
-            return;
-
-        float shiftX = nudgeRight
-            ? blocked.xMax + KeywordReminderPopupGap - xMin
-            : blocked.xMin - KeywordReminderPopupGap - xMax;
-        ShiftPopups(popups, count, shiftX, 0f);
-    }
-
-    float RitualCardScore(RectTransform[] popups, int count, Rect ritualRect, Rect altarRect, Rect screenBounds)
-    {
-        float score = 0f;
-        for (int i = 0; i < count; i++)
-        {
-            if (popups[i] == null)
-                continue;
-
-            Rect rect = GetRectInContainer(popups[i]);
-            score += OffScreenAmount(rect, screenBounds) * 100000f;
-            score += OverlapArea(rect, ritualRect) * 100000f;
-            if (altarRect.width > 0f && altarRect.height > 0f)
-                score += OverlapArea(rect, altarRect) * 100000f;
-        }
-
-        return score;
-    }
-
-    static Vector2[] SnapshotPopupPositions(RectTransform[] popups, int count)
-    {
-        Vector2[] positions = new Vector2[count];
-        for (int i = 0; i < count; i++)
-            positions[i] = popups[i] != null ? popups[i].anchoredPosition : Vector2.zero;
-        return positions;
-    }
-
-    static void RestorePopupPositions(RectTransform[] popups, Vector2[] positions, int count)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            if (popups[i] != null)
-                popups[i].anchoredPosition = positions[i];
-        }
     }
 
     void ClampPopupsIntoBounds(RectTransform[] popups, int count, Rect bounds)
@@ -493,35 +451,6 @@ public class PopupScreenHandler : MonoBehaviour
         ShiftPopups(popups, count, shiftX, 0f);
     }
 
-    void ClampRitualCardsIntoBounds(RectTransform[] popups, int count, Rect bounds, Rect portraitRect, Rect altarRect)
-    {
-        if (bounds.width <= 0f || bounds.height <= 0f)
-            return;
-
-        GetPopupUnion(popups, count, out float xMin, out float xMax, out float yMin, out float yMax);
-        if (xMin == float.MaxValue)
-            return;
-
-        float shiftY = 0f;
-        if (yMin < bounds.yMin)
-            shiftY += bounds.yMin - yMin;
-        if (yMax + shiftY > bounds.yMax)
-            shiftY += bounds.yMax - (yMax + shiftY);
-        shiftY = LimitReminderShift(xMin, xMax, yMin, yMax, portraitRect, shiftY, vertical: true);
-        shiftY = LimitReminderShift(xMin, xMax, yMin, yMax, altarRect, shiftY, vertical: true);
-        ShiftPopups(popups, count, 0f, shiftY);
-
-        GetPopupUnion(popups, count, out xMin, out xMax, out yMin, out yMax);
-        float shiftX = 0f;
-        if (xMin < bounds.xMin)
-            shiftX += bounds.xMin - xMin;
-        if (xMax + shiftX > bounds.xMax)
-            shiftX += bounds.xMax - (xMax + shiftX);
-        shiftX = LimitReminderShift(xMin, xMax, yMin, yMax, portraitRect, shiftX, vertical: false);
-        shiftX = LimitReminderShift(xMin, xMax, yMin, yMax, altarRect, shiftX, vertical: false);
-        ShiftPopups(popups, count, shiftX, 0f);
-    }
-
     static void ShiftPopups(RectTransform[] popups, int count, float shiftX, float shiftY)
     {
         if (shiftX == 0f && shiftY == 0f)
@@ -537,54 +466,6 @@ public class PopupScreenHandler : MonoBehaviour
             position.y += shiftY;
             popups[i].anchoredPosition = position;
         }
-    }
-
-    void RepositionRitualReminders(PopupSlot slot)
-    {
-        if (_activeRitualPopup == null)
-            return;
-
-        List<KeywordReminderPopup> reminders = GetKeywordReminders(slot);
-        int count = 0;
-        while (count < reminders.Count && reminders[count] != null && reminders[count].gameObject.activeSelf)
-            count++;
-        if (count == 0)
-            return;
-
-        RectTransform cardPopup = GetImagePopup(slot);
-        Rect cardRect = GetVisiblePopupCardRect(slot, cardPopup);
-        if (cardRect.width <= 1f || cardRect.height <= 1f)
-            cardRect = GetRectInContainer(cardPopup);
-        if (cardRect.width <= 0f || cardRect.height <= 0f)
-            return;
-
-        Rect ritualRect = GetRectInContainer(_activeRitualPopup.RectTransform);
-        Rect screenBounds = GetContainerLocalScreenBounds();
-        Rect siblingRect = GetOtherRitualCardRect(slot);
-        bool outerOnRight = cardRect.center.x >= ritualRect.center.x;
-
-        float bestScore = float.MaxValue;
-        Vector2[] bestPositions = null;
-
-        void Consider(System.Action place)
-        {
-            place();
-            ClampRemindersIntoBounds(reminders, count, screenBounds, cardRect, ritualRect, siblingRect);
-            float score = RitualReminderScore(reminders, count, cardRect, ritualRect, siblingRect, screenBounds);
-            if (score >= bestScore)
-                return;
-
-            bestScore = score;
-            bestPositions = CopyReminderPositions(reminders, count);
-        }
-
-        Consider(() => PlaceKeywordReminders(reminders, count, cardRect, outerOnRight));
-        Consider(() => PlaceKeywordReminders(reminders, count, cardRect, !outerOnRight));
-        Consider(() => PlaceReminderStack(reminders, count, cardRect.center.x, cardRect.yMax + KeywordReminderPopupGap, upward: true));
-        Consider(() => PlaceReminderStack(reminders, count, cardRect.center.x, cardRect.yMin - KeywordReminderPopupGap, upward: false));
-
-        if (bestPositions != null)
-            ApplyReminderPositions(reminders, count, bestPositions);
     }
 
     void PlaceReminderStack(List<KeywordReminderPopup> reminders, int count, float centerX, float edgeY, bool upward)
@@ -604,19 +485,6 @@ public class PopupScreenHandler : MonoBehaviour
             float step = height + KeywordReminderGap;
             cursor = upward ? cursor + step : cursor - step;
         }
-    }
-
-    Rect GetOtherRitualCardRect(PopupSlot slot)
-    {
-        RectTransform other = GetImagePopup(slot == PopupSlot.One ? PopupSlot.Two : PopupSlot.One);
-        if (other == null || !other.gameObject.activeSelf)
-            return Rect.zero;
-
-        Rect rect = GetRectInContainer(other);
-        if (rect.width <= 0f || rect.height <= 0f)
-            return Rect.zero;
-
-        return rect;
     }
 
     float RitualReminderScore(List<KeywordReminderPopup> reminders, int count, Rect cardRect, Rect ritualRect, Rect siblingRect, Rect screenBounds)
