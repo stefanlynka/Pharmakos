@@ -38763,7 +38763,8 @@ MonoBehaviour:
   ScrollBaseVolume: 1.5
   MinOfferingCollectInterval: 0.12
   FlameOngoingDelay: 2
-  RumbleVolume: 1
+  RumbleVolume: 1.3
+  RefusalRumbleVolume: 1
   RumbleFadeOutDuration: 0.15
   RumbleFadeInDuration: 0.08
   RumbleStartTime: 5

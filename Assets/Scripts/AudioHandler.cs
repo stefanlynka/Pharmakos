@@ -47,6 +47,8 @@ public class AudioHandler : MonoBehaviour
     public float FlameOngoingDelay = 2f;
     [Tooltip("Volume of the rumble that plays while a ritual is selected. Still scaled by the SFX slider.")]
     [Range(0f, 2f)] public float RumbleVolume = 0.8f;
+    [Tooltip("Volume of the refusal rumble (e.g. Archiereus refusing). Still scaled by the SFX slider.")]
+    [Range(0f, 2f)] public float RefusalRumbleVolume = 1f;
     [Tooltip("Seconds to fade the rumble out once the screen has fully faded to black.")]
     public float RumbleFadeOutDuration = 0.15f;
     [Tooltip("Seconds to bring a refusal rumble up to full volume.")]
@@ -76,6 +78,7 @@ public class AudioHandler : MonoBehaviour
     float rumbleFadeElapsed;
     float rumbleFadeDuration;
     float rumbleLevel = 1f;
+    bool rumbleIsRefusal;
 
     private readonly Queue<OfferingCollectNote> offeringCollectQueue = new Queue<OfferingCollectNote>();
     private float nextOfferingCollectTime;
@@ -480,6 +483,7 @@ public class AudioHandler : MonoBehaviour
     {
         rumbleFadeActive = false;
         rumbleLevel = 1f;
+        rumbleIsRefusal = false;
 
         if (OtherSource == null || !OtherAudioByName.ContainsKey(name))
             return;
@@ -509,6 +513,7 @@ public class AudioHandler : MonoBehaviour
 
         rumbleFadeActive = false;
         rumbleLevel = 0f;
+        rumbleIsRefusal = true;
         OtherSource.clip = clip;
         OtherSource.loop = true;
         ApplyRumbleVolume();
@@ -595,7 +600,8 @@ public class AudioHandler : MonoBehaviour
         if (OtherSource == null || !IsRumbleClip(OtherSource.clip))
             return;
 
-        OtherSource.volume = userSoundEffectVolume * RumbleVolume * rumbleLevel;
+        float volume = rumbleIsRefusal ? RefusalRumbleVolume : RumbleVolume;
+        OtherSource.volume = userSoundEffectVolume * volume * rumbleLevel;
     }
 
     bool IsRumbleClip(AudioClip clip)
