@@ -44,6 +44,10 @@ public class PopupScreenHandler : MonoBehaviour
     Transform _ritualHoverAnchor;
     readonly List<Card> _ritualReferenceCards = new List<Card>();
     readonly PopupGroupLayout _ritualGroup = new PopupGroupLayout();
+    readonly PopupGroupLayout _followerGroup = new PopupGroupLayout();
+    readonly List<Rect> _groupObstacles = new List<Rect>();
+    readonly PopupCardUnit _cardUnitOne = new PopupCardUnit();
+    readonly PopupCardUnit _cardUnitTwo = new PopupCardUnit();
     Transform _ritualReferenceAnchor;
     int _ritualReferenceKey;
     readonly List<Card> _followerReferenceCards = new List<Card>();
@@ -313,74 +317,34 @@ public class PopupScreenHandler : MonoBehaviour
         _ritualGroup.Clear();
         int summaryIndex = _ritualGroup.Add(new Rect(0f, -summaryRect.height * 0.5f, summaryRect.width, summaryRect.height));
 
-        // Measure each card's visible face (the capture texture has padding) and its reminders.
-        RectTransform[] cards = new RectTransform[count];
-        Rect[] faces = new Rect[count];
-        Vector2[] faceOffsets = new Vector2[count];
-        List<KeywordReminderPopup>[] reminders = new List<KeywordReminderPopup>[count];
-        int[] reminderCounts = new int[count];
-        float[] unitHeights = new float[count];
+        // Cards stack in a column beyond the summary, each with its reminders beyond it.
+        int units = 0;
         float cardWidth = 0f;
         float columnHeight = 0f;
-        int units = 0;
-
         for (int i = 0; i < count; i++)
         {
             PopupSlot slot = i == 0 ? PopupSlot.One : PopupSlot.Two;
-            RectTransform popup = GetImagePopup(slot);
-            if (popup == null || !popup.gameObject.activeSelf || GetImageAnchor(slot) != anchor)
+            PopupCardUnit unit = GetCardUnit(slot);
+            unit.Included = GetImageAnchor(slot) == anchor && TryMeasureCardUnit(slot, unit);
+            if (!unit.Included)
                 continue;
 
-            LayoutRebuilder.ForceRebuildLayoutImmediate(popup);
-            Rect imageRect = GetRectInContainer(popup);
-            Rect face = GetVisiblePopupCardRect(slot, popup);
-            if (face.width <= 1f || face.height <= 1f)
-                face = imageRect;
-            if (face.width <= 0f || face.height <= 0f)
-                continue;
-
-            cards[i] = popup;
-            faces[i] = face;
-            faceOffsets[i] = face.center - imageRect.center;
-            cardWidth = Mathf.Max(cardWidth, face.width);
-
-            float remindersHeight = 0f;
-            if (GetKeywordSource(slot) == KeywordReminderSource.ImagePopup)
-            {
-                reminders[i] = GetKeywordReminders(slot);
-                reminderCounts[i] = ActiveReminderCount(reminders[i]);
-                for (int r = 0; r < reminderCounts[i]; r++)
-                    remindersHeight += reminders[i][r].RectTransform.rect.height + (r > 0 ? KeywordReminderGap : 0f);
-            }
-
-            unitHeights[i] = Mathf.Max(face.height, remindersHeight);
-            columnHeight += unitHeights[i] + (units > 0 ? KeywordReminderPopupGap : 0f);
+            cardWidth = Mathf.Max(cardWidth, unit.FaceSize.x);
+            columnHeight += unit.Height + (units > 0 ? KeywordReminderPopupGap : 0f);
             units++;
         }
 
-        int[] cardIndices = new int[count];
-        int[][] reminderIndices = new int[count][];
         float cardX = summaryRect.width + KeywordReminderPopupGap;
         float reminderX = cardX + cardWidth + KeywordReminderPopupGap;
         float top = columnHeight * 0.5f;
-
         for (int i = 0; i < count; i++)
         {
-            if (cards[i] == null)
+            PopupCardUnit unit = GetCardUnit(i == 0 ? PopupSlot.One : PopupSlot.Two);
+            if (!unit.Included)
                 continue;
 
-            cardIndices[i] = _ritualGroup.Add(new Rect(cardX, top - faces[i].height, faces[i].width, faces[i].height));
-
-            reminderIndices[i] = new int[reminderCounts[i]];
-            float y = top;
-            for (int r = 0; r < reminderCounts[i]; r++)
-            {
-                Vector2 size = reminders[i][r].RectTransform.rect.size;
-                reminderIndices[i][r] = _ritualGroup.Add(new Rect(reminderX, y - size.y, size.x, size.y));
-                y -= size.y + KeywordReminderGap;
-            }
-
-            top -= unitHeights[i] + KeywordReminderPopupGap;
+            AddCardUnit(_ritualGroup, unit, cardX, top, reminderX);
+            top -= unit.Height + KeywordReminderPopupGap;
         }
 
         if (!_ritualGroup.Place(altarRect, screenBounds, position, TargetGap))
@@ -391,27 +355,87 @@ public class PopupScreenHandler : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            if (cards[i] == null)
-                continue;
-
-            MovePopupToContainerPoint(cards[i], _ritualGroup.GetPlaced(cardIndices[i]).center - faceOffsets[i]);
-            cards[i].SetAsLastSibling();
+            PopupCardUnit unit = GetCardUnit(i == 0 ? PopupSlot.One : PopupSlot.Two);
+            if (unit.Included)
+                ApplyCardUnit(_ritualGroup, unit);
         }
+    }
 
-        for (int i = 0; i < count; i++)
+    /// <summary>A popup card plus its keyword reminders, measured for a <see cref="PopupGroupLayout"/>.</summary>
+    sealed class PopupCardUnit
+    {
+        public RectTransform Popup;
+        public Vector2 FaceSize;
+        // The capture texture has padding around the card: face centre minus popup centre.
+        public Vector2 FaceOffset;
+        public List<KeywordReminderPopup> Reminders;
+        public int ReminderCount;
+        public float Height;
+        public bool Included;
+        public int CardIndex;
+        public readonly List<int> ReminderIndices = new List<int>();
+    }
+
+    PopupCardUnit GetCardUnit(PopupSlot slot) => slot == PopupSlot.One ? _cardUnitOne : _cardUnitTwo;
+
+    bool TryMeasureCardUnit(PopupSlot slot, PopupCardUnit unit)
+    {
+        RectTransform popup = GetImagePopup(slot);
+        if (popup == null || !popup.gameObject.activeSelf)
+            return false;
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(popup);
+        Rect imageRect = GetRectInContainer(popup);
+        Rect face = GetVisiblePopupCardRect(slot, popup);
+        if (face.width <= 1f || face.height <= 1f)
+            face = imageRect;
+        if (face.width <= 0f || face.height <= 0f)
+            return false;
+
+        unit.Popup = popup;
+        unit.FaceSize = face.size;
+        unit.FaceOffset = face.center - imageRect.center;
+        unit.Reminders = GetKeywordReminders(slot);
+        unit.ReminderCount = GetKeywordSource(slot) == KeywordReminderSource.ImagePopup
+            ? ActiveReminderCount(unit.Reminders)
+            : 0;
+
+        float remindersHeight = 0f;
+        for (int r = 0; r < unit.ReminderCount; r++)
+            remindersHeight += unit.Reminders[r].RectTransform.rect.height + (r > 0 ? KeywordReminderGap : 0f);
+
+        unit.Height = Mathf.Max(face.height, remindersHeight);
+        return true;
+    }
+
+    // Card face with its top edge at top; reminders stacked from the same top edge at reminderX.
+    static void AddCardUnit(PopupGroupLayout group, PopupCardUnit unit, float cardX, float top, float reminderX)
+    {
+        unit.CardIndex = group.Add(new Rect(cardX, top - unit.FaceSize.y, unit.FaceSize.x, unit.FaceSize.y));
+
+        unit.ReminderIndices.Clear();
+        float y = top;
+        for (int r = 0; r < unit.ReminderCount; r++)
         {
-            if (cards[i] == null)
-                continue;
+            Vector2 size = unit.Reminders[r].RectTransform.rect.size;
+            unit.ReminderIndices.Add(group.Add(new Rect(reminderX, y - size.y, size.x, size.y)));
+            y -= size.y + KeywordReminderGap;
+        }
+    }
 
-            for (int r = 0; r < reminderCounts[i]; r++)
-            {
-                RectTransform rect = reminders[i][r].RectTransform;
-                rect.anchorMin = new Vector2(0.5f, 0.5f);
-                rect.anchorMax = new Vector2(0.5f, 0.5f);
-                rect.pivot = new Vector2(0.5f, 0.5f);
-                rect.anchoredPosition = _ritualGroup.GetPlaced(reminderIndices[i][r]).center;
-                rect.SetAsLastSibling();
-            }
+    void ApplyCardUnit(PopupGroupLayout group, PopupCardUnit unit)
+    {
+        MovePopupToContainerPoint(unit.Popup, group.GetPlaced(unit.CardIndex).center - unit.FaceOffset);
+        unit.Popup.SetAsLastSibling();
+
+        for (int r = 0; r < unit.ReminderCount; r++)
+        {
+            RectTransform rect = unit.Reminders[r].RectTransform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = group.GetPlaced(unit.ReminderIndices[r]).center;
+            rect.SetAsLastSibling();
         }
     }
 
@@ -424,48 +448,6 @@ public class PopupScreenHandler : MonoBehaviour
             HideImagePopup(PopupSlot.One);
         if (GetImageAnchor(PopupSlot.Two) == anchor)
             HideImagePopup(PopupSlot.Two);
-    }
-
-    void ClampPopupsIntoBounds(RectTransform[] popups, int count, Rect bounds)
-    {
-        if (bounds.width <= 0f || bounds.height <= 0f)
-            return;
-
-        GetPopupUnion(popups, count, out float xMin, out float xMax, out float yMin, out float yMax);
-        if (xMin == float.MaxValue)
-            return;
-
-        float shiftY = 0f;
-        if (yMin < bounds.yMin)
-            shiftY += bounds.yMin - yMin;
-        if (yMax + shiftY > bounds.yMax)
-            shiftY += bounds.yMax - (yMax + shiftY);
-        ShiftPopups(popups, count, 0f, shiftY);
-
-        GetPopupUnion(popups, count, out xMin, out xMax, out yMin, out yMax);
-        float shiftX = 0f;
-        if (xMin < bounds.xMin)
-            shiftX += bounds.xMin - xMin;
-        if (xMax + shiftX > bounds.xMax)
-            shiftX += bounds.xMax - (xMax + shiftX);
-        ShiftPopups(popups, count, shiftX, 0f);
-    }
-
-    static void ShiftPopups(RectTransform[] popups, int count, float shiftX, float shiftY)
-    {
-        if (shiftX == 0f && shiftY == 0f)
-            return;
-
-        for (int i = 0; i < count; i++)
-        {
-            if (popups[i] == null)
-                continue;
-
-            Vector2 position = popups[i].anchoredPosition;
-            position.x += shiftX;
-            position.y += shiftY;
-            popups[i].anchoredPosition = position;
-        }
     }
 
     void PlaceReminderStack(List<KeywordReminderPopup> reminders, int count, float centerX, float edgeY, bool upward)
@@ -569,29 +551,6 @@ public class PopupScreenHandler : MonoBehaviour
         if (rect.yMax > bounds.yMax)
             amount += rect.yMax - bounds.yMax;
         return amount;
-    }
-
-    void GetPopupUnion(RectTransform[] popups, int count, out float xMin, out float xMax, out float yMin, out float yMax)
-    {
-        xMin = float.MaxValue;
-        xMax = float.MinValue;
-        yMin = float.MaxValue;
-        yMax = float.MinValue;
-
-        for (int i = 0; i < count; i++)
-        {
-            if (popups[i] == null)
-                continue;
-
-            Rect rect = GetRectInContainer(popups[i]);
-            if (rect.width <= 0f || rect.height <= 0f)
-                continue;
-
-            xMin = Mathf.Min(xMin, rect.xMin);
-            xMax = Mathf.Max(xMax, rect.xMax);
-            yMin = Mathf.Min(yMin, rect.yMin);
-            yMax = Mathf.Max(yMax, rect.yMax);
-        }
     }
 
     void MovePopupToContainerPoint(RectTransform popup, Vector2 containerCenter)
@@ -796,24 +755,43 @@ public class PopupScreenHandler : MonoBehaviour
                 preferRight = screenBounds.xMax - host.xMax >= host.xMin - screenBounds.xMin;
         }
 
-        PlaceFollowerReferenceCard(popup, blocked, alignTo, preferRight);
-        popup.SetAsLastSibling();
+        LayoutFollowerReferenceGroup(referenceSlot, primarySlot, blocked, alignTo, preferRight, host, anchorRect, sourceReminders);
+    }
 
-        Rect referenceRect = GetRectInContainer(popup);
-        if (OverlapsReminders(primarySlot, referenceRect))
-        {
-            Rect beside = alignTo.width > 0f ? alignTo : host;
-            Rect boardRect = ApproximatelySameRect(beside, anchorRect) ? Rect.zero : anchorRect;
-            RepositionReminders(primarySlot, beside, referenceRect, boardRect);
-        }
+    /// <summary>
+    /// Places the referenced card and its keyword reminders as one block beside the hovered
+    /// follower's own popup and reminders, which stay where their callers put them.
+    /// </summary>
+    void LayoutFollowerReferenceGroup(PopupSlot referenceSlot, PopupSlot primarySlot, Rect blocked, Rect alignTo, bool preferRight, Rect host, Rect anchorRect, Rect sourceReminders)
+    {
+        Rect screenBounds = GetContainerLocalScreenBounds();
+        PopupCardUnit unit = GetCardUnit(referenceSlot);
+        if (screenBounds.width <= 0f || !TryMeasureCardUnit(referenceSlot, unit))
+            return;
 
-        Rect referenceVisible = GetVisiblePopupCardRect(referenceSlot, popup);
-        if (referenceVisible.width <= 1f || referenceVisible.height <= 1f)
-            referenceVisible = referenceRect;
+        _followerGroup.Clear();
+        AddCardUnit(_followerGroup, unit, 0f, unit.FaceSize.y * 0.5f, unit.FaceSize.x + KeywordReminderPopupGap);
 
-        RepositionReminders(referenceSlot, referenceVisible, UnionRect(host, anchorRect), GetActiveReminderBounds(primarySlot));
+        // blocked is a union with empty corners, so score overlap against the real pieces.
+        // The main card counts by its visible face, not the padded capture rect.
+        _groupObstacles.Clear();
+        AddObstacle(alignTo.width > 0f ? alignTo : host);
+        AddObstacle(anchorRect);
+        AddObstacle(sourceReminders);
+
+        float? alignY = alignTo.height > 0f ? alignTo.center.y : (float?)null;
+        PopupPosition side = preferRight ? PopupPosition.Right : PopupPosition.Left;
+        if (!_followerGroup.Place(blocked, screenBounds, side, KeywordReminderPopupGap, _groupObstacles, alignY))
+            return;
+
+        ApplyCardUnit(_followerGroup, unit);
         BringRemindersToFront(primarySlot);
-        BringRemindersToFront(referenceSlot);
+    }
+
+    void AddObstacle(Rect rect)
+    {
+        if (rect.width > 0f && rect.height > 0f)
+            _groupObstacles.Add(rect);
     }
 
     public void HideFollowerReferencedCard(Transform anchor)
@@ -836,81 +814,12 @@ public class PopupScreenHandler : MonoBehaviour
             HideFollowerReferencedCard(_followerReferenceAnchor);
     }
 
-    void PlaceFollowerReferenceCard(RectTransform popup, Rect blocked, Rect alignTo, bool preferRight)
-    {
-        LayoutRebuilder.ForceRebuildLayoutImmediate(popup);
-        Vector2 size = GetRectInContainer(popup).size;
-        if (size.x <= 0f || size.y <= 0f)
-            return;
-
-        Rect screenBounds = GetContainerLocalScreenBounds();
-        float alignY = alignTo.height > 0f ? alignTo.center.y : blocked.center.y;
-        RectTransform[] popups = { popup };
-
-        float Place(bool onRight)
-        {
-            float x = onRight
-                ? blocked.xMax + KeywordReminderPopupGap + size.x * 0.5f
-                : blocked.xMin - KeywordReminderPopupGap - size.x * 0.5f;
-            MovePopupToContainerPoint(popup, new Vector2(x, alignY));
-            ClampPopupsIntoBounds(popups, 1, screenBounds);
-            Rect rect = GetRectInContainer(popup);
-            return OffScreenAmount(rect, screenBounds) * 100000f
-                + OverlapArea(rect, blocked) * 100000f;
-        }
-
-        float firstScore = Place(preferRight);
-        Vector2 firstPosition = popup.anchoredPosition;
-        float secondScore = Place(!preferRight);
-        if (firstScore <= secondScore)
-            popup.anchoredPosition = firstPosition;
-    }
-
-    void RepositionReminders(PopupSlot slot, Rect beside, Rect avoidA, Rect avoidB)
-    {
-        List<KeywordReminderPopup> reminders = GetKeywordReminders(slot);
-        int count = ActiveReminderCount(reminders);
-        if (count == 0 || beside.width <= 0f || beside.height <= 0f)
-            return;
-
-        Rect screenBounds = GetContainerLocalScreenBounds();
-        bool preferRight = avoidA.width <= 0f || beside.center.x >= avoidA.center.x;
-        float bestScore = float.MaxValue;
-        Vector2[] bestPositions = null;
-
-        void Consider(System.Action place)
-        {
-            place();
-            ClampRemindersIntoBounds(reminders, count, screenBounds, beside, avoidA, avoidB);
-            float score = RitualReminderScore(reminders, count, beside, avoidA, avoidB, screenBounds);
-            if (score >= bestScore)
-                return;
-
-            bestScore = score;
-            bestPositions = CopyReminderPositions(reminders, count);
-        }
-
-        Consider(() => PlaceKeywordReminders(reminders, count, beside, preferRight));
-        Consider(() => PlaceKeywordReminders(reminders, count, beside, !preferRight));
-        Consider(() => PlaceReminderStack(reminders, count, beside.center.x, beside.yMax + KeywordReminderPopupGap, upward: true));
-        Consider(() => PlaceReminderStack(reminders, count, beside.center.x, beside.yMin - KeywordReminderPopupGap, upward: false));
-
-        if (bestPositions != null)
-            ApplyReminderPositions(reminders, count, bestPositions);
-    }
-
     void BringRemindersToFront(PopupSlot slot)
     {
         List<KeywordReminderPopup> reminders = GetKeywordReminders(slot);
         int count = ActiveReminderCount(reminders);
         for (int i = 0; i < count; i++)
             reminders[i].transform.SetAsLastSibling();
-    }
-
-    bool OverlapsReminders(PopupSlot slot, Rect other)
-    {
-        List<KeywordReminderPopup> reminders = GetKeywordReminders(slot);
-        return ReminderOverlap(reminders, ActiveReminderCount(reminders), other) > 0f;
     }
 
     int ActiveReminderCount(List<KeywordReminderPopup> reminders)
@@ -947,14 +856,6 @@ public class PopupScreenHandler : MonoBehaviour
             Mathf.Min(a.yMin, b.yMin),
             Mathf.Max(a.xMax, b.xMax),
             Mathf.Max(a.yMax, b.yMax));
-    }
-
-    static bool ApproximatelySameRect(Rect a, Rect b)
-    {
-        return Mathf.Approximately(a.xMin, b.xMin)
-            && Mathf.Approximately(a.yMin, b.yMin)
-            && Mathf.Approximately(a.width, b.width)
-            && Mathf.Approximately(a.height, b.height);
     }
 
     public Transform GetImageAnchor(PopupSlot slot)

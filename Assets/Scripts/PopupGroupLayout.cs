@@ -40,7 +40,12 @@ public class PopupGroupLayout
     /// Chooses the side of <paramref name="anchor"/> for the block and fills the placed rects.
     /// Sides are tried in the usual popup fallback order starting from <paramref name="preferred"/>.
     /// </summary>
-    public bool Place(Rect anchor, Rect screen, PopupPosition preferred, float gap)
+    /// <param name="obstacles">Rects the block must not cover. Defaults to the anchor alone;
+    /// pass the real pieces when the anchor is a union with empty space in it.</param>
+    /// <param name="alignY">Height to centre the head on when placed left or right.
+    /// Defaults to the anchor's centre.</param>
+    public bool Place(Rect anchor, Rect screen, PopupPosition preferred, float gap,
+        IReadOnlyList<Rect> obstacles = null, float? alignY = null)
     {
         _placed.Clear();
         if (_local.Count == 0)
@@ -78,14 +83,15 @@ public class PopupGroupLayout
         {
             Rect head = Orient(_local[0], mirrored);
             Rect bounds = LocalBounds(mirrored);
+            float sideY = (alignY ?? anchor.center.y) - head.center.y;
             Vector2 offset;
             switch (side)
             {
                 case PopupPosition.Right:
-                    offset = new Vector2(anchor.xMax + gap - bounds.xMin, anchor.center.y - head.center.y);
+                    offset = new Vector2(anchor.xMax + gap - bounds.xMin, sideY);
                     break;
                 case PopupPosition.Left:
-                    offset = new Vector2(anchor.xMin - gap - bounds.xMax, anchor.center.y - head.center.y);
+                    offset = new Vector2(anchor.xMin - gap - bounds.xMax, sideY);
                     break;
                 case PopupPosition.Above:
                     offset = new Vector2(anchor.center.x - head.center.x, anchor.yMax + gap - bounds.yMin);
@@ -102,7 +108,17 @@ public class PopupGroupLayout
 
             float anchorOverlap = 0f;
             for (int j = 0; j < _local.Count; j++)
-                anchorOverlap += OverlapArea(Offset(Orient(_local[j], mirrored), offset), anchor);
+            {
+                Rect item = Offset(Orient(_local[j], mirrored), offset);
+                if (obstacles == null)
+                {
+                    anchorOverlap += OverlapArea(item, anchor);
+                    continue;
+                }
+
+                for (int k = 0; k < obstacles.Count; k++)
+                    anchorOverlap += OverlapArea(item, obstacles[k]);
+            }
 
             // Spilling off-screen is worst, then covering the anchor, then leaving the
             // preferred side, then how far the clamp had to drag the block.
