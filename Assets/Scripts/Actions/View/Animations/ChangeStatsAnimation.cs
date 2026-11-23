@@ -67,6 +67,8 @@ public class ChangeStatsAnimation : AnimationAction
 
                 viewPlayer.ShowDamage(-healthChange);
                 isDamage = true;
+                if (player.IsHuman)
+                    PostFXPulse.Damage(-healthChange);
 
                 if (previousHealth > 0 && viewPlayer.GetHealth() <= 0)
                 {

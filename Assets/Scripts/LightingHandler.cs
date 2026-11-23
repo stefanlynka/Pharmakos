@@ -65,6 +65,7 @@ public class LightingHandler : MonoBehaviour
     private void ShakeScreen()
     {
         ScreenShakeHandler.Shake(1f, ritualWaitDuration);
+        PostFXPulse.Ritual();
         View.Instance.AudioHandler.PlaySoundEffect(AudioHandler.SoundEffectType.Whoosh);
     }
 
