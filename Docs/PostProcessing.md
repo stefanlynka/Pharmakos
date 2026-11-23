@@ -51,11 +51,14 @@ With a vignette or grade, the corner UI (End Turn, Discard All) darkens and shif
 so UI colours match the style guide exactly. Verified: End Turn stays (178, 96, 53) under profile D. The menu command
 is undoable; save the scene to keep it. Screen shake still moves the UI (the camera is a child of Main Camera).
 
-## Consistency across screens (optional)
+## Consistency across screens (applied)
 
-To give every screen the same look, tick *Post Processing* on the screen cameras (ShopCamera, RitualRewardCamera,
-StarterBundleCamera, CardRewardCamera, AltarCameras, StyxCamera). Their UI is Screen Space - Overlay, so it is
-unaffected. Tried on the shop with D: modest change (lyre-string bloom, softer edges).
+Post Processing is on for the screen cameras in their area prefabs: ShopCamera, RitualRewardCamera,
+StarterBundleCamera, CardRewardCamera and StyxCamera. Combat, the temple and the trinket reward screen use Main Camera,
+which already had it. Their UI is Screen Space - Overlay, so it is unaffected. Checked each screen: the shop's
+lyre strings and the starter bundle's braziers now bloom, edges get the gentle vignette, and nothing blows out.
+Still off: StatusCamera, the AltarCameras, and the render-texture cameras (popups, deck viewers), which draw into
+textures or overlays.
 
 ## Gameplay pulses (applied)
 
