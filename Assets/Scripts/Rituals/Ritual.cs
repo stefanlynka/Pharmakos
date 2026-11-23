@@ -35,14 +35,7 @@ public abstract class Ritual : ITarget
 
     protected static void CollectLastDeadFollower(List<Card> cards)
     {
-        if (cards == null || Controller.Instance == null || !Controller.Instance.GameRunning)
-            return;
-
-        // The play-history button is shown on top of combat and becomes ScreenHandler.CurrentScreen.
-        // The board is still up as long as the game screen itself has not been exited.
-        if (ScreenHandler.Instance == null
-            || !ScreenHandler.Instance.TryGetScreen(ScreenName.Game, out Screen gameScreen)
-            || !IsGameBoardVisible(gameScreen))
+        if (cards == null || !IsCombatBoardShowing())
             return;
 
         Follower last = Controller.Instance.CanonGameState != null
@@ -53,6 +46,22 @@ public abstract class Ritual : ITarget
 
         if (last.MakeBaseCopy() is Follower copy)
             cards.Add(copy);
+    }
+
+    /// <summary>
+    /// True while a combat is running and its board is on screen. Combat-only details (such as reminder text
+    /// about the last follower that died) are hidden when a ritual is shown anywhere else.
+    /// </summary>
+    public static bool IsCombatBoardShowing()
+    {
+        if (Controller.Instance == null || !Controller.Instance.GameRunning)
+            return false;
+
+        // The play-history button is shown on top of combat and becomes ScreenHandler.CurrentScreen.
+        // The board is still up as long as the game screen itself has not been exited.
+        return ScreenHandler.Instance != null
+            && ScreenHandler.Instance.TryGetScreen(ScreenName.Game, out Screen gameScreen)
+            && IsGameBoardVisible(gameScreen);
     }
 
     static bool IsGameBoardVisible(Screen gameScreen)

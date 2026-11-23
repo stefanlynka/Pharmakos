@@ -38,7 +38,8 @@ public class RitualPopup : MonoBehaviour
             return string.Empty;
 
         string name = GameFonts.InDisplayFont(ritual.Name ?? string.Empty);
-        if (string.IsNullOrEmpty(ritual.ReminderText))
+        // Reminder text describes combat state (e.g. the last follower that died), so it only shows in combat.
+        if (string.IsNullOrEmpty(ritual.ReminderText) || !Ritual.IsCombatBoardShowing())
             return name;
 
         string reminder = Controller.Instance != null && Controller.Instance.TextHandler != null
