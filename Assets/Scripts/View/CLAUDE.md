@@ -24,6 +24,11 @@
 - Discard: `ViewDiscard` (scene, `Player Discard`, layer 7 BoxCollider for drops) drives `DiscardBowl.SetHighlight` on the bowl prefab: an additive ring drawn with Graphics.DrawMesh at the rim (bowl-local radii; the bowl's opening faces local +Z) plus a MaterialPropertyBlock brightening of the label. The old flat `Plane`/label are inactive and `Highlight` is only a fallback. Lane and bowl share the fade/pulse timing in `DropGlow`.
 - `CurvedText` bends any TextMeshPro along an arc by rewriting vertices on `TEXT_CHANGED_EVENT`; edit text, font, size and colour on the TMP component as usual. Its pivot is the top of the arc (centre/baseline alignment).
 
+## Trinkets
+
+- Every trinket is a `ViewBuff` (prefab `Resources/Prefabs/View/ViewBuff`): the round art (`Sprite`, set at runtime) sits on `Base`, a squat black-and-gold marble cylinder (`Models/Meshes/TrinketBase.fbx`, material `Models/Materials/TrinketBase/TrinketMarble.mat`). Both are made by `Tools/Blender/build_trinket_base.py`; the side-wall texture is unwrapped from `Images/Icons/trinketBackdropBorder.png`.
+- `TrinketBase` (on `Base`) sizes the cylinder from the art in play mode, because instances use very different scales (event screen 50x50x1, starter bundles scale the art x2). Tune height and rim on the component, not the Transform. It also copies the art's layer so the offscreen popup cameras (layers 11/12) see it. It doesn't run in edit mode, so it never writes overrides into scenes.
+
 ## Ritual altars
 
 - Every altar (`ViewRitual3` → `Altar2` child) uses the generated `AltarKit.fbx` with four material slots (Stone, Panel, Trim, Corner). `ViewRitual.Refresh` → `ApplyAltarStyle` swaps in the ritual's `AltarStyle` (`Resources/Content/AltarStyles/<God>/<God>.asset`, god from `Ritual.God`, fallback Default) and sets the rules text colour. Full guide: `Docs/AltarKit.md`.
