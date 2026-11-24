@@ -16,6 +16,7 @@ MonoBehaviour:
   Accent: {r: 1, g: 0.95, b: 0.85, a: 1}
   GlowIntensity: 2.2
   SpotlightTint: 0.6
+  Pace: 0.75
   Sigil: {fileID: 2800000, guid: 580ff6667fc1e1347b52deac1f91d43f, type: 3}
   SigilScale: 1
   Burst:

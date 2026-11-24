@@ -4,7 +4,8 @@ Each ritual (Major = 3 notes, Minor = 2 notes) plays its god's instruments over 
 the last note, a timpani/drum hit and a long dark reverb), so the set reads as one family the way the offering notes do.
 The last note always lands on the VFX climax, so the beat times below must match RitualInvocationVfx:
     Major beats: 0.00, 0.40, 0.90 s     Minor beats: 0.00, 0.60 s      (RitualInvocationVfx.MajorBeats / MinorBeats)
-A god can be faster: its RitualTheme.Pace scales those beats, and TEMPO below must use the same pace for its rituals.
+Those are the standard (pace 1) beats. Every ritual actually plays at DEFAULT_TEMPO (0.75): its RitualTheme.Pace scales the
+beats in game, and DEFAULT_TEMPO / TEMPO below must use the same pace.
 
 Samples: VSCO 2 Community Edition (CC0), read through its .sfz mappings. The set was dropped into
 Assets/Resources/Audio/Instruments for this; once it is removed from the project, keep a copy elsewhere and pass it:
@@ -404,7 +405,7 @@ def s_hades_minor(L, m, b):
 
 def s_ares_major(L, m, b):
     tenor = "VSCO 1 Percussion/drums/tenor/tenor_lower/tenor_fff_%d.wav"
-    for i, t in enumerate([b[0], b[0] + 0.2, b[1], b[1] + 0.25]):
+    for i, t in enumerate([b[0], b[0] + 0.2 * m.tempo, b[1], b[1] + 0.25 * m.tempo]):
         m.add(L.file(tenor % (i % 3 + 1)), t, gain=0.7 if i % 2 == 0 else 0.45, pan=-0.3 + 0.2 * i, dur=0.4, release=0.2)
     chord(L, m, "TromboneStac", [50], b[0], 110, 0.9, 0.3, 0.2)
     chord(L, m, "TubaStac", [38], b[0], 110, 0.7, 0.3, 0.2)
@@ -418,8 +419,8 @@ def s_ares_major(L, m, b):
 def s_ares_minor(L, m, b):
     tenor = "VSCO 1 Percussion/drums/tenor/tenor_lower/tenor_fff_%d.wav"
     m.add(L.file(tenor % 1), b[0], gain=0.7, dur=0.4, release=0.2)
-    m.add(L.file(tenor % 2), b[0] + 0.3, gain=0.45, pan=0.3, dur=0.4, release=0.2)
-    m.add(L.file(tenor % 3), b[0] + 0.45, gain=0.5, pan=-0.3, dur=0.4, release=0.2)
+    m.add(L.file(tenor % 2), b[0] + 0.3 * m.tempo, gain=0.45, pan=0.3, dur=0.4, release=0.2)
+    m.add(L.file(tenor % 3), b[0] + 0.45 * m.tempo, gain=0.5, pan=-0.3, dur=0.4, release=0.2)
     chord(L, m, "TromboneStac", [45], b[0], 110, 0.9, 0.3, 0.2)
     chord(L, m, "TubaStac", [33], b[0], 110, 0.6, 0.3, 0.2)
     chord(L, m, "TromboneSus", [50], b[1], 125, 1.0, 1.0, 0.7)
@@ -495,7 +496,7 @@ def s_demeter_minor(L, m, b):
 
 def s_dionysus_minor(L, m, b):
     hand = "VSCO 1 Percussion/drums/other/ethnic/giant/hand/EthnicLargeHand_hit_%s.wav"
-    for t, lvl, g, p in ((b[0], "ff_1", 0.7, -0.2), (b[0] + 0.3, "mp_1", 0.4, 0.3), (b[0] + 0.45, "f_1", 0.5, -0.3)):
+    for t, lvl, g, p in ((b[0], "ff_1", 0.7, -0.2), (b[0] + 0.3 * m.tempo, "mp_1", 0.4, 0.3), (b[0] + 0.45 * m.tempo, "f_1", 0.5, -0.3)):
         m.add(L.file(hand % lvl), t, gain=g, pan=p, dur=0.5, release=0.2)
     chord(L, m, "OboeSusVib", [63], b[0], 95, 0.75, 0.5)
     chord(L, m, "ClarinetSus", [51], b[0], 85, 0.45, 0.5)
@@ -595,19 +596,18 @@ SCORES = {
     "MuseMinor": s_muse_minor,
     "OldOnesMinor": s_oldones_minor,
 }
-# Faster rituals: (pace, last note). pace scales the beats and every note with them (must match the god's
-# RitualTheme.Pace); last note further shortens the notes on the final beat. The hall's decay shortens with the pace.
-TEMPO = {
-    "PoseidonMajor": (0.75, 0.6),
-    "PoseidonMinor": (0.75, 0.6),
-}
+# Timing per ritual: (pace, last note). pace scales the beats and every note with them and must match the god's
+# RitualTheme.Pace; last note further shortens the notes on the final beat. The hall's decay shortens with the pace.
+# Every ritual plays at DEFAULT_TEMPO unless listed in TEMPO.
+DEFAULT_TEMPO = (0.75, 0.6)
+TEMPO = {}
 
 # Rituals whose bed is the grand one (bass drum under the timpani, louder swell) even though they are Minor.
 GRAND_MINORS = {"OldOnesMinor"}
 
 
 def beats_for(name):
-    pace = TEMPO.get(name, (1.0, 1.0))[0]
+    pace = TEMPO.get(name, DEFAULT_TEMPO)[0]
     return [b * pace for b in (MAJOR_BEATS if name.endswith("Major") else MINOR_BEATS)]
 
 
@@ -616,7 +616,7 @@ _irs = {}
 
 def render(L, name):
     major = name.endswith("Major")
-    pace, last_note = TEMPO.get(name, (1.0, 1.0))
+    pace, last_note = TEMPO.get(name, DEFAULT_TEMPO)
     beats = beats_for(name)
     decay = 0.5 + 0.5 * pace
     if decay not in _irs:
