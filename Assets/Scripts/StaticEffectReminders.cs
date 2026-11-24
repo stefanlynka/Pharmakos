@@ -111,7 +111,7 @@ public static class StaticEffectReminders
             case StaticEffect.Sprint:
                 return "<b>Sprint</b>\nCan attack the turn it is played.";
             case StaticEffect.Shield:
-                return "<b>Shield</b>\nTakes 1 less damage.";
+                return "<b>Shield</b>\nTakes 1 less damage from all sources.";
             case StaticEffect.Unstoppable:
                 return "<b>Unstoppable</b>\nTakes no damage when attacking.";
             case StaticEffect.Cleave:

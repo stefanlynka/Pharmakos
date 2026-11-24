@@ -832,7 +832,7 @@ public class Pegasus : Follower
         InnateEffects.Add(new StaticEffectDef(EffectTarget.AllAllies, StaticEffect.Sprint));
     }
 }
-// Adjacent Followers take 1 less damage
+// Adjacent Followers have Shield +1
 public class Phalangite : Follower
 {
     public Phalangite() : base()
@@ -850,7 +850,7 @@ public class Phalangite : Follower
 
         SetBaseStats(2, 3);
 
-        Text = "Adjacent Followers take 1 less damage";
+        Text = "Adjacent Followers have Shield +1";
         Icon = IconType.Shield;
         AffectsAdjacent = true;
         inherentValue = 2;
