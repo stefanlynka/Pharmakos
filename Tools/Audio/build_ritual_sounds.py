@@ -7,8 +7,9 @@ The last note always lands on the VFX climax, so the beat times below must match
 Those are the standard (pace 1) beats. Every ritual actually plays at DEFAULT_TEMPO (0.75): its RitualTheme.Pace scales the
 beats in game, and DEFAULT_TEMPO / TEMPO below must use the same pace.
 
-Samples: VSCO 2 Community Edition (CC0), read through its .sfz mappings. The set was dropped into
-Assets/Resources/Audio/Instruments for this; once it is removed from the project, keep a copy elsewhere and pass it:
+Samples: VSCO 2 Community Edition (CC0), read through its .sfz mappings. Tools/Audio/Samples holds just the samples
+these scores use (trimmed; made by extract_samples.py). A score that needs other notes or instruments needs the full
+set: download VSCO 2 CE, pass it with --samples while writing the score, then re-run extract_samples.py.
     python Tools/Audio/build_ritual_sounds.py [--samples <VSCO folder>] [--out <folder>] [--only ZeusMajor ...]
               [--preview <folder for spectrogram pngs + index.html>]
 Output: Assets/Resources/Audio/SFX/Rituals/Invocations/<RitualClass>.wav (44.1 kHz, 16-bit stereo).
@@ -27,7 +28,7 @@ MAJOR_BEATS = [0.0, 0.40, 0.90]
 MINOR_BEATS = [0.0, 0.60]
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-DEFAULT_SAMPLES = os.path.join(ROOT, "Assets", "Resources", "Audio", "Instruments")
+DEFAULT_SAMPLES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Samples")
 DEFAULT_OUT = os.path.join(ROOT, "Assets", "Resources", "Audio", "SFX", "Rituals", "Invocations")
 
 # Loudest half second of every clip is mastered to this RMS (dBFS); AudioHandler.RitualInvocationVolume scales it in game.

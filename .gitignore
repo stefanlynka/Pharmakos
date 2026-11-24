@@ -75,3 +75,11 @@ crashlytics-build.properties
 
 # Agent working files (screenshots, previews)
 /Claude/
+
+# Full VSCO 2 CE instrument set dropped in for the ritual sounds (3 GB). Only the samples the sounds use are kept, in
+# Tools/Audio/Samples; the game itself uses the rendered clips in Audio/SFX/Rituals/Invocations.
+/[Aa]ssets/[Rr]esources/[Aa]udio/[Ii]nstruments/
+/[Aa]ssets/[Rr]esources/[Aa]udio/[Ii]nstruments.meta
+
+# Python bytecode from the Tools scripts
+__pycache__/

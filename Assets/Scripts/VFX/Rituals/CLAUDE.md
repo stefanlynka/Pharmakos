@@ -21,7 +21,10 @@ What plays when a ritual is used. Entry point: `Ritual.GetPlayVfx` → `VfxLibra
 - **Sound per ritual:** `Resources/Audio/SFX/Rituals/Invocations/<RitualClass>.wav`, played by
   `AudioHandler.PlayRitualInvocation` on its own AudioSource at `RitualInvocationVolume` (falls back to the old whoosh if a
   clip is missing). Rendered offline from VSCO 2 CE samples (CC0) by `Tools/Audio/build_ritual_sounds.py`; the samples
-  are not needed at runtime. A new ritual needs a score function there (and an entry in `SCORES`).
+  are not needed at runtime. `Tools/Audio/Samples` (outside Assets, so never imported or shipped) holds only the samples
+  the scores use, trimmed by `extract_samples.py`, and renders byte-identical clips. A score needing other notes or
+  instruments needs the full VSCO 2 CE set (`--samples`); re-run `extract_samples.py --full <set>` afterwards. The full
+  set dropped into `Assets/Resources/Audio/Instruments` is git-ignored. A new ritual needs a score function there (and an entry in `SCORES`).
 - **Textures:** `Resources/Images/RitualFX` (sigils + particle sprites), built by `Tools/RitualFX/build_ritual_textures.py`.
   Sigils reuse the altar corner emblems from `Tools/Blender/altar_textures.py` (`CORNERS`), so a god's sigil matches its
   altar. Shader `Pharmakos/RitualGlow`; materials `Resources/VFX/Materials/RitualGlowAdd` / `RitualGlowAlpha`.
