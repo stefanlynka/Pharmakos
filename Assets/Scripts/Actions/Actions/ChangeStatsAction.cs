@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static Unity.VisualScripting.Member;
 
 public class ChangeStatsAction : GameAction
 {
@@ -34,10 +33,13 @@ public class ChangeStatsAction : GameAction
     public override void Execute(bool simulated = false, bool successful = true)
     {
         Follower follower = Target as Follower;
-        GameState gameState = follower.GameState;
+
+        // Lethal damage already landed; this gain can't bring the follower back (see Follower.IsDying).
+        if (follower != null && follower.IsDying) return;
 
         if (follower != null)
         {
+            GameState gameState = follower.GameState;
             int currentAttack = follower.GetCurrentAttack();
             if (currentAttack + AttackChange < 0) AttackChange = -currentAttack;
             follower.ChangeStats(AttackChange, HealthChange);

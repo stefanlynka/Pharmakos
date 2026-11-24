@@ -30,6 +30,9 @@ public class HealAction : GameAction
         Follower followerTarget = target as Follower;
         Player playerTarget = target as Player;
 
+        // Lethal damage already landed; a heal can't bring the follower back (see Follower.IsDying).
+        if (followerTarget != null && followerTarget.IsDying) return;
+
         if (followerTarget != null)
         {
             int prevAttack = followerTarget.GetCurrentAttack();

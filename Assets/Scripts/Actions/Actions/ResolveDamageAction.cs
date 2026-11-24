@@ -15,7 +15,7 @@ public class ResolveDamageAction : GameAction
 
     public override GameAction DeepCopy(Player newOwner)
     {
-        DealDamageAction copy = (DealDamageAction)MemberwiseClone();
+        ResolveDamageAction copy = (ResolveDamageAction)MemberwiseClone();
         copy.Target = newOwner.GameState.GetTargetByID<ITarget>(Target.GetID());
 
         return copy;

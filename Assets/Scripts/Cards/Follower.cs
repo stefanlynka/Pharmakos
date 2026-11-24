@@ -54,6 +54,10 @@ public class Follower : Card, ITarget
     public bool Alive = true;
     public bool IsClone = false;
 
+    // Reduced to 0 health and waiting for its ResolveDamageAction. Both sides of an attack deal their damage
+    // at the same time, so a gain or heal queued before the death resolves (e.g. an OnKill +1/+1) can't save it.
+    public bool IsDying { get { return Alive && CurrentHealth <= 0; } }
+
     public enum FollowerType
     {
         Monster,
