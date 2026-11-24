@@ -19863,6 +19863,8 @@ MonoBehaviour:
   maxEyeLightIntensity: 3000
   defaultLightIntensity: 250
   dimLightIntensity: 100
+  ritualHoldAfterClimax: 1
+  ritualRestoreDuration: 0.5
 --- !u!1001 &503549937
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -35074,7 +35076,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -38898,6 +38900,8 @@ MonoBehaviour:
   RumbleFadeOutDuration: 0.15
   RumbleFadeInDuration: 0.08
   RumbleStartTime: 5
+  RitualInvocationVolume: 0.04
+  MinorRitualVolumeScale: 0.8
   MusicFadeDuration: 1.5
   MusicFadedVolume: 0.5
   CombatMusicFadeOutDuration: 2.5
