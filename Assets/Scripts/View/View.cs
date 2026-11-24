@@ -73,7 +73,7 @@ public class View : MonoBehaviour
         { DeckName.SeasideCliffs, "Cliffs" },
         { DeckName.Delphi, "Temple" },
         { DeckName.Archiereus, "Archiereus" },
-        { DeckName.Throne, "Throne" },      // the three bosses use Underworld until they get boards of their own
+        { DeckName.Throne, "Throne" },
         { DeckName.Fates, "Fates" },
         { DeckName.TheGate, "TheGate" }
     };

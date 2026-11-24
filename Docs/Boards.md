@@ -14,14 +14,14 @@ story lives in the margins (bones, vines, shields, statues, the maze), and the l
 | Materials | `<Name>_Ground`, `<Name>_Lane`, `<Name>_EnemyLane` (URP Lit), made by **Tools → Boards → Build Board Styles** |
 | Runtime | `View.ShowBoard(name)`: uses the BoardStyle when there is one, otherwise the old `Images/Backgrounds/Materials/<Name>_1/_2` pair; bosses with neither fall back to Underworld. `BoardAmbience` makes emission flicker. |
 
-Board names come from `View.backgroundNamesByDeckName` (Throne, Fates and TheGate have their own names so they can
-get their own boards; until then they show Underworld).
+Board names come from `View.backgroundNamesByDeckName`. A name with no BoardStyle and no old material falls back to
+Underworld.
 
 ## Boards
 
 | Board | Encounter | Ground | Lanes |
 |---|---|---|---|
-| Underworld | test enemy, bosses | cracked basalt and ash, skeletons and bone piles, embers in the far cracks, asphodel | worn slate slabs |
+| Underworld | test enemy | cracked basalt and ash, skeletons and bone piles, embers in the far cracks, asphodel | worn slate slabs |
 | Cyclops | Cyclops | wind-laid turf, lichened limestone boulders, the giant's footprints | dusty sheep tracks, hoofprints |
 | Labyrinth | Labyrinth | the maze itself around a cleared chamber; bones, blood drags, torch scorches | flagstone runners |
 | Bacchanalia | Bacchanalia | loam, vines creeping in with leaves, tendrils and grapes, spilt wine, broken black-figure pottery | trampled earth, wine, bare feet and satyr hooves |
@@ -32,6 +32,11 @@ get their own boards; until then they show Underworld).
 | Cliffs | Seaside Cliffs (Sirens) | dark sea rock, tide pools, kelp, barnacles, the sea breaking along the far edge | weathered rock ledges, salt |
 | Temple | Delphi | aged marble slabs, an inlaid Greek key round the arena, tripod scorches, laurel | pale marble runners |
 | Archiereus | Archiereus | black marble veined red, blood channel and gutters, carved dedication, candles | dark basalt slabs |
+| Throne | Hades (boss) | polished obsidian, gold-inlaid Greek key, pomegranate seeds, bones of supplicants | black basalt |
+| Fates | the Moirai (boss) | dark stone strung with white, red and gold threads cut short of the arena, spindles, wool | dark wood planks |
+| TheGate | the Gate (boss) | black flagstones, Cerberus' claw marks, chains, obols, the glowing Styx along the far edge | wet black flagstones |
+
+The three boss boards are painted by one recipe: `python Tools/Boards/boards.py Bosses`.
 
 ## Changing a board
 
