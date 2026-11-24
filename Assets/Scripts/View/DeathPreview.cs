@@ -8,15 +8,16 @@ using UnityEngine;
 /// </summary>
 public class DeathPreview
 {
-    const float FadeInDuration = 0.15f;
-    const float PulsePeriod = 1.2f;
+    const float PulsePeriod = 2.4f;
     const float MaxAlpha = 1f;
     const float MinAlpha = 0.5f;
+    // Longest step one frame may advance the pulse, so a hitch on selecting the ritual can't skip the fade-in.
+    const float MaxStep = 1f / 30f;
 
     readonly HashSet<ViewFollower> shown = new HashSet<ViewFollower>();
     readonly HashSet<ViewFollower> current = new HashSet<ViewFollower>();
     ViewRitual shownRitual;
-    float startTime;
+    float elapsed;
 
     public void Tick()
     {
@@ -28,7 +29,11 @@ public class DeathPreview
             if (ritual != shownRitual)
             {
                 shownRitual = ritual;
-                startTime = Time.time;
+                elapsed = 0f;
+            }
+            else
+            {
+                elapsed += Mathf.Min(Time.deltaTime, MaxStep);
             }
 
             List<Follower> doomed = ritual.Ritual.GetFollowersKilledBy(target);
@@ -57,7 +62,7 @@ public class DeathPreview
         if (current.Count == 0)
             return;
 
-        float alpha = GetAlpha(Time.time - startTime);
+        float alpha = GetAlpha(elapsed);
         foreach (ViewFollower viewFollower in current)
         {
             SetSkullAlpha(viewFollower, alpha);
@@ -95,12 +100,16 @@ public class DeathPreview
         return ritual;
     }
 
-    // Fades in to full, then breathes between full and half opacity.
+    // Eases in from 0 to full over half a pulse, then breathes between full and half opacity.
+    // The fade-in is a half-cosine like the pulse's own rise and fall, so the first beat keeps the same rhythm.
     static float GetAlpha(float elapsed)
     {
-        float fadeIn = Mathf.Clamp01(elapsed / FadeInDuration);
-        float pulse = 0.5f + 0.5f * Mathf.Cos(elapsed * 2f * Mathf.PI / PulsePeriod);
-        return fadeIn * Mathf.Lerp(MinAlpha, MaxAlpha, pulse);
+        float half = PulsePeriod * 0.5f;
+        if (elapsed < half)
+            return MaxAlpha * (0.5f - 0.5f * Mathf.Cos(elapsed / half * Mathf.PI));
+
+        float pulse = 0.5f + 0.5f * Mathf.Cos((elapsed - half) * 2f * Mathf.PI / PulsePeriod);
+        return Mathf.Lerp(MinAlpha, MaxAlpha, pulse);
     }
 
     static void SetSkullAlpha(ViewFollower viewFollower, float alpha)
