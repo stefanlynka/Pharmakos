@@ -56,6 +56,12 @@ public class AudioHandler : MonoBehaviour
     [Tooltip("Seconds into the rumble clip to start a refusal. The file's own attack stays quiet for several seconds.")]
     public float RumbleStartTime = 5f;
 
+    [Header("Ritual Invocations")]
+    [Tooltip("Volume of a ritual's invocation (its 2-3 notes). Still scaled by the SFX slider. Clips: Audio/SFX/Rituals/Invocations.")]
+    [Range(0f, 2f)] public float RitualInvocationVolume = 0.45f;
+    [Tooltip("Minor rituals play at this fraction of RitualInvocationVolume, so Majors land harder.")]
+    [Range(0f, 1f)] public float MinorRitualVolumeScale = 0.8f;
+
     private float baseMusicVolume = 0.1f;
 
     private float userMusicVolume = 0.5f;
@@ -98,6 +104,10 @@ public class AudioHandler : MonoBehaviour
     AudioClip heartstringStrumClip;
     bool loggedMissingHeartstringStrum;
 
+    const string RitualInvocationPath = "Audio/SFX/Rituals/Invocations/";
+    AudioSource ritualInvocationSource;
+    readonly Dictionary<string, AudioClip> ritualInvocationClips = new Dictionary<string, AudioClip>();
+
     AudioClip flameStartClip;
     AudioClip flameOngoingClip;
     AudioSource flameOngoingSource;
@@ -136,11 +146,11 @@ public class AudioHandler : MonoBehaviour
             }
         }
 
-        // Fill MusicByName from the Music in Resources
+        // Fill SoundEffectsByName from the SFX in Resources
         IList soundEffectNames = Enum.GetValues(typeof(SoundEffectType));
-        for (int i = 0; i < deckNames.Count; i++)
+        for (int i = 0; i < soundEffectNames.Count; i++)
         {
-            SoundEffectType name = (SoundEffectType)deckNames[i];
+            SoundEffectType name = (SoundEffectType)soundEffectNames[i];
             AudioClip music = Resources.Load<AudioClip>("Audio/SFX/" + name.ToString());
             if (music != null)
             {
@@ -519,6 +529,42 @@ public class AudioHandler : MonoBehaviour
     {
         if (clip != null && SoundEffectSource != null)
             SoundEffectSource.PlayOneShot(clip, userSoundEffectVolume * volumeScale);
+    }
+
+    /// <summary>
+    /// Plays a ritual's invocation, timed to RitualInvocationVfx (its notes fall on the VFX beats). Falls back to the
+    /// old whoosh if the ritual has no clip yet. Rendered by Tools/Audio/build_ritual_sounds.py.
+    /// </summary>
+    public void PlayRitualInvocation(Ritual ritual)
+    {
+        if (ritual == null)
+            return;
+
+        string name = ritual.GetName();
+        if (!ritualInvocationClips.TryGetValue(name, out AudioClip clip))
+        {
+            clip = Resources.Load<AudioClip>(RitualInvocationPath + name);
+            ritualInvocationClips[name] = clip;
+        }
+
+        if (clip == null)
+        {
+            PlaySoundEffect(SoundEffectType.Whoosh);
+            return;
+        }
+
+        if (ritualInvocationSource == null)
+        {
+            ritualInvocationSource = gameObject.AddComponent<AudioSource>();
+            ritualInvocationSource.playOnAwake = false;
+            ritualInvocationSource.spatialBlend = 0f;
+            ritualInvocationSource.loop = false;
+        }
+
+        float volume = RitualInvocationVolume * userSoundEffectVolume;
+        if (!RitualInvocationVfx.IsMajor(ritual))
+            volume *= MinorRitualVolumeScale;
+        ritualInvocationSource.PlayOneShot(clip, volume);
     }
 
     public float PlayHeartstringStrum()

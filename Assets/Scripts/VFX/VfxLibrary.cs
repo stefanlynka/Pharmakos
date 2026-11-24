@@ -6,101 +6,11 @@ using UnityEngine;
 /// </summary>
 public static class VfxLibrary
 {
-    private static readonly OfferingType[] RitualTokenOrder =
+    // A god answering a ritual: offerings stream into its sigil, then the boon lands on the target. Timed to the
+    // ritual's invocation sound; look per god from its RitualTheme. See RitualInvocationVfx.
+    public static RitualInvocationVfx RitualInvocation(Ritual ritual)
     {
-        OfferingType.Blood,
-        OfferingType.Bone,
-        OfferingType.Crop,
-        OfferingType.Scroll,
-        OfferingType.Gold,
-    };
-
-    public static VfxEffect DefaultRitual(Ritual ritual)
-    {
-        return new ParallelVfx(RitualOfferingBurst(ritual), new RitualLightingVfx());
-    }
-
-    // Always spawns totalTokens; the ritual's base costs only decide how they're split between offering types.
-    // Every offering type the ritual costs gets at least one token.
-    public static OfferingBurstVfx RitualOfferingBurst(Ritual ritual, int totalTokens = 16)
-    {
-        OfferingBurstVfx burst = new OfferingBurstVfx();
-
-        List<OfferingType> types = new List<OfferingType>();
-        List<int> costs = new List<int>();
-        if (ritual != null && ritual.Costs != null)
-        {
-            foreach (OfferingType type in RitualTokenOrder)
-            {
-                if (!ritual.Costs.TryGetValue(type, out int cost) || cost <= 0) continue;
-                types.Add(type);
-                costs.Add(cost);
-            }
-        }
-
-        if (types.Count == 0)
-        {
-            types.Add(OfferingType.Gold);
-            costs.Add(1);
-        }
-
-        int[] counts = DistributeProportionally(costs, Mathf.Max(totalTokens, types.Count));
-        for (int i = 0; i < types.Count; i++)
-        {
-            for (int j = 0; j < counts[i]; j++)
-            {
-                burst.Tokens.Add(types[i]);
-            }
-        }
-
-        return burst;
-    }
-
-    // Largest-remainder split of total across weights, guaranteeing each weight at least one
-    private static int[] DistributeProportionally(List<int> weights, int total)
-    {
-        int count = weights.Count;
-        int[] result = new int[count];
-        float[] remainders = new float[count];
-
-        int weightSum = 0;
-        foreach (int weight in weights) weightSum += weight;
-
-        int assigned = 0;
-        for (int i = 0; i < count; i++)
-        {
-            float share = (float)total * weights[i] / weightSum;
-            result[i] = Mathf.FloorToInt(share);
-            remainders[i] = share - result[i];
-            assigned += result[i];
-        }
-
-        while (assigned < total)
-        {
-            int best = 0;
-            for (int i = 1; i < count; i++)
-            {
-                if (remainders[i] > remainders[best]) best = i;
-            }
-            result[best]++;
-            remainders[best] = -1f;
-            assigned++;
-        }
-
-        for (int i = 0; i < count; i++)
-        {
-            if (result[i] > 0) continue;
-
-            int largest = 0;
-            for (int j = 1; j < count; j++)
-            {
-                if (result[j] > result[largest]) largest = j;
-            }
-            result[largest]--;
-            result[i]++;
-        }
-
-        return result;
+        return new RitualInvocationVfx(ritual);
     }
 
     // Flame brushstrokes flurry over the anchor (e.g. a CardView) until it is completely covered, then die down
@@ -186,50 +96,6 @@ public static class VfxLibrary
     public static PortraitColorFlashVfx PortraitHealFlash(float duration = 0.8f)
     {
         return PortraitColorFlash(new Color(0.25f, 0.95f, 0.3f, 0.3f), duration);
-    }
-
-    // Red, white, green, or blue from the ritual's largest Blood, Bone, Crop, or Scroll cost.
-    // Ties keep the earlier of those four. No positive cost falls back to white.
-    public static PortraitColorFlashVfx PortraitOfferingFlash(Ritual ritual, float duration = 0.8f)
-    {
-        return PortraitColorFlash(OfferingFlashColor(DominantOffering(ritual)), duration);
-    }
-
-    public static OfferingType DominantOffering(Ritual ritual)
-    {
-        OfferingType best = OfferingType.Bone;
-        int bestCost = 0;
-        if (ritual == null || ritual.Costs == null)
-            return best;
-
-        foreach (OfferingType type in RitualTokenOrder)
-        {
-            if (type == OfferingType.Gold)
-                continue;
-            if (!ritual.Costs.TryGetValue(type, out int cost) || cost <= bestCost)
-                continue;
-
-            bestCost = cost;
-            best = type;
-        }
-
-        return best;
-    }
-
-    public static Color OfferingFlashColor(OfferingType type)
-    {
-        const float alpha = 0.3f;
-        switch (type)
-        {
-            case OfferingType.Blood:
-                return new Color(0.95f, 0.2f, 0.15f, alpha);
-            case OfferingType.Crop:
-                return new Color(0.25f, 0.95f, 0.3f, alpha);
-            case OfferingType.Scroll:
-                return new Color(0.35f, 0.55f, 1f, alpha);
-            default:
-                return new Color(0.95f, 0.95f, 0.92f, alpha);
-        }
     }
 
     // A green or red wash over the card. It fades in quickly, holds, and is gone when duration elapses.

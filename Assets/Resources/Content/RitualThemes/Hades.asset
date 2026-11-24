@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee918b322b23a7f4dab781db1ab564fc, type: 3}
+  m_Name: Hades
+  m_EditorClassIdentifier: 
+  Glow: {r: 0.84, g: 0.8, b: 0.7, a: 1}
+  Accent: {r: 0.95, g: 0.92, b: 0.85, a: 1}
+  GlowIntensity: 1.9
+  SpotlightTint: 0.4
+  Sigil: {fileID: 2800000, guid: 55992fff6345b554fb6d3ac6a9fb86ab, type: 3}
+  SigilScale: 1
+  Burst:
+    Enabled: 1
+    Texture: {fileID: 2800000, guid: 230ffa7f9b341e443a323730c5ae3445, type: 3}
+    Additive: 0
+    Shape: 1
+    Count: 30
+    Duration: 0
+    Delay: 0
+    Speed: {x: 7, y: 16}
+    Lifetime: {x: 1.2, y: 2}
+    Size: {x: 3.5, y: 7}
+    Gravity: 0
+    Drag: 2.5
+    Spin: {x: -40, y: 40}
+    Stretch: 0
+    ColorA: {r: 0.05, g: 0.04, b: 0.04, a: 0.85}
+    ColorB: {r: 0.12, g: 0.1, b: 0.09, a: 0.75}
+    Intensity: 1.5
+  Drift:
+    Enabled: 1
+    Texture: {fileID: 2800000, guid: 1ffd6729686e3254ca261a5217662f02, type: 3}
+    Additive: 1
+    Shape: 2
+    Count: 26
+    Duration: 1.4
+    Delay: 0
+    Speed: {x: 1, y: 3.5}
+    Lifetime: {x: 1.4, y: 2.4}
+    Size: {x: 0.5, y: 1.1}
+    Gravity: -0.08
+    Drag: 1
+    Spin: {x: -20, y: 20}
+    Stretch: 0
+    ColorA: {r: 0.82, g: 0.8, b: 0.72, a: 1}
+    ColorB: {r: 0.6, g: 0.62, b: 0.55, a: 1}
+    Intensity: 1.6
+  Extra:
+    Enabled: 1
+    Texture: {fileID: 2800000, guid: 9e6046cf9013c284abae3555d2f9e664, type: 3}
+    Additive: 1
+    Shape: 0
+    Count: 18
+    Duration: 0
+    Delay: 0
+    Speed: {x: 8, y: 18}
+    Lifetime: {x: 0.5, y: 1}
+    Size: {x: 0.5, y: 1.1}
+    Gravity: 1.5
+    Drag: 1.5
+    Spin: {x: -360, y: 360}
+    Stretch: 0
+    ColorA: {r: 0.9, g: 0.86, b: 0.76, a: 1}
+    ColorB: {r: 0.7, g: 0.66, b: 0.58, a: 1}
+    Intensity: 1.4
+  ShakeStrength: 1.2
+  LightningStrike: 0

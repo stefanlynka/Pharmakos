@@ -1784,9 +1784,4 @@ public class ZeusMajor : Ritual
         DealDamageAction damageAction = new DealDamageAction(Owner, target, damage);
         Owner.GameState.ActionHandler.AddAction(damageAction, true, true);
     }
-
-    public override VfxEffect GetPlayVfx(ITarget target)
-    {
-        return new ParallelVfx(VfxLibrary.DefaultRitual(this), new LightningStrikeVfx());
-    }
 }

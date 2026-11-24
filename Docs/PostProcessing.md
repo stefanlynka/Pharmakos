@@ -69,7 +69,8 @@ textures or overlays.
 | Pulse | Trigger | Look |
 |---|---|---|
 | Damage Taken | the human player loses health (`ChangeStatsAnimation`) | red vignette, slight fringing, saturation dip; 0.5 s; strength 0.45 + 0.12 per damage point |
-| Ritual Used | the ritual lighting moment (`LightingHandler.ShakeScreen`) | dark vignette, slight fringing, saturation lift; 1.1 s |
+| Ritual Gather | a ritual's offerings gathering (`RitualInvocationRun`), stretched to end on its final note | black vignette, exposure -0.9, saturation dip |
+| Ritual Used | a ritual's final note (`RitualInvocationRun`) | vignette tinted toward the god's colour (`RitualTint`), slight fringing, saturation lift; 1.1 s |
 
 Pulses don't hold the animation queue. A weaker pulse never cuts off a stronger one that is still playing. Call
 `PostFXPulse.Play(pulse, strength)` from view code to add more.

@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee918b322b23a7f4dab781db1ab564fc, type: 3}
+  m_Name: OldOnes
+  m_EditorClassIdentifier: 
+  Glow: {r: 0.42, g: 0.74, b: 0.54, a: 1}
+  Accent: {r: 0.86, g: 1, b: 0.82, a: 1}
+  GlowIntensity: 2.2
+  SpotlightTint: 0.6
+  Sigil: {fileID: 2800000, guid: f25df4a2bc9f31b47af1ede07be1aca4, type: 3}
+  SigilScale: 1
+  Burst:
+    Enabled: 1
+    Texture: {fileID: 2800000, guid: 230ffa7f9b341e443a323730c5ae3445, type: 3}
+    Additive: 0
+    Shape: 1
+    Count: 34
+    Duration: 0
+    Delay: 0
+    Speed: {x: 4, y: 12}
+    Lifetime: {x: 1.4, y: 2.2}
+    Size: {x: 6, y: 12}
+    Gravity: 0
+    Drag: 2.5
+    Spin: {x: -40, y: 40}
+    Stretch: 0
+    ColorA: {r: 0.07, g: 0.06, b: 0.04, a: 0.9}
+    ColorB: {r: 0.14, g: 0.12, b: 0.08, a: 0.8}
+    Intensity: 1.5
+  Drift:
+    Enabled: 1
+    Texture: {fileID: 2800000, guid: 1ffd6729686e3254ca261a5217662f02, type: 3}
+    Additive: 1
+    Shape: 2
+    Count: 26
+    Duration: 1.4
+    Delay: 0
+    Speed: {x: 1, y: 3.5}
+    Lifetime: {x: 1.4, y: 2.4}
+    Size: {x: 0.5, y: 1.2}
+    Gravity: -0.08
+    Drag: 2
+    Spin: {x: -90, y: 90}
+    Stretch: 0
+    ColorA: {r: 0.4, g: 0.75, b: 0.5, a: 1}
+    ColorB: {r: 0.7, g: 0.9, b: 0.65, a: 1}
+    Intensity: 1.8
+  Extra:
+    Enabled: 1
+    Texture: {fileID: 2800000, guid: 9e6046cf9013c284abae3555d2f9e664, type: 3}
+    Additive: 0
+    Shape: 0
+    Count: 26
+    Duration: 0
+    Delay: 0
+    Speed: {x: 10, y: 24}
+    Lifetime: {x: 0.6, y: 1.2}
+    Size: {x: 0.7, y: 1.5}
+    Gravity: 2.5
+    Drag: 1
+    Spin: {x: -400, y: 400}
+    Stretch: 0
+    ColorA: {r: 0.32, g: 0.27, b: 0.2, a: 1}
+    ColorB: {r: 0.2, g: 0.17, b: 0.12, a: 1}
+    Intensity: 1.5
+  ShakeStrength: 1.7
+  LightningStrike: 0

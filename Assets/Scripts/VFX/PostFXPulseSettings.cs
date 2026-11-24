@@ -45,4 +45,27 @@ public class PostFXPulseSettings : ScriptableObject
         Exposure = 0f,
         Saturation = 10f,
     };
+    [Header("Ritual gathering")]
+    [Tooltip("Darkens the board while a ritual's offerings gather, up to its final note (where Ritual Used takes over). " +
+             "Duration and Attack Time are ignored: the pulse is stretched to the ritual's timing.")]
+    public Pulse RitualGather = new Pulse
+    {
+        Duration = 1f,
+        AttackTime = 0.8f,
+        VignetteColor = new Color(0f, 0f, 0f),
+        VignetteIntensity = 0.45f,
+        VignetteSmoothness = 0.55f,
+        ChromaticAberration = 0f,
+        Exposure = -0.9f,
+        Saturation = -20f,
+    };
+
+    [Tooltip("How far a ritual's vignette is tinted toward its god's colour (0 = the colour above).")]
+    [Range(0f, 1f)] public float RitualTint = 0.5f;
+    [Tooltip("The god's colour is darkened by this before tinting, so the edges glow faintly rather than wash out.")]
+    [Range(0f, 1f)] public float RitualTintDarkness = 0.35f;
+
+    // Runtime copy of RitualUsed with the god's tint applied (never saved).
+    [System.NonSerialized] public Pulse RitualTintedPulse;
+    [System.NonSerialized] public Pulse RitualGatherTimed;
 }

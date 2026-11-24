@@ -132,29 +132,10 @@ public abstract class Ritual : ITarget
         // Each Ritual subclass should override this to define its effect
     }
 
+    // The god's answer: sound, sigil, light and boon (see RitualInvocationVfx and RitualTheme).
     public virtual VfxEffect GetPlayVfx(ITarget target)
     {
-        VfxEffect ritualVfx = VfxLibrary.DefaultRitual(this);
-        if (target is not Player || !TargetsOnlyPlayers())
-            return ritualVfx;
-
-        return new ParallelVfx(ritualVfx, VfxLibrary.PortraitOfferingFlash(this));
-    }
-
-    // True when every current legal target is a player. Rituals that can also hit followers stay false.
-    public bool TargetsOnlyPlayers()
-    {
-        List<ITarget> targets = GetTargets();
-        if (targets == null || targets.Count == 0)
-            return false;
-
-        foreach (ITarget candidate in targets)
-        {
-            if (candidate is not Player)
-                return false;
-        }
-
-        return true;
+        return VfxLibrary.RitualInvocation(this);
     }
 
     public Ritual MakeBaseCopy()

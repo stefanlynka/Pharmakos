@@ -43,6 +43,47 @@ public class PostFXPulse : MonoBehaviour
             Play(s.RitualUsed, 1f);
     }
 
+    /// <summary>Darkens the board over a ritual's gathering, peaking on its final note (climax seconds from now).</summary>
+    public static void RitualGather(float climax)
+    {
+        PostFXPulseSettings s = LoadSettings();
+        if (s == null || s.RitualGather == null)
+            return;
+        PostFXPulseSettings.Pulse timed = s.RitualGatherTimed ??= new PostFXPulseSettings.Pulse();
+        CopyPulse(s.RitualGather, timed);
+        timed.AttackTime = Mathf.Max(0.05f, climax * 0.9f);
+        timed.Duration = climax + 0.25f;
+        Play(timed, 1f);
+    }
+
+    static void CopyPulse(PostFXPulseSettings.Pulse from, PostFXPulseSettings.Pulse to)
+    {
+        to.Duration = from.Duration;
+        to.AttackTime = from.AttackTime;
+        to.VignetteColor = from.VignetteColor;
+        to.VignetteIntensity = from.VignetteIntensity;
+        to.VignetteSmoothness = from.VignetteSmoothness;
+        to.ChromaticAberration = from.ChromaticAberration;
+        to.Exposure = from.Exposure;
+        to.Saturation = from.Saturation;
+    }
+
+    /// <summary>The ritual pulse with its vignette tinted toward the god's colour (see PostFXPulseSettings.RitualTint).</summary>
+    public static void Ritual(Color godColor, float strength = 1f)
+    {
+        PostFXPulseSettings s = LoadSettings();
+        if (s == null || s.RitualUsed == null)
+            return;
+
+        PostFXPulseSettings.Pulse tinted = s.RitualTintedPulse ??= new PostFXPulseSettings.Pulse();
+        PostFXPulseSettings.Pulse source = s.RitualUsed;
+        CopyPulse(source, tinted);
+        Color dark = godColor * s.RitualTintDarkness;
+        dark.a = 1f;
+        tinted.VignetteColor = Color.Lerp(source.VignetteColor, dark, s.RitualTint);
+        Play(tinted, Mathf.Clamp01(strength));
+    }
+
     public static void Play(PostFXPulseSettings.Pulse pulse, float strength)
     {
         PostFXPulseSettings s = LoadSettings();
@@ -83,8 +124,8 @@ public class PostFXPulse : MonoBehaviour
 
     void Begin(PostFXPulseSettings.Pulse pulse, float pulseStrength)
     {
-        // a weaker pulse never cuts a stronger one short
-        if (playing && Envelope() * strength > pulseStrength)
+        // a weaker pulse never cuts a stronger one short (except the ritual gathering, which always hands over)
+        if (playing && current != settings.RitualGatherTimed && Envelope() * strength > pulseStrength)
             return;
 
         current = pulse;
