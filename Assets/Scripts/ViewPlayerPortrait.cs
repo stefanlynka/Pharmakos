@@ -20,6 +20,19 @@ public class ViewPlayerPortrait : MonoBehaviour
     public GameObject HeartStringHolder;
     public List<GameObject> HeartStrings = new List<GameObject>();
 
+    [Tooltip("Scaled up while the portrait is hovered as a target. Falls back to the child named PortraitContainer.")]
+    [SerializeField] Transform portraitContainer;
+
+    public Transform PortraitContainer
+    {
+        get
+        {
+            if (portraitContainer == null)
+                portraitContainer = transform.Find("PortraitContainer");
+            return portraitContainer;
+        }
+    }
+
     private Player player;
 
     public void Load(Player player)

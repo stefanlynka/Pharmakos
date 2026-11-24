@@ -438,7 +438,7 @@ public class SelectionHandler
         if (CanShowLegalTargetHover())
             TryGetHoveredLegalTarget(out hovered);
 
-        Transform targetTransform = hovered != null ? hovered.transform : null;
+        Transform targetTransform = hovered != null ? hovered.HoverScaleTransform : null;
         if (hoveredLegalTargetTransform != targetTransform)
         {
             RestoreLegalTargetHoverScale();

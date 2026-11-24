@@ -21,6 +21,16 @@ public class ViewPlayer : ViewTarget
     public List<ViewBuff> Buffs = new List<ViewBuff>();
     public MeshHighlightEffect MeshHighlightEffect;
 
+    // Only the portrait itself grows on target hover, not the buffs and other children of the player.
+    public override Transform HoverScaleTransform
+    {
+        get
+        {
+            Transform container = ViewPlayerPortrait != null ? ViewPlayerPortrait.PortraitContainer : null;
+            return container != null ? container : transform;
+        }
+    }
+
     public void Load(Player player)
     {
         Player = player;
