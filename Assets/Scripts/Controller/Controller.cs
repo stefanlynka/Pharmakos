@@ -188,6 +188,10 @@ public class Controller : MonoBehaviour
     // Dev-only shortcuts. Compiled out of release (non-development) player builds.
     private void HandleDevHotkeys()
     {
+        // P in the test chamber: swap your two rituals for the next god's (see TestChamberRitualPairs).
+        if (Input.GetKeyDown(KeyCode.P) && IsTestChamber && GameRunning && !GamePaused)
+            CycleTestChamberRituals();
+
         bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
         bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         if (!ctrl || !shift) return;
@@ -198,6 +202,46 @@ public class Controller : MonoBehaviour
             Debug.Log("Dev hotkey: starting test chamber");
             StartTestChamber();
         }
+    }
+
+    // Each press of P loads the next pair. Gods with both rituals come together; gods with only one share a pair.
+    // The first pair is the test deck's own (Old Ones + Zeus Major), so the cycle starts on the next one.
+    static readonly (string Minor, string Major)[] TestChamberRitualPairs =
+    {
+        ("OldOnesMinor", "ZeusMajor"),
+        ("ZeusMinor", "ZeusMajor"),
+        ("PoseidonMinor", "PoseidonMajor"),
+        ("HadesMinor", "HadesMajor"),
+        ("AresMinor", "AresMajor"),
+        ("ApolloMinor", "ApolloMajor"),
+        ("AphroditeMinor", "AphroditeMajor"),
+        ("DemeterMinor", "DemeterMajor"),
+        ("HermesMinor", "HermesMajor"),
+        ("DionysusMinor", "AthenaMajor"),
+        ("HestiaMinor", "HephaestusMajor"),
+        ("MuseMinor", "HeraMajor"),
+    };
+    int testChamberRitualPair;
+
+    private void CycleTestChamberRituals()
+    {
+        // Swapping mid-aim or mid-animation would strand the selection or the queued ritual view.
+        if (View.Instance == null || View.Instance.Player1 == null || Player1 == null) return;
+        if (View.Instance.SelectionHandler != null && View.Instance.SelectionHandler.IsSelectingTarget()) return;
+
+        testChamberRitualPair = (testChamberRitualPair + 1) % TestChamberRitualPairs.Length;
+        var pair = TestChamberRitualPairs[testChamberRitualPair];
+        Player1.LoadRitual(MakeRitual(pair.Minor), 0);
+        Player1.LoadRitual(MakeRitual(pair.Major), 1);
+        View.Instance.Player1.ViewMinorRitual.Init(Player1.MinorRitual);
+        View.Instance.Player1.ViewMajorRitual.Init(Player1.MajorRitual);
+        Debug.Log("Test chamber rituals: " + pair.Minor + " + " + pair.Major);
+    }
+
+    static Ritual MakeRitual(string className)
+    {
+        System.Type type = typeof(Ritual).Assembly.GetType(className);
+        return (Ritual)System.Activator.CreateInstance(type);
     }
 
     private bool CanStartTestChamberFromHotkey()
@@ -346,6 +390,7 @@ public class Controller : MonoBehaviour
         Player2.AttachToGameState(CanonGameState);
 
         Player1.LoadDetails(HumanPlayerDetails, 0);
+        Player1.FreeRituals = IsTestChamber;
 
         Player1.Init(0);
 

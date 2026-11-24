@@ -298,6 +298,9 @@ public class ViewRitual : ViewTarget
         if (Ritual == null || Ritual.Owner == null)
             return false;
 
+        if (Ritual.Owner.FreeRituals)
+            return true;
+
         if (View.Instance == null)
             return Ritual.Owner.CanPayForRitual(Ritual);
 

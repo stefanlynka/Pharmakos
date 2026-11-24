@@ -41,6 +41,8 @@ public class Player : ITarget
         };
     public Ritual MinorRitual;
     public Ritual MajorRitual;
+    // Test chamber only: rituals cost nothing (CanPayForRitual / PayRitualCosts ignore offerings).
+    public bool FreeRituals;
 
     public List<Trinket> Trinkets = new List<Trinket>();
 
@@ -288,6 +290,7 @@ public class Player : ITarget
         copy.Offerings = new Dictionary<OfferingType, int>(Offerings);
         copy.FollowerCostReductions = new Dictionary<OfferingType, int>(FollowerCostReductions);
         copy.SummoningSicknessCleared = SummoningSicknessCleared;
+        copy.FreeRituals = FreeRituals;
         copy.MinorRitual = MinorRitual?.DeepCopy(copy);
         copy.MajorRitual = MajorRitual?.DeepCopy(copy);
 
@@ -724,6 +727,8 @@ public class Player : ITarget
 
     public bool CanPayForRitual(Ritual ritual)
     {
+        if (FreeRituals) return true;
+
         foreach (KeyValuePair<OfferingType, int> cost in ritual.Costs)
         {
             int offeringCost = Mathf.Max(0, cost.Value - RitualCostReductions[cost.Key]);
@@ -734,6 +739,8 @@ public class Player : ITarget
     }
     public void PayRitualCosts(Ritual ritual)
     {
+        if (FreeRituals) return;
+
         foreach (KeyValuePair<OfferingType, int> cost in ritual.Costs)
         {
             int offeringCost = Mathf.Max(0, cost.Value - RitualCostReductions[cost.Key]);
