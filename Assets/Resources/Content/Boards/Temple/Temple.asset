@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee711df49b23c1a4b9c8f3e4073f1834, type: 3}
+  m_Name: Temple
+  m_EditorClassIdentifier: 
+  Ground: {fileID: 2100000, guid: 4ab108da2999ce14fa47ea36a88982a7, type: 2}
+  PlayerLane: {fileID: 2100000, guid: 5b72e11c28983e14ead94e479516e41a, type: 2}
+  EnemyLane: {fileID: 2100000, guid: fbfa6c1e9fdc93245b69462a0b34b8df, type: 2}
+  Flicker: 0
+  FlickerSpeed: 1.5

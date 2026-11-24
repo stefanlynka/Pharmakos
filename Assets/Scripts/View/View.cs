@@ -73,9 +73,9 @@ public class View : MonoBehaviour
         { DeckName.SeasideCliffs, "Cliffs" },
         { DeckName.Delphi, "Temple" },
         { DeckName.Archiereus, "Archiereus" },
-        { DeckName.Throne, "Underworld" },
-        { DeckName.Fates, "Underworld" },
-        { DeckName.TheGate, "Underworld" }
+        { DeckName.Throne, "Throne" },      // the three bosses use Underworld until they get boards of their own
+        { DeckName.Fates, "Fates" },
+        { DeckName.TheGate, "TheGate" }
     };
 
     private readonly int targetFrameRate = 60;
@@ -226,10 +226,38 @@ public class View : MonoBehaviour
             return;
         }
 
+        ShowBoard(materialBaseName);
+    }
+
+    private const string BoardStyleFolder = "Content/Boards/";
+
+    /// <summary>The board look for a board name (a value of backgroundNamesByDeckName): its BoardStyle when one exists,
+    /// otherwise the old Images/Backgrounds/Materials pair; bosses without either fall back to Underworld.</summary>
+    public void ShowBoard(string materialBaseName)
+    {
         if (BackgroundRenderer != null)
             BackgroundRenderer.enabled = false;
 
+        BoardStyle style = Resources.Load<BoardStyle>(BoardStyleFolder + materialBaseName + "/" + materialBaseName);
+        if (style == null && LoadBackgroundMaterial(materialBaseName, 1) == null && materialBaseName != "Underworld")
+        {
+            ShowBoard("Underworld");
+            return;
+        }
+
         MeshRenderer backgroundRenderer = FindChildMeshRenderer("Background");
+        if (style != null)
+        {
+            MeshRenderer enemyLane = FindChildMeshRenderer("AIBattleRow");
+            MeshRenderer playerLane = FindChildMeshRenderer("PlayerBattleRow");
+            ApplySharedMaterial(backgroundRenderer, style.Ground, materialBaseName, 1);
+            ApplySharedMaterial(playerLane, style.PlayerLane, materialBaseName, 2);
+            ApplySharedMaterial(enemyLane, style.EnemyLane != null ? style.EnemyLane : style.PlayerLane, materialBaseName, 2);
+            SetBoardAmbience(backgroundRenderer, style.Ground, style.Flicker, style.FlickerSpeed);
+            return;
+        }
+        SetBoardAmbience(backgroundRenderer, null, 0f, 0f);
+
         MeshRenderer aiBattleRowRenderer = FindChildMeshRenderer("AIBattleRow");
         MeshRenderer playerBattleRowRenderer = FindChildMeshRenderer("PlayerBattleRow");
 
@@ -238,6 +266,20 @@ public class View : MonoBehaviour
         Material battleRowMaterial = LoadBackgroundMaterial(materialBaseName, 2);
         ApplySharedMaterial(aiBattleRowRenderer, battleRowMaterial, materialBaseName, 2);
         ApplySharedMaterial(playerBattleRowRenderer, battleRowMaterial, materialBaseName, 2);
+    }
+
+    private static void SetBoardAmbience(MeshRenderer ground, Material material, float flicker, float speed)
+    {
+        if (ground == null)
+            return;
+        BoardAmbience ambience = ground.GetComponent<BoardAmbience>();
+        if (ambience == null)
+        {
+            if (flicker <= 0f)
+                return;
+            ambience = ground.gameObject.AddComponent<BoardAmbience>();
+        }
+        ambience.Configure(material, flicker, speed);
     }
 
     private MeshRenderer FindChildMeshRenderer(string childName)

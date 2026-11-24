@@ -192,6 +192,18 @@ public class Controller : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.P) && IsTestChamber && GameRunning && !GamePaused)
             CycleTestChamberRituals();
 
+        // B in the test chamber: show the next encounter's board (ground and lanes).
+        if (Input.GetKeyDown(KeyCode.B) && IsTestChamber && GameRunning && !GamePaused && View.Instance != null)
+        {
+            var boards = new System.Collections.Generic.List<string>();
+            foreach (string board in View.Instance.backgroundNamesByDeckName.Values)
+                if (!boards.Contains(board))
+                    boards.Add(board);
+            testChamberBoard = (testChamberBoard + 1) % boards.Count;
+            View.Instance.ShowBoard(boards[testChamberBoard]);
+            Debug.Log("Test chamber board: " + boards[testChamberBoard]);
+        }
+
         bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
         bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         if (!ctrl || !shift) return;
@@ -222,6 +234,7 @@ public class Controller : MonoBehaviour
         ("MuseMinor", "HeraMajor"),
     };
     int testChamberRitualPair;
+    int testChamberBoard;
 
     private void CycleTestChamberRituals()
     {
