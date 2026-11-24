@@ -100,5 +100,11 @@ Targeting arrows are black with orange edges; the edges glow ember (emission mas
 - Card art and event art share one colour grade *(TBD)*: warm, slightly desaturated, lifted blacks toward Kiln Black.
 - 3D props (trinkets, braziers, lyre) are lit warm from firelight; avoid cool rim light and glossy plastic specular.
 - VFX use the palette: embers and fire in Terracotta/Gold, offerings in their offering colour. Particles must be large enough to read at 1080p.
+- **Ritual invocations (proposed):** the one place a god's own colour is used as light. Each god's glow comes from its
+  altar style, pushed toward light (Zeus pale gold, Poseidon muted sea green, Hades bone, Ares crimson, Hera lapis
+  violet...), set in its `RitualTheme` (`Resources/Content/RitualThemes`). Same rules as the altars: muted rather than
+  neon, no cyan. The offerings that pay for the ritual stream in their offering colours; the god's sigil is its altar
+  corner emblem. Darkness first, light second: the board dims before the god answers. See
+  `Assets/Scripts/VFX/Rituals/CLAUDE.md`.
 - Nothing important is cut off by the screen edge.
 - **Post-processing (proposed):** grade the world, never the UI. UI keeps its palette exactly (combat UI on a post-free overlay camera); the world gets Neutral tonemapping (not ACES: it crushes the dark board), a midtone lift so the board's carving reads, a gentle vignette and fine grain. Gameplay pulses (damage, ritual) may tint the edges briefly. Options and reasoning: `Docs/PostProcessing.md`.
