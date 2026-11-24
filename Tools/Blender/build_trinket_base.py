@@ -39,8 +39,8 @@ BEVEL_BOTTOM = 0.035
 INLAY_RADIUS = 0.8     # the art's opening; the rim is the rest (the icons' own ring is about 18% of their radius)
 INLAY_DEPTH = 0.035    # how far the art sits below the rim
 BEVEL_INNER = 0.02     # rounded inner edge of the rim
-ART_FRACTION = 0.86    # how much of the art's radius shows: a sliver past the icons' white disc (~0.82), so the dark ring
-                       # gives the opening a soft inner edge instead of white meeting the rim at a jagged mesh edge
+ART_FRACTION = 0.80    # how much of the art's radius shows: just inside the icons' white marble disc (their black-gold
+                       # ring starts at 0.816-0.824), so none of the painted ring shows; the model's rim replaces it
 BEVEL_SEGMENTS = 5
 SEGMENTS = 128         # round the circumference
 
