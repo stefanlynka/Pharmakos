@@ -41,6 +41,7 @@ public class View : MonoBehaviour
 
     public SelectionHandler SelectionHandler;
     AttackArrowPreview attackArrowPreview;
+    DeathPreview deathPreview;
     public MenuSelectionHandler MenuSelectionHandler;
     public SequenceHandler SequenceHandler;
     //public TweenManager TweenManager;
@@ -124,6 +125,7 @@ public class View : MonoBehaviour
 
         SelectionHandler = new SelectionHandler();
         attackArrowPreview = new AttackArrowPreview();
+        deathPreview = new DeathPreview();
 
         MenuSelectionHandler = GetComponent<MenuSelectionHandler>();
         if (MenuSelectionHandler == null)
@@ -160,6 +162,7 @@ public class View : MonoBehaviour
     public void Clear()
     {
         buffsHiddenUntilAnimation.Clear();
+        deathPreview?.Clear();
         Player1.Clear();
         Player2.Clear();
 
@@ -186,6 +189,7 @@ public class View : MonoBehaviour
         Player1.UpdatePlayer();
         Player2.UpdatePlayer();
         attackArrowPreview?.Tick();
+        deathPreview?.Tick();
 
         //TweenManager.Update();
     }

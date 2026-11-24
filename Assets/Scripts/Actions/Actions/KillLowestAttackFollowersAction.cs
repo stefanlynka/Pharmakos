@@ -1,10 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEngine;
-using UnityEngine.UIElements;
-using static UnityEngine.GraphicsBuffer;
-using static UnityEngine.UI.GridLayoutGroup;
 
 public class KillLowestAttackFollowersAction : GameAction
 {
@@ -34,12 +28,24 @@ public class KillLowestAttackFollowersAction : GameAction
             playerSource = followerSource.Owner;
         }
 
-        int lowestAttack = 9999;
+        List<Follower> lowestAttackFollowers = GetLowestAttackFollowers(playerSource);
+
+        foreach (Follower follower in lowestAttackFollowers)
+        {
+            KillFollowerAction killAction = new KillFollowerAction(playerSource, follower);
+            playerSource.GameState.ActionHandler.AddAction(killAction);
+        }
+
+        base.Execute(simulated);
+    }
+
+    // Every follower on both sides tied for the lowest current attack. Also used by the view to preview the deaths.
+    public static List<Follower> GetLowestAttackFollowers(Player player)
+    {
+        int lowestAttack = int.MaxValue;
         List<Follower> lowestAttackFollowers = new List<Follower>();
 
-        List<Follower> allFollowers = ITarget.GetAllFollowers(playerSource);
-
-        foreach (Follower follower in allFollowers)
+        foreach (Follower follower in ITarget.GetAllFollowers(player))
         {
             int currentAttack = follower.GetCurrentAttack();
             if (currentAttack == lowestAttack)
@@ -54,13 +60,7 @@ public class KillLowestAttackFollowersAction : GameAction
             }
         }
 
-        foreach (Follower follower in lowestAttackFollowers)
-        {
-            KillFollowerAction killAction = new KillFollowerAction(playerSource, follower);
-            playerSource.GameState.ActionHandler.AddAction(killAction);
-        }
-
-        base.Execute(simulated);
+        return lowestAttackFollowers;
     }
 
     public override List<AnimationAction> GetAnimationActions()

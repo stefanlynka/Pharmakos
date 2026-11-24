@@ -1680,6 +1680,11 @@ public class PoseidonMinor : Ritual
         KillLowestAttackFollowersAction killAction = new KillLowestAttackFollowersAction(Owner);
         Owner.GameState.ActionHandler.AddAction(killAction, true);
     }
+
+    public override List<Follower> GetFollowersKilledBy(ITarget target)
+    {
+        return KillLowestAttackFollowersAction.GetLowestAttackFollowers(Owner);
+    }
 }
 
 // Summon a 1/1 copy of a Follower

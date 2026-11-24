@@ -132,6 +132,13 @@ public abstract class Ritual : ITarget
         // Each Ritual subclass should override this to define its effect
     }
 
+    // Followers this ritual would destroy if played on the target, for the view's death preview (DeathPreview).
+    // Null or empty = nothing to preview. Must not change any state.
+    public virtual List<Follower> GetFollowersKilledBy(ITarget target)
+    {
+        return null;
+    }
+
     // The god's answer: sound, sigil, light and boon (see RitualInvocationVfx and RitualTheme).
     public virtual VfxEffect GetPlayVfx(ITarget target)
     {
