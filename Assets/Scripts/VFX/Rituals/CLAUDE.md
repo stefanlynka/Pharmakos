@@ -7,6 +7,9 @@ What plays when a ritual is used. Entry point: `Ritual.GetPlayVfx` → `VfxLibra
   `MinorBeats` (0 / 0.60 s); the last beat is the climax (flash, shockwave, particles, shake, tinted `PostFXPulse.Ritual`,
   lightning if the theme asks). The queue is released `ReleaseAfterClimax` (0.15 s) after it, so the ritual's own effect
   animates during the tail. Change the beats in **both** `RitualInvocationVfx` and `Tools/Audio/build_ritual_sounds.py`.
+- **Pace:** `RitualTheme.Pace` (1 = standard) scales everything for that god: beats, tail, particles, shake, lights,
+  post pulse. Its clips must be rendered at the same pace: `TEMPO` in `build_ritual_sounds.py` (pace, last-note
+  scale; the last-note scale shortens the final notes further). Poseidon is at 0.75 as the trial for a faster set.
 - "Major" = class name ends in `Major`, plus `OldOnesMinor` (`RitualInvocationVfx.IsMajor`). Minors play smaller
   (`MinorScale`), with 60% of the particles and `AudioHandler.MinorRitualVolumeScale`.
 - **Look per god:** `RitualTheme` assets in `Resources/Content/RitualThemes/<God>.asset` (god from `Ritual.God`, fallback

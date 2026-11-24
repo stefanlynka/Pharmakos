@@ -25,15 +25,27 @@ public class RitualInvocationVfx : VfxEffect
     // Seconds after the final note before the animation queue moves on to the ritual's own effect.
     public float ReleaseAfterClimax = 0.15f;
 
-    public float[] Beats => Major ? MajorBeats : MinorBeats;
-    public float Climax => Beats[Beats.Length - 1];
+    // The theme's Pace scales every timing: beats, tail, particles, shake, lights and post pulse.
+    public float Pace => Theme != null ? Mathf.Clamp(Theme.Pace, 0.25f, 2f) : 1f;
+    public float[] Beats
+    {
+        get
+        {
+            float[] standard = Major ? MajorBeats : MinorBeats;
+            float[] beats = new float[standard.Length];
+            for (int i = 0; i < beats.Length; i++)
+                beats[i] = standard[i] * Pace;
+            return beats;
+        }
+    }
+    public float Climax => (Major ? MajorBeats[MajorBeats.Length - 1] : MinorBeats[MinorBeats.Length - 1]) * Pace;
 
     public RitualInvocationVfx(Ritual ritual)
     {
         Ritual = ritual;
         Theme = RitualTheme.For(ritual);
         Major = IsMajor(ritual);
-        QueueHold = Climax + ReleaseAfterClimax;
+        QueueHold = Climax + ReleaseAfterClimax * Pace;
         LiftTowardCamera = 0f;
     }
 
@@ -48,7 +60,7 @@ public class RitualInvocationVfx : VfxEffect
 
     public override void Play(VfxContext context, Action onComplete)
     {
-        QueueHold = Climax + ReleaseAfterClimax;
+        QueueHold = Climax + ReleaseAfterClimax * Pace;
 
         GameObject root = new GameObject("RitualInvocation_" + (Ritual != null ? Ritual.GetName() : "?"));
         if (context.Field != null)
@@ -99,6 +111,7 @@ public class RitualInvocationRun : MonoBehaviour
     int nextBeat;
     bool climaxDone;
     float lifetime;
+    float pace = 1f;
 
     Vector3 targetPos;
     Vector3 sigilPos;
@@ -158,7 +171,8 @@ public class RitualInvocationRun : MonoBehaviour
         scale = effect.Major ? 1f : MinorScale;
         beats = effect.Beats;
         climax = effect.Climax;
-        lifetime = climax + 2.6f;
+        pace = effect.Pace;
+        lifetime = climax + 2.6f * pace;
 
         Camera cam = Camera.main;
         targetTransform = context.GetAnchorTransform(VfxAnchor.Target);
@@ -198,7 +212,7 @@ public class RitualInvocationRun : MonoBehaviour
         {
             float tint = theme != null ? theme.SpotlightTint : 0.6f;
             Controller.Instance.LightingHandler.PlayRitualLighting(targetTransform.gameObject, Color.Lerp(Color.white, glow, tint),
-                climax, effectMajor: fx.Major);
+                climax, effectMajor: fx.Major, pace: pace);
         }
 
         UpdateVisuals();
@@ -228,15 +242,15 @@ public class RitualInvocationRun : MonoBehaviour
             sigilPulse = 1f;
             sealPulse = 1f;
             if (index > 0)
-                ScreenShakeHandler.Shake(0.12f * scale, 0.12f);
+                ScreenShakeHandler.Shake(0.12f * scale, 0.12f * pace);
             return;
         }
 
         climaxDone = true;
         float strength = theme != null ? theme.ShakeStrength : 1f;
-        ScreenShakeHandler.Shake((fx.Major ? 0.75f : 0.45f) * strength, fx.Major ? 0.5f : 0.32f);
+        ScreenShakeHandler.Shake((fx.Major ? 0.75f : 0.45f) * strength, (fx.Major ? 0.5f : 0.32f) * pace);
         if (theme != null)
-            PostFXPulse.Ritual(theme.Glow, fx.Major ? 1f : 0.7f);
+            PostFXPulse.Ritual(theme.Glow, fx.Major ? 1f : 0.7f, pace);
         else
             PostFXPulse.Ritual();
 
@@ -258,7 +272,7 @@ public class RitualInvocationRun : MonoBehaviour
         {
             Color wash = theme.Glow;
             wash.a = 0.3f;
-            VfxLibrary.PortraitColorFlash(wash, 0.9f).Play(new VfxContext(null, targetView), null);
+            VfxLibrary.PortraitColorFlash(wash, 0.9f * pace).Play(new VfxContext(null, targetView), null);
         }
     }
 
@@ -266,11 +280,11 @@ public class RitualInvocationRun : MonoBehaviour
     {
         float t = elapsed;
         float dt = Time.deltaTime;
-        sigilPulse = Mathf.MoveTowards(sigilPulse, 0f, dt * 4f);
-        sealPulse = Mathf.MoveTowards(sealPulse, 0f, dt * 3f);
+        sigilPulse = Mathf.MoveTowards(sigilPulse, 0f, dt * 4f / pace);
+        sealPulse = Mathf.MoveTowards(sealPulse, 0f, dt * 3f / pace);
 
         float build = Mathf.Clamp01(t / climax);              // 0..1 over the gathering
-        float after = Mathf.Max(0f, t - climax);              // seconds since the final note
+        float after = Mathf.Max(0f, t - climax) / pace;       // seconds since the final note, at standard pace
 
         // Seal: unfolds under the target and turns slowly; flares and widens on the boon, then fades.
         float sealSize = SealSize * scale;
@@ -285,7 +299,7 @@ public class RitualInvocationRun : MonoBehaviour
             sealAlpha = Mathf.Lerp(0.85f, 0f, Smooth(0f, 1.1f, after));
             sealGrow = 1f + 0.25f * EaseOut(Mathf.Clamp01(after / 1.1f));
         }
-        seal.Transform.localRotation = Quaternion.Euler(0f, 0f, -t * 14f);
+        seal.Transform.localRotation = Quaternion.Euler(0f, 0f, -t / pace * 14f);
         seal.Set(sealAlpha, sealSize * sealGrow);
 
         // Shaft of light from above onto the target.
@@ -352,9 +366,9 @@ public class RitualInvocationRun : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             Color c = Color.Lerp(colors[i % colors.Count], Color.white, 0.25f);
-            float flight = Mathf.Lerp(0.38f, 0.55f, (float)rng.NextDouble()) * (fx.Major ? 1f : 0.85f);
+            float flight = Mathf.Lerp(0.38f, 0.55f, (float)rng.NextDouble()) * (fx.Major ? 1f : 0.85f) * pace;
             float startTime = Mathf.Lerp(0.02f, Mathf.Max(0.05f, lastArrival - flight), (float)i / Mathf.Max(1, count - 1));
-            startTime += ((float)rng.NextDouble() - 0.5f) * 0.06f;
+            startTime += ((float)rng.NextDouble() - 0.5f) * 0.06f * pace;
             Vector3 jitter = new Vector3((float)rng.NextDouble() - 0.5f, (float)rng.NextDouble() - 0.5f, 0f) * 3f;
             Vector3 start = source + jitter;
             Vector3 end = sigilPos + new Vector3((float)rng.NextDouble() - 0.5f, (float)rng.NextDouble() - 0.5f, 0f) * 2f;
@@ -467,10 +481,10 @@ public class RitualInvocationRun : MonoBehaviour
         ParticleSystem.MainModule main = ps.main;
         main.loop = false;
         main.playOnAwake = false;
-        main.duration = Mathf.Max(0.05f, layer.Duration);
-        main.startDelay = Mathf.Max(0f, layer.Delay);
+        main.duration = Mathf.Max(0.05f, layer.Duration * pace);
+        main.startDelay = Mathf.Max(0f, layer.Delay * pace);
         main.simulationSpace = ParticleSystemSimulationSpace.World;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(layer.Lifetime.x, layer.Lifetime.y);
+        main.startLifetime = new ParticleSystem.MinMaxCurve(layer.Lifetime.x * pace, layer.Lifetime.y * pace);
         main.startSpeed = new ParticleSystem.MinMaxCurve(layer.Speed.x * speedScale, layer.Speed.y * speedScale);
         main.startSize = new ParticleSystem.MinMaxCurve(layer.Size.x * scale * ParticleSizeScale, layer.Size.y * scale * ParticleSizeScale);
         main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
@@ -487,7 +501,7 @@ public class RitualInvocationRun : MonoBehaviour
         }
         else
         {
-            emission.rateOverTime = count / layer.Duration;
+            emission.rateOverTime = count / (layer.Duration * pace);
         }
 
         ParticleSystem.ShapeModule shape = ps.shape;

@@ -36,7 +36,7 @@ public class LightingHandler : MonoBehaviour
     /// gathers on the target until the final note, flares on it, then everything returns to normal.
     /// A new invocation takes over from one still playing.
     /// </summary>
-    public void PlayRitualLighting(GameObject target, Color spotColor, float climax, bool effectMajor = true)
+    public void PlayRitualLighting(GameObject target, Color spotColor, float climax, bool effectMajor = true, float pace = 1f)
     {
         if (target == null)
             return;
@@ -51,14 +51,17 @@ public class LightingHandler : MonoBehaviour
         SequenceHandler.Instance.TryStopSequence(LightDimmer);
         if (ritualLighting != null)
             StopCoroutine(ritualLighting);
-        ritualLighting = StartCoroutine(RitualLightingRoutine(spotColor, Mathf.Max(0.1f, climax), effectMajor));
+        ritualLighting = StartCoroutine(RitualLightingRoutine(spotColor, Mathf.Max(0.1f, climax), effectMajor, Mathf.Max(0.1f, pace)));
     }
 
-    System.Collections.IEnumerator RitualLightingRoutine(Color spotColor, float climax, bool major)
+    System.Collections.IEnumerator RitualLightingRoutine(Color spotColor, float climax, bool major, float pace)
     {
         float startMain = LeftLight.intensity;
-        float hold = major ? ritualHoldAfterClimax : ritualHoldAfterClimax * 0.75f;
-        float end = climax + hold + ritualRestoreDuration;
+        float hold = (major ? ritualHoldAfterClimax : ritualHoldAfterClimax * 0.75f) * pace;
+        float restore = ritualRestoreDuration * pace;
+        float flare = 0.12f * pace;
+        float settle = 0.5f * pace;
+        float end = climax + hold + restore;
         EyeLight.color = spotColor;
 
         for (float t = 0f; t < end; t += Time.deltaTime)
@@ -66,19 +69,19 @@ public class LightingHandler : MonoBehaviour
             // main lights: out quickly, back after the hold
             float main = t < climax + hold
                 ? Mathf.Lerp(startMain, 0f, Mathf.Clamp01(t / ritualFadeDuration))
-                : Mathf.Lerp(0f, defaultLightIntensity, Mathf.SmoothStep(0f, 1f, (t - climax - hold) / ritualRestoreDuration));
+                : Mathf.Lerp(0f, defaultLightIntensity, Mathf.SmoothStep(0f, 1f, (t - climax - hold) / restore));
             SetMainLightIntensity(main);
 
             // spotlight: gathers to half strength, flares on the final note, settles, then fades with the restore
             float eye;
             if (t < climax)
                 eye = maxEyeLightIntensity * 0.45f * Mathf.SmoothStep(0f, 1f, t / climax);
-            else if (t < climax + 0.12f)
-                eye = Mathf.Lerp(maxEyeLightIntensity * 0.45f, maxEyeLightIntensity * 1.3f, (t - climax) / 0.12f);
+            else if (t < climax + flare)
+                eye = Mathf.Lerp(maxEyeLightIntensity * 0.45f, maxEyeLightIntensity * 1.3f, (t - climax) / flare);
             else if (t < climax + hold)
-                eye = Mathf.Lerp(maxEyeLightIntensity * 1.3f, maxEyeLightIntensity * 0.6f, Mathf.Clamp01((t - climax - 0.12f) / 0.5f));
+                eye = Mathf.Lerp(maxEyeLightIntensity * 1.3f, maxEyeLightIntensity * 0.6f, Mathf.Clamp01((t - climax - flare) / settle));
             else
-                eye = Mathf.Lerp(maxEyeLightIntensity * 0.6f, 0f, (t - climax - hold) / ritualRestoreDuration);
+                eye = Mathf.Lerp(maxEyeLightIntensity * 0.6f, 0f, (t - climax - hold) / restore);
             SetSpotlightIntensity(eye);
             yield return null;
         }

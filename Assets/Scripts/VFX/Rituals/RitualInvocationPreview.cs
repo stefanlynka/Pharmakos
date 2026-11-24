@@ -58,7 +58,7 @@ public class RitualInvocationPreview : MonoBehaviour
         foreach (string name in AllRituals)
         {
             Debug.Log("Ritual preview: " + name);
-            float climax = name.EndsWith("Major") || name == "OldOnesMinor" ? RitualInvocationVfx.MajorBeats[2] : RitualInvocationVfx.MinorBeats[1];
+            float climax = new RitualInvocationVfx(MakeRitual(name)).Climax;
             Play(name, targetId, captureFolder != null ? new[] { climax * 0.7f, climax + 0.06f, climax + 0.4f } : null, captureFolder);
             yield return new WaitForSeconds(interval);
         }

@@ -25,6 +25,12 @@ public class RitualTheme : ScriptableObject
     [Tooltip("How far the board spotlight is tinted toward Glow (0 = white light).")]
     [Range(0f, 1f)] public float SpotlightTint = 0.6f;
 
+    [Header("Timing")]
+    [Tooltip("Speed of the whole invocation: 1 = the standard timing, 0.75 = everything in 75% of the time. The god's " +
+             "sound clips must be rendered at the same pace (TEMPO in Tools/Audio/build_ritual_sounds.py), or the notes " +
+             "drift off the beats.")]
+    [Range(0.5f, 1.25f)] public float Pace = 1f;
+
     [Header("Sigil")]
     [Tooltip("The god's emblem, white on transparent (Images/RitualFX/Sigils, built by Tools/RitualFX/build_ritual_textures.py).")]
     public Texture2D Sigil;

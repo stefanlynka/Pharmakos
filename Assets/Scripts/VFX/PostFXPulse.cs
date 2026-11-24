@@ -69,7 +69,7 @@ public class PostFXPulse : MonoBehaviour
     }
 
     /// <summary>The ritual pulse with its vignette tinted toward the god's colour (see PostFXPulseSettings.RitualTint).</summary>
-    public static void Ritual(Color godColor, float strength = 1f)
+    public static void Ritual(Color godColor, float strength = 1f, float durationScale = 1f)
     {
         PostFXPulseSettings s = LoadSettings();
         if (s == null || s.RitualUsed == null)
@@ -78,6 +78,8 @@ public class PostFXPulse : MonoBehaviour
         PostFXPulseSettings.Pulse tinted = s.RitualTintedPulse ??= new PostFXPulseSettings.Pulse();
         PostFXPulseSettings.Pulse source = s.RitualUsed;
         CopyPulse(source, tinted);
+        tinted.Duration = source.Duration * durationScale;
+        tinted.AttackTime = source.AttackTime * durationScale;
         Color dark = godColor * s.RitualTintDarkness;
         dark.a = 1f;
         tinted.VignetteColor = Color.Lerp(source.VignetteColor, dark, s.RitualTint);

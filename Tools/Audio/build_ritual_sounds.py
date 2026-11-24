@@ -4,6 +4,7 @@ Each ritual (Major = 3 notes, Minor = 2 notes) plays its god's instruments over 
 the last note, a timpani/drum hit and a long dark reverb), so the set reads as one family the way the offering notes do.
 The last note always lands on the VFX climax, so the beat times below must match RitualInvocationVfx:
     Major beats: 0.00, 0.40, 0.90 s     Minor beats: 0.00, 0.60 s      (RitualInvocationVfx.MajorBeats / MinorBeats)
+A god can be faster: its RitualTheme.Pace scales those beats, and TEMPO below must use the same pace for its rituals.
 
 Samples: VSCO 2 Community Edition (CC0), read through its .sfz mappings. The set was dropped into
 Assets/Resources/Audio/Instruments for this; once it is removed from the project, keep a copy elsewhere and pass it:
@@ -185,12 +186,23 @@ def envelope(n, dur, release):
 
 
 class Mix:
-    def __init__(self, seconds):
+    def __init__(self, seconds, tempo=1.0, last_note=1.0, climax=99.0):
         self.buf = np.zeros((int(seconds * SR), 2))
+        # Note lengths in the scores are written for the standard pace; a faster ritual scales them with its beats,
+        # and its final notes (anything starting near the climax) by last_note on top.
+        self.tempo = tempo
+        self.last_note = last_note
+        self.final_from = climax - 0.25 * tempo
 
-    def add(self, d, at, gain=1.0, pan=0.0, dur=None, release=0.35, align=True, norm=True):
+    def add(self, d, at, gain=1.0, pan=0.0, dur=None, release=0.35, align=True, norm=True, scale=True):
         if align:
             d = d[onset(d):]
+        if dur is not None and scale:
+            dur *= self.tempo
+            release *= self.tempo
+            if at >= self.final_from:
+                dur *= self.last_note
+                release *= self.last_note
         if dur is not None:
             n = min(len(d), int((dur + release) * SR))
             d = d[:n] * envelope(n, dur, release)[:, None]
@@ -235,19 +247,19 @@ class Library:
 
 
 # ---------------------------------------------------------------- reverb ---
-def temple_ir(seconds=3.0, seed=3):
+def temple_ir(seconds=3.0, seed=3, decay=1.0):
     """A large dark stone hall: early reflections, then a long decay that loses its highs as it goes."""
     rng = np.random.default_rng(seed)
     n = int(seconds * SR)
     t = np.arange(n) / SR
     ir = np.zeros((n, 2))
     for ch in range(2):
-        bright = rng.standard_normal(n) * np.exp(-t / 0.16)
+        bright = rng.standard_normal(n) * np.exp(-t / (0.16 * decay))
         dark = rng.standard_normal(n)
         # crude low-pass: moving averages
         for k in (9, 23):
             dark = np.convolve(dark, np.ones(k) / k, mode="same")
-        dark *= np.exp(-t / 0.42) * 3.2
+        dark *= np.exp(-t / (0.42 * decay)) * 3.2
         ir[:, ch] = bright * 0.35 + dark
         for d_ms, g in ((17, 0.5), (29, 0.38), (43, 0.3), (61, 0.24), (83, 0.18)):
             j = int((d_ms + ch * 3.7) * SR / 1000)
@@ -310,7 +322,7 @@ def temple_bed(L, m, climax, grand):
         piece = piece[int(-start * SR):]
         start = 0.0
     m.add(piece * envelope(len(piece), len(piece) / SR - 0.06, 0.06)[:, None], start,
-          gain=0.55 if grand else 0.35, align=False, norm=True)
+          gain=0.55 if grand else 0.35, align=False, norm=True, scale=False)
     m.add(L.note("Timpani", 38, 120 if grand else 90), climax, gain=1.3 if grand else 0.9, dur=2.2, release=0.8)
     if grand:
         m.add(L.file("VSCO 1 Percussion/drums/bass/bdrum3_fff_1.wav"), climax, gain=0.9, dur=1.5, release=0.6)
@@ -583,14 +595,34 @@ SCORES = {
     "MuseMinor": s_muse_minor,
     "OldOnesMinor": s_oldones_minor,
 }
+# Faster rituals: (pace, last note). pace scales the beats and every note with them (must match the god's
+# RitualTheme.Pace); last note further shortens the notes on the final beat. The hall's decay shortens with the pace.
+TEMPO = {
+    "PoseidonMajor": (0.75, 0.6),
+    "PoseidonMinor": (0.75, 0.6),
+}
+
 # Rituals whose bed is the grand one (bass drum under the timpani, louder swell) even though they are Minor.
 GRAND_MINORS = {"OldOnesMinor"}
 
 
-def render(L, name, ir):
+def beats_for(name):
+    pace = TEMPO.get(name, (1.0, 1.0))[0]
+    return [b * pace for b in (MAJOR_BEATS if name.endswith("Major") else MINOR_BEATS)]
+
+
+_irs = {}
+
+
+def render(L, name):
     major = name.endswith("Major")
-    beats = MAJOR_BEATS if major else MINOR_BEATS
-    m = Mix(6.0)
+    pace, last_note = TEMPO.get(name, (1.0, 1.0))
+    beats = beats_for(name)
+    decay = 0.5 + 0.5 * pace
+    if decay not in _irs:
+        _irs[decay] = temple_ir(decay=decay)
+    ir = _irs[decay]
+    m = Mix(6.0, pace, last_note, beats[-1])
     temple_bed(L, m, beats[-1], major or name in GRAND_MINORS)
     SCORES[name](L, m, beats)
     return master(m.buf, ir)
@@ -625,7 +657,7 @@ def write_preview(folder, names, out_dir):
     html = """<!doctype html><meta charset="utf-8"><title>Ritual sounds</title>
 <style>body{background:#141110;color:#E8DCC2;font-family:sans-serif;margin:24px}.r{margin:0 0 22px}
 h2{font-size:16px;margin:0 0 6px}img{display:block;margin-top:6px;max-width:100%%;border:1px solid #333}</style>
-<h1>Ritual invocation sounds</h1><p>Orange lines are the VFX beats (Major 0 / 0.4 / 0.9 s, Minor 0 / 0.6 s).</p>
+<h1>Ritual invocation sounds</h1><p>Orange lines are the VFX beats (Major 0 / 0.4 / 0.9 s, Minor 0 / 0.6 s, times the ritual's pace).</p>
 """ + rows
     open(os.path.join(folder, "index.html"), "w", encoding="utf-8").write(html)
 
@@ -639,17 +671,15 @@ def main():
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     L = Library(a.samples)
-    ir = temple_ir()
     names = a.only or list(SCORES)
     for n in names:
-        audio = render(L, n, ir)
+        audio = render(L, n)
         write_wav(os.path.join(a.out, n + ".wav"), audio)
         peak = np.abs(audio).max()
         print("%-16s %.2fs peak %.2f" % (n, len(audio) / SR, peak))
         if a.preview:
             os.makedirs(a.preview, exist_ok=True)
-            spectrogram_png(audio, os.path.join(a.preview, n + ".png"),
-                            MAJOR_BEATS if n.endswith("Major") else MINOR_BEATS)
+            spectrogram_png(audio, os.path.join(a.preview, n + ".png"), beats_for(n))
     if a.preview:
         write_preview(a.preview, names, a.out)
 
