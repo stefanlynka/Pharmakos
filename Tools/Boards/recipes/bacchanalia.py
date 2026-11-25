@@ -108,7 +108,7 @@ def paint(preview=False):
                     r = rng.uniform(0.15, 0.22)
                     grapes.ellipse(gx, gy, r, r)
         wood.line(pts, rng.uniform(0.22, 0.38))
-    for x, y in scatter_points(rng, 240, (-66, 66, -23, 43), margin_keep(1.5), 1.2):
+    for x, y in scatter_points(rng, 110, (-66, 66, -23, 43), margin_keep(3.0), 1.6):
         add_leaf(x, y, rng.uniform(1.0, 2.0), rng.uniform(0, 6.28))
 
     wdm = wood.read()
@@ -118,12 +118,12 @@ def paint(preview=False):
     lm = leaves.read()
     tv = np.clip(tint.read() / np.maximum(lm, 1e-3), 0, 1)
     vm = veinl.read() * lm
-    green = lerp(C(0.06, 0.085, 0.03), C(0.15, 0.19, 0.06), grain)
-    yellow = lerp(C(0.2, 0.19, 0.07), C(0.3, 0.26, 0.09), grain)
-    red = lerp(C(0.17, 0.045, 0.035), C(0.27, 0.07, 0.05), grain)
+    green = lerp(C(0.045, 0.055, 0.03), C(0.09, 0.105, 0.05), grain)        # muted, shadowed: they frame, not decorate
+    yellow = lerp(C(0.1, 0.085, 0.045), C(0.15, 0.12, 0.065), grain)
+    red = lerp(C(0.09, 0.035, 0.03), C(0.13, 0.05, 0.04), grain)
     leafcol = lerp(green, yellow, smoothstep(0.35, 0.6, tv))
     leafcol = lerp(leafcol, red, smoothstep(0.75, 0.88, tv))
-    leafcol = leafcol * (0.85 + 0.25 * n.fbm(X, Y, 0.6, 3, offset=8))[..., None]
+    leafcol = desaturate(leafcol * (0.85 + 0.25 * n.fbm(X, Y, 0.6, 3, offset=8))[..., None], 0.3)
     leafcol = lerp(leafcol, leafcol * 0.55, vm)
     alb, hgt = apply_object(g, alb, hgt, lm, lm * 0.06 - vm * 0.02, leafcol, shadow=0.5, shadow_blur=0.18)
 
@@ -132,13 +132,13 @@ def paint(preview=False):
 
     gm = grapes.read()
     gdome = np.clip(blurf(gm, 0.05, g) * 1.5, 0, 1) * gm
-    gcol = lerp(C(0.04, 0.015, 0.04), C(0.17, 0.07, 0.16), gdome ** 1.5)
+    gcol = lerp(C(0.035, 0.015, 0.03), C(0.11, 0.05, 0.1), gdome ** 1.5)
     alb, hgt = apply_object(g, alb, hgt, gm, gdome * 0.18, gcol, shadow=0.55, shadow_blur=0.1)
     smear = Layer(g)
     for x, y in scatter_points(rng, 20, (-66, 66, -23, 43), margin_keep(1.5, 12), 4.0):
         blob(smear, rng, x, y, rng.uniform(0.5, 1.0), 12, 0.5)
     sm = blurf(smear.read(), 0.1, g)
-    alb = lerp(alb, C(0.13, 0.03, 0.09), sm * 0.75)
+    alb = lerp(alb, C(0.08, 0.025, 0.05), sm * 0.6)
 
     # broken cups and amphorae: terracotta outside, black glaze in
     sh = Layer(g)
@@ -152,7 +152,7 @@ def paint(preview=False):
                 shard(glaze, rng, px, py, size * 0.7)
     shm = sh.read()
     glm = glaze.read() * shm
-    shcol = lerp(C(0.3, 0.13, 0.07), C(0.42, 0.2, 0.11), n.fbm(X, Y, 0.3, 3, offset=7))
+    shcol = lerp(C(0.15, 0.075, 0.045), C(0.22, 0.11, 0.07), n.fbm(X, Y, 0.3, 3, offset=7))
     shcol = lerp(shcol, C(0.05, 0.04, 0.04), glm)
     alb, hgt = apply_object(g, alb, hgt, shm, shm * 0.08, shcol, shadow=0.55, shadow_blur=0.12)
 

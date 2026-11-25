@@ -122,8 +122,8 @@ def paint(preview=False):
     # the fallen's gear
     rim = Layer(g)
     pnt = Layer(g, ss=1)
-    for x, y in scatter_points(rng, 9, (-64, 64, -22, 38), margin_keep(4.0), min_gap=10):
-        shield(rim, pnt, rng, x, y, rng.uniform(2.1, 2.7))
+    for x, y in scatter_points(rng, 4, (-64, 64, -22, 38), margin_keep(8.0), min_gap=25):
+        shield(rim, pnt, rng, x, y, rng.uniform(1.5, 1.9))
     sr = rim.read()
     pv = blurf(pnt.read(), 0.02, g) * sr
     sf = smoothstep(0.3, 0.45, pv)
@@ -137,7 +137,10 @@ def paint(preview=False):
     scol = lerp(bronze, paint_, sf * (1 - smot))
     scol = lerp(scol, C(0.05, 0.04, 0.035), smot)                                                        # black-figure motif
     scol = scol * (0.75 + 0.35 * n.fbm(X, Y, 0.3, 3, offset=8))[..., None]
-    alb, hgt = apply_object(g, alb, hgt, sr, sdome * 0.35, scol, shadow=0.65, shadow_blur=0.35)
+    scol = lerp(desaturate(scol, 0.5) * 0.6, earth, 0.35)                                          # dulled, dust-caked
+    buried = smoothstep(0.4, 0.7, n.fbm(X, Y, 1.0, 3, offset=9))                                  # half under the dust
+    sr = sr * (1 - buried * 0.8)
+    alb, hgt = apply_object(g, alb, hgt, sr, sdome * 0.2 * sr, scol, shadow=0.35, shadow_blur=0.3)
 
     wood = Layer(g)
     tips = Layer(g)

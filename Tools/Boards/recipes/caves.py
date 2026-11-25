@@ -1,5 +1,5 @@
 """The Gorgon's cave: wet limestone floor with rimstone terraces and black puddles that catch the light, green slime
-in the damp, the petrified who met her gaze lying as broken statues with their stone shields and swords. Lanes: damp packed grit
+in the damp, the petrified who met her gaze lying as broken statues. Lanes: damp packed grit
 with shallow puddles."""
 from boardkit import *  # noqa
 
@@ -60,22 +60,6 @@ def paint(preview=False):
     scol = lerp(scol, C(0.12, 0.16, 0.1), smoothstep(0.62, 0.8, n.fbm(X, Y, 0.8, 3, offset=9)) * 0.5)   # moss creeping
     scol = lerp(scol, scol * 0.4, cracks)
     alb, hgt = apply_object(g, alb, hgt, sm_, sdome * 0.6 - cracks * 0.05, scol, shadow=0.6, shadow_blur=0.3)
-
-    # the heroes' gear, turned to stone with them: shields and swords
-    gear = Layer(g)
-    for x, y in scatter_points(rng, 10, (-64, 64, -22, 42), margin_keep(5.0), 8.0):
-        if rng.random() < 0.5:
-            gear.ellipse(x, y, rng.uniform(1.1, 1.5), rng.uniform(1.1, 1.5), 255, n=36)
-        else:
-            a = rng.uniform(0, 6.28)
-            L = rng.uniform(2.0, 2.8)
-            taper(gear, [(x, y), (x + math.cos(a) * L, y + math.sin(a) * L)], 0.28, 0.06)
-            ca, sa = math.cos(a), math.sin(a)
-            gear.line([(x - sa * 0.5, y + ca * 0.5), (x + sa * 0.5, y - ca * 0.5)], 0.16)
-    gm = gear.read()
-    gdome = np.clip(blurf(gm, 0.25, g) * 1.5, 0, 1) * gm
-    gcol = lerp(C(0.2, 0.2, 0.19), C(0.42, 0.42, 0.39), gdome * (0.6 + 0.5 * n.fbm(X, Y, 0.4, 3, offset=12)))
-    alb, hgt = apply_object(g, alb, hgt, gm, gdome * 0.3, gcol, shadow=0.55, shadow_blur=0.25)
 
     # loose rubble
     rub = [(x, y, rng.uniform(0.12, 0.5)) for x, y in scatter_points(rng, 400, (-66, 66, -23, 43), margin_keep(0.8), 0.6)]

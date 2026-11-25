@@ -24,17 +24,17 @@ Underworld.
 | Underworld | test enemy | cracked basalt and ash, skeletons and bone piles, embers in the far cracks, asphodel | worn slate slabs |
 | Cyclops | Cyclops | wind-laid turf, lichened limestone boulders, the giant's footprints | dusty sheep tracks, hoofprints |
 | Labyrinth | Labyrinth | the maze itself around a cleared chamber; bones, blood drags, torch scorches | flagstone runners |
-| Bacchanalia | Bacchanalia | loam, vines creeping in with leaves, tendrils and grapes, spilt wine, broken black-figure pottery | trampled earth, wine, bare feet and satyr hooves |
-| Caves | Caves (the Gorgon) | wet green-grey rock, puddles, petrified heroes and their stone gear | damp grit and puddles |
+| Bacchanalia | Bacchanalia | loam, dark muted vines creeping in with leaves, tendrils and grapes, spilt wine, dull pottery shards | trampled earth, wine, bare feet and satyr hooves |
+| Caves | Caves (the Gorgon) | wet green-grey rock, puddles, petrified heroes | damp grit and puddles |
 | Hunt | Hunt (Artemis) | moss and leaf litter, roots from the edges, ferns, an antler, spent arrows | muddy game trail, deer slots |
-| Troy | Troy | trampled plain, chariot ruts, painted shields, spears, broken wheels, the walls along the far edge | packed earth, ruts |
+| Troy | Troy | trampled plain, chariot ruts, a few dust-caked shields half buried, spears, broken wheels, the walls along the far edge | packed earth, ruts |
 | Trials | Trials (Amazons) | raked arena sand inside a stone kerb, straw targets with arrows, dry grass outside | raked sand |
-| Cliffs | Seaside Cliffs (Sirens) | dark sea rock, tide pools, kelp, barnacles, the sea breaking along the far edge | weathered rock ledges, salt |
+| Cliffs | Seaside Cliffs (Sirens) | dark sea rock, tide pools, kelp, barnacles; a jagged cliff edge with coves dropping to the sea, rocks and stacks in the surf | weathered rock ledges, salt |
 | Temple | Delphi | aged marble slabs, an inlaid Greek key round the arena, tripod scorches, laurel | pale marble runners |
 | Archiereus | Archiereus | black marble veined red, blood channel and gutters, carved dedication, candles | dark basalt slabs |
-| Throne | Hades (boss) | polished obsidian, gold-inlaid Greek key, pomegranate seeds, bones of supplicants | black basalt |
-| Fates | the Moirai (boss) | dark stone strung with white, red and gold threads cut short of the arena, spindles, wool | dark wood planks |
-| TheGate | the Gate (boss) | black flagstones, Cerberus' claw marks, chains, obols, the glowing Styx along the far edge | wet black flagstones |
+| Throne | Hades (boss) | polished obsidian, gold-inlaid Greek key, pomegranate seeds, old stains where supplicants knelt (no bones) | black basalt |
+| Fates | the Moirai (boss) | dark stone; a warp-weighted loom laid along the far edge (cloth, warp threads in bundles to clay weights, some red, a few cut), spindles, wool | dark wood planks |
+| TheGate | the Gate (boss) | ancient black paving, heaved, cracked, broken and missing in places; Cerberus' claw marks, chains, obols, the glowing Styx along the far edge | wet black flagstones |
 
 The three boss boards are painted by one recipe: `python Tools/Boards/boards.py Bosses`.
 

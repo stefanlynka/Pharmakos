@@ -1,5 +1,5 @@
 """The Sirens' rocks: a dark wet shelf of sea-worn rock above the surf, tide pools that hold the light, barnacles,
-limpets and kelp, sea foam caught in the hollows, and the sea itself breaking along the far edge. Lanes: flat ledges
+limpets and kelp, sea foam caught in the hollows, and a jagged cliff edge dropping to the sea, rocks and stacks in the surf below. Lanes: flat ledges
 of weathered rock crusted with salt."""
 from boardkit import *  # noqa
 
@@ -23,24 +23,61 @@ def paint(preview=False):
     alb = rock + ((brush(n, X, Y) - 0.5) * 0.03)[..., None]
     alb = lerp(alb, C(0.22, 0.22, 0.2), smoothstep(0.75, 0.9, strata) * 0.4)
 
-    # the sea along the far edge: the shoreline wanders, foam breaks on it
-    shore = 31.5 + (n.fbm(X, Y, 10, 3, offset=5) - 0.5) * 8.0 + np.abs(X) * 0.06
-    sea = smoothstep(shore - 0.3, shore + 0.3, Y)
-    depth = smoothstep(shore, shore + 6, Y)
-    water = lerp(C(0.03, 0.09, 0.1), C(0.01, 0.03, 0.05), depth)
+    # the cliff edge: an angular, broken line (straight runs between sharp breaks, a few deep coves), then the cliff
+    # face falling away (seen from above: a band of dark, vertically fractured rock), rocks and stacks in the surf,
+    # and the sea below
+    knots_x = np.arange(-72, 73, 1.6)
+    walk = np.cumsum(rng.normal(0, 0.9, len(knots_x)))
+    walk -= np.linspace(walk[0], walk[-1], len(walk))
+    coves = np.zeros_like(knots_x)
+    for cx_ in rng.uniform(-60, 60, 5):
+        coves += -rng.uniform(3, 7) * np.clip(1 - np.abs(knots_x - cx_) / rng.uniform(4, 9), 0, 1)
+    prof = 33.0 + walk * 0.9 + coves + np.abs(knots_x) * 0.05
+    edge = np.interp(X, knots_x, prof).astype(F32)                      # angular: linear between knots
+    wx, wy = n.warp(X, Y, 1.5, 0.5, offset=50)
+    edge = edge + (n.fbm(wx, wy, 0.8, 3, offset=51) - 0.5) * 0.9       # crumbled detail on the lip
+    drop = 3.2 + 1.5 * n.fbm(X, Y, 6, 2, offset=52)                     # how far the face shows from above
+    d = Y - edge                                                         # >0 beyond the lip
+    face = smoothstep(0.0, 0.15, d) * (1 - smoothstep(drop - 0.3, drop, d))
+    sea = smoothstep(drop - 0.3, drop + 0.2, d)
+
+    fract = n.value(X * 3.0, Y * 0.35, 1.0, 53) * 0.6 + n.fbm(X, Y, 0.5, 3, offset=54) * 0.4
+    facecol = lerp(C(0.05, 0.055, 0.06), C(0.13, 0.135, 0.135), fract)
+    facecol = facecol * (1 - np.clip(d / np.maximum(drop, 0.1), 0, 1) * 0.75)[..., None]   # darker toward the water
+    lip = (1 - smoothstep(0.0, 0.35, np.abs(d))) * (1 - sea)
+    rock_h = hgt.copy()
+    alb = lerp(alb, C(0.26, 0.26, 0.24), lip * 0.5)                     # sunlit broken lip
+    alb = lerp(alb, facecol, face)
+
+    depth = smoothstep(drop, drop + 8, d)
+    water = lerp(C(0.03, 0.085, 0.095), C(0.01, 0.03, 0.045), depth)
     swell = n.fbm(X * 0.5, Y * 1.5, 3, 4, offset=6)
     water = water * (0.8 + 0.4 * swell)[..., None]
-    foam_line = (1 - smoothstep(0.0, 1.2, np.abs(Y - shore - 0.6))) * smoothstep(0.35, 0.6, n.fbm(X, Y, 1.2, 4, offset=7))
-    foam_far = smoothstep(0.72, 0.85, n.fbm(X * 0.4, Y * 2.0, 2, 4, offset=8)) * depth * 0.6
-    foam = np.clip(foam_line + foam_far, 0, 1)
-    rock_h = hgt.copy()
+
+    # rocks and sea stacks in the surf, ringed with foam
+    stk = Layer(g)
+    for _ in range(40):
+        x = rng.uniform(-68, 68)
+        e = float(np.interp(x, knots_x, prof))
+        y = e + rng.uniform(3.5, 10.0)
+        blob(stk, rng, x, y, rng.uniform(0.3, 1.6) if rng.random() < 0.85 else rng.uniform(1.8, 2.8), 9, 0.35)
+    stm = stk.read() * sea
+    ring = np.clip(blurf(stm, 0.5, g) * 2.2 - stm, 0, 1)
+    foam_line = (1 - smoothstep(0.0, 1.0, np.abs(d - drop - 0.3))) * smoothstep(0.3, 0.55, n.fbm(X, Y, 0.9, 4, offset=7))
+    foam_far = smoothstep(0.72, 0.85, n.fbm(X * 0.4, Y * 2.0, 2, 4, offset=8)) * depth * 0.5
+    foam = np.clip(foam_line + foam_far + ring * smoothstep(0.3, 0.6, n.fbm(X, Y, 0.5, 3, offset=55)), 0, 1)
     alb = lerp(alb, water, sea)
-    alb = lerp(alb, C(0.55, 0.6, 0.6), foam * sea * 0.75)
-    hgt = (hgt * (1 - sea) + sea * (float(hgt.min()) - 0.3 + swell * 0.08)).astype(F32)
+    alb = lerp(alb, C(0.5, 0.55, 0.55), foam * sea * 0.7)
+    gy_, gx_ = np.gradient(blurf(stm, 0.15, g))
+    stlit = np.clip(0.45 + (-gx_ + gy_) * g.ppu * 0.8, 0, 1)
+    alb = lerp(alb, lerp(C(0.04, 0.045, 0.05), C(0.18, 0.18, 0.17), stlit), stm)
+    hgt = (hgt * (1 - sea) - face * np.clip(d, 0, 4) * 0.4 + sea * (float(hgt.min()) - 1.5 + swell * 0.08)
+           + stm * 1.2).astype(F32)
+    land = (1 - sea) * (1 - face)
 
     # tide pools in the hollows: deep green-blue, shining
     low = 1 - norm01(rock_h)
-    pool = smoothstep(0.7, 0.76, low + (n.fbm(X, Y, 2, 3, offset=9) - 0.5) * 0.12) * smoothstep(3, 7, ad) * (1 - sea)
+    pool = smoothstep(0.7, 0.76, low + (n.fbm(X, Y, 2, 3, offset=9) - 0.5) * 0.12) * smoothstep(3, 7, ad) * land
     poolcol = lerp(C(0.04, 0.1, 0.1), C(0.08, 0.17, 0.16), n.fbm(X, Y, 1.0, 3, offset=10))
     alb = lerp(alb, poolcol, pool * 0.85)
     pool_rim = np.clip(blurf(pool, 0.3, g) * 1.6 - pool, 0, 1)
@@ -61,7 +98,7 @@ def paint(preview=False):
                 py += math.sin(ka) * 0.3
                 pts.append((px, py))
             taper(kelp, pts, rng.uniform(0.18, 0.32), 0.05)
-    km = kelp.read() * (1 - sea)
+    km = kelp.read() * land
     kcol = lerp(C(0.09, 0.08, 0.03), C(0.2, 0.18, 0.07), n.fbm(X, Y, 0.5, 3, offset=11))
     alb, hgt = apply_object(g, alb, hgt, km, km * 0.05, kcol, shadow=0.4, shadow_blur=0.12)
 
@@ -71,19 +108,19 @@ def paint(preview=False):
         for _ in range(rng.integers(10, 30)):
             r = rng.uniform(0.05, 0.12)
             bar.ellipse(x + rng.normal(0, 0.8), y + rng.normal(0, 0.8), r, r)
-    bm = bar.read() * (1 - sea) * (1 - pool)
+    bm = bar.read() * land * (1 - pool)
     bdome = np.clip(blurf(bm, 0.03, g) * 1.6, 0, 1) * bm
     bcol = lerp(C(0.15, 0.15, 0.13), C(0.3, 0.29, 0.26), bdome)
     alb, hgt = apply_object(g, alb, hgt, bm, bdome * 0.08, bcol, shadow=0.45, shadow_blur=0.05)
 
     # salt crust high and dry, near the arena
-    salt = smoothstep(0.62, 0.75, n.fbm(X, Y, 1.5, 4, offset=12)) * smoothstep(0.5, 0.8, norm01(hgt)) * (1 - sea)
+    salt = smoothstep(0.62, 0.75, n.fbm(X, Y, 1.5, 4, offset=12)) * smoothstep(0.5, 0.8, norm01(hgt)) * land
     alb = lerp(alb, C(0.35, 0.35, 0.33), salt * 0.35)
 
     cav = cavity(hgt, g, 0.6, 2.0)
     alb = desaturate(alb * (1 - cav[..., None] * 0.45 * (1 - sea)[..., None]), 0.05)
     wet = smoothstep(0.4, 0.7, n.fbm(X, Y, 3, 3, offset=13)) * margin
-    smooth = 0.3 + wet * 0.3 + pool * 0.6 + sea * 0.62 - salt * 0.2
+    smooth = (0.3 + wet * 0.3) * (1 - face) + pool * 0.6 + sea * 0.62 - salt * 0.2
 
     # a faint glimmer on the water (emission) so the sea reads even outside the lights
     emission = C(0.03, 0.07, 0.08) * (sea * (0.4 + 0.6 * swell))[..., None] + C(0.08, 0.1, 0.1) * (foam * sea * 0.5)[..., None]
