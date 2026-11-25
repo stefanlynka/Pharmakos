@@ -98,6 +98,37 @@ class BackEdge:
                 uvs.append(mat.uv_elev(p[0] + along_shift, p[2]))
         tris.extend([i, i + 1, i + 2, i, i + 2, i + 3])
 
+    def quad_uv(self, mat, pts, uvs, outward):
+        """One quad with explicit UVs (painted backdrops): pts = 4 board points (x, y, h), uvs = 4 (u, v)."""
+        verts, norms, uv_list, tris = self.parts[mat.name]
+        P = [np.array(p, F32) for p in pts]
+        n = np.cross(P[1] - P[0], P[2] - P[0])
+        n /= max(float(np.linalg.norm(n)), 1e-9)
+        if float(np.dot(n, np.array(outward, F32))) < 0:
+            P = [P[0], P[3], P[2], P[1]]
+            uvs = [uvs[0], uvs[3], uvs[2], uvs[1]]
+            n = -n
+        i = len(verts)
+        for p, u in zip(P, uvs):
+            verts.append(p)
+            norms.append(n)
+            uv_list.append(tuple(u))
+        tris.extend([i, i + 1, i + 2, i, i + 2, i + 3])
+
+    def backdrop(self, mat, x0, x1, foot_y, height, v0=0.0, v1=1.0, cols=24):
+        """A painted backdrop standing at the board's far edge and leaning back so it faces the combat camera
+        (perpendicular to its view; the camera is pitched 20 degrees), from the foot line up out of frame. The image
+        spans x0..x1; v0..v1 picks which band of it runs from the foot to the top. Split into columns so lights shade
+        it smoothly."""
+        up = np.array((0.0, math.cos(math.radians(20)), math.sin(math.radians(20))), F32)
+        top = up * height
+        for k in range(cols):
+            a = x0 + (x1 - x0) * k / cols
+            b = x0 + (x1 - x0) * (k + 1) / cols
+            ua, ub = k / cols, (k + 1) / cols
+            pts = [(a, foot_y, 0.0), (b, foot_y, 0.0), (b + top[0], foot_y + top[1], top[2]), (a + top[0], foot_y + top[1], top[2])]
+            self.quad_uv(mat, pts, [(ua, v0), (ub, v0), (ub, v1), (ua, v1)], (0.0, -math.sin(math.radians(20)), math.cos(math.radians(20))))
+
     def box(self, mat, x0, x1, y0, y1, h0, h1, batter=0.0, sides=True, back=False, bottom=False, top_mat=None,
             top=True):
         """Block from (x0, y0) to (x1, y1) and height h0..h1. batter slopes the front face back by batter per unit.

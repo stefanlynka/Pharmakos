@@ -190,7 +190,7 @@ SMOOTH_CAP = 0.38
 # value: brightness multiplier; sat: saturation multiplier; tint/tint_amt: pull the colour toward a hue at the same
 # luminance (used to move warm grounds off the terracotta accent hue toward umber/olive/grey).
 GRADES = {
-    'Troy': dict(value=0.7, sat=0.55, tint=(1.0, 0.93, 0.78), tint_amt=0.45),
+    'Troy': dict(value=0.76, sat=0.9),
     'Trials': dict(value=0.5, sat=0.5, tint=(1.0, 0.94, 0.8), tint_amt=0.45),
     'Temple': dict(value=0.48, sat=0.85),
     'Labyrinth': dict(value=0.95, sat=0.8),

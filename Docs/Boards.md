@@ -66,7 +66,7 @@ View.ShowBoard instantiates it at the world origin under GameField and swaps it 
 
 | Board | Back edge |
 |---|---|
-| Troy | the walls: battered limestone base, timber beam, mudbrick, merlons with pale caps against a shadowed walkway, towers |
+| Troy | painted backdrop of the ruined walls (prototype of the generated-art approach; see below) |
 | Temple (Delphi) | three-stepped stylobate, Doric colonnade rising out of frame, shadowed cella wall |
 | Archiereus | two black marble steps, red-veined black marble wall with pilasters, candle clusters on the ledge |
 | Trials | stone seating tiers of the arena |
@@ -95,6 +95,12 @@ How it's made:
 - **Light:** back edges stand outside the spotlights, so every material emits a share of its own albedo
   (`self_light` per material, times `SELF_LIGHT_GAIN` in backedge.py). Brighten one in Unity with its material's
   Emission colour.
+- **Generated art (prototype: Troy).** Source images made with fal.ai (FLUX 2 Pro, through MCP for Unity's
+  `generate_image`; it saves into `Assets/`, so move the file to `Tools/Boards/gen/` and delete the copy) are committed
+  in `Tools/Boards/gen/`. Floors: `make_tileable` + `sample_tiled` (boardgen.py) mix a tile at two or three scales and
+  angles through noise so no repeat reads, then the recipe adds its own large tone, wear, shadows and the edge fade to
+  black. Back edge: `BackEdge.backdrop` stands the painting at the far edge leaning back to face the camera; the recipe
+  grades it, fades it to black at the sides and lets it carry its own light through the emission map.
 - **Layout that made room for them:** the enemy lane and card row moved down 2 units, the enemy portrait was scaled
   from 2 to 1.4, and its resources and altars moved down (in GameScene).
 

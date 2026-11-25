@@ -336,3 +336,42 @@ def preview(path, canvas, albedo, normal, light=(-0.35, 0.45, 0.82), scale=0.25)
     img = _rgb8(albedo * shade)
     img = img.resize((int(canvas.w * scale), int(canvas.h * scale)), Image.LANCZOS)
     img.save(path)
+
+
+# --------------------------------------------------------- source images ---
+def load_rgb(path):
+    """An image file as float RGB (h, w, 3), display values 0..1, row 0 = top."""
+    return (np.asarray(Image.open(path).convert('RGB'), F32) / 255.0).astype(F32)
+
+
+def make_tileable(img, blend=0.25):
+    """Makes an image tile seamlessly: cross-fades it with a half-offset copy of itself near its own edges (the copy's
+    seams sit in the middle, where the original is kept)."""
+    h, w, _ = img.shape
+    shifted = np.roll(np.roll(img, h // 2, 0), w // 2, 1)
+    yy = np.abs(np.arange(h, dtype=F32) / (h - 1) - 0.5) * 2          # 0 centre .. 1 edge
+    xx = np.abs(np.arange(w, dtype=F32) / (w - 1) - 0.5) * 2
+    edge = np.maximum(yy[:, None], xx[None, :])
+    t = smoothstep(1 - blend * 2, 1.0, edge)
+    return lerp(img, shifted, t)
+
+
+def sample_tiled(tile, X, Y, size, rot=0.0):
+    """Samples a tileable image over world coordinates, one repeat every `size` units (bilinear)."""
+    h, w, _ = tile.shape
+    if rot:
+        c, s = math.cos(rot), math.sin(rot)
+        X, Y = X * c - Y * s, X * s + Y * c
+    u = (X / size % 1.0) * w
+    v = (-Y / size % 1.0) * h
+    x0 = np.floor(u).astype(np.int64)
+    y0 = np.floor(v).astype(np.int64)
+    fx = (u - x0)[..., None]
+    fy = (v - y0)[..., None]
+    x1 = (x0 + 1) % w
+    y1 = (y0 + 1) % h
+    x0 %= w
+    y0 %= h
+    a = tile[y0, x0] * (1 - fx) + tile[y0, x1] * fx
+    b = tile[y1, x0] * (1 - fx) + tile[y1, x1] * fx
+    return (a * (1 - fy) + b * fy).astype(F32)
