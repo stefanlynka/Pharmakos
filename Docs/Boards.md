@@ -25,9 +25,9 @@ Underworld.
 | Cyclops | Cyclops | wind-laid turf, lichened limestone boulders, the giant's footprints | dusty sheep tracks, hoofprints |
 | Labyrinth | Labyrinth | the maze itself around a cleared chamber; bones, blood drags, torch scorches | flagstone runners |
 | Bacchanalia | Bacchanalia | loam, dark muted vines creeping in with leaves, tendrils and grapes, spilt wine, dull pottery shards | trampled earth, wine, bare feet and satyr hooves |
-| Caves | Caves (the Gorgon) | wet green-grey rock, puddles, petrified heroes | damp grit and puddles |
+| Caves | Caves (the Gorgon) | wet green-grey rock, slime, puddles (petrified statues were tried and dropped as unconvincing) | damp grit and puddles |
 | Hunt | Hunt (Artemis) | moss and leaf litter, roots from the edges, ferns, an antler, spent arrows | muddy game trail, deer slots |
-| Troy | Troy | trampled plain, chariot ruts, a few dust-caked shields half buried, spears, broken wheels, the walls along the far edge | packed earth, ruts |
+| Troy | Troy | trampled plain, chariot ruts, a few dust-caked shields half buried, spears, broken wheels; **3D back edge:** the walls of Troy | packed earth, ruts |
 | Trials | Trials (Amazons) | raked arena sand inside a stone kerb, straw targets with arrows, dry grass outside | raked sand |
 | Cliffs | Seaside Cliffs (Sirens) | dark sea rock, tide pools, kelp, barnacles; a jagged cliff edge with coves dropping to the sea, rocks and stacks in the surf | weathered rock ledges, salt |
 | Temple | Delphi | aged marble slabs, an inlaid Greek key round the arena, tripod scorches, laurel | pale marble runners |
@@ -49,7 +49,7 @@ The three boss boards are painted by one recipe: `python Tools/Boards/boards.py 
 3. In the test chamber, **B** cycles through every board.
 
 Things to know:
-- Everything is laid out in board world units (lanes 60 x 10; player lane y -0.65..9.35, enemy lane 13.92..23.92). The
+- Everything is laid out in board world units (lanes 60 x 10; player lane y -0.65..9.35, enemy lane 11.92..21.92). The
   ground canvas covers x -68..68, y -24..44: all the board plane the combat camera can see.
 - The ground plane's UVs run toward -x/-y, so the painter saves the ground turned 180 degrees (normals flipped to
   match) and the builder works out the tiling from the Background mesh. If NewBackgroundHolder moves or the lane
@@ -58,3 +58,21 @@ Things to know:
   are dim and warm. Raise or lower those to brighten or darken every board at once.
 - Ground normals are saved at half size: fine relief barely shows at board distance and it keeps the repo light.
 - Emission (embers, torches, candles, the sea's glimmer) flickers by the BoardStyle's Flicker and FlickerSpeed.
+
+## Back edges (3D, prototype on Troy)
+
+A board can stand a 3D piece along its far edge: `BoardStyle.BackEdge` (a prefab whose mesh is in board world space,
+so View.ShowBoard instantiates it at the world origin under GameField and swaps it when the board changes).
+
+- **Troy's wall:** built by **Tools → Boards → Build Troy Wall** (`Assets/Scripts/Editor/BoardBackEdgeBuilder.cs`):
+  a battered limestone base, a timber tie-beam, mudbrick above, crenellations, and two towers that run out of frame.
+  Textures from `paint_wall()` in `recipes/troy.py` (an elevation of the faces, plus a band for the tops). The wall's
+  constants exist in both files; keep them in sync.
+- **Why it's low:** the camera looks almost straight down, so height rises up the screen fast (about 0.016 of the
+  screen per unit of height). A curtain wall about 6 units high keeps its crenellations in frame; the towers are
+  taller and leave the frame to suggest the real height.
+- **Light:** the spotlights graze the wall's face and the scene has no ambient light, so the wall material carries a
+  little self-light from its albedo (`_EmissionColor` on `Troy_Wall.mat`).
+- **Layout that made room for it:** the enemy lane and card row moved down 2 units, and the enemy portrait was scaled
+  from 2 to 1.4. The enemy's portrait, resources and altars moved down (portrait y 28.4, resources y 28.5, Minor altar
+  y 28.9, Major altar y 16.15).

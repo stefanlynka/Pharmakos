@@ -12,7 +12,7 @@ NAME = 'Bosses'
 BOARDS = ('Throne', 'Fates', 'TheGate')
 
 
-def slabs(n, X, Y, S, cy=11.64):
+def slabs(n, X, Y, S, cy=10.64):
     gx, gy = X / S, (Y - cy) / S
     cx, cyy = np.floor(gx).astype(np.int64), np.floor(gy).astype(np.int64)
     edge = np.minimum(np.minimum(gx - cx, cx + 1 - gx), np.minimum(gy - cyy, cyy + 1 - gy)) * S
@@ -43,7 +43,7 @@ def throne(preview):
     alb = lerp(alb, C(0.01, 0.01, 0.012), joint * 0.8)
     hgt = ((sid - 0.5) * 0.03 - joint * 0.05).astype(F32)
 
-    km, band = meander_band(X, Y, (-31.5, 31.5, -2.2, 25.5), 0.8, 2.4)
+    km, band = meander_band(X, Y, (-31.5, 31.5, -2.2, 23.5), 0.8, 2.4)
     gold = lerp(C(0.2, 0.14, 0.05), C(0.42, 0.31, 0.12), n.fbm(X, Y, 0.4, 3, offset=1))
     alb = lerp(alb, gold, km * 0.9)
     hgt = (hgt + km * 0.01).astype(F32)

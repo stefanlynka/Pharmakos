@@ -17,7 +17,7 @@ def paint(preview=False):
     # slabs: a grid centred on the arena, two marbles in a loose chequer
     S = 6.4
     gx = (X - 0.0) / S
-    gy = (Y - 11.64) / S
+    gy = (Y - 10.64) / S
     cx = np.floor(gx).astype(np.int64)
     cy = np.floor(gy).astype(np.int64)
     edge = np.minimum(np.minimum(gx - cx, cx + 1 - gx), np.minimum(gy - cy, cy + 1 - gy)) * S
@@ -38,7 +38,7 @@ def paint(preview=False):
     hgt = (hgt - chip * 0.05).astype(F32)
 
     # inlaid Greek key round the arena, worn where feet cross it
-    km, band = meander_band(X, Y, (-31.5, 31.5, -2.2, 25.5), 0.8, 2.4)
+    km, band = meander_band(X, Y, (-31.5, 31.5, -2.2, 23.5), 0.8, 2.4)
     km = km * (0.75 + 0.25 * smoothstep(0.3, 0.7, n.fbm(X, Y, 1.2, 3, offset=3)))
     inlay, _ = marble(n, X, Y, C(0.05, 0.06, 0.055), C(0.1, 0.12, 0.1), C(0.18, 0.2, 0.17), 0.5, 0.05, offset=1300)
     alb = lerp(alb, lerp(C(0.3, 0.28, 0.25), alb, 0.4), band * 0.5)

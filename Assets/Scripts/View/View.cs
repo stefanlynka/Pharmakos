@@ -254,9 +254,11 @@ public class View : MonoBehaviour
             ApplySharedMaterial(playerLane, style.PlayerLane, materialBaseName, 2);
             ApplySharedMaterial(enemyLane, style.EnemyLane != null ? style.EnemyLane : style.PlayerLane, materialBaseName, 2);
             SetBoardAmbience(backgroundRenderer, style.Ground, style.Flicker, style.FlickerSpeed);
+            SetBoardBackEdge(style.BackEdge);
             return;
         }
         SetBoardAmbience(backgroundRenderer, null, 0f, 0f);
+        SetBoardBackEdge(null);
 
         MeshRenderer aiBattleRowRenderer = FindChildMeshRenderer("AIBattleRow");
         MeshRenderer playerBattleRowRenderer = FindChildMeshRenderer("PlayerBattleRow");
@@ -266,6 +268,30 @@ public class View : MonoBehaviour
         Material battleRowMaterial = LoadBackgroundMaterial(materialBaseName, 2);
         ApplySharedMaterial(aiBattleRowRenderer, battleRowMaterial, materialBaseName, 2);
         ApplySharedMaterial(playerBattleRowRenderer, battleRowMaterial, materialBaseName, 2);
+    }
+
+    GameObject boardBackEdge;
+    GameObject boardBackEdgeSource;
+
+    /// <summary>Shows the board's 3D back edge (built in board world space, so placed at the world origin), replacing
+    /// the previous board's.</summary>
+    private void SetBoardBackEdge(GameObject prefab)
+    {
+        if (prefab == boardBackEdgeSource && boardBackEdge != null)
+            return;
+        if (boardBackEdge != null)
+        {
+            boardBackEdge.SetActive(false);     // Destroy only lands at the end of the frame
+            Destroy(boardBackEdge);
+        }
+        boardBackEdge = null;
+        boardBackEdgeSource = prefab;
+        if (prefab == null || NewBackgroundHolder == null)
+            return;
+        boardBackEdge = Instantiate(prefab, NewBackgroundHolder.parent);
+        boardBackEdge.name = prefab.name;
+        boardBackEdge.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+        boardBackEdge.transform.localScale = Vector3.one;
     }
 
     private static void SetBoardAmbience(MeshRenderer ground, Material material, float flicker, float speed)

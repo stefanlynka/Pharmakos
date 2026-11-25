@@ -42,7 +42,7 @@ def paint(preview=False):
     margin = smoothstep(1, 14, ad)
 
     S = 8.0
-    gx, gy = X / S, (Y - 11.64) / S
+    gx, gy = X / S, (Y - 10.64) / S
     cx, cy = np.floor(gx).astype(np.int64), np.floor(gy).astype(np.int64)
     edge = np.minimum(np.minimum(gx - cx, cx + 1 - gx), np.minimum(gy - cy, cy + 1 - gy)) * S
     joint = 1 - smoothstep(0.03, 0.09, edge)
@@ -55,10 +55,10 @@ def paint(preview=False):
 
     # the blood channel round the arena, and gutters running off from it
     ch = Layer(g)
-    ox0, ox1, oy0, oy1 = -33.0, 33.0, -3.6, 27.2
+    ox0, ox1, oy0, oy1 = -33.0, 33.0, -3.6, 25.2
     ch.line([(ox0, oy0), (ox1, oy0), (ox1, oy1), (ox0, oy1), (ox0, oy0)], 0.7)
     for (x, y), (tx, ty) in [((ox0, oy0), (-68, -24)), ((ox1, oy0), (68, -24)), ((ox0, oy1), (-68, 46)), ((ox1, oy1), (68, 46)),
-                             ((ox0, 11.6), (-70, 11.6)), ((ox1, 11.6), (70, 11.6))]:
+                             ((ox0, 10.6), (-70, 10.6)), ((ox1, 10.6), (70, 10.6))]:
         pts = []
         for t in np.linspace(0, 1, 40):
             pts.append((x + (tx - x) * t + math.sin(t * 9) * 0.3 * t, y + (ty - y) * t))

@@ -20,7 +20,7 @@ def paint(preview=False):
     ad = arena_dist(X, Y)
 
     # the kerb: a rounded rectangle of stone blocks around the arena
-    kerb_d = sd_box(X, Y, (-44, 44, -14.5, 37.5), 12.0)
+    kerb_d = sd_box(X, Y, (-44, 44, -14.5, 35.5), 12.0)
     inside = smoothstep(0.5, -0.5, kerb_d)
 
     big = n.fbm(X, Y, 12, 4, offset=2)
@@ -42,7 +42,7 @@ def paint(preview=False):
 
     # kerb stones: individual blocks laid along the line, some shifted or missing, sand drifted over others
     kl = Layer(g)
-    kx0, kx1, ky0, ky1, kr = -44.0, 44.0, -14.5, 37.5, 12.0
+    kx0, kx1, ky0, ky1, kr = -44.0, 44.0, -14.5, 35.5, 12.0
 
     def perim(t):
         # rounded rectangle parameterised by arc length t (0..L)

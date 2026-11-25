@@ -18,6 +18,10 @@ public class BoardStyle : ScriptableObject
     [Tooltip("The enemy's lane (NewBackgroundHolder/AIBattleRow). Leave empty to use PlayerLane.")]
     public Material EnemyLane;
 
+    [Tooltip("Optional 3D piece standing along the far edge of the board (e.g. Troy's wall). Its mesh is in board world " +
+             "space, so it is placed at the world origin.")]
+    public GameObject BackEdge;
+
     [Header("Glow")]
     [Tooltip("How much the ground's glowing parts (embers, candles, torches, the sea) waver: 0 = steady.")]
     [Range(0f, 1f)]

@@ -1,7 +1,7 @@
 """Toolkit for painting the combat board backgrounds (see boards.py for the per-encounter recipes).
 
 Everything is worked out in board world units (the same x/y the combat board uses: lanes are 60 x 10, the player lane
-spans y -0.65..9.35, the enemy lane 13.92..23.92), so the ground and the lanes share noise fields and features line up
+spans y -0.65..9.35, the enemy lane 11.92..21.92), so the ground and the lanes share noise fields and features line up
 across them. Two canvases:
   ground: x -68..68, y -24..44 (everything the combat camera can see of the board plane), 4096 x 2048
   lanes:  x -30..30, two lanes stacked (enemy on top), 3072 x 1024
@@ -22,8 +22,8 @@ LANE_RECT = (-30.0, 30.0, 0.0, 20.0)         # lane canvas: local y 0..10 = play
 LANE_SIZE = (3072, 1024)
 
 PLAYER_LANE = (-30.0, 30.0, -0.65, 9.35)
-ENEMY_LANE = (-30.0, 30.0, 13.92, 23.92)
-ARENA = (-30.0, 30.0, -0.65, 23.92)           # both lanes and the gap between them
+ENEMY_LANE = (-30.0, 30.0, 11.92, 21.92)   # moved down 2 to make room for back edges (Troy's wall)
+ARENA = (-30.0, 30.0, -0.65, 21.92)           # both lanes and the gap between them
 
 
 # ------------------------------------------------------------------ canvas ---

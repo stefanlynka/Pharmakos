@@ -1,9 +1,18 @@
 """The plain before Troy: trampled dusty earth churned by hooves and scored by chariot wheels, the dead's gear left
 where it fell (painted round shields, broken spears, arrows, a shattered chariot wheel), dark old blood, and the
-foot of the great walls along the far edge. Lanes: packed earth with ruts."""
+foot of the great walls along the far edge (a 3D wall: see paint_wall). Lanes: packed earth with ruts."""
 from boardkit import *  # noqa
 
 NAME = 'Troy'
+
+# The wall (keep in sync with Assets/Scripts/Editor/BoardBackEdgeBuilder.cs): its foot runs along y = WALL_Y on the board,
+# x -WALL_HALF..WALL_HALF; heights are out of the board toward the camera. The elevation texture covers heights 0..WALL_H.
+WALL_Y = 34.0
+WALL_HALF = 75.0
+WALL_H = 300 / (4096 / 150.0)   # 300 texture rows of height at the same texel size as across (about 11 units)
+BASE_H = 2.4          # battered limestone base; mudbrick above
+TOWER_X = 44.0
+TOWER_W = 9.0
 
 
 def shield(layer, paint, rng, x, y, r):
@@ -108,16 +117,14 @@ def paint(preview=False):
     bm = blurf(blood.read(), 0.2, g) * (0.6 + 0.4 * n.fbm(X, Y, 0.6, 3, offset=4))
     alb = lerp(alb, C(0.12, 0.03, 0.025), bm * 0.75)
 
-    # the walls of Troy along the far edge
-    wall_y = 40.5 + (n.fbm(X, Y, 20, 2, offset=5) - 0.5) * 1.0
-    wallm = smoothstep(wall_y - 0.1, wall_y + 0.1, Y)
-    j, sid, _ = flagstones(n, X, Y, 4.5, 2.2, gap=0.12, offset=6)
-    wallcol = lerp(C(0.28, 0.24, 0.18), C(0.45, 0.39, 0.3), np.clip(sid * 0.6 + grain * 0.4, 0, 1))
-    wallcol = lerp(wallcol, C(0.1, 0.08, 0.06), j * 0.8)
-    wshadow = smoothstep(wall_y - 3.5, wall_y, Y) * (1 - wallm)
-    alb = alb * (1 - wshadow[..., None] * 0.55)
-    alb = lerp(alb, wallcol, wallm)
-    hgt = (hgt + wallm * (1.5 - j * 0.1)).astype(F32)
+    # the walls of Troy are a 3D back edge now (TroyWall, built by Tools -> Boards -> Build Troy Wall from the textures
+    # paint_wall() makes): here only the ground at their foot, darkened by their shadow and strewn with fallen stone
+    foot = WALL_Y - 1.6 * smoothstep(-0.5, 0.5, -np.abs(np.abs(X) - TOWER_X) + TOWER_W / 2)   # towers stand forward
+    wshadow = smoothstep(foot - 3.0, foot, Y)
+    alb = alb * (1 - wshadow[..., None] * 0.6)
+    rubble = [(x, y, rng.uniform(0.12, 0.45)) for x, y in scatter_points(rng, 140, (-70, 70, WALL_Y - 3, WALL_Y), lambda x, y: True, 0.5)]
+    rbm, rbh, rbc = rocks(g, n, rng, rubble, base=C(0.17, 0.15, 0.11), light=C(0.38, 0.34, 0.26))
+    alb, hgt = apply_object(g, alb, hgt, rbm, rbh * 0.5, rbc, shadow=0.5, shadow_blur=0.15)
 
     # the fallen's gear
     rim = Layer(g)
@@ -186,3 +193,72 @@ def paint(preview=False):
     lsmooth = 0.12 + wear * 0.05
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, None, lane, lalb, lhgt, lsmooth, preview=preview)
+    paint_wall()
+
+
+WALL_TEX = (4096, 384)        # u: x -WALL_HALF..WALL_HALF; rows 84..383: elevation (heights 0..WALL_H); rows 0..83: tops
+WALL_ELEV_ROWS = 300
+WALL_TOP_DEPTH = 84 / (4096 / (2 * WALL_HALF))   # world depth the top band covers (about 6.15 units)
+
+
+def paint_wall():
+    """Textures for the 3D wall: an elevation of the front faces (battered limestone base with Troy VI's shallow vertical
+    offsets, a timber tie-beam, mudbrick above, grime streaks, fire scorch) and, in a band above it, the tops (walkway
+    and merlon tops) seen from above."""
+    n = Noise(73)
+    W = WALL_TEX[0]
+    el = Canvas((-WALL_HALF, WALL_HALF, 0.0, WALL_H), (W, WALL_ELEV_ROWS))
+    X, H = el.X, el.Y
+
+    # limestone base: big ashlar blocks, a slight shift of tone and a dark seam at each offset (every 9 units)
+    seg = np.floor((X + 200) / 6.0)
+    seg_id = n.cellhash(seg.astype(np.int64), seg.astype(np.int64) * 7, 1)
+    j1, s1, _ = flagstones(n, X, H, 1.2, 0.5, gap=0.04, jitter=0.35, offset=3)
+    grain = n.fbm(X, H, 0.35, 5, offset=4)
+    lime = lerp(C(0.36, 0.33, 0.28), C(0.52, 0.48, 0.41), np.clip(s1 * 0.4 + grain * 0.4 + seg_id * 0.2, 0, 1))
+    lime = lerp(lime, C(0.12, 0.1, 0.08), j1 * 0.7)
+    offset_seam = 1 - smoothstep(0.0, 0.18, np.abs(((X + 200) % 6.0) - 0.0))
+    lime = lerp(lime, C(0.08, 0.07, 0.06), offset_seam * 0.8)
+
+    # mudbrick above, with old plaster clinging in patches
+    j2, s2, _ = flagstones(n, X, H, 0.55, 0.24, gap=0.03, jitter=0.3, offset=5)
+    mud = lerp(C(0.3, 0.22, 0.14), C(0.44, 0.34, 0.22), np.clip(s2 * 0.45 + grain * 0.55, 0, 1))
+    mud = lerp(mud, C(0.15, 0.11, 0.07), j2 * 0.6)
+    plaster = smoothstep(0.66, 0.76, n.fbm(X, H, 1.5, 4, offset=6))
+    mud = lerp(mud, C(0.5, 0.45, 0.37) * (0.85 + 0.3 * grain)[..., None], plaster * 0.45)
+
+    upper = smoothstep(BASE_H - 0.05, BASE_H + 0.05, H)
+    alb = lerp(lime, mud, upper)
+    beam = (1 - smoothstep(0.1, 0.15, np.abs(H - BASE_H - 0.12)))
+    wood = lerp(C(0.12, 0.08, 0.05), C(0.22, 0.15, 0.09), n.value(X * 0.15, H * 6, 0.5, 7))
+    alb = lerp(alb, wood, beam)
+
+    # weathering: grime running down from the top, damp at the foot, soot where Troy burned
+    streak = n.value(X * 2.2, H * 0.2, 1.0, 8) * 0.7 + n.fbm(X, H, 1.2, 3, offset=9) * 0.3
+    streak = smoothstep(0.55, 0.85, streak) * smoothstep(0.5, 5.0, H)
+    alb = alb * (1 - streak * 0.35)[..., None]
+    alb = alb * (1 - (1 - smoothstep(0.0, 0.8, H)) * 0.45)[..., None]
+    soot = smoothstep(0.62, 0.8, n.fbm(X, H, 4, 4, offset=10)) * smoothstep(BASE_H, 7.0, H)
+    alb = lerp(alb, C(0.04, 0.035, 0.03), soot * 0.75)
+    alb = alb + ((brush(n, X, H) - 0.5) * 0.04)[..., None]
+    alb = desaturate(alb, 0.15)
+
+    hgt = (s1 * 0.02 - j1 * 0.12) * (1 - upper) + (s2 * 0.015 - j2 * 0.07) * upper - beam * 0.02 + grain * 0.04
+    hgt = (hgt - offset_seam * (1 - upper) * 0.1 - plaster * upper * -0.02).astype(F32)
+    smooth = (0.12 + (1 - upper) * 0.08 - soot * 0.05).astype(F32)
+
+    # tops: the walkway and merlon tops, packed earth over mudbrick, seen from above
+    tp = Canvas((-WALL_HALF, WALL_HALF, 0.0, WALL_TOP_DEPTH), (W, WALL_TEX[1] - WALL_ELEV_ROWS))
+    TX, TY = tp.X, tp.Y
+    tg = n.fbm(TX, TY, 0.5, 5, offset=11)
+    talb = lerp(C(0.3, 0.24, 0.16), C(0.45, 0.37, 0.25), np.clip(tg * 0.7 + n.fbm(TX, TY, 3, 3, offset=12) * 0.3, 0, 1))
+    tsoot = smoothstep(0.6, 0.78, n.fbm(TX, TY, 6, 4, offset=10))
+    talb = lerp(talb, C(0.05, 0.04, 0.035), tsoot * 0.7)
+    thgt = (tg * 0.06).astype(F32)
+
+    full = Canvas((-WALL_HALF, WALL_HALF, 0.0, 1.0), WALL_TEX)     # only used for its size in save_set
+    alb_all = np.concatenate([talb, alb], 0)
+    nrm_all = np.concatenate([normals(thgt, tp, 1.0), normals(hgt, el, 1.0)], 0)
+    sm_all = np.concatenate([np.full(thgt.shape, 0.1, F32), smooth], 0)
+    save_set(os.path.join(OUT, NAME), 'Wall', full, alb_all, nrm_all, sm_all, None, normal_scale=1.0,
+             mask_size=(WALL_TEX[0] // 4, WALL_TEX[1] // 4))
