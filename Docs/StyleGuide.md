@@ -85,7 +85,30 @@ Targeting arrows are black with orange edges; the edges glow ember (emission mas
 
 ## Combat board
 
-- **Ground and lanes:** each encounter's board is painted (`Docs/Boards.md`): a composed ground whose arena (lanes and the gap) is worn and calm, with the encounter's story in the margins (bones, vines, shields, statues, the maze), and quiet lanes with no high-contrast pattern behind cards. Muted, warm-leaning colour, painted with the same dabbed brush grain as the card art; carved and scattered things sit in the surface with contact shadows. Glowing details (embers, candles, torches) only far from the fight.
+- **Ground and lanes:** each encounter's board is painted (`Docs/Boards.md`). It follows the board spec below.
+
+### Board spec: the board is the stage, not an actor
+
+The game is dark and grand, and the board must never compete with what the player reads and acts on. References: Hearthstone (a calm, uniform play surface; all ornament pushed to the frame and corners; everything communicates clearly) and Inscryption (one dominant hue per scene, a pool of light on the table, darkness all around, cards and world sharing one palette). Boards judged good in game (2026-11): Hunt, Temple (Delphi), Archiereus, TheGate.
+
+1. **Hierarchy.** Cards and anything targetable > altars, the pottery frames and resource holders, UI > board. The board is never the brightest or most saturated thing near the arena. Check with the squint test: blur a greyscale capture; the cards must still lead.
+2. **Three zones.**
+   - **Arena** (both lanes and the gap between them): uniform, low-frequency, worn, with no props and no pattern that reads at board distance. Brightness variation in the gap stays small (in-frame luminance spread ≤ ~0.05).
+   - **Margins:** texture and story are allowed, but only in the board's own value family. Detail can grow away from the arena and must fade into darkness toward the screen edges, where the light pool falls off.
+   - **Back edge:** silhouette and scale, kept dark; never detail that competes with the enemy portrait. (Its design is still under discussion.)
+3. **Value.** In-frame luminance of the gap is about 0.10–0.33; the liked boards range from 0.12 (Archiereus, TheGate) to 0.33 (Temple). Margins are ≤ ~0.15. Cards average ~0.47, so the board must stay well below that.
+4. **Colour.**
+   - One dominant hue family per board; this is the encounter's identity.
+   - Saturation scales with brightness: a mid-value ground stays muted (gap saturation ≤ ~0.40 when its luminance is above ~0.18; darker grounds can carry more). Troy and Trials break this rule: sat 0.6 at luminance 0.22–0.32.
+   - Earth grounds go umber, olive or grey, never the terracotta orange of the pottery and the buttons. That orange is the accent hue, and a ground in it swallows the frames.
+   - Accents (blood, embers, gold, wine) are small, deliberate and matte.
+5. **Props.** Few, large, dark, and sitting in the surface: half-buried, in the ground's value family, with a contact shadow. No small bright isolated objects. Bones, shields, statues and bright leaves all proved distracting. Leaf litter in the ground's own value (Hunt) is fine.
+6. **Materials.** Matte (smoothness ≤ ~0.35). Wet or polished looks only at low contrast; no glossy liquids (Archiereus' blood reads too glossy).
+7. **Light and motion.** Nothing on the board pulls the eye by moving or glowing.
+   - Flames are either properly animated (VFX or flipbook) or absent; never static flame geometry.
+   - Emission stays low and far from the arena.
+   - Mood per board comes from light colour and temperature rather than from more texture.
+8. **Process.** Every board change is checked in a full in-game frame (cards, UI, altars, pottery), with a colour capture, the squint test and the numbers above. A board that passes in isolation can still fail in the frame.
 - **Lane edge (locked):** a carved-slab edge on every lane: soft drop shadow on the ground, dark lip, bone bevel, faint inner shade. `LaneEdge` component on each lane, look in `Images/Backgrounds/LaneEdge/LaneEdge.mat` (profile texture `LaneEdgeSlab.png`). No meander on lanes. While a playable follower is held, the player lane's bevel is the drop target: pulsing ember (Target colour), steady and brighter under the cursor. No flat overlays on lanes.
 - **Board objects:** one family, black-figure pottery. Black glaze (≈ `#1E1714`, a soft sheen, never mirror-glossy) for bodies and grounds, fired terracotta (darker and redder than the UI's Terracotta, matte) for rims and raised motifs, bone limestone (≈ `#CDBFA3`) only for ritual altars. The sheen/matte split comes from a smoothness map built from the albedo; the material's Smoothness scales it (keep it low: strong gloss draws the eye to frames). No metal; the board has no reflections, so metal reads as mud. The heartstrings dial is the only gold.
   - **Portrait frame (locked):** the Meshy terracotta wave-scroll frame (`Models/Meshes/PortraitFrameTerracotta.fbx`, material `PortraitFrame_Terracotta`, base colour tinted to (0.60, 0.40, 0.31) to darken Meshy's pale clay).
