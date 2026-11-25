@@ -46,7 +46,7 @@ The three boss boards are painted by one recipe: `python Tools/Boards/boards.py 
 2. In Unity, refresh (the textures' import settings are applied on import by `BoardTexturePostprocessor`), then
    **Tools → Boards → Build Board Styles** with GameScene open. It only rewrites textures and UV tiling on existing
    materials, so colours and smoothness tuned in the inspector are kept.
-3. In the test chamber, **I** / **O** step back / forward through every board.
+3. In the test chamber, **O** shows the next board and **I** the previous one.
 
 Things to know:
 - Everything is laid out in board world units (lanes 60 x 10; player lane y -0.65..9.35, enemy lane 11.92..21.92). The

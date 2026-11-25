@@ -192,13 +192,12 @@ public class Controller : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.P) && IsTestChamber && GameRunning && !GamePaused)
             CycleTestChamberRituals();
 
-        // I / O in the test chamber: show the previous / next encounter's board (ground, lanes and back edge).
+        // O / I in the test chamber: show the next / previous encounter's board (ground, lanes and back edge).
         if (IsTestChamber && GameRunning && !GamePaused && View.Instance != null)
         {
-            if (Input.GetKeyDown(KeyCode.O))
-                CycleTestChamberBoard(1);
-            else if (Input.GetKeyDown(KeyCode.I))
-                CycleTestChamberBoard(-1);
+            int step = Input.GetKeyDown(KeyCode.O) ? 1 : Input.GetKeyDown(KeyCode.I) ? -1 : 0;
+            if (step != 0)
+                CycleTestChamberBoard(step);
         }
 
         bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
