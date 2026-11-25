@@ -192,16 +192,13 @@ public class Controller : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.P) && IsTestChamber && GameRunning && !GamePaused)
             CycleTestChamberRituals();
 
-        // B in the test chamber: show the next encounter's board (ground and lanes).
-        if (Input.GetKeyDown(KeyCode.B) && IsTestChamber && GameRunning && !GamePaused && View.Instance != null)
+        // I / O in the test chamber: show the previous / next encounter's board (ground, lanes and back edge).
+        if (IsTestChamber && GameRunning && !GamePaused && View.Instance != null)
         {
-            var boards = new System.Collections.Generic.List<string>();
-            foreach (string board in View.Instance.backgroundNamesByDeckName.Values)
-                if (!boards.Contains(board))
-                    boards.Add(board);
-            testChamberBoard = (testChamberBoard + 1) % boards.Count;
-            View.Instance.ShowBoard(boards[testChamberBoard]);
-            Debug.Log("Test chamber board: " + boards[testChamberBoard]);
+            if (Input.GetKeyDown(KeyCode.O))
+                CycleTestChamberBoard(1);
+            else if (Input.GetKeyDown(KeyCode.I))
+                CycleTestChamberBoard(-1);
         }
 
         bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
@@ -235,6 +232,17 @@ public class Controller : MonoBehaviour
     };
     int testChamberRitualPair;
     int testChamberBoard;
+
+    private void CycleTestChamberBoard(int step)
+    {
+        var boards = new System.Collections.Generic.List<string>();
+        foreach (string board in View.Instance.backgroundNamesByDeckName.Values)
+            if (!boards.Contains(board))
+                boards.Add(board);
+        testChamberBoard = ((testChamberBoard + step) % boards.Count + boards.Count) % boards.Count;
+        View.Instance.ShowBoard(boards[testChamberBoard]);
+        Debug.Log("Test chamber board: " + boards[testChamberBoard]);
+    }
 
     private void CycleTestChamberRituals()
     {
