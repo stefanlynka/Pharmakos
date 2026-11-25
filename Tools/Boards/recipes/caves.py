@@ -1,5 +1,5 @@
 """The Gorgon's cave: wet limestone floor with rimstone terraces and black puddles that catch the light, green slime
-in the damp, the petrified who met her gaze lying as broken statues. Lanes: damp packed grit
+in the damp (statues and bodies were tried and dropped: they read as unconvincing and distracting). Lanes: damp packed grit
 with shallow puddles."""
 from boardkit import *  # noqa
 
@@ -37,30 +37,6 @@ def paint(preview=False):
     alb = alb * (1 - wet_rim[..., None] * 0.25)
     hgt = (hgt * (1 - pud) + pud * float(np.percentile(hgt, 30))).astype(F32)
 
-    # the petrified: whole statues and broken pieces, pale stone, some fallen apart
-    st = Layer(g)
-    for x, y in scatter_points(rng, 5, (-62, 62, -21, 41), margin_keep(8.0), min_gap=20):
-        whole = rng.random() < 0.5
-        parts = None if whole else set(rng.choice(['head', 'torso', 'larm', 'rarm', 'lleg', 'rleg'], 4, replace=False))
-        figure(st, rng, x, y, rng.uniform(2.2, 2.8), rng.uniform(0, 6.28), parts)
-    for x, y in scatter_points(rng, 24, (-66, 66, -23, 43), margin_keep(3.0), 4.0):
-        k = rng.random()
-        if k < 0.4:
-            st.ellipse(x, y, rng.uniform(0.4, 0.6), rng.uniform(0.45, 0.65), 255, rng.uniform(0, 6.28))   # a head
-        else:
-            a = rng.uniform(0, 6.28)
-            L = rng.uniform(1.2, 2.6)
-            st.line([(x, y), (x + math.cos(a) * L, y + math.sin(a) * L)], rng.uniform(0.35, 0.6))
-    sm_ = st.read()
-    sdome = np.clip(blurf(sm_, 0.18, g) * 1.6, 0, 1) * sm_
-    cracks = smoothstep(0.9, 0.97, n.ridged(X, Y, 0.9, 3, offset=7)) * sm_
-    gy, gx = np.gradient(blurf(sdome, 0.05, g))
-    lit = np.clip(0.5 + (-gx + gy) * g.ppu * 0.8, 0, 1)
-    scol = lerp(C(0.2, 0.2, 0.19), C(0.5, 0.5, 0.47), np.clip(lit * 0.7 + 0.3 * n.fbm(X, Y, 0.4, 3, offset=8), 0, 1))
-    scol = lerp(scol, C(0.12, 0.16, 0.1), smoothstep(0.62, 0.8, n.fbm(X, Y, 0.8, 3, offset=9)) * 0.5)   # moss creeping
-    scol = lerp(scol, scol * 0.4, cracks)
-    alb, hgt = apply_object(g, alb, hgt, sm_, sdome * 0.6 - cracks * 0.05, scol, shadow=0.6, shadow_blur=0.3)
-
     # loose rubble
     rub = [(x, y, rng.uniform(0.12, 0.5)) for x, y in scatter_points(rng, 400, (-66, 66, -23, 43), margin_keep(0.8), 0.6)]
     rm, rh, rc = rocks(g, n, rng, rub, base=C(0.08, 0.085, 0.08), light=C(0.26, 0.27, 0.25))
@@ -68,7 +44,7 @@ def paint(preview=False):
 
     cav = cavity(hgt, g, 0.6, 2.5)
     alb = desaturate(alb * (1 - cav[..., None] * 0.5), 0.05)
-    smooth = 0.3 + damp * 0.25 + pud * 0.65 + sm_ * 0.1
+    smooth = 0.3 + damp * 0.25 + pud * 0.65
 
     # lanes: damp packed grit
     LX, LY = lane.WX, lane.WY

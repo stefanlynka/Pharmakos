@@ -15,5 +15,6 @@ MonoBehaviour:
   Ground: {fileID: 2100000, guid: 879a67e2e2d09154eb98da76baf2085f, type: 2}
   PlayerLane: {fileID: 2100000, guid: 431648eff8ef6824699e6a0ceceb74f5, type: 2}
   EnemyLane: {fileID: 2100000, guid: a37ea03981fa9624f990386eb8840f3e, type: 2}
+  BackEdge: {fileID: 0}
   Flicker: 0
   FlickerSpeed: 1.5
