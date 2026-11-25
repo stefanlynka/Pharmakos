@@ -71,7 +71,14 @@ public static class BoardBackEdgeBuilder
             uvs[i] = new Vector2(data.uvs[i * 2], data.uvs[i * 2 + 1]);
         }
 
-        Mesh mesh = new Mesh { name = data.name + "_BackEdge_Mesh" };
+        // Rebuild into the existing mesh asset when there is one (keeps its GUID). Writing the arrays straight into it,
+        // rather than EditorUtility.CopySerialized from a new mesh, also refreshes its GPU buffers: CopySerialized left
+        // the old vertex data on screen when the vertex count didn't change.
+        string meshPath = folder + "/" + data.name + "_BackEdge_Mesh.asset";
+        Mesh existing = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
+        Mesh mesh = existing != null ? existing : new Mesh();
+        mesh.Clear();
+        mesh.name = data.name + "_BackEdge_Mesh";
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         mesh.vertices = verts;
         mesh.normals = norms;
@@ -86,13 +93,8 @@ public static class BoardBackEdgeBuilder
         mesh.RecalculateTangents();
         mesh.RecalculateBounds();
 
-        string meshPath = folder + "/" + data.name + "_BackEdge_Mesh.asset";
-        Mesh existing = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
         if (existing != null)
-        {
-            EditorUtility.CopySerialized(mesh, existing);
-            mesh = existing;
-        }
+            EditorUtility.SetDirty(mesh);
         else
             AssetDatabase.CreateAsset(mesh, meshPath);
 

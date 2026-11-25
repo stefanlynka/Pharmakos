@@ -27,7 +27,7 @@ Underworld.
 | Bacchanalia | Bacchanalia | loam, dark muted vines creeping in with leaves, tendrils and grapes, spilt wine, dull pottery shards | trampled earth, wine, bare feet and satyr hooves |
 | Caves | Caves (the Gorgon) | wet green-grey rock, slime, puddles (petrified statues were tried and dropped as unconvincing) | damp grit and puddles |
 | Hunt | Hunt (Artemis) | moss and leaf litter, roots from the edges, ferns, an antler, spent arrows | muddy game trail, deer slots |
-| Troy | Troy | trampled plain, chariot ruts, a few dust-caked shields half buried, spears, broken wheels; **3D back edge:** the walls of Troy | packed earth, ruts |
+| Troy | Troy | wind-rippled sand (generated tiles), faint chariot ruts, old blood, fallen blocks at the wall's foot; **3D back edge:** the walls of Troy | the same sand, packed calmer |
 | Trials | Trials (Amazons) | raked arena sand inside a stone kerb, straw targets with arrows, dry grass outside | raked sand |
 | Cliffs | Seaside Cliffs (Sirens) | dark sea rock, tide pools, kelp, barnacles; a jagged cliff edge with coves dropping to the sea, rocks and stacks in the surf | weathered rock ledges, salt |
 | Temple | Delphi | aged marble slabs, an inlaid Greek key round the arena, tripod scorches, laurel | pale marble runners |
@@ -66,7 +66,7 @@ View.ShowBoard instantiates it at the world origin under GameField and swaps it 
 
 | Board | Back edge |
 |---|---|
-| Troy | painted backdrop of the ruined walls (prototype of the generated-art approach; see below) |
+| Troy | battered base of huge irregular limestone ashlar (stepped beds, Troy VI's sawtooth offsets) carved into the mesh, a ledge and dark mudbrick above; fallen blocks in the sand; only the foot is lit |
 | Temple (Delphi) | three-stepped stylobate, Doric colonnade rising out of frame, shadowed cella wall |
 | Archiereus | two black marble steps, red-veined black marble wall with pilasters, candle clusters on the ledge |
 | Trials | stone seating tiers of the arena |
@@ -97,10 +97,17 @@ How it's made:
   Emission colour.
 - **Generated art (prototype: Troy).** Source images made with fal.ai (FLUX 2 Pro, through MCP for Unity's
   `generate_image`; it saves into `Assets/`, so move the file to `Tools/Boards/gen/` and delete the copy) are committed
-  in `Tools/Boards/gen/`. Floors: `make_tileable` + `sample_tiled` (boardgen.py) mix a tile at two or three scales and
-  angles through noise so no repeat reads, then the recipe adds its own large tone, wear, shadows and the edge fade to
-  black. Back edge: `BackEdge.backdrop` stands the painting at the far edge leaning back to face the camera; the recipe
-  grades it, fades it to black at the sides and lets it carry its own light through the emission map.
+  in `Tools/Boards/gen/`. Ask for *surfaces* (a flat stone face, sand), not scenes or block layouts: the model bakes in
+  shadows and its own joints, which then fight the geometry. Floors: `make_tileable` + `sample_tiled` (boardgen.py) mix
+  a tile at two or three scales and angles through noise so no repeat reads; the recipe adds its own large tone, wear,
+  shadows and the edge fade to black. Back edges: real geometry lit by the scene, with the layout procedural (Troy:
+  `_wall_layout` courses and joints, one height map carved into the mesh through `relief` and also used for the normal
+  map) and the generated tile as the surface, sampled at a different spot per block.
+- **Painted backdrops don't work.** A flat painting at the far edge (tried for Troy) reads as a pasted picture: its baked
+  light and perspective don't match the scene's and it meets the floor along a hard line. Keep back edges as geometry.
+- **Light falloff on a back edge:** instead of uniform self-light, pass an `emission` map to `save_material` that falls off
+  with height and toward the sides (Troy: `lit * side`), with `self_light=0`. The foot catches light, the rest sinks into
+  darkness and the corners stay black.
 - **Layout that made room for them:** the enemy lane and card row moved down 2 units, the enemy portrait was scaled
   from 2 to 1.4, and its resources and altars moved down (in GameScene).
 
