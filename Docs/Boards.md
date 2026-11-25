@@ -97,3 +97,14 @@ How it's made:
   Emission colour.
 - **Layout that made room for them:** the enemy lane and card row moved down 2 units, the enemy portrait was scaled
   from 2 to 1.4, and its resources and altars moved down (in GameScene).
+
+## Keeping boards on spec
+
+The board spec lives in `Docs/StyleGuide.md` ("Board spec"). Two tools enforce it:
+- **Grades:** `GRADES` in `boardkit.py` darkens, desaturates or re-tints a whole board (ground, lanes and back edge) in
+  one place, and `SMOOTH_CAP` keeps every board matte. Graded today: Troy, Trials, Temple, Cyclops, Labyrinth.
+- **Check:** capture the boards in game (1920x1080, one `<Board>.png` per board), then
+  `python Tools/Boards/check.py <folder>` reports the gap's brightness, spread and saturation and the margin's
+  brightness, and flags anything over the spec's limits. The regions assume the test chamber's layout; an enemy altar
+  or card over a region skews it.
+- Static flame geometry is off (`FLAMES = False` in `bekit.py`) until there is an animated flame VFX.

@@ -89,14 +89,14 @@ Targeting arrows are black with orange edges; the edges glow ember (emission mas
 
 ### Board spec: the board is the stage, not an actor
 
-The game is dark and grand, and the board must never compete with what the player reads and acts on. References: Hearthstone (a calm, uniform play surface; all ornament pushed to the frame and corners; everything communicates clearly) and Inscryption (one dominant hue per scene, a pool of light on the table, darkness all around, cards and world sharing one palette). Boards judged good in game (2026-11): Hunt, Temple (Delphi), Archiereus, TheGate.
+The game is dark and grand, and the board must never compete with what the player reads and acts on. References: Hearthstone (a calm, uniform play surface; all ornament pushed to the frame and corners; everything communicates clearly) and Inscryption (one dominant hue per scene, a pool of light on the table, darkness all around, cards and world sharing one palette). Boards judged good in game (2026-11): Hunt, Archiereus, TheGate as wholes; Temple (Delphi) for its floor pattern only, as a whole frame it is too bright.
 
 1. **Hierarchy.** Cards and anything targetable > altars, the pottery frames and resource holders, UI > board. The board is never the brightest or most saturated thing near the arena. Check with the squint test: blur a greyscale capture; the cards must still lead.
 2. **Three zones.**
    - **Arena** (both lanes and the gap between them): uniform, low-frequency, worn, with no props and no pattern that reads at board distance. Brightness variation in the gap stays small (in-frame luminance spread ≤ ~0.05).
    - **Margins:** texture and story are allowed, but only in the board's own value family. Detail can grow away from the arena and must fade into darkness toward the screen edges, where the light pool falls off.
    - **Back edge:** silhouette and scale, kept dark; never detail that competes with the enemy portrait. (Its design is still under discussion.)
-3. **Value.** In-frame luminance of the gap is about 0.10–0.33; the liked boards range from 0.12 (Archiereus, TheGate) to 0.33 (Temple). Margins are ≤ ~0.15. Cards average ~0.47, so the board must stay well below that.
+3. **Value.** In-frame luminance of the gap is about 0.08–0.20 (the liked boards sit at 0.12–0.16; Delphi at 0.33 and Trials at 0.32 read too bright as a whole). Margins are ≤ ~0.12. Cards average ~0.47, so the board stays well below them: dark and grand comes from the board receding.
 4. **Colour.**
    - One dominant hue family per board; this is the encounter's identity.
    - Saturation scales with brightness: a mid-value ground stays muted (gap saturation ≤ ~0.40 when its luminance is above ~0.18; darker grounds can carry more). Troy and Trials break this rule: sat 0.6 at luminance 0.22–0.32.

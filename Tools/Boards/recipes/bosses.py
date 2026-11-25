@@ -201,14 +201,14 @@ def the_gate(preview):
     chd = np.clip(blurf(chm, 0.04, g) * 1.5, 0, 1) * chm
     alb, hgt = apply_object(g, alb, hgt, chm, chd * 0.15, lerp(C(0.08, 0.07, 0.06), C(0.25, 0.22, 0.18), chd), shadow=0.5, shadow_blur=0.08)
     ob = Layer(g)
-    for x, y in scatter_points(rng, 60, (-66, 66, -23, 32), margin_keep(1.5), 1.5):
+    for x, y in scatter_points(rng, 18, (-66, 66, -23, 32), margin_keep(4.0), 3.0):
         ob.ellipse(x, y, 0.32, 0.32, 255, n=16)
     obm = ob.read()
-    alb, hgt = apply_object(g, alb, hgt, obm, obm * 0.04, lerp(C(0.25, 0.17, 0.07), C(0.45, 0.33, 0.14), n.fbm(X, Y, 0.2, 2, offset=5)), shadow=0.5, shadow_blur=0.05)
+    alb, hgt = apply_object(g, alb, hgt, obm, obm * 0.04, lerp(C(0.1, 0.075, 0.04), C(0.17, 0.13, 0.07), n.fbm(X, Y, 0.2, 2, offset=5)), shadow=0.5, shadow_blur=0.05)
 
     cav = cavity(hgt, g, 0.4, 2.0)
     alb = desaturate(alb * (1 - cav[..., None] * 0.4), 0.05)
-    smooth = 0.35 + river * 0.55 - j * 0.2 + obm * 0.3
+    smooth = 0.3 + river * 0.1 - j * 0.15
     lalb, lhgt, lsmooth = dark_lane(n, lane, rng, C(0.065, 0.07, 0.07), C(0.12, 0.13, 0.125), 5.0, 3.3, offset=2300)
     finish(os.path.join(OUT, 'TheGate'), 'TheGate', g, alb, hgt, smooth, emission, lane, lalb, lhgt, lsmooth, preview=preview)
     gate_edge()

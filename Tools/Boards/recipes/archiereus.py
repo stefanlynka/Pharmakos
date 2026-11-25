@@ -116,7 +116,7 @@ def paint(preview=False):
 
     cav = cavity(hgt, g, 0.4, 2.0)
     alb = desaturate(alb * (1 - cav[..., None] * 0.35), 0.05)
-    smooth = 0.6 - joint * 0.4 - margin * 0.12 * smoothstep(0.5, 0.8, n.fbm(X, Y, 3, 3, offset=4)) + blm * 0.2 + blood_in * 0.25 - tm * 0.3
+    smooth = 0.6 - joint * 0.4 - margin * 0.12 * smoothstep(0.5, 0.8, n.fbm(X, Y, 3, 3, offset=4)) - tm * 0.2
 
     # lanes: dark basalt slabs, smooth with use
     LX, LY = lane.WX, lane.WY

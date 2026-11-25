@@ -245,7 +245,18 @@ class BackEdge:
 
 
 def save_material(folder, mat, alb, hgt, smooth, emission=None, talb=None, thgt=None, tsmooth=None, alpha=None):
-    """Stacks the tops band over the elevation and writes BE_<name>_Albedo/_Normal/_Mask(/_Emission)."""
+    """Stacks the tops band over the elevation and writes BE_<name>_Albedo/_Normal/_Mask(/_Emission). The board's
+    grade and the smoothness cap (boardkit.GRADES, SMOOTH_CAP) apply here too."""
+    from boardkit import grade, SMOOTH_CAP
+    board = os.path.basename(os.path.normpath(folder))
+    alb = grade(np.asarray(alb, F32), board)
+    if talb is not None:
+        talb = grade(np.asarray(talb, F32), board)
+    if emission is not None:
+        emission = grade(np.asarray(emission, F32), board)
+    smooth = np.minimum(smooth, SMOOTH_CAP)
+    if tsmooth is not None:
+        tsmooth = np.minimum(tsmooth, SMOOTH_CAP)
     el = mat.elev_canvas()
     tp = mat.top_canvas()
     if talb is None:

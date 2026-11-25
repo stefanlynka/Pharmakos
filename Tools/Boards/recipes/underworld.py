@@ -39,8 +39,7 @@ def paint(preview=False):
     alb = lerp(alb, ashcol, ash * 0.8)
     hgt = (hgt * (1 - ash * 0.6) + ash * 0.25).astype(F32)
 
-    bones = place_bones(g, n, rng, ash)
-    alb, hgt = apply_bones(g, alb, hgt, bones)
+    # (bones were tried and removed: small bright props distract; board spec)
 
     # asphodel: pale six-pointed flowers in a few loose clumps, far from the fight
     flowers = Layer(g)
@@ -53,7 +52,7 @@ def paint(preview=False):
                     for i, a in enumerate(np.linspace(0, 2 * math.pi, 12, endpoint=False))]
             flowers.poly(pts6)
     fm = flowers.read()
-    alb = lerp(alb, C(0.5, 0.48, 0.43), fm * 0.75)
+    alb = lerp(alb, C(0.26, 0.25, 0.23), fm * 0.6)                      # dim, in the ground's value family
     hgt += fm * 0.04
 
     # embers: only in the widest cracks, far out in the margins, broken into glowing stretches
@@ -68,7 +67,7 @@ def paint(preview=False):
     cav = cavity(hgt, g, 0.7, 2.5)
     alb = alb * (1 - cav[..., None] * 0.55)
     alb = desaturate(alb, 0.1)
-    smooth = 0.16 + 0.12 * bones[0] - 0.08 * ash + 0.06 * (1 - margin)
+    smooth = 0.16 - 0.08 * ash + 0.06 * (1 - margin)
 
     # lanes: worn slate slabs, ash in the joints
     LX, LY = lane.WX, lane.WY

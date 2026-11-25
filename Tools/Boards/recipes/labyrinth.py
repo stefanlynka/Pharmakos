@@ -127,10 +127,7 @@ def paint(preview=False):
     alb = lerp(alb, wallcol, wm)
     hgt = (hgt + blurf(wm, 0.08, g) * 1.4 + wm * wtone * 0.1 - wj * wm * 0.06).astype(F32)
 
-    # the lost: bones in the passages, only near the chamber
-    bones = place_bones(g, n, rng, np.zeros_like(X), skeletons=5, piles=14, singles=50, fragments=180, keep_out=1.5)
-    vis = bones[0] * (1 - wm) * (1 - smoothstep(10, 20, ad))
-    alb, hgt = apply_bones(g, alb, hgt, (vis, bones[1] * vis, bones[2] * (1 - wm), bones[3]))
+    # (bones of the lost were tried and removed: small bright props distract; board spec)
 
     # straw and dried blood drag-marks in the passages close to the chamber
     blood = smoothstep(0.66, 0.8, n.fbm(X * 0.6, Y * 1.6, 3, 4, offset=9)) * (1 - wm) * (1 - smoothstep(3, 12, ad))
@@ -201,7 +198,8 @@ def back_edge():
             tx = d + side * (dw / 2 + 0.7)
             be.box(iron, tx - 0.08, tx + 0.08, 34.3, 34.6, 2.0, 2.9)
             be.lathe(iron, tx, 34.2, [(2.9, 0.12), (3.05, 0.28), (3.2, 0.3)], segments=8)
-            be.lathe(fl, tx, 34.2, [(3.15, 0.25), (3.45, 0.24), (3.8, 0.14), (4.3, 0.0)], segments=8, cap=False)
+            if bk.FLAMES:
+                be.lathe(fl, tx, 34.2, [(3.15, 0.25), (3.45, 0.24), (3.8, 0.14), (4.3, 0.0)], segments=8, cap=False)
     be.save(folder)
 
     c = st.elev_canvas()

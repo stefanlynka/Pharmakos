@@ -184,10 +184,43 @@ GROUND_GAIN = 2.0
 LANE_GAIN = 1.6
 
 
+# Board spec (Docs/StyleGuide.md, "Board spec"): matte, and graded per board so the whole frame (ground, lanes, back
+# edge) sits in one value and colour family below the cards. A grade is applied last, after GROUND_GAIN / LANE_GAIN.
+SMOOTH_CAP = 0.38
+# value: brightness multiplier; sat: saturation multiplier; tint/tint_amt: pull the colour toward a hue at the same
+# luminance (used to move warm grounds off the terracotta accent hue toward umber/olive/grey).
+GRADES = {
+    'Troy': dict(value=0.7, sat=0.55, tint=(1.0, 0.93, 0.78), tint_amt=0.45),
+    'Trials': dict(value=0.5, sat=0.5, tint=(1.0, 0.94, 0.8), tint_amt=0.45),
+    'Temple': dict(value=0.48, sat=0.85),
+    'Labyrinth': dict(value=0.95, sat=0.8),
+    'Cyclops': dict(value=0.85, sat=0.65),
+}
+
+
+def grade(alb, name):
+    """Applies GRADES[name] to an albedo or emission (h, w, 3)."""
+    g = GRADES.get(name)
+    if g is None:
+        return alb
+    w = np.array((0.2126, 0.7152, 0.0722), F32)
+    lum = (alb @ w)[..., None]
+    out = lum + (alb - lum) * g.get('sat', 1.0)
+    if 'tint' in g:
+        t = np.array(g['tint'], F32)
+        t = t / float(t @ w)
+        out = lerp(out, lum * t, g.get('tint_amt', 0.0))
+    return np.clip(out * g.get('value', 1.0), 0, 1).astype(F32)
+
+
 def finish(folder, name, g, alb, hgt, smooth, emission, lane, lalb, lhgt, lsmooth, lemission=None,
            gstrength=1.0, lstrength=1.0, preview=False, ggain=GROUND_GAIN, lgain=LANE_GAIN):
-    alb = np.clip(alb * ggain, 0, 1)
-    lalb = np.clip(lalb * lgain, 0, 1)
+    alb = grade(np.clip(alb * ggain, 0, 1), name)
+    lalb = grade(np.clip(lalb * lgain, 0, 1), name)
+    if emission is not None:
+        emission = grade(emission, name)
+    smooth = np.minimum(smooth, SMOOTH_CAP)
+    lsmooth = np.minimum(lsmooth, SMOOTH_CAP)
     save_set(folder, 'Ground', g, alb, normals(hgt, g, gstrength), smooth, emission, rotate=True)
     save_set(folder, 'Lane', lane, lalb, normals(lhgt, lane, lstrength), lsmooth, lemission)
     if preview:

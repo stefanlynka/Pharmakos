@@ -24,8 +24,14 @@ def doric_column(be, mat, x, y, h0, height, r, flutes=20):
     be.lathe(mat, x, y, prof, segments=24, flutes=flutes, flute_depth=0.06)
 
 
+# Board spec: flames are animated (VFX) or absent; static flame geometry looks cheap. Off until there is a flame VFX.
+FLAMES = False
+
+
 def candle(be, wax, flame, x, y, h0, height, r):
     be.lathe(wax, x, y, [(h0, r * 1.15), (h0 + 0.05, r), (h0 + height, r * 0.95)], segments=10)
+    if not FLAMES:
+        return
     fh = r * 2.6
     be.lathe(flame, x, y, [(h0 + height + 0.02, 0.0), (h0 + height + fh * 0.25, r * 0.6), (h0 + height + fh * 0.55, r * 0.5),
                            (h0 + height + fh, 0.0)], segments=8, cap=False)
@@ -34,12 +40,16 @@ def candle(be, wax, flame, x, y, h0, height, r):
 def brazier(be, metal, flame, x, y, h0, r=1.2):
     be.lathe(metal, x, y, [(h0, r * 0.35), (h0 + 1.2, r * 0.18), (h0 + 1.25, r * 0.5), (h0 + 1.6, r * 0.95), (h0 + 1.75, r)],
              segments=16)
+    if not FLAMES:
+        return
     for k, (dx, dy, s) in enumerate([(0, 0, 1.0), (-0.35, 0.1, 0.7), (0.4, -0.05, 0.75)]):
         be.lathe(flame, x + dx * r, y + dy * r, [(h0 + 1.6, r * 0.55 * s), (h0 + 2.1, r * 0.5 * s), (h0 + 2.7, r * 0.25 * s),
                                                  (h0 + 3.3 * s + 0.2, 0.0)], segments=10, cap=False)
 
 
 def paint_flame(folder, mat, n):
+    if not FLAMES:
+        return
     c = mat.elev_canvas()
     X, H = c.X, c.Y
     flick = n.fbm(X, H, 0.4, 3, offset=700)
