@@ -59,20 +59,41 @@ Things to know:
 - Ground normals are saved at half size: fine relief barely shows at board distance and it keeps the repo light.
 - Emission (embers, torches, candles, the sea's glimmer) flickers by the BoardStyle's Flicker and FlickerSpeed.
 
-## Back edges (3D, prototype on Troy)
+## Back edges (3D)
 
-A board can stand a 3D piece along its far edge: `BoardStyle.BackEdge` (a prefab whose mesh is in board world space,
-so View.ShowBoard instantiates it at the world origin under GameField and swaps it when the board changes).
+Every board stands a 3D piece along its far edge (`BoardStyle.BackEdge`, a prefab whose mesh is in board world space;
+View.ShowBoard instantiates it at the world origin under GameField and swaps it when the board changes).
 
-- **Troy's wall:** built by **Tools → Boards → Build Troy Wall** (`Assets/Scripts/Editor/BoardBackEdgeBuilder.cs`):
-  a battered limestone base, a timber tie-beam, mudbrick above, crenellations, and two towers that run out of frame.
-  Textures from `paint_wall()` in `recipes/troy.py` (an elevation of the faces, plus a band for the tops). The wall's
-  constants exist in both files; keep them in sync.
-- **Why it's low:** the camera looks almost straight down, so height rises up the screen fast (about 0.016 of the
-  screen per unit of height). A curtain wall about 6 units high keeps its crenellations in frame; the towers are
-  taller and leave the frame to suggest the real height.
-- **Light:** the spotlights graze the wall's face and the scene has no ambient light, so the wall material carries a
-  little self-light from its albedo (`_EmissionColor` on `Troy_Wall.mat`).
-- **Layout that made room for it:** the enemy lane and card row moved down 2 units, and the enemy portrait was scaled
-  from 2 to 1.4. The enemy's portrait, resources and altars moved down (portrait y 28.4, resources y 28.5, Minor altar
-  y 28.9, Major altar y 16.15).
+| Board | Back edge |
+|---|---|
+| Troy | the walls: battered limestone base, timber beam, mudbrick, merlons with pale caps against a shadowed walkway, towers |
+| Temple (Delphi) | three-stepped stylobate, Doric colonnade rising out of frame, shadowed cella wall |
+| Archiereus | two black marble steps, red-veined black marble wall with pilasters, candle clusters on the ledge |
+| Trials | stone seating tiers of the arena |
+| Throne | obsidian dais edged in gold, gold-banded obsidian pillars, braziers |
+| Labyrinth | the maze wall stepping back and forth, dark passages leading off, torches in iron sconces |
+| Fates | the warp-weighted loom standing: posts, cloth with a red meander, warp threads to clay weights (a few red, a few cut) |
+| TheGate | massive black pillars, bronze gates rising out of frame, walls running off to either side |
+| Cliffs | sea stacks in the surf below the cliff edge, headlands at the far corners |
+| Caves | rugged wet cave wall, stalagmites |
+| Underworld | jagged basalt ridge with embers glowing in its cracks |
+| Cyclops | rocky hillside with grassy ledges, the cave mouth and the great boulder |
+| Hunt | bank of earth and roots, old trunks rising out of frame |
+| Bacchanalia | dry-stone terrace wall, pithoi, a pergola hung with vines and grapes |
+
+How it's made:
+- Each recipe's `back_edge()` (bosses: `throne_edge`, `fates_edge`, `gate_edge`) builds the mesh from primitives in
+  `Tools/Boards/backedge.py` (box, lathe, relief, strand) and helpers in `bekit.py`, and paints one texture set per
+  material (`BE_<Material>_*` in the board folder) with `bepaint.py`. `boards.py` runs them with the boards; to rerun
+  only the back edges: `python Tools/Boards/backedges.py troy:back_edge temple:back_edge ...`.
+- The mesh goes to `Claude/Boards/backedge_json/<Name>.json` (regenerated, gitignored: run the painter before building on a fresh clone); **Tools → Boards → Build Back
+  Edges** turns it into `<Name>_BackEdge_Mesh.asset`, `BE_<Material>.mat` and `<Name>_BackEdge.prefab` and sets the
+  BoardStyle. Materials keep inspector tweaks; only textures and keywords are rewritten.
+- **Height budget:** the camera looks almost straight down, so height climbs the screen fast (about 0.016 of the
+  screen per unit). Things at the front line (y ~34) show about 6 units before leaving the frame; taller things leave
+  the frame on purpose. Keep clear of the enemy portrait (x -9..9) and its offerings (x 8..29) at y below ~34.5.
+- **Light:** back edges stand outside the spotlights, so every material emits a share of its own albedo
+  (`self_light` per material, times `SELF_LIGHT_GAIN` in backedge.py). Brighten one in Unity with its material's
+  Emission colour.
+- **Layout that made room for them:** the enemy lane and card row moved down 2 units, the enemy portrait was scaled
+  from 2 to 1.4, and its resources and altars moved down (in GameScene).

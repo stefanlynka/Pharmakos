@@ -2,7 +2,7 @@
 loom...). A recipe builds a BackEdge (mesh primitives in board world units, each tagged with a material) and paints one
 texture set per material; save() writes the mesh as JSON and the textures into the board's folder.
 In Unity, Tools -> Boards -> Build Back Edges turns them into a mesh, materials and a prefab and plugs the prefab into
-the board's BoardStyle.BackEdge (see Assets/Scripts/Editor/BoardBackEdgeBuilder.cs and Docs/Boards.md).
+the board's BoardStyle.BackEdge (see Assets/Scripts/Editor/BoardBackEdgeBuilder.cs and Docs/Boards.md). Rebuild only these: Tools/Boards/backedges.py.
 
 Coordinates: x across the board, y up the board (the enemy side is high y), h = height out of the board toward the
 camera. The board plane is world z = 33, so a point is world (x, y, 33 - h).
