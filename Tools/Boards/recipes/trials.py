@@ -148,3 +148,22 @@ def paint(preview=False):
     lsmooth = 0.1 + 0 * wear
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, None, lane, lalb, lhgt, lsmooth, preview=preview)
+    back_edge()
+
+
+def back_edge():
+    """The Amazons' arena: stone seating tiers rising behind the kerb."""
+    from backedge import BackEdge, Material, save_material
+    import bepaint as bp
+    import bekit as bk
+    folder = os.path.join(OUT, NAME)
+    n = Noise(87)
+    be = BackEdge(NAME)
+    st = be.material(Material('Tiers', tex_h=8.0, self_light=0.4))
+    bk.steps(be, st, -75, 75, 34.8, 9, 0.8, 1.3)
+    be.save(folder)
+    c = st.elev_canvas()
+    alb, hgt, sm = bp.masonry(c, n, 2.4, 0.8, C(0.38, 0.33, 0.25), C(0.52, 0.46, 0.36), C(0.13, 0.11, 0.08), offset=51)
+    alb = bp.age(n, c.X, c.Y, alb, foot_dark=0.3, streaks=0.2)
+    ta, th, ts = bp.tops(st, n, C(0.4, 0.35, 0.27), C(0.55, 0.48, 0.37), offset=52)
+    save_material(folder, st, alb, hgt, sm, talb=ta, thgt=th, tsmooth=ts)

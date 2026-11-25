@@ -28,6 +28,7 @@ HALF = 75.0
 TEX_W = 4096
 PPU = TEX_W / (2 * HALF)          # texels per unit, the same across and up
 TOP_ROWS = 96
+SELF_LIGHT_GAIN = 1.7   # back edges stand outside the spotlights; scales every material's self-light
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 JSON_DIR = os.path.join(ROOT, 'Claude', 'Boards', 'backedge_json')   # regenerated input for the Unity builder
 
@@ -258,7 +259,7 @@ def save_material(folder, mat, alb, hgt, smooth, emission=None, talb=None, thgt=
     N = np.concatenate([normals(thgt, tp, 1.0), normals(hgt, el, 1.0)], 0)
     S = np.concatenate([tsmooth, smooth], 0)
     # emission = the material's self-light (a share of its own albedo, standing in for bounce light) plus any glow
-    E = A * mat.self_light
+    E = A * mat.self_light * SELF_LIGHT_GAIN
     if emission is not None:
         E = E + np.concatenate([np.zeros_like(talb), emission], 0)
     prefix = 'BE_' + mat.name

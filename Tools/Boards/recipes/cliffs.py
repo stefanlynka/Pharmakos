@@ -6,6 +6,19 @@ from boardkit import *  # noqa
 NAME = 'Cliffs'
 
 
+def cliff_profile(rng):
+    """The cliff edge's y at a row of knots across the board (linear between them, so it breaks angularly). Must
+    be the first use of the recipe's rng so the ground and the back edge agree."""
+    knots_x = np.arange(-72, 73, 1.6)
+    walk = np.cumsum(rng.normal(0, 0.9, len(knots_x)))
+    walk -= np.linspace(walk[0], walk[-1], len(walk))
+    coves = np.zeros_like(knots_x)
+    for cx_ in rng.uniform(-60, 60, 5):
+        coves += -rng.uniform(3, 7) * np.clip(1 - np.abs(knots_x - cx_) / rng.uniform(4, 9), 0, 1)
+    prof = 33.0 + walk * 0.9 + coves + np.abs(knots_x) * 0.05
+    return knots_x, prof
+
+
 def paint(preview=False):
     g, lane = new_canvases()
     n = Noise(97)
@@ -26,13 +39,7 @@ def paint(preview=False):
     # the cliff edge: an angular, broken line (straight runs between sharp breaks, a few deep coves), then the cliff
     # face falling away (seen from above: a band of dark, vertically fractured rock), rocks and stacks in the surf,
     # and the sea below
-    knots_x = np.arange(-72, 73, 1.6)
-    walk = np.cumsum(rng.normal(0, 0.9, len(knots_x)))
-    walk -= np.linspace(walk[0], walk[-1], len(walk))
-    coves = np.zeros_like(knots_x)
-    for cx_ in rng.uniform(-60, 60, 5):
-        coves += -rng.uniform(3, 7) * np.clip(1 - np.abs(knots_x - cx_) / rng.uniform(4, 9), 0, 1)
-    prof = 33.0 + walk * 0.9 + coves + np.abs(knots_x) * 0.05
+    knots_x, prof = cliff_profile(rng)
     edge = np.interp(X, knots_x, prof).astype(F32)                      # angular: linear between knots
     wx, wy = n.warp(X, Y, 1.5, 0.5, offset=50)
     edge = edge + (n.fbm(wx, wy, 0.8, 3, offset=51) - 0.5) * 0.9       # crumbled detail on the lip
@@ -141,3 +148,47 @@ def paint(preview=False):
     lsmooth = 0.28 + lp * 0.6 - lsalt * 0.15
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, emission, lane, lalb, lhgt, lsmooth, preview=preview)
+    back_edge()
+
+
+def back_edge():
+    """Beyond the cliff edge: sea stacks rising out of the surf below, and the next headlands along the coast, their
+    faces dropping sheer into the sea at the far corners."""
+    from backedge import BackEdge, Material, save_material
+    import bepaint as bp
+    folder = os.path.join(OUT, NAME)
+    n = Noise(99)
+    rng = np.random.default_rng(97)
+    knots_x, prof = cliff_profile(rng)
+    edge = lambda x: float(np.interp(x, knots_x, prof))
+    rng = np.random.default_rng(199)
+    be = BackEdge(NAME)
+    rk = be.material(Material('SeaRock', tex_h=16.0, self_light=0.35))
+    for _ in range(26):
+        x = rng.uniform(-70, 70)
+        y = edge(x) + rng.uniform(4.0, 7.5)
+        if -12 < x < 32 and y < 37.0:
+            continue
+        r = rng.uniform(0.8, 2.2)
+        top = rng.uniform(2.5, 9.0)
+        seed = rng.uniform(0, 100)
+        wob = lambda t, h, s_=seed: 0.75 + 0.5 * n.value(np.array([[math.cos(t) * 2 + s_]], F32), np.array([[h * 0.6 + s_]], F32), 1.0, 7)[0, 0]
+        prof_ = [(0.0, r * 1.35), (0.4, r * 1.15), (top * 0.5, r * 0.95), (top * 0.85, r * 0.75), (top, r * 0.45)]
+        be.lathe(rk, x, y, prof_, segments=14, wobble=wob)
+    for side in (-1, 1):
+        x0, x1 = (-75.0, -38.0) if side < 0 else (38.0, 75.0)
+        be.relief(rk, x0, x1, lambda x: 35.5 + (abs(x) - 38.0) * 0.05,
+                  lambda x, s_=side: 9.0 + 6.0 * n.fbm(np.array([[x]], F32), np.array([[s_ * 3.0]], F32), 6, 3, offset=11)[0, 0],
+                  lambda x, h: 0.8 * n.fbm(np.array([[x]], F32), np.array([[h]], F32), 1.5, 3, offset=12)[0, 0] + h * 0.08,
+                  step=0.6, h_step=0.6, back=3.0)
+    be.save(folder)
+    c = rk.elev_canvas()
+    alb, hgt, sm = bp.rock(c, n, C(0.04, 0.05, 0.055), C(0.15, 0.16, 0.16), strata=0.5, offset=171)
+    foam = (1 - smoothstep(0.1, 0.6, c.Y)) * smoothstep(0.35, 0.6, n.fbm(c.X, c.Y, 0.5, 3, offset=172))
+    wet = 1 - smoothstep(0.4, 2.5, c.Y)
+    alb = alb * (1 - wet * 0.35)[..., None]
+    alb = lerp(alb, C(0.5, 0.55, 0.55), foam * 0.8)
+    guano = smoothstep(0.66, 0.8, n.fbm(c.X, c.Y, 0.8, 3, offset=173)) * smoothstep(3.0, 7.0, c.Y)
+    alb = lerp(alb, C(0.4, 0.4, 0.37), guano * 0.5)
+    ta, th, ts = bp.tops(rk, n, C(0.06, 0.07, 0.06), C(0.16, 0.17, 0.15), offset=174)
+    save_material(folder, rk, alb, hgt, sm + wet * 0.4, talb=ta, thgt=th, tsmooth=ts)

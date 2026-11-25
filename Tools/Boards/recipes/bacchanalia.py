@@ -187,3 +187,81 @@ def paint(preview=False):
     lsmooth = 0.12 + spm * 0.4
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, None, lane, lalb, lhgt, lsmooth, preview=preview)
+    back_edge()
+
+
+def back_edge():
+    """Dionysus' vineyard: a dry-stone terrace wall, great wine jars (pithoi) standing before it, and a pergola of
+    rough posts behind it hung thick with vine leaves and grapes."""
+    from backedge import BackEdge, Material, save_material
+    import bepaint as bp
+    folder = os.path.join(OUT, NAME)
+    n = Noise(43)
+    rng = np.random.default_rng(43)
+    be = BackEdge(NAME)
+    wall = be.material(Material('Terrace', tex_h=3.0, self_light=0.38))
+    clay = be.material(Material('Pithos', tex_h=5.0, self_light=0.4))
+    post = be.material(Material('Post', tex_h=16.0, self_light=0.35))
+    vine = be.material(Material('Vine', tex_h=16.0, self_light=0.4, cutout=True))
+    be.box(wall, -75, 75, 35.2, 38.0, 0, 1.8, batter=0.25, sides=False)
+    for x in [-66, -58, -49, -40, -27, -18, 37, 46, 55, 63, 71]:
+        x = x + rng.normal(0, 1.0)
+        r = rng.uniform(1.1, 1.5)
+        hh = r * rng.uniform(2.3, 2.7)
+        y = 34.2 if not (-11 < x < 31) else 35.0
+        be.lathe(clay, x, y, [(0.0, r * 0.45), (hh * 0.2, r * 0.95), (hh * 0.5, r), (hh * 0.8, r * 0.7), (hh * 0.9, r * 0.42),
+                              (hh, r * 0.45), (hh + 0.15, r * 0.52)], segments=18)
+    xs = np.arange(-72, 75, 8.0)
+    for x in xs:
+        be.lathe(post, x, 37.0, [(1.8, 0.32), (16.0, 0.26)], segments=8)
+    for x in xs[:-1]:
+        for k in range(3):
+            yy = 36.4 - k * 0.25
+            x0, x1 = x - 1.5 + k * 0.7, x + 9.5 - k * 0.5
+            be.strand(vine, (x0 + x1) / 2, yy, 2.6 + k * 0.7, 16.0, x1 - x0, along_shift=k * 19.0 * (-1 if x > 0 else 1))
+    be.save(folder)
+    c = wall.elev_canvas()
+    alb, hgt, sm = bp.masonry(c, n, 0.9, 0.42, C(0.18, 0.15, 0.11), C(0.34, 0.29, 0.21), C(0.04, 0.03, 0.02), gap=0.08,
+                              jitter=0.6, offset=71)
+    ta, th, ts = bp.tops(wall, n, C(0.1, 0.07, 0.05), C(0.2, 0.15, 0.1), offset=72)
+    save_material(folder, wall, alb, hgt, sm, talb=ta, thgt=th, tsmooth=ts)
+    c = clay.elev_canvas()
+    alb, hgt, sm = bp.rock(c, n, C(0.25, 0.11, 0.06), C(0.4, 0.2, 0.11), strata=0.0, offset=73)
+    band = (1 - smoothstep(0.08, 0.14, np.abs(((c.Y * 1.0) % 1.1) - 0.55)))
+    alb = lerp(alb, C(0.08, 0.05, 0.04), band * 0.6)
+    save_material(folder, clay, alb, hgt, sm)
+    c = post.elev_canvas()
+    alb, hgt, sm = bp.wood(c, n, C(0.09, 0.06, 0.04), C(0.2, 0.14, 0.09), offset=74)
+    save_material(folder, post, alb, hgt, sm)
+    # vine: leaves (and grapes) on a transparent ground, denser toward the top
+    from boardgen import Layer
+    from boardkit import palmate_leaf
+    c = vine.elev_canvas()
+    leaves = Layer(c)
+    tint = Layer(c)
+    grapes = Layer(c)
+    pts = np.stack([rng.uniform(-75, 75, 9000), rng.uniform(0, 16, 9000)], 1)
+    for x, h in pts:
+        if rng.random() > 0.15 + 0.85 * min(1.0, max(0.0, (h - 2.6) / 4.0)):
+            continue
+        s = rng.uniform(0.7, 1.3)
+        a = rng.uniform(0, 6.28)
+        palmate_leaf(leaves, x, h, s, a, 255)
+        palmate_leaf(tint, x, h, s, a, int(rng.uniform(30, 255)))
+    for x, h in pts[:500]:
+        if h < 3.0:
+            continue
+        for _ in range(rng.integers(10, 20)):
+            t = rng.random()
+            rr = rng.uniform(0.12, 0.17)
+            grapes.ellipse(x + rng.normal(0, 0.25 * (1 - t * 0.6)), h - t * 1.2, rr, rr)
+    lm = leaves.read()
+    tv = np.clip(tint.read() / np.maximum(lm, 1e-3), 0, 1)
+    gm = grapes.read()
+    leafcol = lerp(lerp(C(0.06, 0.09, 0.03), C(0.14, 0.18, 0.06), n.fbm(c.X, c.Y, 0.3, 3, offset=75)),
+                   C(0.2, 0.17, 0.06), smoothstep(0.75, 0.95, tv) * 0.6)
+    gdome = np.clip(blurf(gm, 0.04, c) * 1.5, 0, 1) * gm
+    alb = lerp(leafcol, lerp(C(0.05, 0.02, 0.05), C(0.2, 0.08, 0.18), gdome), gm)
+    alpha = np.clip(lm + gm, 0, 1)
+    save_material(folder, vine, alb.astype(F32), (lm * 0.05 + gdome * 0.05).astype(F32), np.full(c.X.shape, 0.2, F32),
+                  alpha=alpha)

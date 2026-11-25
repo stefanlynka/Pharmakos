@@ -86,3 +86,27 @@ def paint(preview=False):
     lsmooth = 0.3 - joint * 0.18 + lbig * 0.1
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, emission, lane, lalb, lhgt, lsmooth, preview=preview)
+    back_edge()
+
+
+def back_edge():
+    """A ridge of broken basalt along the far edge, jagged against the dark, embers glowing in its cracks."""
+    from backedge import BackEdge, Material, save_material
+    import bepaint as bp
+    folder = os.path.join(OUT, NAME)
+    n = Noise(13)
+    be = BackEdge(NAME)
+    rk = be.material(Material('Basalt', tex_h=10.0, self_light=0.3))
+    f = lambda x, h, sc, o: n.fbm(np.array([[x]], F32), np.array([[h]], F32), sc, 4, offset=o)[0, 0]
+    ridge = lambda x: 2.8 + 4.5 * f(x, 0, 7, 31) + 2.0 * abs(math.sin(x * 0.9 + 3 * f(x, 5, 3, 32)))
+    be.relief(be.materials['Basalt'], -75, 75, lambda x: 35.0 + 1.2 * f(x, 0, 8, 33), ridge,
+              lambda x, h: 1.8 * f(x, h, 2.0, 34) + h * 0.35, step=0.4, h_step=0.4, back=4.0)
+    be.save(folder)
+    c = rk.elev_canvas()
+    alb, hgt, sm = bp.rock(c, n, C(0.06, 0.055, 0.055), C(0.17, 0.155, 0.15), strata=0.3, offset=191)
+    crack = smoothstep(0.86, 0.95, n.ridged(c.X * 0.8, c.Y, 1.6, 3, offset=192))
+    hot = crack * smoothstep(0.35, 0.6, n.fbm(c.X, c.Y, 3.0, 3, offset=193))
+    alb = lerp(alb, C(0.3, 0.08, 0.02), hot)
+    em = C(1.0, 0.32, 0.06) * hot[..., None] + C(0.3, 0.07, 0.01) * np.clip(blurf(hot, 0.4, c) * 1.5, 0, 1)[..., None]
+    ta, th, ts = bp.tops(rk, n, C(0.03, 0.028, 0.03), C(0.08, 0.075, 0.075), offset=194)
+    save_material(folder, rk, alb, hgt, sm, emission=em.astype(F32), talb=ta, thgt=th, tsmooth=ts)

@@ -71,7 +71,7 @@ public static class BoardBackEdgeBuilder
             uvs[i] = new Vector2(data.uvs[i * 2], data.uvs[i * 2 + 1]);
         }
 
-        Mesh mesh = new Mesh { name = data.name + "_BackEdge" };
+        Mesh mesh = new Mesh { name = data.name + "_BackEdge_Mesh" };
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         mesh.vertices = verts;
         mesh.normals = norms;

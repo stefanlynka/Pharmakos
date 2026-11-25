@@ -180,3 +180,41 @@ def paint(preview=False):
     lsmooth = 0.15 + wet * 0.35
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, None, lane, lalb, lhgt, lsmooth, preview=preview)
+    back_edge()
+
+
+def back_edge():
+    """The edge of Artemis' forest: a low bank of earth and roots, and old trunks rising out of frame behind it,
+    staggered in depth, their roots spreading into the bank."""
+    from backedge import BackEdge, Material, save_material
+    import bepaint as bp
+    folder = os.path.join(OUT, NAME)
+    n = Noise(63)
+    rng = np.random.default_rng(63)
+    be = BackEdge(NAME)
+    bark = be.material(Material('Bark', tex_h=20.0, self_light=0.35))
+    bank = be.material(Material('Bank', tex_h=4.0, self_light=0.35))
+    f = lambda x, h, sc, o: n.fbm(np.array([[x]], F32), np.array([[h]], F32), sc, 4, offset=o)[0, 0]
+    be.relief(bank, -75, 75, lambda x: 34.8 + 0.8 * f(x, 0, 6, 51), lambda x: 0.8 + 1.4 * f(x, 0, 5, 52),
+              lambda x, h: 0.6 * f(x, h, 1.0, 53) + h * 0.9, step=0.5, h_step=0.3, back=5.0)
+    x = -73.0
+    while x < 75:
+        y = 36.2 + rng.uniform(0, 3.5)
+        r = rng.uniform(0.9, 1.8)
+        seed = rng.uniform(0, 100)
+        wob = lambda t, h, s_=seed: 0.85 + 0.3 * n.value(np.array([[math.cos(t * 3) + s_]], F32), np.array([[h * 0.3 + s_]], F32), 1.0, 54)[0, 0]
+        be.lathe(bark, x, y, [(0.0, r * 2.1), (0.4, r * 1.5), (1.2, r * 1.12), (3.0, r), (20.0, r * 0.82)], segments=16, wobble=wob)
+        x += rng.uniform(5.5, 11.0)
+    be.save(folder)
+    c = bark.elev_canvas()
+    ridges = n.value(c.X * 4.0, c.Y * 0.25, 1.0, 61) * 0.6 + n.fbm(c.X, c.Y, 0.6, 3, offset=62) * 0.4
+    alb = lerp(C(0.09, 0.075, 0.06), C(0.28, 0.24, 0.18), ridges)
+    moss = smoothstep(0.58, 0.72, n.fbm(c.X, c.Y, 1.5, 4, offset=63)) * (1 - smoothstep(1.0, 6.0, c.Y))
+    alb = lerp(alb, C(0.08, 0.12, 0.04), moss * 0.7)
+    save_material(folder, bark, alb.astype(F32), (ridges * 0.12).astype(F32), np.full(c.X.shape, 0.12, F32))
+    c = bank.elev_canvas()
+    alb, hgt, sm = bp.rock(c, n, C(0.07, 0.05, 0.035), C(0.17, 0.13, 0.09), strata=0.0, offset=64)
+    green = smoothstep(0.45, 0.65, n.fbm(c.X, c.Y, 0.9, 4, offset=65))
+    alb = lerp(alb, lerp(C(0.05, 0.08, 0.03), C(0.13, 0.18, 0.06), n.fbm(c.X, c.Y, 0.2, 3, offset=66)), green * 0.8)
+    ta, th, ts = bp.tops(bank, n, C(0.06, 0.08, 0.03), C(0.14, 0.16, 0.07), offset=67)
+    save_material(folder, bank, alb, hgt, sm, talb=ta, thgt=th, tsmooth=ts)

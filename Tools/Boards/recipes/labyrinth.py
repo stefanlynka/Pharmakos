@@ -165,3 +165,62 @@ def paint(preview=False):
     lsmooth = 0.25 + wear * 0.12 - lj * 0.15
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, emission, lane, lalb, lhgt, lsmooth, preview=preview)
+    back_edge()
+
+
+def back_edge():
+    """The maze goes on: a tall wall of dressed stone with dark passages leading off into the labyrinth, set back
+    walls glimpsed through them, torches burning in iron sconces beside each opening."""
+    from backedge import BackEdge, Material, save_material
+    import bepaint as bp
+    import bekit as bk
+    folder = os.path.join(OUT, NAME)
+    n = Noise(41)
+    rng = np.random.default_rng(41)
+    be = BackEdge(NAME)
+    st = be.material(Material('Stone', tex_h=14.0, self_light=0.4))
+    deep = be.material(Material('Deep', tex_h=14.0, self_light=0.12))
+    iron = be.material(Material('Iron', tex_h=6.0, self_light=0.3))
+    fl = be.material(bk.flame_material())
+    doors = [-58.0, -36.0, -17.0, 19.0, 37.0, 57.0]
+    dw = 3.2
+    x = -75.0
+    edges = []
+    for d in doors:
+        edges.append((x, d - dw / 2))
+        x = d + dw / 2
+    edges.append((x, 75.0))
+    for i, (x0, x1) in enumerate(edges):
+        y0 = 34.6 + (0.0 if i % 2 == 0 else 1.2)          # the wall steps back and forth like the maze
+        be.box(st, x0, x1, y0, y0 + 2.2, 0, 13.0, back=False)
+    for d in doors:
+        be.box(st, d - dw / 2 - 0.01, d + dw / 2 + 0.01, 34.6, 37.0, 3.6, 13.0, sides=False)      # lintel and wall above
+        be.box(deep, d - dw / 2, d + dw / 2, 41.0, 43.0, 0, 13.0, sides=False)                    # far wall of the passage
+        for side in (-1, 1):
+            be.box(deep, d + side * dw / 2 - 0.01 * side, d + side * dw / 2, 36.8, 41.0, 0, 3.6, sides=True)
+            tx = d + side * (dw / 2 + 0.7)
+            be.box(iron, tx - 0.08, tx + 0.08, 34.3, 34.6, 2.0, 2.9)
+            be.lathe(iron, tx, 34.2, [(2.9, 0.12), (3.05, 0.28), (3.2, 0.3)], segments=8)
+            be.lathe(fl, tx, 34.2, [(3.15, 0.25), (3.45, 0.24), (3.8, 0.14), (4.3, 0.0)], segments=8, cap=False)
+    be.save(folder)
+
+    c = st.elev_canvas()
+    alb, hgt, sm = bp.masonry(c, n, 1.8, 0.75, C(0.16, 0.14, 0.12), C(0.27, 0.24, 0.2), C(0.06, 0.05, 0.04), offset=81)
+    moss = smoothstep(0.62, 0.78, n.fbm(c.X, c.Y, 1.4, 4, offset=82)) * (1 - smoothstep(0.0, 3.0, c.Y))
+    alb = lerp(alb, C(0.08, 0.1, 0.05), moss * 0.6)
+    soot = sum(np.exp(-(((c.X - (d + s_ * (dw / 2 + 0.7))) / 0.6) ** 2) - (((c.Y - 4.5) / 1.6) ** 2))
+               for d in doors for s_ in (-1, 1))
+    alb = alb * (1 - np.clip(soot, 0, 1) * 0.6)[..., None]
+    glow = sum(np.exp(-(((c.X - (d + s_ * (dw / 2 + 0.7))) / 1.6) ** 2) - (((c.Y - 3.4) / 1.4) ** 2))
+               for d in doors for s_ in (-1, 1))
+    alb = bp.age(n, c.X, c.Y, alb, foot_dark=0.4)
+    em = C(0.5, 0.22, 0.06) * np.clip(glow, 0, 1)[..., None] * 0.35
+    ta, th, ts = bp.tops(st, n, C(0.12, 0.1, 0.09), C(0.2, 0.18, 0.15), offset=83)
+    save_material(folder, st, alb, hgt, sm, emission=em, talb=ta, thgt=th, tsmooth=ts)
+    c = deep.elev_canvas()
+    alb, hgt, sm = bp.masonry(c, n, 1.8, 0.75, C(0.04, 0.035, 0.03), C(0.08, 0.07, 0.06), C(0.02, 0.015, 0.01), offset=84)
+    save_material(folder, deep, alb, hgt, sm)
+    c = iron.elev_canvas()
+    alb, hgt, sm = bp.metal(c, n, C(0.05, 0.045, 0.04), C(0.14, 0.12, 0.1), offset=85)
+    save_material(folder, iron, alb, hgt, sm)
+    bk.paint_flame(folder, fl, n)

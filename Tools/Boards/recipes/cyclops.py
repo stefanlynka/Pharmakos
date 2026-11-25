@@ -92,3 +92,43 @@ def paint(preview=False):
     lsmooth = 0.12 + pm * 0.1
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, None, lane, lalb, lhgt, lsmooth, preview=preview)
+    back_edge()
+
+
+def back_edge():
+    """Polyphemus' hillside: a rocky slope with grass on its ledges, the black mouth of his cave, and the great
+    boulder he rolls across it."""
+    from backedge import BackEdge, Material, save_material
+    import bepaint as bp
+    folder = os.path.join(OUT, NAME)
+    n = Noise(27)
+    be = BackEdge(NAME)
+    rk = be.material(Material('HillRock', tex_h=14.0, self_light=0.38))
+    bould = be.material(Material('Boulder', tex_h=8.0, self_light=0.4))
+    f = lambda x, h, sc, o: n.fbm(np.array([[x]], F32), np.array([[h]], F32), sc, 4, offset=o)[0, 0]
+    cave_x = -30.0
+
+    def depth(x, h):
+        d = 1.6 * f(x, h, 2.5, 41) + 0.5 * f(x, h, 0.7, 42) + h * 0.5
+        inside = max(0.0, 1 - ((x - cave_x) / 4.2) ** 2 - (h / 4.8) ** 2)
+        return d + 5.0 * min(1.0, inside * 3)                                           # the cave mouth recedes
+    be.relief(rk, -75, 75, lambda x: 35.0 + 0.8 * f(x, 0, 9, 43), lambda x: 3.2 + 3.4 * f(x, 0, 8, 44) + 1.8 * f(x, 3, 1.5, 45),
+              depth, step=0.4, h_step=0.4, back=6.0)
+    seed = 3.0
+    wob = lambda t, h: 0.85 + 0.3 * n.value(np.array([[math.cos(t) * 1.5 + seed]], F32), np.array([[h + seed]], F32), 1.0, 46)[0, 0]
+    be.lathe(bould, cave_x + 8.5, 35.2, [(0.0, 1.5), (0.6, 2.9), (1.8, 3.4), (3.2, 3.1), (4.4, 2.2), (5.1, 0.8), (5.3, 0.0)],
+             segments=18, wobble=wob)
+    be.save(folder)
+    c = rk.elev_canvas()
+    alb, hgt, sm = bp.rock(c, n, C(0.22, 0.21, 0.19), C(0.5, 0.48, 0.43), strata=0.4, offset=201)
+    grass = smoothstep(0.55, 0.7, n.fbm(c.X, c.Y, 1.2, 4, offset=202)) * smoothstep(1.0, 4.0, c.Y)
+    alb = lerp(alb, lerp(C(0.1, 0.12, 0.05), C(0.24, 0.24, 0.11), n.fbm(c.X, c.Y, 0.2, 3, offset=203)), grass * 0.75)
+    mouth = np.clip(1 - ((c.X - cave_x) / 4.2) ** 2 - (c.Y / 4.8) ** 2, 0, 1)
+    alb = alb * (1 - smoothstep(0.0, 0.25, mouth) * 0.92)[..., None]
+    alb = bp.age(n, c.X, c.Y, alb, foot_dark=0.3)
+    ta, th, ts = bp.tops(rk, n, C(0.12, 0.13, 0.07), C(0.26, 0.26, 0.13), offset=204)
+    save_material(folder, rk, alb, hgt, sm, talb=ta, thgt=th, tsmooth=ts)
+    c = bould.elev_canvas()
+    alb, hgt, sm = bp.rock(c, n, C(0.22, 0.21, 0.19), C(0.46, 0.44, 0.4), strata=0.1, offset=205)
+    lich = smoothstep(0.62, 0.76, n.fbm(c.X, c.Y, 0.5, 3, offset=206))
+    save_material(folder, bould, lerp(alb, C(0.36, 0.36, 0.2), lich * 0.5), hgt, sm)

@@ -62,3 +62,34 @@ def paint(preview=False):
     lsmooth = 0.32 + lp * 0.55
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, None, lane, lalb, lhgt, lsmooth, preview=preview)
+    back_edge()
+
+
+def back_edge():
+    """The Gorgon's cave closes in: a rugged wall of wet rock rising out of frame, stalagmites at its foot."""
+    from backedge import BackEdge, Material, save_material
+    import bepaint as bp
+    folder = os.path.join(OUT, NAME)
+    n = Noise(57)
+    rng = np.random.default_rng(57)
+    be = BackEdge(NAME)
+    rk = be.material(Material('CaveRock', tex_h=16.0, self_light=0.32))
+    f = lambda x, h, sc, o: n.fbm(np.array([[x]], F32), np.array([[h]], F32), sc, 3, offset=o)[0, 0]
+    be.relief(rk, -75, 75, lambda x: 35.3 + 1.6 * f(x, 0, 9, 21), lambda x: 15.0,
+              lambda x, h: 2.4 * f(x, h, 3.0, 22) + 0.8 * f(x, h, 0.8, 23) + h * 0.12, step=0.5, h_step=0.5)
+    for _ in range(30):
+        x = rng.uniform(-72, 72)
+        y = rng.uniform(34.6, 35.6) if -11 < x < 31 else rng.uniform(33.0, 35.4)
+        r = rng.uniform(0.35, 1.0)
+        top = r * rng.uniform(2.5, 5.0)
+        seed = rng.uniform(0, 100)
+        wob = lambda t, h, s_=seed: 0.8 + 0.4 * n.value(np.array([[math.cos(t) + s_]], F32), np.array([[h * 1.5 + s_]], F32), 1.0, 9)[0, 0]
+        be.lathe(rk, x, y, [(0.0, r * 1.3), (top * 0.3, r * 0.9), (top * 0.75, r * 0.45), (top, 0.05)], segments=10, wobble=wob)
+    be.save(folder)
+    c = rk.elev_canvas()
+    alb, hgt, sm = bp.rock(c, n, C(0.07, 0.085, 0.075), C(0.2, 0.23, 0.2), strata=0.6, offset=181)
+    slime = smoothstep(0.6, 0.76, n.fbm(c.X, c.Y, 2.0, 4, offset=182))
+    alb = lerp(alb, C(0.06, 0.1, 0.05), slime * 0.6)
+    flow = smoothstep(0.7, 0.9, n.value(c.X * 3.0, c.Y * 0.15, 1.0, 183))      # wet runnels down the face
+    ta, th, ts = bp.tops(rk, n, C(0.04, 0.05, 0.045), C(0.1, 0.12, 0.1), offset=184)
+    save_material(folder, rk, alb, hgt, sm + flow * 0.4 + slime * 0.2, talb=ta, thgt=th, tsmooth=ts)

@@ -131,3 +131,43 @@ def paint(preview=False):
     lsmooth = 0.45 + wear * 0.12 - lj * 0.3
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, emission, lane, lalb, lhgt, lsmooth, preview=preview)
+    back_edge()
+
+
+def back_edge():
+    """The high priest's sanctum wall: two black marble steps, then a wall of red-veined black marble divided by
+    pilasters, candles guttering in clusters on the ledge between them."""
+    from backedge import BackEdge, Material, save_material
+    import bepaint as bp
+    import bekit as bk
+    folder = os.path.join(OUT, NAME)
+    n = Noise(117)
+    rng = np.random.default_rng(117)
+    be = BackEdge(NAME)
+    blk = be.material(Material('Black', tex_h=14.0, self_light=0.45))
+    wax = be.material(Material('Wax', tex_h=4.0, self_light=0.5))
+    fl = be.material(bk.flame_material())
+    top_y, top_h = bk.steps(be, blk, -75, 75, 34.0, 2, 0.4, 0.6)
+    be.box(blk, -75, 75, top_y - 0.01, 37.6, 0, top_h, sides=False)
+    be.box(blk, -75, 75, 37.5, 39.5, top_h, 15.0, sides=False)
+    x = -73.5
+    while x < 75:
+        be.box(blk, x - 0.8, x + 0.8, 36.3, 37.6, top_h, 15.0)
+        cx = x + 3.5
+        if cx < 74 and not (-10 < cx < 10):
+            for _ in range(rng.integers(4, 8)):
+                hh = rng.uniform(0.7, 2.2)
+                bk.candle(be, wax, fl, cx + rng.normal(0, 0.9), 37.0 + rng.uniform(-0.3, 0.3), top_h, hh, rng.uniform(0.16, 0.26))
+        x += 7.0
+    be.save(folder)
+
+    c = blk.elev_canvas()
+    alb, hgt, sm = bp.marble(c, n, C(0.035, 0.03, 0.03), C(0.09, 0.075, 0.07), C(0.35, 0.06, 0.05), 0.5, 0.03, offset=41)
+    glow = np.exp(-((c.Y - 2.0) / 1.6) ** 2) * 0.12
+    alb = alb + C(0.5, 0.25, 0.08) * glow[..., None]
+    ta, th, ts = bp.tops(blk, n, C(0.03, 0.025, 0.025), C(0.07, 0.06, 0.055), offset=42)
+    save_material(folder, blk, alb, hgt, np.full(c.X.shape, 0.6, F32), talb=ta, thgt=th, tsmooth=ts)
+    c = wax.elev_canvas()
+    wa = lerp(C(0.5, 0.44, 0.33), C(0.7, 0.62, 0.48), n.fbm(c.X, c.Y, 0.2, 3, offset=43))
+    save_material(folder, wax, wa.astype(F32), np.zeros(c.X.shape, F32), np.full(c.X.shape, 0.4, F32))
+    bk.paint_flame(folder, fl, n)

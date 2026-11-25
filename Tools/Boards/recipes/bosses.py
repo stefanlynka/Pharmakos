@@ -2,8 +2,8 @@
 
 Throne:  Hades' hall. Polished obsidian slabs, a gold-inlaid Greek key round the arena, spilt pomegranate seeds,
          old stains where supplicants knelt, cold green-gold glimmer in the gold. Lanes: black basalt.
-Fates:   the Moirai's chamber. Dark worn stone; along the far edge a warp-weighted loom laid out: woven cloth, the
-         warp running toward the arena in bundles tied to clay weights, a few red threads, a few cut; spindles and wool. Lanes: dark wood-grained floor of the loom room.
+Fates:   the Moirai's chamber. Dark worn stone, a few cut red threads, spindles and wool; the warp-weighted loom
+         stands along the far edge as a 3D back edge (fates_edge). Lanes: dark wood-grained floor of the loom room.
 TheGate: the gate of Hades on the Styx. Ancient black paving, heaved, cracked and broken, scored with Cerberus' claw marks, chains, obols scattered for
          the ferryman, and the river along the far edge, faintly glowing. Lanes: wet black flagstones."""
 from boardkit import *  # noqa
@@ -68,6 +68,7 @@ def throne(preview):
     emission = C(0.18, 0.13, 0.04) * (km * smoothstep(0.55, 0.8, n.fbm(X, Y, 4, 3, offset=2)))[..., None]
     lalb, lhgt, lsmooth = dark_lane(n, lane, rng, C(0.05, 0.045, 0.05), C(0.1, 0.09, 0.1), offset=2150)
     finish(os.path.join(OUT, 'Throne'), 'Throne', g, alb, hgt, smooth, emission, lane, lalb, lhgt, lsmooth, preview=preview)
+    throne_edge()
 
 
 def fates(preview):
@@ -82,48 +83,6 @@ def fates(preview):
     alb = alb + ((brush(n, X, Y) - 0.5) * 0.03)[..., None]
     alb = lerp(alb, C(0.025, 0.02, 0.02), joint * 0.7)
     hgt = (big * 0.2 - joint * 0.05).astype(F32)
-
-    # the loom along the far edge (a Greek warp-weighted loom, seen from above as if laid out on the floor): a band of
-    # woven cloth with a meander worked into it, then the warp threads running toward the arena, gathered in bundles,
-    # each ending in a clay loom weight. One thread in each few is red or gold; a few are cut short.
-    cloth_y0 = 39.5 + (n.fbm(X, Y, 8, 2, offset=6) - 0.5) * 0.6
-    cloth = smoothstep(cloth_y0 - 0.15, cloth_y0 + 0.15, Y)
-    weave = 0.5 + 0.25 * np.sin(X * 2 * math.pi / 0.18) * np.sin(Y * 2 * math.pi / 0.18)
-    km, _ = meander_band(X, Y, (-80, 80, -40, 40.6), 0.0, 1.4)
-    clothcol = lerp(C(0.3, 0.28, 0.24), C(0.42, 0.39, 0.33), weave * n.fbm(X, Y, 1.0, 3, offset=7))
-    clothcol = lerp(clothcol, C(0.32, 0.05, 0.04), km * smoothstep(40.6, 40.8, Y))
-    alb = alb * (1 - np.clip(blurf(cloth, 0.4, g) * 1.4 - cloth, 0, 1)[..., None] * 0.5)
-    alb = lerp(alb, clothcol, cloth)
-    hgt = (hgt + cloth * 0.15).astype(F32)
-
-    warp_w = Layer(g)
-    warp_r = Layer(g)
-    weights = Layer(g)
-    xs = np.arange(-67.5, 67.6, 0.42)
-    for i, x in enumerate(xs):
-        bundle = int((x + 68) // 2.1)
-        bx = -68 + (bundle + 0.5) * 2.1 + rng.normal(0, 0.1)          # where this thread's bundle is tied
-        by = 29.5 + 1.2 * math.sin(bundle * 1.7) + rng.normal(0, 0.15)
-        top_y = 39.7
-        cut = rng.random() < 0.06
-        end_y = by + (rng.uniform(2.0, 6.0) if cut else 0.0)
-        pts = []
-        for t in np.linspace(0, 1, 24):
-            yy = top_y + (end_y - top_y) * t
-            xx = x + (bx - x) * (t ** 2.2 if not cut else 0)
-            pts.append((xx, yy))
-        (warp_r if i % 7 == 3 else warp_w).line(pts, 0.05)
-    for bundle in range(65):
-        bx = -68 + (bundle + 0.5) * 2.1
-        by = 29.5 + 1.2 * math.sin(bundle * 1.7)
-        weights.poly([(bx - 0.45, by - 0.1), (bx + 0.45, by - 0.1), (bx + 0.3, by - 1.15), (bx - 0.3, by - 1.15)])
-    wwm = warp_w.read()
-    wrm = warp_r.read()
-    wgm = weights.read()
-    alb, hgt = apply_object(g, alb, hgt, wwm, wwm * 0.03, C(0.55, 0.52, 0.46), shadow=0.45, shadow_blur=0.08, shadow_offset=(0.04, -0.1))
-    alb, hgt = apply_object(g, alb, hgt, wrm, wrm * 0.03, C(0.4, 0.07, 0.05), shadow=0.45, shadow_blur=0.08, shadow_offset=(0.04, -0.1))
-    wdm_ = np.clip(blurf(wgm, 0.12, g) * 1.4, 0, 1) * wgm
-    alb, hgt = apply_object(g, alb, hgt, wgm, wdm_ * 0.4, lerp(C(0.2, 0.1, 0.06), C(0.38, 0.2, 0.11), wdm_), shadow=0.55, shadow_blur=0.25)
 
     # a few threads cut and fallen near the arena
     loose = Layer(g)
@@ -169,6 +128,7 @@ def fates(preview):
     lhgt = (grainw * 0.04 - (1 - smoothstep(0.0, 0.03, 1.25 * np.minimum(LY / 1.25 % 1.0, 1 - LY / 1.25 % 1.0))) * 0.05).astype(F32)
     lsmooth = 0.3 + lane_wear(lane) * 0.1
     finish(os.path.join(OUT, 'Fates'), 'Fates', g, alb, hgt, smooth, None, lane, lalb, lhgt, lsmooth, preview=preview)
+    fates_edge()
 
 
 def the_gate(preview):
@@ -251,6 +211,137 @@ def the_gate(preview):
     smooth = 0.35 + river * 0.55 - j * 0.2 + obm * 0.3
     lalb, lhgt, lsmooth = dark_lane(n, lane, rng, C(0.065, 0.07, 0.07), C(0.12, 0.13, 0.125), 5.0, 3.3, offset=2300)
     finish(os.path.join(OUT, 'TheGate'), 'TheGate', g, alb, hgt, smooth, emission, lane, lalb, lhgt, lsmooth, preview=preview)
+    gate_edge()
+
+
+def throne_edge():
+    """Hades' hall: an obsidian dais of three steps edged in gold, great obsidian pillars banded in gold rising out of
+    frame, braziers burning between them, black wall behind."""
+    from backedge import BackEdge, Material, save_material
+    import bepaint as bp
+    import bekit as bk
+    folder = os.path.join(OUT, 'Throne')
+    n = Noise(133)
+    be = BackEdge('Throne')
+    obs = be.material(Material('Obsidian', tex_h=16.0, self_light=0.3))
+    gold = be.material(Material('Gold', tex_h=16.0, self_light=0.45))
+    bronze = be.material(Material('Bronze', tex_h=4.0, self_light=0.35))
+    fl = be.material(bk.flame_material())
+    top_y, top_h = bk.steps(be, obs, -75, 75, 34.0, 3, 0.45, 0.65)
+    for i in range(3):
+        be.box(gold, -75, 75, 34.0 + i * 0.65 - 0.02, 34.0 + i * 0.65 + 0.1, (i + 1) * 0.45 - 0.06, (i + 1) * 0.45 + 0.02,
+               sides=False)
+    be.box(obs, -75, 75, top_y - 0.01, 42.5, 0, top_h, sides=False)
+    be.box(obs, -75, 75, 41.0, 43.0, top_h, 18.0, sides=False)
+    for x in np.arange(-72, 75, 9.0):
+        be.lathe(obs, x, top_y + 1.8, [(top_h, 1.7), (top_h + 0.5, 1.45), (top_h + 16, 1.3)], segments=20, flutes=12,
+                 flute_depth=0.05)
+        for hb in (top_h + 0.5, top_h + 3.5, top_h + 6.5):
+            be.lathe(gold, x, top_y + 1.8, [(hb, 1.5), (hb + 0.18, 1.52), (hb + 0.36, 1.5)], segments=20, cap=False)
+        bx = x + 4.5
+        if bx < 74 and not (-10 < bx < 10):
+            bk.brazier(be, bronze, fl, bx, top_y + 0.9, top_h, 0.9)
+    be.save(folder)
+    c = obs.elev_canvas()
+    alb, hgt, sm = bp.marble(c, n, C(0.02, 0.018, 0.024), C(0.055, 0.05, 0.065), C(0.14, 0.13, 0.16), 0.35, 0.03, offset=61)
+    ta, th, ts = bp.tops(obs, n, C(0.02, 0.018, 0.022), C(0.05, 0.045, 0.055), offset=62)
+    save_material(folder, obs, alb, hgt, np.full(c.X.shape, 0.75, F32), talb=ta, thgt=th, tsmooth=ts)
+    c = gold.elev_canvas()
+    alb, hgt, sm = bp.metal(c, n, C(0.35, 0.24, 0.08), C(0.62, 0.46, 0.18), offset=63)
+    save_material(folder, gold, alb, hgt, sm)
+    c = bronze.elev_canvas()
+    alb, hgt, sm = bp.metal(c, n, C(0.16, 0.1, 0.05), C(0.32, 0.2, 0.1), C(0.12, 0.2, 0.15), offset=64)
+    save_material(folder, bronze, alb, hgt, sm)
+    bk.paint_flame(folder, fl, n)
+
+
+def fates_edge():
+    """The Moirai's loom, a Greek warp-weighted loom standing along the far edge: posts and a beam out of frame, the
+    woven cloth with a red meander, the warp hanging below it in bundles tied to clay weights, a few red threads among
+    the white and a few cut short."""
+    from backedge import BackEdge, Material, save_material
+    import bepaint as bp
+    from boardkit import meander_band
+    folder = os.path.join(OUT, 'Fates')
+    n = Noise(141)
+    rng = np.random.default_rng(141)
+    be = BackEdge('Fates')
+    wood = be.material(Material('Wood', tex_h=16.0, self_light=0.35))
+    cloth = be.material(Material('Cloth', tex_h=16.0, self_light=0.45))
+    thread = be.material(Material('Thread', tex_h=6.0, self_light=0.5))
+    red = be.material(Material('RedThread', tex_h=6.0, self_light=0.5))
+    clay = be.material(Material('Clay', tex_h=3.0, self_light=0.4))
+    ly = 35.6
+    cloth_h = 4.2
+    for px in np.arange(-72, 75, 24.0):
+        be.box(wood, px - 0.45, px + 0.45, ly + 0.3, ly + 1.2, 0, 16.0)
+    be.box(cloth, -75, 75, ly, ly + 0.25, cloth_h, 16.0, sides=False)
+    be.box(wood, -75, 75, ly - 0.1, ly + 0.5, cloth_h - 0.35, cloth_h, sides=False)       # the shed bar
+    bundle_w = 1.6
+    for b in np.arange(-74.2, 75, bundle_w):
+        wx = b + rng.normal(0, 0.05)
+        wh = 0.9 + 0.25 * math.sin(b * 1.3) + rng.normal(0, 0.06)
+        be.box(clay, wx - 0.38, wx + 0.38, ly - 0.45, ly + 0.05, wh - 0.75, wh, top=True)       # loom weight
+        for k in range(5):
+            tx = b - bundle_w / 2 + (k + 0.5) * bundle_w / 5
+            mat = red if rng.random() < 0.12 else thread
+            bottom = wh if rng.random() > 0.05 else rng.uniform(1.8, 3.4)                 # a few cut short
+            be.strand(mat, tx, ly - 0.15, bottom, cloth_h - 0.3, 0.06, sway=(wx - tx) * 0.0)
+    be.save(folder)
+
+    c = wood.elev_canvas()
+    alb, hgt, sm = bp.wood(c, n, C(0.1, 0.065, 0.04), C(0.22, 0.15, 0.09), offset=151)
+    save_material(folder, wood, alb, hgt, sm)
+    c = cloth.elev_canvas()
+    weave = 0.5 + 0.25 * np.sin(c.X * 2 * math.pi / 0.2) * np.sin(c.Y * 2 * math.pi / 0.2)
+    alb = lerp(C(0.34, 0.31, 0.26), C(0.48, 0.44, 0.37), weave * n.fbm(c.X, c.Y, 1.0, 3, offset=152))
+    km, _ = meander_band(c.X, c.Y, (-90, 90, -10, cloth_h + 0.3), 0.0, 1.3)
+    alb = lerp(alb, C(0.36, 0.05, 0.04), km)
+    alb = alb * (1 - (1 - smoothstep(cloth_h, cloth_h + 0.6, c.Y)) * 0.3)[..., None]
+    save_material(folder, cloth, alb.astype(F32), (weave * 0.02).astype(F32), np.full(c.X.shape, 0.1, F32))
+    c = thread.elev_canvas()
+    save_material(folder, thread, lerp(C(0.55, 0.52, 0.46), C(0.66, 0.63, 0.56), n.fbm(c.X, c.Y, 0.3, 2, offset=153)),
+                  np.zeros(c.X.shape, F32), np.full(c.X.shape, 0.1, F32))
+    save_material(folder, red, lerp(C(0.34, 0.05, 0.04), C(0.46, 0.08, 0.06), n.fbm(c.X, c.Y, 0.3, 2, offset=154)),
+                  np.zeros(c.X.shape, F32), np.full(c.X.shape, 0.1, F32))
+    c = clay.elev_canvas()
+    alb, hgt, sm = bp.rock(c, n, C(0.22, 0.11, 0.06), C(0.36, 0.2, 0.11), offset=155)
+    save_material(folder, clay, alb, hgt, sm)
+
+
+def gate_edge():
+    """The gate of Hades beyond the Styx: two massive pillars of cracked black stone, bronze gates of bars and
+    crossbars between them rising out of frame, the walls running off to either side, the river at their foot."""
+    from backedge import BackEdge, Material, save_material
+    import bepaint as bp
+    folder = os.path.join(OUT, 'TheGate')
+    n = Noise(143)
+    be = BackEdge('TheGate')
+    stone = be.material(Material('Stone', tex_h=16.0, self_light=0.3))
+    bronze = be.material(Material('Bronze', tex_h=16.0, self_light=0.4))
+    gy = 35.6
+    be.box(stone, -75, -24.0, gy + 0.8, gy + 3.0, 0, 14.0, batter=0.15)
+    be.box(stone, 24.0, 75, gy + 0.8, gy + 3.0, 0, 14.0, batter=0.15)
+    for px in (-21.5, 21.5):
+        be.box(stone, px - 2.6, px + 2.6, gy - 0.4, gy + 3.2, 0, 18.0, batter=0.08)
+        be.box(stone, px - 3.0, px + 3.0, gy - 0.7, gy + 3.4, 0, 1.2)                          # plinth
+    for bx in np.arange(-18.6, 18.7, 0.85):
+        be.box(bronze, bx - 0.13, bx + 0.13, gy + 0.9, gy + 1.15, 0, 16.0)
+        be.lathe(bronze, bx, gy + 1.0, [(0.0, 0.0), (0.1, 0.22), (0.3, 0.0)], segments=6, cap=False)
+    for hh in (1.4, 4.6, 7.8):
+        be.box(bronze, -18.9, 18.9, gy + 0.7, gy + 1.35, hh, hh + 0.45, sides=False)
+    be.save(folder)
+    c = stone.elev_canvas()
+    alb, hgt, sm = bp.masonry(c, n, 2.2, 1.0, C(0.08, 0.09, 0.09), C(0.19, 0.2, 0.19), C(0.02, 0.025, 0.025), offset=161)
+    crack = smoothstep(0.86, 0.95, n.ridged(c.X * 0.7, c.Y, 1.8, 3, offset=162))
+    alb = lerp(alb, C(0.0, 0.0, 0.0), crack * 0.8)
+    alb = alb + C(0.02, 0.09, 0.07) * (1 - smoothstep(0.0, 1.5, c.Y))[..., None]      # the river's glow on the foot
+    alb = bp.age(n, c.X, c.Y, alb, foot_dark=0.2)
+    ta, th, ts = bp.tops(stone, n, C(0.04, 0.045, 0.045), C(0.09, 0.1, 0.095), offset=163)
+    save_material(folder, stone, alb, hgt - crack * 0.1, sm, talb=ta, thgt=th, tsmooth=ts)
+    c = bronze.elev_canvas()
+    alb, hgt, sm = bp.metal(c, n, C(0.24, 0.16, 0.07), C(0.48, 0.33, 0.15), C(0.14, 0.26, 0.2), 0.5, offset=164)
+    save_material(folder, bronze, alb, hgt, sm)
 
 
 def paint(preview=False):
