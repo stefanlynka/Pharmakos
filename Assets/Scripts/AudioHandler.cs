@@ -63,10 +63,8 @@ public class AudioHandler : MonoBehaviour
     [Range(0f, 1f)] public float MinorRitualVolumeScale = 0.8f;
 
     [Header("Follower Death")]
-    [Tooltip("The skull landing on a dying follower. Clip: Audio/SFX/Death/DeathStrike (Tools/Audio/build_death_sounds.py).")]
+    [Tooltip("A follower dying: the skull landing as the card is crushed into ash. Clip: Audio/SFX/Death/DeathStrike (Tools/Audio/build_death_sounds.py).")]
     [Range(0f, 2f)] public float DeathStrikeVolume = 0.7f;
-    [Tooltip("The card falling into the board and breaking into ash. Clip: Audio/SFX/Death/DeathCollapse.")]
-    [Range(0f, 2f)] public float DeathCollapseVolume = 0.8f;
 
     [Header("Cues")]
     [Tooltip("Triggered abilities, trinkets and ritual buffs (CuePlayer). Still scaled by the SFX slider. Clips: Audio/SFX/Cues, rendered by Tools/Audio/build_cue_sounds.py.")]
@@ -538,22 +536,13 @@ public class AudioHandler : MonoBehaviour
     }
 
     AudioClip deathStrikeClip;
-    AudioClip deathCollapseClip;
 
-    /// <summary>The skull landing on a dying follower (FollowerDeathAnimation).</summary>
+    /// <summary>A follower dying (FollowerDeathAnimation's impact).</summary>
     public void PlayDeathStrike()
     {
         if (deathStrikeClip == null)
             deathStrikeClip = Resources.Load<AudioClip>("Audio/SFX/Death/DeathStrike");
         PlayOneShot(deathStrikeClip, DeathStrikeVolume);
-    }
-
-    /// <summary>A dead follower's card falling into the board and breaking into ash (FollowerDeathAnimation).</summary>
-    public void PlayDeathCollapse()
-    {
-        if (deathCollapseClip == null)
-            deathCollapseClip = Resources.Load<AudioClip>("Audio/SFX/Death/DeathCollapse");
-        PlayOneShot(deathCollapseClip, DeathCollapseVolume);
     }
 
     const int PitchedVoiceCount = 10;

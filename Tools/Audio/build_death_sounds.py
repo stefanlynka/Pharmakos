@@ -1,13 +1,12 @@
-"""Renders the follower death sounds, timed to FollowerDeathAnimation's two beats.
+"""Renders the follower death sound, played on FollowerDeathAnimation's single impact (the skull landing as the card
+is crushed into the board): a dull, heavy drum strike with a bone knock and a sub thump, and the ash crumbling away
+in its tail. No gong or long ring: a death is one moment.
 
-    DeathStrike   the skull lands on the card: a dull, heavy drum strike with a bone knock and a sub thump.
-    DeathCollapse the card sinks and breaks into ash: a deep low impact under a gong pitched down an octave,
-                  a falling sub, and dry ash crumbling away.
-
-Both play in the same dark stone hall as the ritual invocations (build_ritual_sounds.temple_ir / master), so the
+It plays in the same dark stone hall as the ritual invocations (build_ritual_sounds.temple_ir / master), so the
 game's generated sounds sit together. Percussion: VSCO 2 CE / VSCO 1 percussion (CC0) in Tools/Audio/Samples.
     python Tools/Audio/build_death_sounds.py [--out <folder>] [--seed N]
-Output: Assets/Resources/Audio/SFX/Death/DeathStrike.wav, DeathCollapse.wav (44.1 kHz, 16-bit stereo).
+Output: Assets/Resources/Audio/SFX/Death/DeathStrike.wav (44.1 kHz, 16-bit stereo); volume is
+AudioHandler.DeathStrikeVolume.
 Requires numpy.
 """
 import argparse
@@ -26,8 +25,6 @@ OUT = os.path.join(rs.ROOT, "Assets", "Resources", "Audio", "SFX", "Death")
 HAND = "VSCO 1 Percussion/drums/other/ethnic/giant/hand/EthnicLargeHand_hit_ff_1.wav"
 BASS_DRUM = "VSCO 1 Percussion/drums/bass/bdrum3_fff_1.wav"
 TENOR = "VSCO 1 Percussion/drums/tenor/tenor_lower/tenor_fff_2.wav"
-GONG = "VSCO 1 Percussion/varMetal/Gong/gong_hit_fff.wav"
-TIMPANI = "Percussion/Timpani/Timpani1_Hit_v3_rr1_Sum.wav"
 
 
 def lowpass(x, hz):
@@ -93,23 +90,15 @@ def crumble(rng, seconds, density=260.0, tau=0.45):
 
 
 def strike(lib, rng):
-    m = rs.Mix(2.0)
+    m = rs.Mix(2.2)
     m.add(lib.file(HAND, -5), 0.0, gain=1.0)
-    m.add(lowpass(lib.file(BASS_DRUM, -3), 900), 0.0, gain=0.55)
-    m.add(lowpass(lib.file(TIMPANI, -7), 1200), 0.005, gain=0.35, dur=0.5, release=0.4)
-    m.add(sub(0.6, 85, 46, 0.17), 0.0, gain=0.9, align=False)
+    m.add(lowpass(lib.file(BASS_DRUM, -4), 800), 0.0, gain=0.7)
+    m.add(lowpass(lib.file(TENOR, -9), 1100), 0.0, gain=0.3)
+    m.add(sub(0.7, 80, 40, 0.2), 0.0, gain=1.0, align=False)
     m.add(knock(rng), 0.0, gain=0.35, align=False)
+    # The card breaking into ash, under the strike's tail rather than after it.
+    m.add(crumble(rng, 1.1, density=220.0, tau=0.3), 0.02, gain=0.32, align=False)
     return rs.master(m.buf, rs.temple_ir(2.0, seed=5, decay=0.8), wet=0.22)
-
-
-def collapse(lib, rng):
-    m = rs.Mix(3.5)
-    m.add(lowpass(lib.file(BASS_DRUM, -5), 700), 0.0, gain=0.9)
-    m.add(lowpass(lib.file(TENOR, -9), 1100), 0.0, gain=0.45)
-    m.add(lowpass(lib.file(GONG, -12), 1800), 0.02, gain=0.32, dur=1.6, release=1.0)
-    m.add(sub(1.0, 70, 36, 0.32), 0.0, gain=1.0, align=False)
-    m.add(crumble(rng, 1.6), 0.03, gain=0.5, align=False, norm=True)
-    return rs.master(m.buf, rs.temple_ir(3.0, seed=7, decay=1.0), wet=0.3)
 
 
 def main():
@@ -122,7 +111,7 @@ def main():
     os.makedirs(args.out, exist_ok=True)
     lib = rs.Library(args.samples)
     rng = np.random.default_rng(args.seed)
-    for name, render in (("DeathStrike", strike), ("DeathCollapse", collapse)):
+    for name, render in (("DeathStrike", strike),):
         path = os.path.join(args.out, name + ".wav")
         rs.write_wav(path, render(lib, rng))
         print(path)

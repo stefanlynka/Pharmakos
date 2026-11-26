@@ -3,33 +3,26 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// A follower dies, with weight: the skull drops onto the card like something heavy (accelerating in, a hard landing,
-/// the card recoiling into the board) while the card chars; a beat; then the card lifts slightly and falls into the
-/// board, burnt black, landing with a thud (sound, a short screen shake) and breaking into bone-white dust and soot.
-/// The Bone offering token it yields leaves from the dust (CreateOfferingAnimation waits via DeferUntilAsh).
+/// A follower dies in one heavy moment: the skull drops onto the card (accelerating in) and on impact everything lands
+/// together: the death sound, a short screen shake, a burst of bone-white dust, and the card charring black as it is
+/// crushed down into the board. It is gone a beat later under a soft puff of soot, and the Bone offering token it
+/// yields leaves from there (CreateOfferingAnimation waits via DeferUntilAsh).
 /// The card's root is positioned by its battle row every frame, so the motion is applied to CardHolder and undone
-/// before the card goes back to the pool. Sounds: Tools/Audio/build_death_sounds.py.
+/// before the card goes back to the pool. Sound: Tools/Audio/build_death_sounds.py.
 /// </summary>
 public class FollowerDeathAnimation : AnimationAction
 {
     // Seconds on the human's turn; the AI's turn plays a little slower so the player can follow it.
-    const float DropDuration = 0.11f;      // skull accelerating onto the card
-    const float SettleDuration = 0.12f;    // the landing settling
-    const float HoldDuration = 0.36f;
-    const float LiftDuration = 0.09f;      // the card gathering before it falls
-    const float FallDuration = 0.24f;
+    const float DropDuration = 0.1f;       // skull accelerating onto the card
+    const float CrushDuration = 0.32f;     // from the impact until the card is gone
+    const float SkullSettleDuration = 0.12f;
     const float AiTurnSlowdown = 1.25f;
 
     const float SkullDropScale = 1.7f;
     const float SkullLandScale = 0.93f;
-    // The card is knocked into the board when the skull lands, then rises back
-    const float RecoilDepth = 0.25f;
-    const float RecoilScale = 0.97f;
-    const float LiftScale = 1.03f;
-    const float LiftHeight = 0.15f;
-    const float FallScale = 0.72f;
-    // Into the board (the card faces -Z)
-    const float FallDepth = 0.8f;
+    // The card is crushed down into the board (the card faces -Z), fastest right at the impact
+    const float CrushScale = 0.78f;
+    const float CrushDepth = 0.7f;
 
     const float ShakeIntensity = 0.3f;
     const float ShakeDuration = 0.22f;
@@ -42,8 +35,7 @@ public class FollowerDeathAnimation : AnimationAction
     static readonly Color SootColor = new Color(0.10f, 0.09f, 0.08f, 0.9f);
     static readonly Color SootEndColor = new Color(0.05f, 0.04f, 0.04f, 0f);
 
-    static float lastStrikeSoundTime = -1f;
-    static float lastCollapseTime = -1f;
+    static float lastImpactTime = -1f;
 
     // Followers mid-death, with what waits for their ash (the Bone token's flight).
     static readonly Dictionary<ViewFollower, List<Action>> waitingForAsh = new Dictionary<ViewFollower, List<Action>>();
@@ -78,6 +70,7 @@ public class FollowerDeathAnimation : AnimationAction
     Vector3 holderScale;
     Vector3 holderPosition;
     Vector3 skullScale;
+    VfxContext context;
     bool landed;
 
     public FollowerDeathAnimation(GameAction gameAction, Follower follower) : base(gameAction)
@@ -118,11 +111,7 @@ public class FollowerDeathAnimation : AnimationAction
 
         float pace = View.Instance.IsHumansTurn ? 1f : AiTurnSlowdown;
         float drop = DropDuration * pace;
-        float settle = SettleDuration * pace;
-        float hold = HoldDuration * pace;
-        float lift = LiftDuration * pace;
-        float fall = FallDuration * pace;
-        float total = drop + settle + hold + lift + fall;
+        float crush = CrushDuration * pace;
 
         cardHolder = ViewFollower.CardHolder != null ? ViewFollower.CardHolder.transform : null;
         if (cardHolder != null)
@@ -136,19 +125,15 @@ public class FollowerDeathAnimation : AnimationAction
         if (!waitingForAsh.ContainsKey(ViewFollower))
             waitingForAsh[ViewFollower] = new List<Action>();
 
-        // The life goes out of it: the card darkens as the skull lands, then burns fully black as it falls.
-        VfxContext context = new VfxContext(null, ViewFollower);
-        Char(0.6f, drop * 0.5f, drop + settle * 2f, total + 1f).Play(context, null);
-        Char(0.85f, drop + settle + hold, lift + fall * 0.5f, total + 1f).Play(context, null);
+        // The card chars black from the moment the skull lands.
+        context = new VfxContext(null, ViewFollower);
+        Char(0.9f, drop, crush * 0.6f, drop + crush + 1f).Play(context, null);
 
         Sequence sequence = new Sequence();
         sequence.Add(new Tween(Drop, 0f, 1f, drop));
-        sequence.Add(new SequenceAction(Land));
-        sequence.Add(new Tween(Settle, 0f, 1f, settle));
-        sequence.Add(new Tween(null, 0f, 1f, hold));
-        sequence.Add(new Tween(Lift, 0f, 1f, lift));
-        sequence.Add(new Tween(Fall, 0f, 1f, fall));
-        sequence.Add(new SequenceAction(() => Collapse(context)));
+        sequence.Add(new SequenceAction(Impact));
+        sequence.Add(new Tween(Crush, 0f, 1f, crush));
+        sequence.Add(new SequenceAction(Vanish));
         sequence.Add(new SequenceAction(RemoveFollower));
         sequence.Add(new SequenceAction(CallCallback));
         sequence.Start();
@@ -179,84 +164,24 @@ public class FollowerDeathAnimation : AnimationAction
         skull.transform.localScale = skullScale * Mathf.Lerp(SkullDropScale, SkullLandScale, t * t * t);
     }
 
-    void Land()
+    // Everything lands at once: sound, shake, dust.
+    void Impact()
     {
         if (landed)
             return;
         landed = true;
 
-        if (Time.time - lastStrikeSoundTime > SharedImpactWindow)
+        if (Time.time - lastImpactTime > SharedImpactWindow)
         {
-            lastStrikeSoundTime = Time.time;
+            lastImpactTime = Time.time;
             View.Instance?.AudioHandler?.PlayDeathStrike();
-        }
-    }
-
-    // The landing: the skull settles to its size; the card, knocked into the board, comes back up.
-    void Settle(float t)
-    {
-        if (ViewFollower != null && ViewFollower.SkullRenderer != null)
-        {
-            Color color = ViewFollower.SkullRenderer.color;
-            color.a = 1f;
-            ViewFollower.SkullRenderer.color = color;
-            ViewFollower.SkullRenderer.transform.localScale = skullScale * Mathf.Lerp(SkullLandScale, 1f, EaseOut(t));
-        }
-
-        if (cardHolder == null)
-            return;
-
-        float knock = 1f - EaseOut(t);
-        cardHolder.localScale = holderScale * Mathf.Lerp(1f, RecoilScale, knock);
-        cardHolder.localPosition = holderPosition + Vector3.forward * (RecoilDepth * knock);
-    }
-
-    // The card gathers itself before it falls: a little up and a little larger.
-    void Lift(float t)
-    {
-        if (cardHolder == null)
-            return;
-
-        float eased = EaseOut(t);
-        cardHolder.localScale = holderScale * Mathf.Lerp(1f, LiftScale, eased);
-        cardHolder.localPosition = holderPosition + Vector3.back * (LiftHeight * eased);
-    }
-
-    // Then drops into the board, accelerating, as dead weight.
-    void Fall(float t)
-    {
-        if (cardHolder == null)
-            return;
-
-        float eased = t * t * t;
-        cardHolder.localScale = holderScale * Mathf.Lerp(LiftScale, FallScale, eased);
-        cardHolder.localPosition = holderPosition + Vector3.back * LiftHeight
-            + Vector3.forward * ((LiftHeight + FallDepth) * eased);
-    }
-
-    void Collapse(VfxContext context)
-    {
-        if (ViewFollower != null && follower != null)
-            RememberAsh(follower.ID, ViewFollower.transform.position);
-
-        if (ViewFollower != null && waitingForAsh.TryGetValue(ViewFollower, out List<Action> waiting))
-        {
-            waitingForAsh.Remove(ViewFollower);
-            foreach (Action action in waiting)
-                action?.Invoke();
+            ScreenShakeHandler.Shake(ShakeIntensity, ShakeDuration);
         }
 
         if (ViewFollower == null || !ViewFollower.gameObject.activeInHierarchy)
             return;
 
-        if (Time.time - lastCollapseTime > SharedImpactWindow)
-        {
-            lastCollapseTime = Time.time;
-            View.Instance?.AudioHandler?.PlayDeathCollapse();
-            ScreenShakeHandler.Shake(ShakeIntensity, ShakeDuration);
-        }
-
-        // Dust: bone-white, a heavy puff that spreads low and settles rather than flying off.
+        // Dust: bone-white, a heavy puff knocked out from under the card that spreads low and settles.
         new ParticleBurstVfx
         {
             Count = 60,
@@ -273,8 +198,44 @@ public class FollowerDeathAnimation : AnimationAction
             Gravity = -0.15f,
             QueueHold = 0f,
         }.Play(context, null);
+    }
 
-        // Soot: dark flakes from the burnt card, drifting up.
+    // The skull settles to its size while the card is crushed down into the board, fastest right after the impact.
+    void Crush(float t)
+    {
+        float settle = Mathf.Clamp01(t * CrushDuration / SkullSettleDuration);
+        if (ViewFollower != null && ViewFollower.SkullRenderer != null)
+        {
+            Color color = ViewFollower.SkullRenderer.color;
+            color.a = 1f;
+            ViewFollower.SkullRenderer.color = color;
+            ViewFollower.SkullRenderer.transform.localScale = skullScale * Mathf.Lerp(SkullLandScale, 1f, EaseOut(settle));
+        }
+
+        if (cardHolder == null)
+            return;
+
+        float eased = EaseOut(t);
+        cardHolder.localScale = holderScale * Mathf.Lerp(1f, CrushScale, eased);
+        cardHolder.localPosition = holderPosition + Vector3.forward * (CrushDepth * eased);
+    }
+
+    // The crushed card goes under a soft puff of soot; whatever waits for it (the Bone token) leaves now.
+    void Vanish()
+    {
+        if (ViewFollower != null && follower != null)
+            RememberAsh(follower.ID, ViewFollower.transform.position);
+
+        if (ViewFollower != null && waitingForAsh.TryGetValue(ViewFollower, out List<Action> waiting))
+        {
+            waitingForAsh.Remove(ViewFollower);
+            foreach (Action action in waiting)
+                action?.Invoke();
+        }
+
+        if (ViewFollower == null || !ViewFollower.gameObject.activeInHierarchy)
+            return;
+
         new ParticleBurstVfx
         {
             Count = 26,

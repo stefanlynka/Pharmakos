@@ -1,7 +1,7 @@
 """The skull shown over a follower when it dies (ViewFollower.SkullRenderer), in black-figure style.
 
 A Kiln Black silhouette with the eye sockets and nose cut through (the card shows behind), incised bone-white
-lines for temples, dome and teeth, and a thin bone-white rim so it reads on dark art.
+lines for temples and dome, and one row of solid upper teeth hanging below the jaw line (no lower jaw), and a thin bone-white rim so it reads on dark art.
 
     python Tools/Icons/death_skull.py            # writes Assets/Sprites/DeathSkull.png and Tools/Icons/svg/death_skull.svg
     python Tools/Icons/death_skull.py --out X.png
@@ -24,43 +24,48 @@ BLACK = "#141110"
 BONE = "#D8D4CC"  # the Bone offering colour: white is death (Docs/StyleGuide.md, offering colours)
 WIDTH, HEIGHT = 1024, 1229  # canvas 100 x 120
 
+# Cranium, cheekbones and upper jaw only (no mandible), with hard planes rather than soft curves below the brow.
 SILHOUETTE = (
-    "M50 4 C78 4 95 22 95 46 C95 58 91 66 86 71 C84 73 83 76 83 80 L81 86 C80 90 77 92 73 93 "
-    "L72 105 C71 111 67 115 61 115 L39 115 C33 115 29 111 28 105 L27 93 C23 92 20 90 19 86 "
-    "L17 80 C17 76 16 73 14 71 C9 66 5 58 5 46 C5 22 22 4 50 4 Z"
+    "M50 4 C79 4 95 22 95 46 C95 57 92 64 88 69 L85 76 L79 79 L75 86 L25 86 "
+    "L21 79 L15 76 L12 69 C8 64 5 57 5 46 C5 22 21 4 50 4 Z"
 )
-# Deep orbits, cut through so the (charred) card shows behind.
+# Angular orbits, cut through so the (charred) card shows behind.
 SOCKETS = (
-    "M55 47 C55 41 61 38 68 38 C76 38 81 42 81 49 C81 57 77 63 69 63 C61 63 55 57 55 47 Z "
-    "M45 47 C45 41 39 38 32 38 C24 38 19 42 19 49 C19 57 23 63 31 63 C39 63 45 57 45 47 Z"
+    "M55 46 L60 39 L76 38 L82 44 L80 56 L73 62 L62 62 L56 56 Z "
+    "M45 46 L40 39 L24 38 L18 44 L20 56 L27 62 L38 62 L44 56 Z"
 )
-NOSE = "M50 65 C48 70 45 74 46 78 C47 80 49 79 50 77 C51 79 53 80 54 78 C55 74 52 70 50 65 Z"
+# A sharp, split nasal opening.
+NOSE = "M50 65 L44.5 79 L50 75.5 L55.5 79 Z"
 
 INCISIONS = [
     # temples
-    "M11 50 C12 58 15 64 19 68",
-    "M89 50 C88 58 85 64 81 68",
-    # dome, as a potter would incise it
+    "M11 50 C12 58 14 63 17 67",
+    "M89 50 C88 58 86 63 83 67",
+    # dome
     "M28 15 C39 9 61 9 72 15",
-    # bite line, upper and lower teeth
-    "M30 101 C40 103 60 103 70 101",
-    "M37 93 L37.4 101.4 M43.5 93 L43.7 102.2 M50 93 L50 102.6 M56.5 93 L56.3 102.2 M63 93 L62.6 101.4",
-    "M40 102.4 L40 110 M46.5 102.7 L46.5 112.5 M53.5 102.7 L53.5 112.5 M60 102.4 L60 110",
 ]
+# One row of upper teeth hanging free below the jaw line: solid bone, square-cut, narrowing a little to the tip.
+TEETH = []
+for i in range(6):
+    x0 = 28.6 + i * 7.3
+    x1 = x0 + 5.6
+    bottom = 99.0 if i in (2, 3) else 97.0
+    TEETH.append(f"M{x0:.1f} 85 L{x1:.1f} 85 L{x1 - 0.7:.1f} {bottom} L{x0 + 0.7:.1f} {bottom} Z")
 STROKE = 1.25
 RIM = 1.9
 
 
 def build_svg():
     incisions = "".join(
-        f'<path d="{d}" fill="none" stroke="{BONE}" stroke-width="{STROKE}" stroke-linecap="round"/>'
+        f'<path d="{d}" fill="none" stroke="{BONE}" stroke-width="{STROKE}" stroke-linecap="butt" stroke-linejoin="miter"/>'
         for d in INCISIONS
     )
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" viewBox="0 0 100 120">'
         f'<path d="{SILHOUETTE} {SOCKETS} {NOSE}" fill="{BLACK}" fill-rule="evenodd"/>'
-        f'<path d="{SOCKETS} {NOSE}" fill="none" stroke="{BONE}" stroke-width="{STROKE}" stroke-linejoin="round"/>'
+        f'<path d="{SOCKETS} {NOSE}" fill="none" stroke="{BONE}" stroke-width="{STROKE}" stroke-linejoin="miter"/>'
         f"{incisions}"
+        f'<path d="{" ".join(TEETH)}" fill="{BONE}"/>'
         f'<path d="{SILHOUETTE}" fill="none" stroke="{BONE}" stroke-width="{RIM}" stroke-linejoin="round"/>'
         f"</svg>"
     )
