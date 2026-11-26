@@ -244,7 +244,7 @@ def back_edge():
 
     # --- light: the spotlights already fall off across the wall; on top of that only the foot glows a little (bounce
     # from the sand) and the stone darkens upward, so the wall sinks into darkness above its lowest courses
-    lit = 1 - smoothstep(0.2, 3.4, H)
+    lit = 1 - smoothstep(0.4, 5.8, H)
     side = (1 - smoothstep(8.0, 55.0, np.abs(X))) * (0.55 + 0.45 * n.fbm(X, H * 0.2, 9, 3, offset=31))
     em = alb * (lit * side * 0.7)[..., None]
     alb = alb * ((0.35 + 0.65 * lit) * (0.5 + 0.5 * side))[..., None]
