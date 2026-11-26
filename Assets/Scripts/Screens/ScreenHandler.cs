@@ -183,5 +183,6 @@ public enum ScreenName
     NewTutorialScreen,
     SelectableDeckViewerScreen,
     MapButton,
+    DeckPileScreen,
 }
 

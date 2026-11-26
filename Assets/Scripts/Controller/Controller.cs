@@ -1671,6 +1671,9 @@ public class Controller : MonoBehaviour
 
         ScreenHandler.Instance.HideScreen(ScreenName.DeckViewerScreen, true);
         ScreenHandler.Instance.HideScreen(ScreenName.PlayHistoryScreen, true);
+        // Combat deck menu (DeckPileScreenHandler): only registered once a deck pile has been opened.
+        if (ScreenHandler.Instance.TryGetScreen(ScreenName.DeckPileScreen, out Screen deckPileScreen))
+            deckPileScreen.Exit(true);
 
         // Legacy SetActive path only; Screen-hosted handlers stay active while hidden.
         if (ContentScrollView.Instance == null)
