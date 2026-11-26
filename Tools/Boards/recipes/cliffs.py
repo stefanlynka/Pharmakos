@@ -1,7 +1,9 @@
-"""The Sirens' rocks: a dark wet shelf of sea-worn rock above the surf, tide pools that hold the light, barnacles,
-limpets and kelp, sea foam caught in the hollows, and a jagged cliff edge dropping to the sea, rocks and stacks in the surf below. Lanes: flat ledges
-of weathered rock crusted with salt."""
+"""The Sirens' rocks: a dark shelf of sea-worn rock (a generated tile, calm under the cards) ending in a jagged cliff
+edge that drops to the surf, rocks and stacks in the sea below. Back edge (3D): sea stacks rising out of the surf
+and the next headlands at the far corners, in the same rock, lit only at their feet. Lanes: the same rock, calmer.
+(Tide pools, kelp, barnacles and salt crust were dropped: they made the shelf splotchy.)"""
 from boardkit import *  # noqa
+from genkit import tile, two_scale, norm_lum, tile_height, tile_lanes, falloff, edge_fade
 
 NAME = 'Cliffs'
 
@@ -27,14 +29,13 @@ def paint(preview=False):
     ad = arena_dist(X, Y)
     margin = smoothstep(1, 12, ad)
 
+    shelf = tile('Cliffs_RockTile.png')
     big = n.fbm(X, Y, 12, 5, offset=1)
-    mid = n.fbm(X, Y, 3, 4, offset=2)
-    grain = n.fbm(X, Y, 0.4, 5, offset=3)
-    strata = n.ridged(X * 0.6, Y * 1.6, 5, 3, offset=4)
-    hgt = (big * 0.8 + mid * 0.3 + grain * 0.05 + strata * 0.15).astype(F32)
-    rock = lerp(C(0.05, 0.06, 0.065), C(0.17, 0.18, 0.18), np.clip(big * 0.4 + mid * 0.35 + grain * 0.25, 0, 1))
-    alb = rock + ((brush(n, X, Y) - 0.5) * 0.03)[..., None]
-    alb = lerp(alb, C(0.22, 0.22, 0.2), smoothstep(0.75, 0.9, strata) * 0.4)
+    alb = norm_lum(two_scale(n, shelf, X, Y, 11.0), 0.12)
+    calm = smoothstep(5.0, -1.0, ad) * 0.5
+    alb = lerp(alb, np.broadcast_to(alb.reshape(-1, 3).mean(0), alb.shape), calm)
+    alb = alb * (0.85 + 0.3 * big)[..., None]
+    hgt = (big * 0.6 + tile_height(alb, g, 0.15) * (1 - calm)).astype(F32)
 
     # the cliff edge: an angular, broken line (straight runs between sharp breaks, a few deep coves), then the cliff
     # face falling away (seen from above: a band of dark, vertically fractured rock), rocks and stacks in the surf,
@@ -52,7 +53,6 @@ def paint(preview=False):
     facecol = lerp(C(0.05, 0.055, 0.06), C(0.13, 0.135, 0.135), fract)
     facecol = facecol * (1 - np.clip(d / np.maximum(drop, 0.1), 0, 1) * 0.75)[..., None]   # darker toward the water
     lip = (1 - smoothstep(0.0, 0.35, np.abs(d))) * (1 - sea)
-    rock_h = hgt.copy()
     alb = lerp(alb, C(0.26, 0.26, 0.24), lip * 0.5)                     # sunlit broken lip
     alb = lerp(alb, facecol, face)
 
@@ -82,70 +82,20 @@ def paint(preview=False):
            + stm * 1.2).astype(F32)
     land = (1 - sea) * (1 - face)
 
-    # tide pools in the hollows: deep green-blue, shining
-    low = 1 - norm01(rock_h)
-    pool = smoothstep(0.7, 0.76, low + (n.fbm(X, Y, 2, 3, offset=9) - 0.5) * 0.12) * smoothstep(3, 7, ad) * land
-    poolcol = lerp(C(0.04, 0.1, 0.1), C(0.08, 0.17, 0.16), n.fbm(X, Y, 1.0, 3, offset=10))
-    alb = lerp(alb, poolcol, pool * 0.85)
-    pool_rim = np.clip(blurf(pool, 0.3, g) * 1.6 - pool, 0, 1)
-    alb = lerp(alb, C(0.2, 0.22, 0.2), pool_rim * 0.35)
-    hgt = (hgt * (1 - pool) + pool * float(np.percentile(hgt, 25))).astype(F32)
-
-    # kelp strands and wrack, mostly near the water and pools
-    kelp = Layer(g)
-    for x, y in scatter_points(rng, 70, (-66, 66, -23, 43), margin_keep(3.0), 2.5):
-        a = rng.uniform(0, 6.28)
-        for _ in range(rng.integers(2, 6)):
-            pts = [(x, y)]
-            ka = a + rng.normal(0, 0.5)
-            px, py = x, y
-            for k in range(rng.integers(8, 20)):
-                ka += rng.normal(0, 0.25)
-                px += math.cos(ka) * 0.3
-                py += math.sin(ka) * 0.3
-                pts.append((px, py))
-            taper(kelp, pts, rng.uniform(0.18, 0.32), 0.05)
-    km = kelp.read() * land
-    kcol = lerp(C(0.09, 0.08, 0.03), C(0.2, 0.18, 0.07), n.fbm(X, Y, 0.5, 3, offset=11))
-    alb, hgt = apply_object(g, alb, hgt, km, km * 0.05, kcol, shadow=0.4, shadow_blur=0.12)
-
-    # barnacles and limpets in colonies
-    bar = Layer(g)
-    for x, y in scatter_points(rng, 60, (-66, 66, -23, 43), margin_keep(2.0), 2.5):
-        for _ in range(rng.integers(10, 30)):
-            r = rng.uniform(0.05, 0.12)
-            bar.ellipse(x + rng.normal(0, 0.8), y + rng.normal(0, 0.8), r, r)
-    bm = bar.read() * land * (1 - pool)
-    bdome = np.clip(blurf(bm, 0.03, g) * 1.6, 0, 1) * bm
-    bcol = lerp(C(0.15, 0.15, 0.13), C(0.3, 0.29, 0.26), bdome)
-    alb, hgt = apply_object(g, alb, hgt, bm, bdome * 0.08, bcol, shadow=0.45, shadow_blur=0.05)
-
-    # salt crust high and dry, near the arena
-    salt = smoothstep(0.62, 0.75, n.fbm(X, Y, 1.5, 4, offset=12)) * smoothstep(0.5, 0.8, norm01(hgt)) * land
-    alb = lerp(alb, C(0.35, 0.35, 0.33), salt * 0.35)
-
     cav = cavity(hgt, g, 0.6, 2.0)
     alb = desaturate(alb * (1 - cav[..., None] * 0.45 * (1 - sea)[..., None]), 0.05)
+    alb = edge_fade(X, Y, alb)
     wet = smoothstep(0.4, 0.7, n.fbm(X, Y, 3, 3, offset=13)) * margin
-    smooth = (0.3 + wet * 0.3) * (1 - face) + pool * 0.6 + sea * 0.62 - salt * 0.2
+    smooth = (0.2 + wet * 0.15) * (1 - face) + sea * 0.62
 
     # a faint glimmer on the water (emission) so the sea reads even outside the lights
     emission = C(0.03, 0.07, 0.08) * (sea * (0.4 + 0.6 * swell))[..., None] + C(0.08, 0.1, 0.1) * (foam * sea * 0.5)[..., None]
+    # the far sea sinks into darkness toward the top of the frame (spec: the top fades to black)
+    far = 1 - smoothstep(35.0, 42.0, Y) * 0.92
+    alb = alb * far[..., None]
+    emission = emission * far[..., None]
 
-    # lanes: flat ledges of weathered rock, salt crust, small pools
-    LX, LY = lane.WX, lane.WY
-    lalb, lhgt = lane_base(n, lane, C(0.1, 0.11, 0.11), C(0.19, 0.2, 0.19), offset=990)
-    wear = lane_wear(lane)
-    lstrata = n.ridged(LX * 0.4, LY * 2.0, 4, 3, offset=991)
-    lalb = lerp(lalb, C(0.24, 0.24, 0.22), smoothstep(0.75, 0.9, lstrata) * 0.35)
-    lsalt = smoothstep(0.62, 0.78, n.fbm(LX, LY, 1.2, 4, offset=992))
-    lalb = lerp(lalb, C(0.33, 0.33, 0.31), lsalt * 0.3)
-    lp = smoothstep(0.74, 0.79, n.fbm(LX, LY, 2.0, 4, offset=993)) * (1 - wear * 0.8)
-    lalb = lerp(lalb, C(0.03, 0.07, 0.07), lp * 0.8)
-    lhgt = (lhgt + lstrata * 0.08 - lp * 0.06).astype(F32)
-    lcav = cavity(lhgt, lane, 0.4, 2.0)
-    lalb = desaturate(lalb * (1 - lcav[..., None] * 0.3), 0.05)
-    lsmooth = 0.28 + lp * 0.6 - lsalt * 0.15
+    lalb, lhgt, lsmooth = tile_lanes(n, lane, shelf, size=11.0, mean=0.15, calm=0.55)
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, emission, lane, lalb, lhgt, lsmooth, preview=preview)
     back_edge()
@@ -163,7 +113,7 @@ def back_edge():
     edge = lambda x: float(np.interp(x, knots_x, prof))
     rng = np.random.default_rng(199)
     be = BackEdge(NAME)
-    rk = be.material(Material('SeaRock', tex_h=16.0, self_light=0.35))
+    rk = be.material(Material('SeaRock', tex_h=16.0, self_light=0.0))
     for _ in range(26):
         x = rng.uniform(-70, 70)
         y = edge(x) + rng.uniform(4.0, 7.5)
@@ -183,12 +133,12 @@ def back_edge():
                   step=0.6, h_step=0.6, back=3.0)
     be.save(folder)
     c = rk.elev_canvas()
-    alb, hgt, sm = bp.rock(c, n, C(0.04, 0.05, 0.055), C(0.15, 0.16, 0.16), strata=0.5, offset=171)
-    foam = (1 - smoothstep(0.1, 0.6, c.Y)) * smoothstep(0.35, 0.6, n.fbm(c.X, c.Y, 0.5, 3, offset=172))
+    shelf = tile('Cliffs_RockTile.png')
+    alb = norm_lum(lerp(sample_tiled(shelf, c.X, c.Y, 3.0, 0.4), sample_tiled(shelf, c.X + 9.0, c.Y, 2.4, 1.9), 0.5), 0.16)
     wet = 1 - smoothstep(0.4, 2.5, c.Y)
     alb = alb * (1 - wet * 0.35)[..., None]
-    alb = lerp(alb, C(0.5, 0.55, 0.55), foam * 0.8)
-    guano = smoothstep(0.66, 0.8, n.fbm(c.X, c.Y, 0.8, 3, offset=173)) * smoothstep(3.0, 7.0, c.Y)
-    alb = lerp(alb, C(0.4, 0.4, 0.37), guano * 0.5)
-    ta, th, ts = bp.tops(rk, n, C(0.06, 0.07, 0.06), C(0.16, 0.17, 0.15), offset=174)
-    save_material(folder, rk, alb, hgt, sm + wet * 0.4, talb=ta, thgt=th, tsmooth=ts)
+    foam = (1 - smoothstep(0.1, 0.5, c.Y)) * smoothstep(0.35, 0.6, n.fbm(c.X, c.Y, 0.5, 3, offset=172))
+    alb = lerp(alb, C(0.32, 0.35, 0.35), foam * 0.5)
+    hgt = tile_height(alb, c, 0.2)
+    em_k, am = falloff(n, c.X, c.Y, top=5.0, glow=0.5, floor=0.12)
+    save_material(folder, rk, alb * am[..., None], hgt, (0.15 + wet * 0.3).astype(F32), emission=alb * em_k[..., None])
