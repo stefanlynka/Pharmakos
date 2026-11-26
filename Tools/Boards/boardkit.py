@@ -191,7 +191,7 @@ SMOOTH_CAP = 0.38
 # luminance (used to move warm grounds off the terracotta accent hue toward umber/olive/grey).
 GRADES = {
     'Troy': dict(value=0.74, sat=0.9),
-    'Trials': dict(value=0.78, sat=0.75),
+    'Trials': dict(value=0.78, sat=1.0),
     'Temple': dict(value=0.48, sat=0.85),
     'Labyrinth': dict(value=0.78, sat=0.8),
     'Cyclops': dict(value=0.78, sat=1.0),
