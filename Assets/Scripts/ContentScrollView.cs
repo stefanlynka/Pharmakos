@@ -81,7 +81,13 @@ public class ContentScrollView : MonoBehaviour
 
     [Header("Scroll")]
     public float ScrollIncrement = 5f;
+    [Tooltip("Minimum scroll speed, in world units per second.")]
     public float ScrollSpeed = 40f;
+    [Tooltip("How quickly the main view catches up with the wheel: it closes this fraction-per-second of the "
+        + "remaining distance (exponentially), never slower than Scroll Speed. 0 = Scroll Speed only.")]
+    public float ScrollSharpness = 14f;
+    [Tooltip("World units the play history scrolls per wheel notch (a row is about 12).")]
+    public float PlayHistoryScrollIncrement = 9f;
     [Tooltip("Rows a side section scrolls per mouse wheel step.")]
     public float SideScrollRows = 0.5f;
     [Tooltip("Rows per second a side section scrolls at.")]
@@ -109,6 +115,7 @@ public class ContentScrollView : MonoBehaviour
         public float Margin;
         public float ScrollIncrement;
         public float ScrollSpeed;
+        public float ScrollSharpness;
 
         public float CurrentScrollOffset;
         public float DesiredScrollOffset;
@@ -201,6 +208,12 @@ public class ContentScrollView : MonoBehaviour
         UpdateSection(_ritualSection);
         UpdateSection(_trinketSection);
 
+        if (_activeLayout == PlayHistoryLayout)
+        {
+            SyncPlayHistoryScrollbar();
+            UpdatePlayHistoryHover();
+        }
+
         if (_selectionEnabled && Input.GetMouseButtonDown(0) && !IsPointerOverButton())
             ToggleCardUnderMouse();
     }
@@ -254,6 +267,7 @@ public class ContentScrollView : MonoBehaviour
 
     void ShowCardsInternal(List<Card> cards, RectTransform scrollRegion)
     {
+        RestorePopupLayer();
         ClearInternal();
         _activeLayout = CardLayout;
         _mainSection.ScrollRegion = scrollRegion;
@@ -268,6 +282,7 @@ public class ContentScrollView : MonoBehaviour
         ClearInternal();
         _activeLayout = PlayHistoryLayout;
         _mainSection.ScrollRegion = null;
+        RaisePopupsAbovePlayHistory();
         SetCaptureActive(true);
         CreatePlayHistoryViews(items ?? new List<PlayHistoryItem>());
         ResetScroll(_mainSection);
@@ -368,6 +383,7 @@ public class ContentScrollView : MonoBehaviour
     void HideInternal()
     {
         ClearInternal();
+        RestorePopupLayer();
         SetCaptureActive(false);
         _isActive = false;
     }
@@ -543,8 +559,220 @@ public class ContentScrollView : MonoBehaviour
         _viewCards.Clear();
     }
 
+    // ---- Play history: hover popups and scroll bar ----
+
+    const string PlayHistoryScrollbarPath = "Prefabs/UI/PlayHistory/PlayHistoryScrollbar";
+
+    Scrollbar _playHistoryScrollbar;
+    Transform _popupLayer;
+    int _popupLayerIndex = -1;
+    bool _syncingScrollbar;
+    ScreenRectAnchor _popupAnchor;
+    object _hoverSubject;
+
+    // The RawImage the play history is drawn into.
+    static RectTransform GetPlayHistoryView()
+    {
+        if (ScreenHandler.Instance == null || !ScreenHandler.Instance.TryGetScreen(ScreenName.PlayHistoryScreen, out Screen screen))
+            return null;
+
+        ContentScrollScreenHandler handler = screen.GetComponent<ContentScrollScreenHandler>();
+        return handler != null ? handler.ContentView : null;
+    }
+
+    Scrollbar GetPlayHistoryScrollbar()
+    {
+        if (_playHistoryScrollbar != null)
+            return _playHistoryScrollbar;
+
+        if (ScreenHandler.Instance == null || !ScreenHandler.Instance.TryGetScreen(ScreenName.PlayHistoryScreen, out Screen screen))
+            return null;
+
+        GameObject prefab = Resources.Load<GameObject>(PlayHistoryScrollbarPath);
+        if (prefab == null)
+            return null;
+
+        // Built from its prefab at runtime so the screen (in the scene) needs no edit; tune it on the prefab.
+        GameObject scrollbarObject = Instantiate(prefab, screen.transform, false);
+        scrollbarObject.name = prefab.name;
+        _playHistoryScrollbar = scrollbarObject.GetComponent<Scrollbar>();
+        if (_playHistoryScrollbar != null)
+            _playHistoryScrollbar.onValueChanged.AddListener(OnPlayHistoryScrollbarChanged);
+        return _playHistoryScrollbar;
+    }
+
+    // The popup layer sits below the full-screen viewers on the UI canvas. While the play history is open, move it
+    // just above that screen (Pause and Options stay above both), and put it back on close.
+    void RaisePopupsAbovePlayHistory()
+    {
+        if (PopupScreenHandler.Instance == null || ScreenHandler.Instance == null
+            || !ScreenHandler.Instance.TryGetScreen(ScreenName.PlayHistoryScreen, out Screen screen))
+            return;
+
+        Transform popupLayer = PopupScreenHandler.Instance.transform;
+        if (popupLayer.parent != screen.transform.parent)
+            return;
+
+        if (_popupLayer == null)
+        {
+            _popupLayer = popupLayer;
+            _popupLayerIndex = popupLayer.GetSiblingIndex();
+        }
+
+        if (popupLayer.GetSiblingIndex() < screen.transform.GetSiblingIndex())
+            popupLayer.SetSiblingIndex(screen.transform.GetSiblingIndex());
+    }
+
+    void RestorePopupLayer()
+    {
+        if (_popupLayer == null)
+            return;
+
+        _popupLayer.SetSiblingIndex(_popupLayerIndex);
+        _popupLayer = null;
+        _popupLayerIndex = -1;
+    }
+
+    void SyncPlayHistoryScrollbar()
+    {
+        Scrollbar scrollbar = GetPlayHistoryScrollbar();
+        if (scrollbar == null)
+            return;
+
+        bool needed = _mainSection.MaxScrollOffset > 0.01f;
+        if (scrollbar.gameObject.activeSelf != needed)
+            scrollbar.gameObject.SetActive(needed);
+        if (!needed)
+            return;
+
+        _syncingScrollbar = true;
+        scrollbar.size = Mathf.Clamp01(_mainSection.ViewDepth / (_mainSection.ViewDepth + _mainSection.MaxScrollOffset));
+        scrollbar.SetValueWithoutNotify(_mainSection.CurrentScrollOffset / _mainSection.MaxScrollOffset);
+        _syncingScrollbar = false;
+    }
+
+    void OnPlayHistoryScrollbarChanged(float value)
+    {
+        if (_syncingScrollbar || _activeLayout != PlayHistoryLayout)
+            return;
+
+        // Dragging follows the hand directly, no easing.
+        _mainSection.DesiredScrollOffset = Mathf.Clamp01(value) * _mainSection.MaxScrollOffset;
+        _mainSection.CurrentScrollOffset = _mainSection.DesiredScrollOffset;
+        ApplyCameraScroll(_mainSection);
+    }
+
+    // Shows the usual popups for the card, ritual or buff under the mouse (as on the board).
+    void UpdatePlayHistoryHover()
+    {
+        RectTransform view = GetPlayHistoryView();
+        object subject = null;
+        Bounds bounds = default;
+
+        if (view != null && ScrollCamera != null && !IsPointerOverScrollbar()
+            && TryGetMouseViewport(view, out Vector2 viewport))
+        {
+            Ray ray = ScrollCamera.ViewportPointToRay(viewport);
+            Plane plane = new Plane(ContentContainer.up, ContentContainer.position);
+            if (plane.Raycast(ray, out float distance))
+            {
+                Vector3 point = ray.GetPoint(distance);
+                foreach (ViewPlayHistoryItemNew item in _playHistoryItems)
+                {
+                    if (item != null && item.TryGetHoverSubject(point, out subject, out bounds))
+                        break;
+                }
+            }
+        }
+
+        if (subject == _hoverSubject)
+            return;
+
+        HidePlayHistoryPopups();
+        _hoverSubject = subject;
+        if (subject == null || PopupScreenHandler.Instance == null)
+            return;
+
+        if (_popupAnchor == null)
+        {
+            _popupAnchor = new GameObject("PlayHistoryPopupAnchor").AddComponent<ScreenRectAnchor>();
+            _popupAnchor.transform.SetParent(transform, false);
+        }
+        _popupAnchor.ScreenRect = BoundsToScreenRect(bounds, view);
+        Transform anchor = _popupAnchor.transform;
+
+        switch (subject)
+        {
+            case Follower follower:
+                // A dead follower has had its effects removed, so its keyword reminders would be missing; show a
+                // fresh copy of the card instead.
+                Follower shown = follower.Alive ? follower : (follower.MakeBaseCopy() as Follower ?? follower);
+                PopupScreenHandler.Instance.ShowCardPopup(shown, anchor, PopupPosition.Right, PopupSlot.One);
+                PopupScreenHandler.Instance.ShowFollowerReferencedCard(shown, anchor, PopupSlot.One);
+                break;
+            case Card card:
+                PopupScreenHandler.Instance.ShowCardPopup(card, anchor, PopupPosition.Right, PopupSlot.One);
+                break;
+            case Ritual ritual:
+                PopupScreenHandler.Instance.ShowRitualHoverPopup(ritual, anchor, PopupPosition.Right);
+                break;
+            case EffectPlayHistoryComponent effect:
+                if (effect.HoverCard != null)
+                    PopupScreenHandler.Instance.ShowCardPopup(effect.HoverCard, anchor, PopupPosition.Right, PopupSlot.One, reminderText: effect.Description);
+                else if (!string.IsNullOrEmpty(effect.Description))
+                    PopupScreenHandler.Instance.ShowTextPopup(effect.Description, anchor, PopupPosition.Right, null, showKeywordReminders: true);
+                break;
+        }
+    }
+
+    void HidePlayHistoryPopups()
+    {
+        if (_hoverSubject == null || _popupAnchor == null || PopupScreenHandler.Instance == null)
+        {
+            _hoverSubject = null;
+            return;
+        }
+
+        Transform anchor = _popupAnchor.transform;
+        PopupScreenHandler.Instance.HideImagePopup(PopupSlot.One);
+        PopupScreenHandler.Instance.HideFollowerReferencedCard(anchor);
+        PopupScreenHandler.Instance.HideRitualHoverPopup(anchor);
+        PopupScreenHandler.Instance.HideTextPopup(anchor);
+        _hoverSubject = null;
+    }
+
+    bool IsPointerOverScrollbar()
+    {
+        if (_playHistoryScrollbar == null || !_playHistoryScrollbar.gameObject.activeInHierarchy)
+            return false;
+
+        return RectTransformUtility.RectangleContainsScreenPoint(
+            (RectTransform)_playHistoryScrollbar.transform, Input.mousePosition, null);
+    }
+
+    // World bounds seen by ScrollCamera, as screen pixels inside the RawImage that shows them.
+    Rect BoundsToScreenRect(Bounds bounds, RectTransform view)
+    {
+        Rect viewRect = GetScreenRect(view);
+        Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
+        Vector2 max = new Vector2(float.MinValue, float.MinValue);
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 corner = bounds.center + Vector3.Scale(bounds.extents,
+                new Vector3((i & 1) == 0 ? -1f : 1f, (i & 2) == 0 ? -1f : 1f, (i & 4) == 0 ? -1f : 1f));
+            Vector3 viewportPoint = ScrollCamera.WorldToViewportPoint(corner);
+            Vector2 screenPoint = new Vector2(
+                viewRect.xMin + viewportPoint.x * viewRect.width,
+                viewRect.yMin + viewportPoint.y * viewRect.height);
+            min = Vector2.Min(min, screenPoint);
+            max = Vector2.Max(max, screenPoint);
+        }
+        return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+    }
+
     void ClearPlayHistoryViews()
     {
+        HidePlayHistoryPopups();
         if (_playHistoryItemPool == null)
         {
             _playHistoryItems.Clear();
@@ -616,6 +844,9 @@ public class ContentScrollView : MonoBehaviour
         _mainSection.Margin = _activeLayout.ItemMargin;
         _mainSection.ScrollIncrement = ScrollIncrement;
         _mainSection.ScrollSpeed = ScrollSpeed;
+        _mainSection.ScrollSharpness = ScrollSharpness;
+        if (_activeLayout == PlayHistoryLayout)
+            _mainSection.ScrollIncrement = PlayHistoryScrollIncrement;
         LayoutSection(_mainSection);
     }
 
@@ -1149,12 +1380,17 @@ public class ContentScrollView : MonoBehaviour
         if (Mathf.Approximately(section.CurrentScrollOffset, section.DesiredScrollOffset))
             return;
 
-        float direction = section.DesiredScrollOffset > section.CurrentScrollOffset ? 1f : -1f;
-        float delta = direction * Time.deltaTime * section.ScrollSpeed;
-        if (Mathf.Abs(delta) > Mathf.Abs(section.DesiredScrollOffset - section.CurrentScrollOffset))
+        float remaining = section.DesiredScrollOffset - section.CurrentScrollOffset;
+        float direction = remaining > 0f ? 1f : -1f;
+        // Ease out: fast while far behind the wheel, never slower than ScrollSpeed near the end.
+        float eased = section.ScrollSharpness > 0f
+            ? Mathf.Abs(remaining) * (1f - Mathf.Exp(-section.ScrollSharpness * Time.unscaledDeltaTime))
+            : 0f;
+        float step = Mathf.Max(eased, Time.unscaledDeltaTime * section.ScrollSpeed);
+        if (step >= Mathf.Abs(remaining))
             section.CurrentScrollOffset = section.DesiredScrollOffset;
         else
-            section.CurrentScrollOffset += delta;
+            section.CurrentScrollOffset += direction * step;
 
         ApplyCameraScroll(section);
     }

@@ -83,6 +83,7 @@ public class AttackWithFollowerAction : GameAction
     }
     public override PlayHistoryItem MakePlayHistoryItem()
     {
-        return new AttackWithFollowerPlayHistory(Attacker.Owner, Attacker, Target);
+        // An attack that never landed (the attacker died to an On Attacked reaction first) gets no row; the reaction's row tells it.
+        return attackSuccessful ? new AttackWithFollowerPlayHistory(Attacker.Owner, Attacker, Target) : null;
     }
 }

@@ -56,6 +56,9 @@ public class DealDamageAction : GameAction
 
             if (damageDealt > 0) follower.GameState.FireFollowerHealthChanges(follower, -damageDealt);
 
+            if (!simulated)
+                PlayHistoryHandler.For(follower.GameState)?.RecordDamage(this, follower, damageDealt);
+
             ResolveDamageAction resolveDamageAction = new ResolveDamageAction(follower);
             follower.GameState.ActionHandler.AddAction(resolveDamageAction, true, resolveDamageImmediately);
         }
@@ -64,6 +67,8 @@ public class DealDamageAction : GameAction
             int prevHealth = player.Health;
             player.ChangeHealth(Source, -Damage);
             damageDealt = prevHealth - player.Health;
+            if (!simulated)
+                PlayHistoryHandler.For(player.GameState)?.RecordDamage(this, player, damageDealt);
         }
 
         base.Execute(simulated);

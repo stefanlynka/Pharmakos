@@ -52,6 +52,29 @@ public sealed class DamageIconStroke
         }
     }
 
+    /// <summary>Shows the icon fully painted with its number, no animation (the play history's record of a hit).</summary>
+    public void ShowImmediate(MonoBehaviour host, GameObject icon, TextMeshPro text, int damage)
+    {
+        StopTextRoutine(host);
+        icon.SetActive(true);
+        text.text = damage.ToString();
+        text.enabled = true;
+
+        // Where the view is squashed flat (play history portraits), the number and its stroke end up coplanar;
+        // keep the number on top.
+        SpriteRenderer strokeRenderer = icon.GetComponentInChildren<SpriteRenderer>(true);
+        if (strokeRenderer != null)
+            text.renderer.sortingOrder = strokeRenderer.sortingOrder + 1;
+
+        BrushStroke brushStroke = GetStroke(icon);
+        if (brushStroke == null)
+            return;
+
+        brushStroke.Stop();
+        brushStroke.SetStrokeAngle(strokeAngle);
+        brushStroke.SetProgress(1f, 0f);
+    }
+
     public void Hide(MonoBehaviour host, GameObject icon, TextMeshPro text)
     {
         StopTextRoutine(host);

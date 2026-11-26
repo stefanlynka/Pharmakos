@@ -24,6 +24,10 @@ public class PlayHistoryHandler
     int playsInProgress;
     // Counts outermost action-queue evaluations, so one trinket's actions within one chain share a record.
     int evaluationChain;
+    bool evaluating;
+    // The play, attack or ritual whose consequences are resolving: damage and deaths that no triggered ability
+    // claims are shown on it. Open until its action chain (and the card play around it) has finished.
+    PlayHistoryItem currentEntry;
 
     public List<PlayHistoryItem> GetPlayHistoryItems()
     {
@@ -38,6 +42,7 @@ public class PlayHistoryHandler
     {
         StampTurn(newItem);
         ThisTurnsItems.Insert(0, newItem);
+        currentEntry = newItem;
 
         // Reactions held back for this entry go above it (they happened after it).
         expectingEntry = false;
@@ -95,21 +100,53 @@ public class PlayHistoryHandler
     public void EndPlay()
     {
         playsInProgress = Mathf.Max(0, playsInProgress - 1);
+        if (playsInProgress == 0 && !evaluating)
+            CloseEntry();
     }
 
     public void BeginEvaluationChain()
     {
         evaluationChain++;
+        evaluating = true;
     }
 
     /// <summary>Called when the action queue empties: a play that never arrived (its attacker died first) releases its reactions.</summary>
     public void EndEvaluationChain()
     {
+        evaluating = false;
         if (playsInProgress > 0)
             return;
 
+        CloseEntry();
+    }
+
+    void CloseEntry()
+    {
         expectingEntry = false;
         FlushHeldRecords();
+        currentEntry = null;
+    }
+
+    /// <summary>The entry an action's damage and deaths belong to: its triggered ability's, else the open play's.</summary>
+    PlayHistoryItem EntryFor(GameAction action) => action?.HistoryRecord ?? currentEntry;
+
+    /// <summary>Damage dealt by an action (after it is applied), for the damage marker on the follower or portrait.</summary>
+    public void RecordDamage(GameAction action, ITarget target, int amount)
+    {
+        if (amount > 0)
+            EntryFor(action)?.RecordDamage(target, amount);
+    }
+
+    /// <summary>A follower's stats changed (a buff): an entry already showing it shows the result.</summary>
+    public void RecordStatChange(GameAction action, Follower follower)
+    {
+        EntryFor(action)?.GetState(follower)?.Refresh(follower);
+    }
+
+    /// <summary>A follower died, for the skull on it.</summary>
+    public void RecordDeath(GameAction action, Follower follower)
+    {
+        EntryFor(action)?.RecordDeath(follower);
     }
 
     void FlushHeldRecords()
@@ -134,7 +171,7 @@ public class PlayHistoryHandler
     public void ProgressPlayHistory()
     {
         playsInProgress = 0;
-        EndEvaluationChain();
+        CloseEntry();
         LastTurnsItems.Clear();
         LastTurnsItems.AddRange(ThisTurnsItems);
         ThisTurnsItems.Clear();
@@ -146,6 +183,7 @@ public class PlayHistoryHandler
         heldRecords.Clear();
         expectingEntry = false;
         playsInProgress = 0;
+        currentEntry = null;
     }
 
     /// <summary>The canon game's history, or null (no controller, or a simulated game state).</summary>
@@ -164,6 +202,78 @@ public abstract class PlayHistoryItem
     public Player TurnPlayer;
     public PlayHistoryType Type;
     public abstract List<PlayHistoryComponent> GetComponents();
+
+    // Each follower and player as this entry shows them: stats when the entry first saw them (so later buffs don't
+    // change old entries), updated by the damage dealt within this entry, plus whether they died in it.
+    readonly Dictionary<ITarget, PlayHistoryTargetState> targetStates = new Dictionary<ITarget, PlayHistoryTargetState>();
+
+    public PlayHistoryTargetState GetState(ITarget target) =>
+        target != null && targetStates.TryGetValue(target, out PlayHistoryTargetState state) ? state : null;
+
+    public PlayHistoryTargetState Capture(ITarget target)
+    {
+        if (!(target is Follower) && !(target is Player))
+            return null;
+
+        if (!targetStates.TryGetValue(target, out PlayHistoryTargetState state))
+        {
+            state = new PlayHistoryTargetState();
+            state.Refresh(target);
+            targetStates[target] = state;
+        }
+        return state;
+    }
+
+    public void RecordDamage(ITarget target, int amount)
+    {
+        PlayHistoryTargetState state = Capture(target);
+        if (state == null)
+            return;
+
+        state.Refresh(target);
+        state.Damage += amount;
+    }
+
+    public void RecordDeath(Follower follower)
+    {
+        PlayHistoryTargetState state = Capture(follower);
+        if (state != null)
+            state.Died = true;
+    }
+
+    protected FollowerPlayHistoryComponent FollowerComponent(Follower follower) =>
+        new FollowerPlayHistoryComponent(follower) { State = GetState(follower) };
+
+    protected PlayerPlayHistoryComponent PlayerComponent(Player player)
+    {
+        PlayHistoryTargetState state = GetState(player);
+        return new PlayerPlayHistoryComponent(player, state != null ? state.Health : player.Health) { State = state };
+    }
+}
+
+/// <summary>A follower or player as one play history entry shows it.</summary>
+public class PlayHistoryTargetState
+{
+    public int Attack;
+    public int Health;
+    public int MaxHealth;
+    public int Damage;
+    public bool Died;
+
+    public void Refresh(ITarget target)
+    {
+        if (target is Follower follower)
+        {
+            Attack = follower.GetCurrentAttack();
+            Health = follower.CurrentHealth;
+            MaxHealth = follower.MaxHealth;
+        }
+        else if (target is Player player)
+        {
+            Health = player.Health;
+            MaxHealth = player.Health;
+        }
+    }
 }
 public class PlayFollowerPlayHistory : PlayHistoryItem
 {
@@ -172,11 +282,12 @@ public class PlayFollowerPlayHistory : PlayHistoryItem
     {
         Owner = owner;
         Follower = follower;
+        Capture(follower);
     }
     public override List<PlayHistoryComponent> GetComponents()
     {
         List<PlayHistoryComponent> playHistoryComponents = new List<PlayHistoryComponent>();
-        playHistoryComponents.Add(new FollowerPlayHistoryComponent(Follower));
+        playHistoryComponents.Add(FollowerComponent(Follower));
         return playHistoryComponents;
     }
 }
@@ -193,6 +304,7 @@ public class PlaySpellPlayHistory : PlayHistoryItem
         Owner = owner;
         Spell = spell;
         Target = target;
+        Capture(target);
     }
     public override List<PlayHistoryComponent> GetComponents()
     {
@@ -204,11 +316,11 @@ public class PlaySpellPlayHistory : PlayHistoryItem
 
             if (Target is Player targetPlayer)
             {
-                playHistoryComponents.Add(new PlayerPlayHistoryComponent(targetPlayer, targetPlayer.Health));
+                playHistoryComponents.Add(PlayerComponent(targetPlayer));
             }
             else if (Target is Follower targetFollower)
             {
-                playHistoryComponents.Add(new FollowerPlayHistoryComponent(targetFollower));
+                playHistoryComponents.Add(FollowerComponent(targetFollower));
             }
         }
         if (GrantedTrinket != null)
@@ -225,19 +337,21 @@ public class AttackWithFollowerPlayHistory : PlayHistoryItem
         Owner = owner;
         Attacker = attacker;
         Target = target;
+        Capture(attacker);
+        Capture(target);
     }
     public override List<PlayHistoryComponent> GetComponents()
     {
         List<PlayHistoryComponent> playHistoryComponents = new List<PlayHistoryComponent>();
-        playHistoryComponents.Add(new FollowerPlayHistoryComponent(Attacker));
+        playHistoryComponents.Add(FollowerComponent(Attacker));
         playHistoryComponents.Add(new AttackPlayHistoryComponent());
         if (Target is Player targetPlayer)
         {
-            playHistoryComponents.Add(new PlayerPlayHistoryComponent(targetPlayer, targetPlayer.Health));
+            playHistoryComponents.Add(PlayerComponent(targetPlayer));
         }
         else if (Target is Follower targetFollower)
         {
-            playHistoryComponents.Add(new FollowerPlayHistoryComponent(targetFollower));
+            playHistoryComponents.Add(FollowerComponent(targetFollower));
         }
         return playHistoryComponents;
     }
@@ -251,6 +365,7 @@ public class RitualPlayHistory : PlayHistoryItem
         Owner = owner;
         Ritual = ritual;
         Target = target;
+        Capture(target);
     }
     public override List<PlayHistoryComponent> GetComponents()
     {
@@ -259,11 +374,11 @@ public class RitualPlayHistory : PlayHistoryItem
         playHistoryComponents.Add(new TargetPlayHistoryComponent());
         if (Target is Player targetPlayer)
         {
-            playHistoryComponents.Add(new PlayerPlayHistoryComponent(targetPlayer, targetPlayer.Health));
+            playHistoryComponents.Add(PlayerComponent(targetPlayer));
         }
         else if (Target is Follower targetFollower)
         {
-            playHistoryComponents.Add(new FollowerPlayHistoryComponent(targetFollower));
+            playHistoryComponents.Add(FollowerComponent(targetFollower));
         }
         return playHistoryComponents;
     }
@@ -295,6 +410,7 @@ public enum PlayHistoryComponentType
 public class PlayerPlayHistoryComponent : PlayHistoryComponent
 {
     public Player Player;
+    public PlayHistoryTargetState State;
     public int Health;
     public bool ShowHealth;
     public PlayerPlayHistoryComponent(Player player, int health, bool showHealth = true)
@@ -311,6 +427,7 @@ public class PlayerPlayHistoryComponent : PlayHistoryComponent
 public class FollowerPlayHistoryComponent : PlayHistoryComponent
 {
     public Follower Follower;
+    public PlayHistoryTargetState State;
     public FollowerPlayHistoryComponent(Follower follower)
     {
         Follower = follower;
@@ -377,17 +494,30 @@ public class EffectPlayHistoryComponent : PlayHistoryComponent
 {
     public Sprite Icon;
     public string Name;
+    // What its hover popup shows, as on the board's buff icons (ViewBuff): a card, or the description.
+    public string Description;
+    public Card HoverCard;
 
     public EffectPlayHistoryComponent(Trinket trinket)
     {
-        Icon = trinket.GetDescriptionData()?.Icon;
+        SetDescription(trinket.GetDescriptionData());
         Name = trinket.Name;
     }
 
     public EffectPlayHistoryComponent(StaticPlayerEffect effect)
     {
-        Icon = effect.GetDescriptionData()?.Icon;
+        SetDescription(effect.GetDescriptionData());
         Name = GetTrinketName(effect);
+    }
+
+    void SetDescription(PlayerEffectDescriptionData data)
+    {
+        if (data == null)
+            return;
+
+        Icon = data.Icon;
+        Description = data.Description;
+        HoverCard = data.HoverCard;
     }
 
     // Trinket effects are named <X>TrinketEffectDef after their <X>Trinket, which holds the display name.
@@ -445,6 +575,7 @@ public class TriggeredEffectPlayHistory : PlayHistoryItem
         Owner = source.Owner;
         Trigger = trigger;
         ViaAlly = viaAlly;
+        Capture(source);
     }
 
     public TriggeredEffectPlayHistory(StaticPlayerEffect effect)
@@ -458,6 +589,8 @@ public class TriggeredEffectPlayHistory : PlayHistoryItem
     {
         if (target == null || ReferenceEquals(target, SourceFollower))
             return;
+
+        Capture(target);
 
         if (target is Card card)
         {
@@ -543,7 +676,7 @@ public class TriggeredEffectPlayHistory : PlayHistoryItem
     {
         List<PlayHistoryComponent> components = new List<PlayHistoryComponent>();
         if (SourceFollower != null)
-            components.Add(new FollowerPlayHistoryComponent(SourceFollower));
+            components.Add(FollowerComponent(SourceFollower));
         else if (SourceEffect != null)
             components.Add(new EffectPlayHistoryComponent(SourceEffect));
 
@@ -554,7 +687,7 @@ public class TriggeredEffectPlayHistory : PlayHistoryItem
         {
             if (shown >= MaxResults) break;
             if (card is Follower follower)
-                components.Add(new FollowerPlayHistoryComponent(follower));
+                components.Add(FollowerComponent(follower));
             else if (card is Spell spell)
                 components.Add(new SpellPlayHistoryComponent(spell));
             else
@@ -564,7 +697,7 @@ public class TriggeredEffectPlayHistory : PlayHistoryItem
         foreach (Player player in playerResults)
         {
             if (shown >= MaxResults) break;
-            components.Add(new PlayerPlayHistoryComponent(player, player.Health));
+            components.Add(PlayerComponent(player));
             shown++;
         }
 

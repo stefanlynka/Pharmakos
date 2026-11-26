@@ -42,6 +42,8 @@ public class SetStatsAction : GameAction
             if (NewHealth == -1) NewHealth = follower.CurrentHealth;
 
             follower.SetStats(NewAttack, NewHealth);
+            if (!simulated)
+                PlayHistoryHandler.For(follower.GameState)?.RecordStatChange(this, follower);
         }
 
         base.Execute(simulated);

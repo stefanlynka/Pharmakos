@@ -63,6 +63,9 @@ public class ViewFollower : ViewCard
     static readonly Color RaisedStatColor = new Color(0.24f, 1f, 0.31f, 1f);
     static readonly Color LoweredStatColor = new Color(1f, 0.25f, 0.15f, 1f);
 
+    // Set by SetStatsSnapshot (play history): colour health against this maximum, not the live one.
+    int? snapshotMaxHealth;
+
     const string PowerUpSoundPath = "Audio/SFX/PowerUp";
     const string PowerDownSoundPath = "Audio/SFX/PowerDown";
     const float StatChangeSoundOverlapWindow = 0.25f;
@@ -106,6 +109,8 @@ public class ViewFollower : ViewCard
     public void ResetForPool()
     {
         CleanupNameText();
+        snapshotMaxHealth = null;
+        SetSkullVisible(false);
 
         if (Follower != null)
         {
@@ -184,6 +189,33 @@ public class ViewFollower : ViewCard
         health = newHealth;
         ApplyStatText();
     }
+
+    /// <summary>
+    /// Shows stats as they were at some moment (the play history), coloured against the maximum health of that
+    /// moment rather than the follower's current one.
+    /// </summary>
+    public void SetStatsSnapshot(int newAttack, int newHealth, int maxHealth)
+    {
+        snapshotMaxHealth = maxHealth;
+        SetStats(newAttack, newHealth);
+    }
+
+    /// <summary>The damage icon with its number, shown at once without the brush animation.</summary>
+    public void ShowDamageImmediate(int damage)
+    {
+        damageStroke.ShowImmediate(this, DamageIcon, DamageText, damage);
+    }
+
+    /// <summary>The death skull, held fully visible (the play history's record of a death).</summary>
+    public void SetSkullVisible(bool visible)
+    {
+        if (SkullRenderer == null)
+            return;
+
+        Color color = SkullRenderer.color;
+        color.a = visible ? 1f : 0f;
+        SkullRenderer.color = color;
+    }
     public void ChangeStats(int attackChange, int healthChange)
     {
         attack += attackChange;
@@ -200,7 +232,7 @@ public class ViewFollower : ViewCard
     {
         int baseAttack = Follower != null ? Follower.BaseAttack : attack;
         int baseHealth = Follower != null ? Follower.BaseHealth : health;
-        int maxHealth = Follower != null ? Follower.MaxHealth : health;
+        int maxHealth = snapshotMaxHealth ?? (Follower != null ? Follower.MaxHealth : health);
 
         if (AttackText != null)
         {

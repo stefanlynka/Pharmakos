@@ -93,6 +93,12 @@ public class ViewPlayerPortrait : MonoBehaviour
     {
         damageStroke.Show(this, DamageIcon, DamageText, damage);
     }
+    /// <summary>The damage icon with its number, shown at once without the brush animation.</summary>
+    public void ShowDamageImmediate(int damage)
+    {
+        damageStroke.ShowImmediate(this, DamageIcon, DamageText, damage);
+    }
+
     public void HideDamage()
     {
         damageStroke.Hide(this, DamageIcon, DamageText);

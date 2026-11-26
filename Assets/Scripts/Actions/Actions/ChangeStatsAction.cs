@@ -48,6 +48,8 @@ public class ChangeStatsAction : GameAction
             int currentAttack = follower.GetCurrentAttack();
             if (currentAttack + AttackChange < 0) AttackChange = -currentAttack;
             follower.ChangeStats(AttackChange, HealthChange);
+            if (!simulated)
+                PlayHistoryHandler.For(gameState)?.RecordStatChange(this, follower);
 
             gameState.FireFollowerHealthChanges(follower, HealthChange);
         }

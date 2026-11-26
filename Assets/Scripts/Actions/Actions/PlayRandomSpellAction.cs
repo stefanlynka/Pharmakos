@@ -53,7 +53,7 @@ public class PlayRandomSpellAction : GameAction
             return;
         }
         ITarget randomTarget = possibleTargets[Owner.GameState.RNG.Next(0, possibleTargets.Count - 1)];
-        randomSpell.Play(randomTarget);
+        randomSpell.PlayRecorded(randomTarget);
 
         base.Execute(simulated);
     }

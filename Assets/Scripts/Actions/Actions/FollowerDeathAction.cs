@@ -23,6 +23,8 @@ public class FollowerDeathAction : GameAction
     public override void Execute(bool simulated = false, bool success = true)
     {
         Player Owner = Follower.Owner;
+        if (!simulated)
+            PlayHistoryHandler.For(Owner.GameState)?.RecordDeath(this, Follower);
 
         GameAction newAction = new CreateOfferingAction(Owner.GameState.CurrentPlayer, OfferingType.Bone, 1, Follower.ID, Owner.GameState.CurrentPlayer.ITargetID);
         Owner.GameState.ActionHandler.AddAction(newAction);

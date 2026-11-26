@@ -16,21 +16,6 @@ public class Spell : Card, ITarget
     public override void Play(ITarget target)
     {
         GrantedTrinket = null;
-        // On Targeted and spell-cast reactions resolve before this play's entry exists; hold them until it does.
-        PlayHistoryHandler history = PlayHistoryHandler.For(GameState);
-        history?.BeginPlay();
-        try
-        {
-            PlayBase(target);
-        }
-        finally
-        {
-            history?.EndPlay();
-        }
-    }
-
-    void PlayBase(ITarget target)
-    {
         base.Play(target);
 
         //GameState.CurrentPlayer.ChangeOffering(OfferingType.Scroll, 1);
@@ -60,6 +45,24 @@ public class Spell : Card, ITarget
     public virtual ArcProjectileStyle GetThrowStyle()
     {
         return null;
+    }
+
+    /// <summary>
+    /// Plays the spell inside a play history window: its On Targeted / spell-cast reactions resolve before its entry
+    /// exists and are held until it does, and the damage its own Play override deals afterwards is shown on it.
+    /// </summary>
+    public void PlayRecorded(ITarget target)
+    {
+        PlayHistoryHandler history = PlayHistoryHandler.For(GameState);
+        history?.BeginPlay();
+        try
+        {
+            Play(target);
+        }
+        finally
+        {
+            history?.EndPlay();
+        }
     }
 
     public bool HasPlayableTargets()

@@ -35,6 +35,8 @@ public class ChangePlayerHealthAction : GameAction
         int prevHealth = target.Health;
         target.ChangeHealth(source, amount);
         healthChanged = target.Health - prevHealth;
+        if (!simulated && healthChanged < 0)
+            PlayHistoryHandler.For(target.GameState)?.RecordDamage(this, target, -healthChanged);
 
         base.Execute(simulated);
     }

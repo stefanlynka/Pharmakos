@@ -667,7 +667,7 @@ public class Player : ITarget
     public void TryPlaySpell(Spell spell, ITarget target)
     {
         PlayCard(spell);
-        spell.Play(target);
+        spell.PlayRecorded(target);
         //View.Instance.RemoveCard(spell);
     }
 

@@ -71,6 +71,8 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
     public float Depth => IsHeader ? HeaderDepth : RowDepth;
 
     readonly List<GameObject> _playHistoryComponents = new List<GameObject>();
+    // What the hover popups can show for each component: its holder (for bounds) and its card, ritual or effect.
+    readonly List<(Transform holder, object subject)> _hoverSubjects = new List<(Transform, object)>();
     readonly List<Transform> _componentHolders = new List<Transform>();
     static ObjectPool<Transform> _holderPool;
 
@@ -268,6 +270,7 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
             HolderPool.Release(holder);
 
         _componentHolders.Clear();
+        _hoverSubjects.Clear();
         PlayHistoryItem = null;
         IsHeader = false;
     }
@@ -299,6 +302,10 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
         if (componentType == PlayHistoryComponentType.Ritual || componentType == PlayHistoryComponentType.Player)
             holder.localScale = new Vector3(scale, DepthFlatten * scale, scale);
 
+        object hoverSubject = GetHoverSubject(componentData);
+        if (hoverSubject != null)
+            _hoverSubjects.Add((holder, hoverSubject));
+
         if (builtHere)
         {
             if (componentData is TriggerIconPlayHistoryComponent triggerIcon)
@@ -320,7 +327,10 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
                 break;
             case PlayHistoryComponentType.Follower:
                 if (componentData is FollowerPlayHistoryComponent followerComponent)
+                {
                     ConfigureCardComponent(componentObject, followerComponent.Follower);
+                    ApplyFollowerState(componentObject.GetComponent<ViewFollower>(), followerComponent.State);
+                }
                 break;
             case PlayHistoryComponentType.Spell:
                 if (componentData is SpellPlayHistoryComponent spellComponent)
@@ -340,6 +350,65 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
         }
 
         _playHistoryComponents.Add(componentObject);
+    }
+
+    static object GetHoverSubject(PlayHistoryComponent component)
+    {
+        switch (component)
+        {
+            case FollowerPlayHistoryComponent follower: return follower.Follower;
+            case SpellPlayHistoryComponent spell: return spell.Spell;
+            case RitualPlayHistoryComponent ritual: return ritual.Ritual;
+            case EffectPlayHistoryComponent effect: return effect;
+            default: return null;
+        }
+    }
+
+    /// <summary>
+    /// The card, ritual or effect (EffectPlayHistoryComponent) drawn at <paramref name="worldPoint"/> (on the row's
+    /// plane), with its world bounds for placing the popup.
+    /// </summary>
+    public bool TryGetHoverSubject(Vector3 worldPoint, out object subject, out Bounds bounds)
+    {
+        foreach ((Transform holder, object candidate) in _hoverSubjects)
+        {
+            if (holder == null || !TryGetBounds(holder, out Bounds holderBounds))
+                continue;
+
+            if (worldPoint.x >= holderBounds.min.x && worldPoint.x <= holderBounds.max.x
+                && worldPoint.z >= holderBounds.min.z && worldPoint.z <= holderBounds.max.z)
+            {
+                subject = candidate;
+                bounds = holderBounds;
+                return true;
+            }
+        }
+
+        subject = null;
+        bounds = default;
+        return false;
+    }
+
+    static bool TryGetBounds(Transform root, out Bounds bounds)
+    {
+        bounds = default;
+        bool found = false;
+        foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>())
+        {
+            if (!renderer.enabled || renderer is ParticleSystemRenderer)
+                continue;
+
+            if (!found)
+            {
+                bounds = renderer.bounds;
+                found = true;
+            }
+            else
+            {
+                bounds.Encapsulate(renderer.bounds);
+            }
+        }
+        return found;
     }
 
     GameObject AddIcon(Transform holder, Sprite sprite, float scale)
@@ -391,8 +460,13 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
         viewPlayerPortrait.Load(playerComponent.Player);
         viewPlayerPortrait.SetHealth(playerComponent.Health);
         viewPlayerPortrait.SetHealthVisible(playerComponent.ShowHealth);
+        if (playerComponent.State != null && playerComponent.State.Damage > 0)
+            viewPlayerPortrait.ShowDamageImmediate(playerComponent.State.Damage);
         if (viewPlayerPortrait.HeartStringHolder != null)
             viewPlayerPortrait.HeartStringHolder.SetActive(false);
+        // The frame stands proud of the floor here, and its shadow reads as a dark smear beside it.
+        foreach (Renderer frameRenderer in portraitObject.GetComponentsInChildren<Renderer>(true))
+            frameRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         if (playerComponent.Player.IsHuman && viewPlayerPortrait.PortraitRenderer != null)
             viewPlayerPortrait.PortraitRenderer.transform.localScale = Vector3.one * HumanPortraitArtScale;
 
@@ -405,6 +479,19 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
             portraitObject.transform.localRotation = FlatDisplayRotation * Quaternion.Inverse(leaning.localRotation);
 
         portraitObject.transform.localScale = Vector3.one * PortraitScale;
+    }
+
+    // Stats as the entry saw them, the damage dealt in it, or the skull if the follower died in it (no damage then).
+    static void ApplyFollowerState(ViewFollower viewFollower, PlayHistoryTargetState state)
+    {
+        if (viewFollower == null || state == null)
+            return;
+
+        viewFollower.SetStatsSnapshot(state.Attack, Mathf.Max(0, state.Health), state.MaxHealth);
+        if (state.Died)
+            viewFollower.SetSkullVisible(true);
+        else if (state.Damage > 0)
+            viewFollower.ShowDamageImmediate(state.Damage);
     }
 
     void ConfigureCardComponent(GameObject cardObject, Card card)

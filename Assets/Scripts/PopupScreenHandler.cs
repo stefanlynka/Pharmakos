@@ -1222,6 +1222,10 @@ public class PopupScreenHandler : MonoBehaviour
         if (target == null || camera == null)
             return Rect.zero;
 
+        // Anchors for items drawn by an offscreen camera (play history) carry their screen rect directly.
+        if (target.TryGetComponent(out ScreenRectAnchor screenRectAnchor))
+            return screenRectAnchor.ScreenRect;
+
         if (!TryGetAnchorBounds(target, out Bounds bounds))
         {
             Vector3 screenPoint = camera.WorldToScreenPoint(target.position);
