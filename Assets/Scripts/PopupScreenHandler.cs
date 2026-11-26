@@ -805,6 +805,18 @@ public class PopupScreenHandler : MonoBehaviour
         HideImagePopup(slot);
     }
 
+    /// <summary>Hides the referenced card when the object it was anchored to has been destroyed.</summary>
+    public void HideOrphanedFollowerReferencedCard()
+    {
+        if (_followerReferenceAnchor is null || _followerReferenceAnchor != null)
+            return;
+
+        PopupSlot slot = _followerReferenceSlot;
+        _followerReferenceAnchor = null;
+        _followerReferenceKey = 0;
+        HideImagePopup(slot);
+    }
+
     public void HideFollowerReferencedCardUnder(Transform root)
     {
         if (_followerReferenceAnchor == null || root == null)

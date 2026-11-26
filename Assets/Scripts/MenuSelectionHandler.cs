@@ -18,6 +18,10 @@ public class MenuSelectionHandler : MonoBehaviour
     public bool IsActive { get; private set; }
     public ViewTarget CurrentHover { get; private set; }
 
+    // The card whose hover popups (keyword reminders, referenced card) are showing, and where they hang.
+    ViewCard _popupCard;
+    Transform _popupAnchor;
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -46,6 +50,7 @@ public class MenuSelectionHandler : MonoBehaviour
 
     public void Deactivate()
     {
+        HideCardPopups();
         IsActive = false;
         _selectionCamera = null;
         _blockInput = null;
@@ -62,17 +67,65 @@ public class MenuSelectionHandler : MonoBehaviour
     public void UpdateSelections()
     {
         if (!IsActive) return;
-        if (Controller.Instance != null && Controller.Instance.GamePaused) return;
-        if (ContentScrollView.BlocksGameInput || TutorialPresenter.BlocksGameInput) return;
+        if ((Controller.Instance != null && Controller.Instance.GamePaused)
+            || ContentScrollView.BlocksGameInput || TutorialPresenter.BlocksGameInput)
+        {
+            HideCardPopups();
+            return;
+        }
         if (OverworldMapView.BlocksGameInput)
         {
             CurrentHover = null;
+            HideCardPopups();
             return;
         }
         if (GetSelectionCamera() == null) return;
 
         UpdateTargetUnderMouse();
+        UpdateCardPopups();
         HandleMouseInputs();
+    }
+
+    /// <summary>
+    /// Menu cards are already in full-text mode, but a hovered follower still gets the same popups as a card
+    /// raised in the hand: its keyword reminders and any card it names.
+    /// </summary>
+    void UpdateCardPopups()
+    {
+        ViewCard hovered = CardViewRaycastTarget.ResolveViewCard(CurrentHover);
+        if (hovered != null && !hovered.gameObject.activeInHierarchy)
+            hovered = null;
+
+        if (hovered == _popupCard && (hovered == null || _popupAnchor != null))
+            return;
+
+        HideCardPopups();
+        if (hovered == null || !(hovered.Card is Follower follower) || PopupScreenHandler.Instance == null)
+            return;
+
+        _popupCard = hovered;
+        _popupAnchor = hovered.transform;
+        Camera camera = GetSelectionCamera();
+        PopupScreenHandler.Instance.ShowHandKeywordReminders(follower, _popupAnchor, PopupSlot.One, camera);
+        PopupScreenHandler.Instance.ShowFollowerReferencedCard(follower, _popupAnchor, PopupSlot.One, camera);
+    }
+
+    void HideCardPopups()
+    {
+        if (_popupCard is null && _popupAnchor is null)
+            return;
+
+        if (PopupScreenHandler.Instance != null)
+        {
+            PopupScreenHandler.Instance.HideHandKeywordReminders(PopupSlot.One);
+            if (_popupAnchor != null)
+                PopupScreenHandler.Instance.HideFollowerReferencedCard(_popupAnchor);
+            else
+                PopupScreenHandler.Instance.HideOrphanedFollowerReferencedCard();
+        }
+
+        _popupCard = null;
+        _popupAnchor = null;
     }
 
     void UpdateTargetUnderMouse()

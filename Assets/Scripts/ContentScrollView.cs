@@ -219,6 +219,8 @@ public class ContentScrollView : MonoBehaviour
             SyncPlayHistoryScrollbar();
             UpdatePlayHistoryHover();
         }
+        else if (_activeLayout == CardLayout)
+            UpdateCardHover();
 
         if (_selectionEnabled && Input.GetMouseButtonDown(0) && !IsPointerOverButton())
             ToggleCardUnderMouse();
@@ -283,6 +285,7 @@ public class ContentScrollView : MonoBehaviour
         ClearInternal();
         _activeLayout = CardLayout;
         _mainSection.ScrollRegion = scrollRegion;
+        RaisePopupsAbove(scrollRegion);
         SetCaptureActive(true);
         CreateCardViews(cards ?? new List<Card>());
         ResetScroll(_mainSection);
@@ -651,12 +654,24 @@ public class ContentScrollView : MonoBehaviour
     // just above that screen (Pause and Options stay above both), and put it back on close.
     void RaisePopupsAbovePlayHistory()
     {
-        if (PopupScreenHandler.Instance == null || ScreenHandler.Instance == null
+        if (ScreenHandler.Instance == null
             || !ScreenHandler.Instance.TryGetScreen(ScreenName.PlayHistoryScreen, out Screen screen))
             return;
 
+        RaisePopupsAbove(screen.transform);
+    }
+
+    // Same for the screen that holds a deck view: raises the popup layer above the screen containing `inside`.
+    void RaisePopupsAbove(Transform inside)
+    {
+        if (PopupScreenHandler.Instance == null || inside == null)
+            return;
+
         Transform popupLayer = PopupScreenHandler.Instance.transform;
-        if (popupLayer.parent != screen.transform.parent)
+        Transform screenRoot = inside;
+        while (screenRoot != null && screenRoot.parent != popupLayer.parent)
+            screenRoot = screenRoot.parent;
+        if (screenRoot == null || screenRoot == popupLayer)
             return;
 
         if (_popupLayer == null)
@@ -665,8 +680,8 @@ public class ContentScrollView : MonoBehaviour
             _popupLayerIndex = popupLayer.GetSiblingIndex();
         }
 
-        if (popupLayer.GetSiblingIndex() < screen.transform.GetSiblingIndex())
-            popupLayer.SetSiblingIndex(screen.transform.GetSiblingIndex());
+        if (popupLayer.GetSiblingIndex() < screenRoot.GetSiblingIndex())
+            popupLayer.SetSiblingIndex(screenRoot.GetSiblingIndex());
     }
 
     void RestorePopupLayer()
@@ -771,6 +786,49 @@ public class ContentScrollView : MonoBehaviour
         }
     }
 
+    // Deck views draw their cards in full text, but a hovered follower still gets the popups a card raised in the
+    // hand does: its keyword reminders and any card it names.
+    void UpdateCardHover()
+    {
+        Follower follower = null;
+        Bounds bounds = default;
+        int index = IsPointerOverButton() ? -1 : GetItemIndexUnderMouse(_mainSection);
+        if (index >= 0 && index < _viewCards.Count && index < _mainSection.Items.Count && _viewCards[index] != null)
+        {
+            follower = _viewCards[index].Card as Follower;
+            if (follower != null)
+                bounds = GetItemWorldBounds(_mainSection, index);
+        }
+
+        if (follower == _hoverSubject)
+            return;
+
+        HidePlayHistoryPopups();
+        _hoverSubject = follower;
+        if (follower == null || PopupScreenHandler.Instance == null)
+            return;
+
+        if (_popupAnchor == null)
+        {
+            _popupAnchor = new GameObject("PlayHistoryPopupAnchor").AddComponent<ScreenRectAnchor>();
+            _popupAnchor.transform.SetParent(transform, false);
+        }
+        _popupAnchor.ScreenRect = BoundsToScreenRect(bounds, _mainSection.ScrollRegion);
+        Transform anchor = _popupAnchor.transform;
+        PopupScreenHandler.Instance.ShowHandKeywordReminders(follower, anchor, PopupSlot.One);
+        PopupScreenHandler.Instance.ShowFollowerReferencedCard(follower, anchor, PopupSlot.One);
+    }
+
+    static Bounds GetItemWorldBounds(Section section, int index)
+    {
+        Vector3 center = section.Items[index].localPosition + section.ItemOffsets[index];
+        Vector2 half = section.CellSize * 0.5f;
+        Bounds bounds = new Bounds(section.Container.TransformPoint(center), Vector3.zero);
+        bounds.Encapsulate(section.Container.TransformPoint(center + new Vector3(-half.x, 0f, -half.y)));
+        bounds.Encapsulate(section.Container.TransformPoint(center + new Vector3(half.x, 0f, half.y)));
+        return bounds;
+    }
+
     void HidePlayHistoryPopups()
     {
         if (_hoverSubject == null || _popupAnchor == null || PopupScreenHandler.Instance == null)
@@ -780,6 +838,7 @@ public class ContentScrollView : MonoBehaviour
         }
 
         Transform anchor = _popupAnchor.transform;
+        PopupScreenHandler.Instance.HideHandKeywordReminders(PopupSlot.One);
         PopupScreenHandler.Instance.HideImagePopup(PopupSlot.One);
         PopupScreenHandler.Instance.HideFollowerReferencedCard(anchor);
         PopupScreenHandler.Instance.HideRitualHoverPopup(anchor);

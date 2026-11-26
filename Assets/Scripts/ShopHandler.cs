@@ -99,7 +99,6 @@ public class ShopHandler : MonoBehaviour
 
     public void EndShop()
     {
-        PopupScreenHandler.Instance?.HideHandKeywordReminders(PopupSlot.One);
         ClearDisplayedStock();
         _shopCards.Clear();
         _shopTrinkets.Clear();
@@ -361,8 +360,6 @@ public class ShopHandler : MonoBehaviour
             viewCard.SetHighlight(highlight, HighlightState.Choice);
         }
 
-        UpdateKeywordReminders(hoveredCard);
-
         ViewBuff hoveredTrinket = GetHoveredTrinket();
         bool canAffordTrinket = CanAfford(TrinketCost);
 
@@ -388,20 +385,6 @@ public class ShopHandler : MonoBehaviour
             hoverHighlightCost = TrinketCost;
 
         RefreshPlayerLyre(hoverHighlightCost);
-    }
-
-    void UpdateKeywordReminders(ViewCard hoveredCard)
-    {
-        if (PopupScreenHandler.Instance == null)
-            return;
-
-        if (hoveredCard != null && hoveredCard.Card is Follower follower)
-        {
-            PopupScreenHandler.Instance.ShowHandKeywordReminders(follower, hoveredCard.transform, PopupSlot.One, ShopCamera);
-            return;
-        }
-
-        PopupScreenHandler.Instance.HideHandKeywordReminders(PopupSlot.One);
     }
 
     public void RefreshHeartstrings()
