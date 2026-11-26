@@ -95,8 +95,8 @@ The game is dark and grand, and the board must never compete with what the playe
 2. **Three zones.**
    - **Arena** (both lanes and the gap between them): uniform, low-frequency, worn, with no props and no pattern that reads at board distance. Brightness variation in the gap stays small (in-frame luminance spread ≤ ~0.05).
    - **Margins:** texture and story are allowed, but only in the board's own value family. Detail can grow away from the arena and must fade into darkness toward the screen edges, where the light pool falls off.
-   - **Back edge:** silhouette and scale, kept dark; never detail that competes with the enemy portrait. (Its design is still under discussion.)
-3. **Value.** In-frame luminance of the gap is about 0.08–0.20 (the liked boards sit at 0.12–0.16; Delphi at 0.33 and Trials at 0.32 read too bright as a whole). Margins are ≤ ~0.12. Cards average ~0.47, so the board stays well below them: dark and grand comes from the board receding.
+   - **Back edge:** real geometry lit by the scene (never a painted backdrop), kept dark, never detail that competes with the enemy portrait. It runs out of the top of the frame (its top never shows) and its light falls off with height, so the frame fades to black at the top; the reference is Troy (2026-11).
+3. **Value.** In-frame luminance of the gap is about 0.08–0.20 (the liked boards sit at 0.12–0.16; Delphi at 0.33 and Trials at 0.32 read too bright as a whole). Margins are ≤ ~0.12. The top 3% of the frame (middle half of its width) is ≤ ~0.025: every combat board fades to black at the top the same way. Cards average ~0.47, so the board stays well below them: dark and grand comes from the board receding.
 4. **Colour.**
    - One dominant hue family per board; this is the encounter's identity.
    - Saturation scales with brightness: a mid-value ground stays muted (gap saturation ≤ ~0.40 when its luminance is above ~0.18; darker grounds can carry more). Troy and Trials break this rule: sat 0.6 at luminance 0.22–0.32.

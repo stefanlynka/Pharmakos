@@ -4,7 +4,8 @@
 
 Measures the gap between the lanes (arena), a right-hand margin and the player's cards in each capture, and flags what
 breaks the spec: gap luminance above 0.20, a mid-value gap (L > 0.18) with saturation above 0.40, margins above 0.12,
-or gap luminance spread above 0.05. Regions assume the default combat layout (enemy lane moved down 2 units)."""
+gap luminance spread above 0.05, or a top of frame that doesn't fade to black (top 3% above 0.025). Regions assume the
+default combat layout (enemy lane moved down 2 units)."""
 import glob
 import os
 import sys
@@ -16,6 +17,7 @@ REGIONS = {
     'gap': (0.30, 0.395, 0.70, 0.425),
     'margin': (0.86, 0.18, 0.97, 0.32),
     'cards': (0.30, 0.46, 0.66, 0.55),
+    'top': (0.25, 0.0, 0.75, 0.03),          # the strip along the top edge, which must fade to black
 }
 W = np.array((0.2126, 0.7152, 0.0722))
 
@@ -45,6 +47,8 @@ def problems(m):
         p.append('margin too bright (%.2f)' % ml)
     if gs > 0.05:
         p.append('gap too busy (spread %.2f)' % gs)
+    if m['top'][0] > 0.025:
+        p.append('top of frame not fading to black (%.3f)' % m['top'][0])
     return p
 
 
@@ -53,6 +57,6 @@ if __name__ == '__main__':
     for path in sorted(glob.glob(os.path.join(folder, '*.png'))):
         m = measure(path)
         p = problems(m)
-        print('%-12s gap L%.2f±%.2f S%.2f  margin L%.2f  cards L%.2f  %s' % (
-            os.path.splitext(os.path.basename(path))[0], *m['gap'], m['margin'][0], m['cards'][0],
+        print('%-12s gap L%.2f±%.2f S%.2f  margin L%.2f  cards L%.2f  top L%.3f  %s' % (
+            os.path.splitext(os.path.basename(path))[0], *m['gap'], m['margin'][0], m['cards'][0], m['top'][0],
             'OK' if not p else '; '.join(p)))
