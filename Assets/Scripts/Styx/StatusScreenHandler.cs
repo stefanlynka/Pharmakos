@@ -10,17 +10,20 @@ using UnityEngine.UI;
 ///  - Styx: the Styx deck, removed rituals, and removed trinkets that await at the river.
 /// Shears (Strings of Fate) and Hammer (Gates Beyond) in BottomInfo are shown when the
 /// player has that boon this run. The Hammer sacrifice button is only active on Current.
-/// The static layout is authored under the StatusScreen GameObject. ContentScrollView renders
-/// the deck into DeckContent, and the rituals and trinkets into images built in SideContent.
+/// The static layout is authored in Prefabs/StatusScreen.prefab. ContentScrollView renders
+/// the deck into DeckContent, and the rituals and trinkets into framed images built in SideContent.
+/// The Styx tab tints the backdrop cold (StyxBackdropTint) so the two tabs read as different places.
 /// </summary>
 public class StatusScreenHandler : MonoBehaviour
 {
     [Header("Scene References")]
     public Button CurrentTabButton;
     public Button StyxTabButton;
-    public Button CloseButton;
     public TextMeshProUGUI TitleText;
+    public TextMeshProUGUI SubtitleText;
     public TextMeshProUGUI HeartstringsText;
+    [Tooltip("Row the heartstring pips are built into: one per heartstring, lit for each one the player holds.")]
+    public RectTransform HeartstringPips;
     [Tooltip("Shows the deck. Found by name under this screen if left empty.")]
     public RawImage DeckContent;
     public RectTransform SideContentRoot;
@@ -33,19 +36,38 @@ public class StatusScreenHandler : MonoBehaviour
     [Header("Templates (inactive in scene, cloned into SideContent)")]
     public TextMeshProUGUI SectionHeaderTemplate;
     public TextMeshProUGUI EmptyRowTemplate;
+    [Tooltip("Plaque frame laid over each side section (Image, Fill Center off).")]
+    public Image SectionFrameTemplate;
+    [Tooltip("One heartstring pip, cloned into HeartstringPips.")]
+    public Image HeartstringPipTemplate;
+
+    [Header("Text")]
+    public string CurrentTitle = "Your Possessions";
+    [Tooltip("{0} is the number of cards in the deck.")]
+    public string CurrentSubtitle = "{0} cards in your deck";
+    public string StyxTitle = "What Waits at the Styx";
+    [Tooltip("{0} is the number of cards in the Styx deck.")]
+    public string StyxSubtitle = "What you give up drifts here. Cross the Styx to trade all you carry for it.";
+
+    [Header("Styx Tab")]
+    [Tooltip("Multiplies the carpet backdrop while the Styx tab is shown.")]
+    public Color StyxBackdropTint = new Color(0.5f, 0.56f, 0.6f, 1f);
+
+    [Header("Heartstrings")]
+    public Color HeartstringHeldColor = new Color(0.851f, 0.706f, 0.353f, 1f);
+    public Color HeartstringMissingColor = new Color(0.32f, 0.28f, 0.24f, 0.6f);
 
     [Header("Side Sections")]
     [Tooltip("Height of the trinket section in SideContent; the ritual section gets the rest. Applied live while the screen is open.")]
     public float TrinketSectionHeight = 382f;
 
     [Header("Tab Colors")]
-    public Color TabColor = new Color(0.23f, 0.27f, 0.37f, 1f);
-    public Color TabSelectedColor = new Color(0.62f, 0.5f, 0.16f, 1f);
+    public Color TabColor = new Color(0.55f, 0.55f, 0.55f, 1f);
+    public Color TabSelectedColor = Color.white;
 
     const float HeaderTopPadding = 6f;
     const float HeaderSpacing = 12f;
     const float SectionSpacing = 10f;
-    const float EmptyLabelPadding = 8f;
 
     bool isOpen;
     bool styxTabActive;
@@ -58,7 +80,6 @@ public class StatusScreenHandler : MonoBehaviour
         ResolveBoonReferences();
         CurrentTabButton.onClick.AddListener(() => ShowTab(false));
         StyxTabButton.onClick.AddListener(() => ShowTab(true));
-        CloseButton.onClick.AddListener(() => Controller.Instance.CloseStatusScreen());
         if (SacrificeButton != null)
             SacrificeButton.onClick.AddListener(SacrificeSelected);
 
@@ -122,21 +143,24 @@ public class StatusScreenHandler : MonoBehaviour
     {
         CurrentTabButton.targetGraphic.color = styxTabActive ? TabColor : TabSelectedColor;
         StyxTabButton.targetGraphic.color = styxTabActive ? TabSelectedColor : TabColor;
-        TitleText.text = styxTabActive ? "What Waits At The Styx" : "Your Current Possessions";
-        HeartstringsText.text = "Heartstrings: " + Controller.Instance.RunHeartStrings + " / " + Player.MaxHeartStrings;
+        List<Card> deck = styxTabActive
+            ? Controller.Instance.StyxRunState.GetStyxDeck()
+            : Controller.Instance.HumanPlayerDetails.DeckBlueprint[0];
+        TitleText.text = styxTabActive ? StyxTitle : CurrentTitle;
+        if (SubtitleText != null)
+            SubtitleText.text = string.Format(styxTabActive ? StyxSubtitle : CurrentSubtitle, deck.Count);
+        RefreshHeartstrings();
 
         selectedRitual = null;
         selectedTrinket = null;
         canSelectForSacrifice = !styxTabActive && HasGatesBeyond();
 
-        ContentScrollView.ShowCards(GetSortedDeck(styxTabActive
-            ? Controller.Instance.StyxRunState.GetStyxDeck()
-            : Controller.Instance.HumanPlayerDetails.DeckBlueprint[0]),
-            DeckContent != null ? DeckContent.rectTransform : null);
+        ContentScrollView.ShowCards(GetSortedDeck(deck), DeckContent != null ? DeckContent.rectTransform : null);
 
         StyxUI.Clear(SideContentRoot);
         if (styxTabActive) PopulateStyxSide();
         else PopulateCurrentSide();
+        ContentScrollView.SetBackdropTint(styxTabActive ? StyxBackdropTint : Color.white);
 
         RefreshBoonSections();
         RefreshSacrificeSelection();
@@ -173,7 +197,7 @@ public class StatusScreenHandler : MonoBehaviour
     void PopulateStyxSide()
     {
         StyxRunState styxState = Controller.Instance.StyxRunState;
-        PopulateSections("Removed Rituals", styxState.RemovedRituals, "Removed Trinkets", styxState.RemovedTrinkets, "None yet", 0f);
+        PopulateSections("Lost Rituals", styxState.RemovedRituals, "Lost Trinkets", styxState.RemovedTrinkets, "Nothing yet", 0f);
     }
 
     // Splits the side panel into a header and scrolling section for the rituals, then the trinkets.
@@ -191,17 +215,17 @@ public class StatusScreenHandler : MonoBehaviour
         y = AddSection(y, ritualHeight, rituals.Exists(ritual => ritual != null) ? null : emptyLabel,
             image => ContentScrollView.ShowRituals(rituals, image));
 
-        y = AddSectionHeader(y, trinketLabel);
+        y = AddSectionHeader(y, trinketLabel, trinkets.Count);
         y = AddSection(y, trinketHeight, trinkets.Count > 0 ? null : emptyLabel,
             image => ContentScrollView.ShowTrinkets(trinkets, image));
         return y;
     }
 
-    float AddSectionHeader(float y, string label)
+    float AddSectionHeader(float y, string label, int count = 0)
     {
         TextMeshProUGUI header = CloneTemplate(SectionHeaderTemplate);
         header.gameObject.name = "Header_" + label;
-        header.text = label;
+        header.text = count > 0 ? label + "<alpha=#80>  " + count : label;
         SetY(header.rectTransform, y - HeaderTopPadding);
         return y - HeaderTopPadding - header.rectTransform.sizeDelta.y - HeaderSpacing;
     }
@@ -220,11 +244,22 @@ public class StatusScreenHandler : MonoBehaviour
         image.raycastTarget = false;
         show(image);
 
+        if (SectionFrameTemplate != null)
+        {
+            Image frame = Instantiate(SectionFrameTemplate, rect);
+            frame.gameObject.name = "Frame";
+            frame.gameObject.SetActive(true);
+            frame.raycastTarget = false;
+            StyxUI.Stretch(frame.rectTransform);
+        }
+
         if (emptyLabel != null)
         {
             TextMeshProUGUI text = CloneTemplate(EmptyRowTemplate);
             text.text = emptyLabel;
-            SetY(text.rectTransform, y - EmptyLabelPadding);
+            text.rectTransform.SetParent(rect, false);
+            StyxUI.Stretch(text.rectTransform);
+            text.alignment = TextAlignmentOptions.Center;
         }
 
         return y - height - SectionSpacing;
@@ -266,6 +301,26 @@ public class StatusScreenHandler : MonoBehaviour
             View.Instance.AudioHandler.PlayHeartstringStrum();
 
         Rebuild();
+    }
+
+    // The count, plus a row of pips (strings): lit for each heartstring held, dim for each still to win
+    void RefreshHeartstrings()
+    {
+        int held = Controller.Instance.RunHeartStrings;
+        int max = Player.MaxHeartStrings;
+        HeartstringsText.text = held + " / " + max;
+
+        if (HeartstringPips == null || HeartstringPipTemplate == null)
+            return;
+
+        StyxUI.Clear(HeartstringPips);
+        for (int i = 0; i < max; i++)
+        {
+            Image pip = Instantiate(HeartstringPipTemplate, HeartstringPips);
+            pip.gameObject.name = "Pip" + i;
+            pip.gameObject.SetActive(true);
+            pip.color = i < held ? HeartstringHeldColor : HeartstringMissingColor;
+        }
     }
 
     void ResolveBoonReferences()

@@ -78,6 +78,8 @@ public class ContentScrollView : MonoBehaviour
     public float TrinketSummaryZ = -0.2f;
     [Tooltip("Local Z of the trinket section's copy of the Carpets backdrop.")]
     public float TrinketCarpetZ = 5f;
+    [Tooltip("Side sections stretch their copy of the Carpets backdrop this much wider, so the patterned borders at its sides stay out of their narrow views.")]
+    public float SideCarpetWidthScale = 2f;
 
     [Header("Scroll")]
     public float ScrollIncrement = 5f;
@@ -137,6 +139,10 @@ public class ContentScrollView : MonoBehaviour
 
     ContentScrollLayout _activeLayout;
     bool _isActive;
+
+    static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    MaterialPropertyBlock _tintBlock;
+    Color _backdropTint = Color.white;
 
     readonly Section _mainSection = new Section();
     Section _ritualSection;
@@ -262,6 +268,12 @@ public class ContentScrollView : MonoBehaviour
     public static void HighlightTrinket(Trinket trinket) => Instance?.HighlightTrinketInternal(trinket);
 
     public static void Hide() => Instance?.HideInternal();
+
+    /// <summary>
+    /// Tints the Carpets backdrop (main view and side sections) until the next Show or Hide clears it.
+    /// Call after showing the content.
+    /// </summary>
+    public static void SetBackdropTint(Color tint) => Instance?.SetBackdropTintInternal(tint);
 
     public static void Clear() => Instance?.ClearInternal();
 
@@ -394,6 +406,40 @@ public class ContentScrollView : MonoBehaviour
         ClearPlayHistoryViews();
         _mainSection.ClearItems();
         HideSideSections();
+        SetBackdropTintInternal(Color.white);
+    }
+
+    void SetBackdropTintInternal(Color tint)
+    {
+        _backdropTint = tint;
+        ApplyBackdropTint(transform.Find("Carpets"));
+        if (_ritualSection != null)
+            ApplyBackdropTint(_ritualSection.Root.transform.Find("Carpets"));
+        if (_trinketSection != null)
+            ApplyBackdropTint(_trinketSection.Root.transform.Find("Carpets"));
+    }
+
+    void ApplyBackdropTint(Transform carpets)
+    {
+        if (carpets == null)
+            return;
+
+        bool untinted = _backdropTint == Color.white;
+        if (!untinted && _tintBlock == null)
+            _tintBlock = new MaterialPropertyBlock();
+
+        foreach (Renderer carpet in carpets.GetComponentsInChildren<Renderer>(true))
+        {
+            if (untinted)
+            {
+                carpet.SetPropertyBlock(null);
+                continue;
+            }
+
+            carpet.GetPropertyBlock(_tintBlock);
+            _tintBlock.SetColor(BaseColorId, _backdropTint);
+            carpet.SetPropertyBlock(_tintBlock);
+        }
     }
 
     void SetCaptureActive(bool active)
@@ -1002,7 +1048,16 @@ public class ContentScrollView : MonoBehaviour
         root.transform.localPosition = Vector3.right * (SectionSpacing * index);
 
         foreach (Transform source in backdrop)
-            Instantiate(source.gameObject, root.transform, false).name = source.name;
+        {
+            GameObject copy = Instantiate(source.gameObject, root.transform, false);
+            copy.name = source.name;
+            if (copy.name == "Carpets")
+            {
+                Vector3 scale = copy.transform.localScale;
+                scale.x *= SideCarpetWidthScale;
+                copy.transform.localScale = scale;
+            }
+        }
 
         Camera sectionCamera = Instantiate(ScrollCamera, root.transform, false);
         sectionCamera.name = ScrollCamera.name;
