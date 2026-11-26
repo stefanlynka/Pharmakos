@@ -197,7 +197,7 @@ public static class CardHandler
         if (card.Icon == IconType.None) return null;
 
         string iconName = card.Icon.ToString().ToLower();
-        return Resources.Load<Sprite>("Images/Icons/Summary/" + iconName);
+        return Resources.Load<Sprite>("Images/Icons/SummaryMono/" + iconName);
     }
 
     public static List<Card> GetPossibleCardRewards(int level)

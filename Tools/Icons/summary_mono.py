@@ -24,6 +24,9 @@ OUT_DIR = os.path.join(ROOT, "Assets", "Resources", "Images", "Icons", "SummaryM
 SIZE = 216
 TERRACOTTA = "D9733F"
 
+# Pixel size for icons that aren't square (default is SIZE x SIZE). The viewBox keeps a height of 100.
+CANVAS = {"chevron": (137, 163)}
+
 BROWSERS = [
     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
     r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
@@ -122,6 +125,13 @@ ICONS = {
         "</g>",
         '<g transform="rotate(45 50 50)"><path d="M50 14 L50 56" stroke-width="3" stroke-linecap="round"/></g>',
     ),
+    # The flanking chevrons on followers that affect adjacent followers (ViewFollower.SummaryLeft/RightArrow).
+    # Same canvas as the old whiteArrow (137x163, see CANVAS), so the prefab's scale stays right.
+    # Points right; the left one is flipX'd on the prefab.
+    "chevron": (
+        '<path d="M22 14 L60 50 L22 86" fill="none" stroke-width="11" stroke-linejoin="miter"/>',
+        "",
+    ),
     # Taunt
     "target": (
         '<circle cx="50" cy="50" r="38" fill="none" stroke-width="10"/>'
@@ -132,15 +142,16 @@ ICONS = {
 }
 
 
-def build_svg(name, color, size):
+def build_svg(name, color, width, height):
     solid, cut = ICONS[name]
+    vw = f"{100 * width / height:.4g}"
     return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 100 100">'
-        f'<defs><mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">'
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {vw} 100">'
+        f'<defs><mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="{vw}" height="100">'
         f'<g fill="white" stroke="white">{solid}</g>'
         f'<g fill="black" stroke="black">{cut}</g>'
         f"</mask></defs>"
-        f'<rect width="100" height="100" fill="#{color}" mask="url(#m)"/>'
+        f'<rect width="{vw}" height="100" fill="#{color}" mask="url(#m)"/>'
         f"</svg>"
     )
 
@@ -152,12 +163,12 @@ def find_browser():
     sys.exit("Need Chrome or Edge to render the SVGs.")
 
 
-def render(browser, svg_path, png_path, size):
+def render(browser, svg_path, png_path, width, height):
     # Wrap in a page so the SVG fills the viewport exactly, on a transparent background.
     with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False, encoding="utf-8") as page:
         page.write(
             "<html><body style='margin:0;background:transparent;overflow:hidden'>"
-            f"<img src='file:///{svg_path.replace(os.sep, '/')}' width='{size}' height='{size}' style='display:block'>"
+            f"<img src='file:///{svg_path.replace(os.sep, '/')}' width='{width}' height='{height}' style='display:block'>"
             "</body></html>"
         )
         page_path = page.name
@@ -167,7 +178,7 @@ def render(browser, svg_path, png_path, size):
                 browser, "--headless=new", "--disable-gpu", "--hide-scrollbars",
                 "--force-device-scale-factor=1", "--default-background-color=00000000",
                 "--allow-file-access-from-files",
-                f"--window-size={size},{size}", f"--screenshot={png_path}",
+                f"--window-size={width},{height}", f"--screenshot={png_path}",
                 "file:///" + page_path.replace(os.sep, "/"),
             ],
             check=True, capture_output=True,
@@ -189,10 +200,12 @@ def main():
     browser = find_browser()
     args.out = os.path.abspath(args.out)
     for name in args.only or ICONS:
+        w, h = CANVAS.get(name, (SIZE, SIZE))
+        w, h = round(w * args.size / SIZE), round(h * args.size / SIZE)
         svg_path = os.path.join(SVG_DIR, name + ".svg")
         with open(svg_path, "w", encoding="utf-8") as f:
-            f.write(build_svg(name, args.color, args.size))
-        render(browser, svg_path, os.path.join(args.out, name + ".png"), args.size)
+            f.write(build_svg(name, args.color, w, h))
+        render(browser, svg_path, os.path.join(args.out, name + ".png"), w, h)
         print(name)
 
 
