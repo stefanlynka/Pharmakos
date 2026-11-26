@@ -66,7 +66,7 @@ View.ShowBoard instantiates it at the world origin under GameField and swaps it 
 
 | Board | Back edge |
 |---|---|
-| Troy | battered base of huge irregular limestone ashlar (stepped beds, Troy VI's sawtooth offsets) carved into the mesh, a ledge and dark mudbrick above; fallen blocks in the sand; only the foot is lit |
+| Troy | battered base of huge irregular limestone ashlar (stepped beds, Troy VI's sawtooth offsets) carved into the mesh, rising out of frame (its top must never show); fallen blocks in the sand; lit at the foot, fading upward |
 | Temple (Delphi) | three-stepped stylobate, Doric colonnade rising out of frame, shadowed cella wall |
 | Archiereus | two black marble steps, red-veined black marble wall with pilasters, candle clusters on the ledge |
 | Trials | stone seating tiers of the arena |

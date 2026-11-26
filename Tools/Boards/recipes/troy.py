@@ -10,7 +10,7 @@ NAME = 'Troy'
 WALL_Y = 34.0
 WALL_HALF = 75.0
 GEN = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'gen')
-BASE_H = 3.4          # the battered limestone base; its top is a ledge, the mudbrick above stands back from it
+BASE_H = 9.0          # the battered limestone base, running out of frame (its ledge and the mudbrick above are never seen)
 BATTER = 0.35         # the base leans back this much per unit of height
 LEDGE = 0.7
 WALL_TOP = 16.0       # well out of frame
@@ -244,7 +244,7 @@ def back_edge():
 
     # --- light: the spotlights already fall off across the wall; on top of that only the foot glows a little (bounce
     # from the sand) and the stone darkens upward, so the wall sinks into darkness above its lowest courses
-    lit = 1 - smoothstep(0.4, 5.8, H)
+    lit = 1 - smoothstep(0.4, 7.5, H)
     side = (1 - smoothstep(8.0, 55.0, np.abs(X))) * (0.55 + 0.45 * n.fbm(X, H * 0.2, 9, 3, offset=31))
     em = alb * (lit * side * 0.7)[..., None]
     alb = alb * ((0.35 + 0.65 * lit) * (0.5 + 0.5 * side))[..., None]
