@@ -6,6 +6,8 @@ using UnityEngine;
 public abstract class AnimationAction
 {
     public bool Stackable = false;
+    /// <summary>Nothing queued after this starts until it finishes, even stackable animations (a trigger cue's beat).</summary>
+    public bool HoldsFollowing = false;
     public bool MarkSourceTriggered = false;
     public GameAction GameAction;
     public Action OnFinish;
@@ -50,6 +52,28 @@ public class MarkSourceTriggeredAnimation : AnimationAction
     public override void Play(Action onFinish = null)
     {
         base.Play(onFinish);
+        CallCallback();
+    }
+}
+
+// Flares a trinket or ritual buff that acted without an action of its own (StaticPlayerEffect.MarkTriggered), in turn
+// with the other animations. Instant and stackable, so it never holds the queue.
+public class EffectFlareAnimation : AnimationAction
+{
+    readonly StaticPlayerEffect effect;
+    readonly Action<StaticPlayerEffect> flare;
+
+    public EffectFlareAnimation(StaticPlayerEffect effect, Action<StaticPlayerEffect> flare) : base(null)
+    {
+        this.effect = effect;
+        this.flare = flare;
+        Stackable = true;
+    }
+
+    public override void Play(Action onFinish = null)
+    {
+        base.Play(onFinish);
+        flare?.Invoke(effect);
         CallCallback();
     }
 }

@@ -40,12 +40,12 @@ public class StrokeProjectileView : MonoBehaviour
     // Head
     const int HeadStrokes = 3;
     // Heads sit this far either side of the path (authoring units), so the head reads as a glob, not a line.
-    const float HeadSpread = 0.12f;
-    const float HeadScale = 0.45f;
+    const float HeadSpread = 0.16f;
+    const float HeadScale = 0.7f;
     // Trail
     const float TrailSpacing = 0.35f;
-    const float TrailScaleMin = 0.24f;
-    const float TrailScaleMax = 0.36f;
+    const float TrailScaleMin = 0.34f;
+    const float TrailScaleMax = 0.5f;
     const float TrailPaint = 0.04f;
     const float TrailHold = 0.05f;
     const float TrailWipe = 0.3f;

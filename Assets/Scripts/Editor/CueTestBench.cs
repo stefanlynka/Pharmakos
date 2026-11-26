@@ -148,6 +148,20 @@ public static class CueTestBench
 
     public static int QueueCount => View.Instance.AnimationHandler.AnimationActionQueue.Count;
 
+    /// <summary>Logs how long the animation queue takes to drain from now (game seconds), as "CueTestBench: drained in Xs".</summary>
+    public static void TimeUntilIdle(string label)
+    {
+        float start = Time.time;
+        void Check()
+        {
+            if (Idle)
+                Debug.Log("CueTestBench: " + label + " drained in " + (Time.time - start).ToString("0.00") + "s");
+            else
+                CuePlayer.Hold(0.05f, Check);
+        }
+        CuePlayer.Hold(0.05f, Check);
+    }
+
     /// <summary>True when no animation is playing or queued.</summary>
     public static bool Idle => !AnimationHandler.IsAnimating && View.Instance.AnimationHandler.AnimationActionQueue.Count == 0;
 

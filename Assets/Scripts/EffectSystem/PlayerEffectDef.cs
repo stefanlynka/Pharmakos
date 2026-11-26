@@ -16,6 +16,11 @@ public abstract class PlayerEffect
 public abstract class StaticPlayerEffect : PlayerEffect
 {
     public static event Action<StaticPlayerEffect> Triggered;
+    /// <summary>
+    /// MarkTriggered (no action of its own): the view queues the flare in the animation queue so it plays in turn
+    /// with everything else (on the AI's turn every action resolves before its animations). Falls back to Triggered.
+    /// </summary>
+    public static event Action<StaticPlayerEffect> TriggeredWithoutAction;
 
     public Player Owner;
     public Player TargetPlayer;
@@ -32,7 +37,10 @@ public abstract class StaticPlayerEffect : PlayerEffect
         PlayHistoryHandler history = PlayHistoryHandler.For(Owner.GameState);
         history?.AddTriggeredRecord(history.GetEffectRecord(this));
 
-        Triggered?.Invoke(this);
+        if (TriggeredWithoutAction != null)
+            TriggeredWithoutAction.Invoke(this);
+        else
+            Triggered?.Invoke(this);
     }
 
     /// <summary>Flares the icon only: an action with this SourceEffect is animating (its history is already recorded).</summary>

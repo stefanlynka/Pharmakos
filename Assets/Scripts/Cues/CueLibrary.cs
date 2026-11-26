@@ -127,7 +127,7 @@ public static class CueLibrary
         { nameof(CyclopsEyeTrinketEffectDef), Empower },
         { nameof(PansFluteTrinketEffectDef), Panpipe },
         { nameof(HermesSandalsTrinketEffectDef), Swift },
-        { nameof(TheAegisTrinketEffectDef), Ward },
+        { nameof(TheAegisTrinketEffectDef), "" },          // a passive aura: flares, no sound
         { nameof(RodOfAsclepiusTrinketEffectDef), Revive },
         { nameof(HydrasScaleTrinketEffectDef), Summon },
         { nameof(TunicOfNessusTrinketEffectDef), Flame },
@@ -301,7 +301,9 @@ public static class CueLibrary
         if (lastEffectSound.Count > 64)
             lastEffectSound.Clear();
 
-        CuePlayer.Play(EffectSound(effect));
+        string sound = EffectSound(effect);
+        if (!string.IsNullOrEmpty(sound))
+            CuePlayer.Play(sound);
     }
 
     // ------------------------------------------------------------------------------------- coverage ---

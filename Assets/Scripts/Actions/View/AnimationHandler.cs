@@ -62,6 +62,10 @@ public class AnimationHandler
             return;
         }
 
+        // An animation that holds what follows (a trigger cue's beat) keeps everything after it waiting, even
+        // stackable animations; anything already playing carries on.
+        if (holdingAnimation != null) return;
+
         // If a non-stackable animation is already playing and our next animation isn't stackable, early out
         bool nextActionIsStackable = AnimationActionQueue[0].Stackable;
         if (IsAnimating && (!nextActionIsStackable || !CurrentAnimationIsStackable)) return;
@@ -78,8 +82,20 @@ public class AnimationHandler
         }
 
         //Debug.LogError("Play: " + newAction.GetType().Name);
+        if (newAction.HoldsFollowing)
+        {
+            holdingAnimation = newAction;
+            newAction.Play(() =>
+            {
+                if (holdingAnimation == newAction) holdingAnimation = null;
+                AnimationComplete();
+            });
+            return;
+        }
         newAction.Play(AnimationComplete);
     }
+
+    AnimationAction holdingAnimation;
     public void AnimationComplete()
     {
         //Debug.LogError("Animation Complete");
@@ -103,7 +119,7 @@ public class AnimationHandler
         List<AnimationAction> animationActions = gameAction.GetAnimationActions();
         CueLibrary.DecorateAnimations(gameAction, animationActions);
         // A triggered ability's flash and sound play just before its first visible result.
-        AnimationAction cueAnimation = gameAction.Cue?.TakeAnimationForPlacement();
+        AnimationAction cueAnimation = gameAction.Cue?.TakeAnimationForPlacement(animationActions.Find(a => a != null));
         if (cueAnimation != null)
         {
             // Plays first for this action, so it carries the action's trinket flare (MarkSourceTriggered).

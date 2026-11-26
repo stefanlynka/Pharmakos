@@ -85,11 +85,24 @@ public class View : MonoBehaviour
     void OnEnable()
     {
         StaticPlayerEffect.Triggered += OnPlayerEffectTriggered;
+        StaticPlayerEffect.TriggeredWithoutAction += QueuePlayerEffectTriggered;
     }
 
     void OnDisable()
     {
         StaticPlayerEffect.Triggered -= OnPlayerEffectTriggered;
+        StaticPlayerEffect.TriggeredWithoutAction -= QueuePlayerEffectTriggered;
+    }
+
+    // An effect acted without an action (MarkTriggered): flare it in turn with the rest of the animations.
+    void QueuePlayerEffectTriggered(StaticPlayerEffect effect)
+    {
+        if (AnimationHandler == null)
+        {
+            OnPlayerEffectTriggered(effect);
+            return;
+        }
+        AnimationHandler.AddAnimationActionToQueue(new EffectFlareAnimation(effect, OnPlayerEffectTriggered));
     }
 
     void OnPlayerEffectTriggered(StaticPlayerEffect effect)

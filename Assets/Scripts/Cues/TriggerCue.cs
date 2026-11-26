@@ -15,6 +15,9 @@ using UnityEngine;
 /// </summary>
 public class TriggerCue
 {
+    /// <summary>Turns trigger cues off (CueTestBench uses it to time combos with and without them). Never set in game.</summary>
+    public static bool Disabled;
+
     public const string StartOfTurn = "StartOfTurn";
     public const string EndOfTurn = "EndOfTurn";
 
@@ -54,10 +57,16 @@ public class TriggerCue
 
     public void Open()
     {
+        if (Disabled)
+        {
+            Placed = true;
+            return;
+        }
         if (!PlacesOnOpen || Queue == null)
             return;
 
-        animation = new TriggerCueAnimation(this);
+        // Overlays the lethal damage animation, flashing a moment into it, and holds the death animation back.
+        animation = new TriggerCueAnimation(this) { Stackable = true, PreDelay = TriggerCueAnimation.OwnDeathDelay };
         Queue.AddAnimationActionToQueue(animation);
         Placed = true;
         placedOnOpen = true;
@@ -85,14 +94,21 @@ public class TriggerCue
         Acted = true;
     }
 
-    /// <summary>Called by AnimationHandler when one of this cue's actions queues its animations.</summary>
-    public AnimationAction TakeAnimationForPlacement()
+    /// <summary>
+    /// Called by AnimationHandler when one of this cue's actions queues its animations (firstResult: the first of
+    /// them, or null). The cue overlays running stackable animations (deaths, damage numbers, tokens) so combos keep
+    /// their pace, unless its result is itself a blocking animation (a projectile), when it waits so the flash sits
+    /// right before the shot.
+    /// </summary>
+    public AnimationAction TakeAnimationForPlacement(AnimationAction firstResult)
     {
         if (Placed)
             return null;
 
         Placed = true;
-        return animation ??= new TriggerCueAnimation(this);
+        animation ??= new TriggerCueAnimation(this);
+        animation.Stackable = firstResult == null || firstResult.Stackable;
+        return animation;
     }
 
     /// <summary>Scope closed. Returns true when the cue still has to be placed after its causing action.</summary>
@@ -133,7 +149,7 @@ public class TriggerCue
             return;
 
         Placed = true;
-        animation ??= new TriggerCueAnimation(this);
+        animation ??= new TriggerCueAnimation(this) { Stackable = true };
         Queue.AddAnimationActionToQueue(animation);
     }
 }
@@ -143,15 +159,29 @@ public class TriggerCueAnimation : AnimationAction
 {
     readonly TriggerCue cue;
 
+    /// <summary>A follower's own On Death cue waits this long into the lethal damage before flashing.</summary>
+    public const float OwnDeathDelay = 0.15f;
+    public float PreDelay;
+
     public TriggerCueAnimation(TriggerCue cue) : base(null)
     {
         this.cue = cue;
+        HoldsFollowing = true;
     }
 
     public override void Play(Action onFinish = null)
     {
         base.Play(onFinish);
 
+        float delay = PreDelay * (View.Instance != null && !View.Instance.IsHumansTurn ? 1.25f : 1f);
+        if (delay > 0f)
+            CuePlayer.Hold(delay, Fire);
+        else
+            Fire();
+    }
+
+    void Fire()
+    {
         CueDef def = cue.Def;
         int repeat = CuePlayer.Play(def.Sound);
 
