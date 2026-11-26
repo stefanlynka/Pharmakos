@@ -705,7 +705,7 @@ public class Toxotes : Follower
 
         SetBaseStats(1, 2);
 
-        Text = "Ranged attacker.\nUnstoppable";
+        Text = "Archer";
         Icon = IconType.Bow;
         inherentValue = 2;
 
@@ -1653,10 +1653,10 @@ public class Atalanta : Follower
 
         Type = FollowerType.Mortal;
 
-        SetBaseStats(2, 4);
+        SetBaseStats(2, 3);
         inherentValue = 2;
 
-        Text = "On Kill: Add free Smite to hand";
+        Text = "Archer\nOn Kill: Add free Smite to hand";
         Icon = IconType.Sickle;
 
         SetupInnateEffects();
@@ -1665,6 +1665,8 @@ public class Atalanta : Follower
     public override void SetupInnateEffects()
     {
         base.SetupInnateEffects();
+
+        InnateEffects.Add(new StaticEffectDef(EffectTarget.Self, StaticEffect.RangedAttacker));
 
         CustomEffectDef customEffectDef = new CustomEffectDef(EffectTarget.Self);
         customEffectDef.ApplyInstanceAction = CustomEffectAction;
@@ -1820,7 +1822,7 @@ public class Paris : Follower
         SetBaseStats(3, 2);
         inherentValue = 3;
 
-        Text = "Ranged attacker.\nUnstoppable";
+        Text = "Archer";
         Icon = IconType.Bow;
 
         SetupInnateEffects();
