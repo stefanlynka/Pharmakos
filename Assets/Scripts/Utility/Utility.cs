@@ -38,7 +38,14 @@ public static class Utility
     public static int GetPreyDamage(Follower follower)
     {
         int damage = 1;
-        Player otherPlayer = follower.Owner.GetOtherPlayer();
+
+        // Reference cards (ritual popups, play history, deck viewers) can be unowned or owned by a
+        // player outside combat, so there's no opponent to read Growing Bounties from.
+        Player owner = follower?.Owner;
+        if (owner?.GameState == null) return damage;
+        Player otherPlayer = owner.GetOtherPlayer();
+        if (otherPlayer?.PlayerEffects == null) return damage;
+
         foreach (PlayerEffect playerEffect in otherPlayer.PlayerEffects)
         {
             if (playerEffect is GrowingBountiesTrinketEffectDef growing)
