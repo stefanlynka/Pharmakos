@@ -194,7 +194,7 @@ GRADES = {
     'Trials': dict(value=0.5, sat=0.5, tint=(1.0, 0.94, 0.8), tint_amt=0.45),
     'Temple': dict(value=0.48, sat=0.85),
     'Labyrinth': dict(value=0.95, sat=0.8),
-    'Cyclops': dict(value=0.85, sat=0.65),
+    'Cyclops': dict(value=0.74, sat=0.75),
 }
 
 
