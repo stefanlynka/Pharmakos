@@ -70,9 +70,9 @@ public class AudioHandler : MonoBehaviour
 
     [Header("Cues")]
     [Tooltip("Triggered abilities, trinkets and ritual buffs (CuePlayer). Still scaled by the SFX slider. Clips: Audio/SFX/Cues, rendered by Tools/Audio/build_cue_sounds.py.")]
-    [Range(0f, 2f)] public float CueVolume = 0.7f;
-    [Tooltip("Spell cast sounds (CuePlayer.PlayCast). Still scaled by the SFX slider.")]
-    [Range(0f, 2f)] public float SpellCastVolume = 0.8f;
+    [Range(0f, 2f)] public float CueVolume = 0.4f;
+    [Tooltip("Spell cast sounds (CuePlayer.PlayCast). Still scaled by the SFX slider. In the test chamber, [ and ] step both cue volumes.")]
+    [Range(0f, 2f)] public float SpellCastVolume = 0.45f;
 
     private float baseMusicVolume = 0.1f;
 

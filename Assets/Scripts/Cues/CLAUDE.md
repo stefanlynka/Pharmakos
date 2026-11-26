@@ -37,4 +37,6 @@ Presentation only: nothing here changes game state, and none of it runs in AI si
 
 ## Testing
 
+- **By hand:** test chamber, **L** / **K** for the next / previous bench in `CueTestSetups.Setups` (each rebuilds the fight via `Controller.LoadLevel`'s dev hook: rows, hands, trinkets, ritual buffs, then `AfterStart`, e.g. the AI casting Twist of Fate). Only on your turn with nothing animating. Rewards staged by placing the rows (Oracle, Cassandra) are dropped. **[** / **]** step `AudioHandler.CueVolume` and `SpellCastVolume` by 20% (play mode only; the label shows the values to put in the inspector). Add a bench for new content by adding a `Setup`.
+- **From code:** 
 `Assets/Scripts/Editor/CueTestBench.cs` from MCP `execute_code` in play mode: `Stage("Hoplite,Keres", "Siren,Charon")` (starts the chamber, 60 health, clears and summons), `Attack`, `Damage`, `Cast(human, "Roar", "player:human")`, `DumpQueue(from)` (the animation order, cues show source/trigger/sound), `Film(step, count, timeScale)` → `Claude/Cues/Shots/film_NN.png`, contact sheet with `python Tools/VFX/film_sheet.py name x0 y0 x1 y1 [cols]`. The test chamber starts players at 1 health, so stage before anything can hit a portrait. `Controller.AnimationDebugMode = true` logs every animation as it plays (cues included).

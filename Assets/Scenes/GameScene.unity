@@ -38691,6 +38691,10 @@ MonoBehaviour:
   RumbleStartTime: 5
   RitualInvocationVolume: 0.04
   MinorRitualVolumeScale: 0.8
+  DeathStrikeVolume: 0.7
+  DeathCollapseVolume: 0.8
+  CueVolume: 0.4
+  SpellCastVolume: 0.45
   MusicFadeDuration: 1.5
   MusicFadedVolume: 0.5
   CombatMusicFadeOutDuration: 2.5

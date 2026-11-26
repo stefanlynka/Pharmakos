@@ -200,6 +200,19 @@ public class Controller : MonoBehaviour
                 CycleTestChamberBoard(step);
         }
 
+        // L / K in the test chamber: rebuild the fight as the next / previous cue setup (CueTestSetups).
+        // [ / ] turn every cue and spell cast sound down / up.
+        if (IsTestChamber && GameRunning && !GamePaused && View.Instance != null)
+        {
+            int setupStep = Input.GetKeyDown(KeyCode.L) ? 1 : Input.GetKeyDown(KeyCode.K) ? -1 : 0;
+            if (setupStep != 0)
+                LoadCueTestSetup(setupStep);
+
+            int volumeStep = Input.GetKeyDown(KeyCode.RightBracket) ? 1 : Input.GetKeyDown(KeyCode.LeftBracket) ? -1 : 0;
+            if (volumeStep != 0)
+                CueTestSetups.StepVolume(volumeStep);
+        }
+
         bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
         bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         if (!ctrl || !shift) return;
@@ -210,6 +223,29 @@ public class Controller : MonoBehaviour
             Debug.Log("Dev hotkey: starting test chamber");
             StartTestChamber();
         }
+    }
+
+    private void LoadCueTestSetup(int step)
+    {
+        // Rebuilding mid-animation or on the AI's turn would leave animations and planning pointing at the old fight.
+        if (AnimationHandler.IsAnimating || View.Instance.AnimationHandler.AnimationActionQueue.Count > 0
+            || CanonGameState == null || !CanonGameState.CurrentPlayer.IsHuman
+            || (View.Instance.SelectionHandler != null && View.Instance.SelectionHandler.IsSelectingTarget()))
+        {
+            Debug.Log("Cue setups: wait for the animations to finish on your turn");
+            return;
+        }
+
+        CueTestSetups.Step(step);
+        PlayHistoryHandler.Clear();
+        ClearLevel();
+        LoadLevel();
+    }
+
+    void OnGUI()
+    {
+        if (IsTestChamber && GameRunning && CurrentScreen == ScreenName.Game)
+            CueTestSetups.DrawLabel();
     }
 
     // Each press of P loads the next pair. Gods with both rituals come together; gods with only one share a pair.
@@ -431,6 +467,18 @@ public class Controller : MonoBehaviour
         }
 
         TutorialCombatScript.ArmForCurrentFight(Player1, Player2);
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        // Test chamber cue bench (L / K): the setup's rows, hands and buffs instead of the deck's own start.
+        if (IsTestChamber && CueTestSetups.Active != null)
+        {
+            CueTestSetups.Apply(Player1, Player2);
+            GameRunning = true;
+            CurrentPlayer.StartTurn();
+            CueTestSetups.AfterStart(Player1, Player2);
+            return;
+        }
+#endif
 
         // Load Starting BattleRow
         LoadStartingBattleRow();
