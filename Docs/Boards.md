@@ -22,14 +22,14 @@ Underworld.
 | Board | Encounter | Ground | Lanes |
 |---|---|---|---|
 | Underworld | test enemy | cracked basalt and ash, skeletons and bone piles, embers in the far cracks, asphodel | worn slate slabs |
-| Cyclops | Cyclops | wind-laid turf, lichened limestone boulders, the giant's footprints | dusty sheep tracks, hoofprints |
-| Labyrinth | Labyrinth | the maze itself around a cleared chamber; bones, blood drags, torch scorches | flagstone runners |
-| Bacchanalia | Bacchanalia | loam, dark muted vines creeping in with leaves, tendrils and grapes, spilt wine, dull pottery shards | trampled earth, wine, bare feet and satyr hooves |
-| Caves | Caves (the Gorgon) | wet green-grey rock, slime, puddles (petrified statues were tried and dropped as unconvincing) | damp grit and puddles |
+| Cyclops | Cyclops | dry hillside grass and grit (generated tile), scree at the hill's foot | the same ground, calmer |
+| Labyrinth | Labyrinth | a chamber of worn paving seen from inside (generated tile), a few old stains | the same paving, calmer |
+| Bacchanalia | Bacchanalia | forest floor of fallen leaves (generated tile, graded to umber), wine stains soaked in | the same litter, trodden calmer |
+| Caves | Caves (the Gorgon) | damp worn limestone (generated tile), slime in the margins; no puddles | the same floor, calmer |
 | Hunt | Hunt (Artemis) | moss and leaf litter, roots from the edges, ferns, an antler, spent arrows | muddy game trail, deer slots |
 | Troy | Troy | wind-rippled sand (generated tiles), faint chariot ruts, old blood, fallen blocks at the wall's foot; **3D back edge:** the walls of Troy | the same sand, packed calmer |
-| Trials | Trials (Amazons) | raked arena sand inside a stone kerb, straw targets with arrows, dry grass outside | raked sand |
-| Cliffs | Seaside Cliffs (Sirens) | dark sea rock, tide pools, kelp, barnacles; a jagged cliff edge with coves dropping to the sea, rocks and stacks in the surf | weathered rock ledges, salt |
+| Trials | Trials (Amazons) | compacted arena sand (generated tile) | the same sand, smoothed |
+| Cliffs | Seaside Cliffs (Sirens) | a shelf of sea-worn rock (generated tile); a jagged cliff edge with coves dropping to the sea, rocks and stacks in the surf, fading to black | the same rock, calmer |
 | Temple | Delphi | aged marble slabs, an inlaid Greek key round the arena, tripod scorches, laurel | pale marble runners |
 | Archiereus | Archiereus | black marble veined red, blood channel and gutters, carved dedication, candles | dark basalt slabs |
 | Throne | Hades (boss) | polished obsidian, gold-inlaid Greek key, pomegranate seeds, old stains where supplicants knelt (no bones) | black basalt |
@@ -69,17 +69,17 @@ View.ShowBoard instantiates it at the world origin under GameField and swaps it 
 | Troy | battered base of huge irregular limestone ashlar (stepped beds, Troy VI's sawtooth offsets) carved into the mesh, rising out of frame (its top must never show); fallen blocks in the sand; lit at the foot, fading upward |
 | Temple (Delphi) | three-stepped stylobate, Doric colonnade rising out of frame, shadowed cella wall |
 | Archiereus | two black marble steps, red-veined black marble wall with pilasters, candle clusters on the ledge |
-| Trials | stone seating tiers of the arena |
+| Trials | the arena's podium wall of pale ashlar (genkit.AshlarWall) with a dark gateway |
 | Throne | obsidian dais edged in gold, gold-banded obsidian pillars, braziers |
-| Labyrinth | the maze wall stepping back and forth, dark passages leading off, torches in iron sconces |
+| Labyrinth | dark ashlar maze walls (genkit.AshlarWall) stepping back and forth, black passages leading off |
 | Fates | the warp-weighted loom standing: posts, cloth with a red meander, warp threads to clay weights (a few red, a few cut) |
 | TheGate | massive black pillars, bronze gates rising out of frame, walls running off to either side |
-| Cliffs | sea stacks in the surf below the cliff edge, headlands at the far corners |
-| Caves | rugged wet cave wall, stalagmites |
+| Cliffs | sea stacks in the surf below the cliff edge, headlands at the far corners (generated rock, lit at their feet) |
+| Caves | wet cave wall carved from a generated rock tile (genkit.RockFace), fallen rocks at its foot |
 | Underworld | jagged basalt ridge with embers glowing in its cracks |
-| Cyclops | rocky hillside with grassy ledges, the cave mouth and the great boulder |
+| Cyclops | rocky hillside (genkit.RockFace) with grassy patches, the cave mouth sunk into it, the great boulder |
 | Hunt | bank of earth and roots, old trunks rising out of frame |
-| Bacchanalia | dry-stone terrace wall, pithoi, a pergola hung with vines and grapes |
+| Bacchanalia | old trunks rising out of frame (generated bark) before a dark wooded bank |
 
 How it's made:
 - Each recipe's `back_edge()` (bosses: `throne_edge`, `fates_edge`, `gate_edge`) builds the mesh from primitives in
@@ -103,6 +103,11 @@ How it's made:
   shadows and the edge fade to black. Back edges: real geometry lit by the scene, with the layout procedural (Troy:
   `_wall_layout` courses and joints, one height map carved into the mesh through `relief` and also used for the normal
   map) and the generated tile as the surface, sampled at a different spot per block.
+- **genkit.py** holds the shared pieces for this style: `tile`/`two_scale`/`norm_lum` (floors from a generated tile at
+  a target brightness), `tile_lanes`, `edge_fade` (corners to black), `falloff` (back-edge light: only the foot glows,
+  darker upward and to the sides), `RockFace` (a natural rock wall carved from a rock tile, with optional recesses such
+  as a cave mouth), `AshlarWall` (Troy's masonry generalised, with openings for passages) and `boulder`. Redone with
+  it so far: Troy, Cyclops, Labyrinth, Bacchanalia, Caves, Trials, Cliffs.
 - **Painted backdrops don't work.** A flat painting at the far edge (tried for Troy) reads as a pasted picture: its baked
   light and perspective don't match the scene's and it meets the floor along a hard line. Keep back edges as geometry.
 - **Light falloff on a back edge:** instead of uniform self-light, pass an `emission` map to `save_material` that falls off
