@@ -64,7 +64,13 @@ public class AnimationHandler
 
         // An animation that holds what follows (a trigger cue's beat) keeps everything after it waiting, even
         // stackable animations; anything already playing carries on.
-        if (holdingAnimation != null) return;
+        if (holdingAnimation != null)
+        {
+            // Safety cap: a hold must never stall the game (a cue's beat is a fraction of a second).
+            if (Time.unscaledTime - holdingSince < MaxHoldSeconds) return;
+            Debug.LogWarning("AnimationHandler: released a hold that ran over " + MaxHoldSeconds + "s (" + holdingAnimation.GetType().Name + ")");
+            holdingAnimation = null;
+        }
 
         // If a non-stackable animation is already playing and our next animation isn't stackable, early out
         bool nextActionIsStackable = AnimationActionQueue[0].Stackable;
@@ -85,6 +91,7 @@ public class AnimationHandler
         if (newAction.HoldsFollowing)
         {
             holdingAnimation = newAction;
+            holdingSince = Time.unscaledTime;
             newAction.Play(() =>
             {
                 if (holdingAnimation == newAction) holdingAnimation = null;
@@ -96,6 +103,8 @@ public class AnimationHandler
     }
 
     AnimationAction holdingAnimation;
+    float holdingSince;
+    const float MaxHoldSeconds = 3f;
     public void AnimationComplete()
     {
         //Debug.LogError("Animation Complete");

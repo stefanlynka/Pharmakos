@@ -125,7 +125,8 @@ public static class CueCoverageReport
             bool known = CueLibrary.HasPlayerEffectEntry(type.Name, out string sound);
             if (known)
                 used.Add(sound);
-            sb.AppendLine("| " + type.Name + " | " + (known ? sound : "Boon (default)") + " |");
+            string shown = !known ? "Boon (default; silent if it never acts)" : string.IsNullOrEmpty(sound) ? "silent (passive)" : sound;
+            sb.AppendLine("| " + type.Name + " | " + shown + " |");
         }
         used.Add(CueLibrary.Boon);
         sb.AppendLine();

@@ -387,13 +387,6 @@ def t_swift(L, rng):
     return m.buf
 
 
-def t_ward(L, rng):
-    m = rs.Mix(0.9)
-    m.add(ds.lowpass(L.file(ANVIL2, -12), 2600), 0.0, gain=0.6, dur=0.4, release=0.3)
-    m.add(ds.lowpass(L.file(GONG_MF, 2), 3000), 0.0, gain=0.18, dur=0.3, release=0.25)
-    return m.buf
-
-
 def t_revive(L, rng):
     m = rs.Mix(1.2)
     m.add(L.note("TubularBells", 67, 70), 0.0, gain=0.5, dur=0.5, release=0.5)
@@ -864,7 +857,7 @@ SOUNDS = {
     "Weaken": t_weaken, "Summon": t_summon, "Draw": t_draw, "Strike": t_strike, "Snap": t_snap,
     "Splash": t_splash, "Flame": t_flame, "Fury": t_fury, "BloodSpatter": t_bloodspatter, "Doom": t_doom,
     "Maelstrom": t_maelstrom, "Petrify": t_petrify, "Mend": t_mend, "Rally": t_rally, "Swift": t_swift,
-    "Ward": t_ward, "Revive": t_revive, "Chaos": t_chaos, "Hope": t_hope, "Fate": t_fate, "Lyre": t_lyre,
+    "Revive": t_revive, "Chaos": t_chaos, "Hope": t_hope, "Fate": t_fate, "Lyre": t_lyre,
     "Panpipe": t_panpipe, "Boon": t_boon, "Chime": t_chime,
     # projectile impacts
     "ImpactWater": i_water, "ImpactFire": i_fire, "ImpactBlood": i_blood, "ImpactInk": i_ink, "ImpactGold": i_gold,

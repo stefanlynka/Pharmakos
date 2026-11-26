@@ -182,6 +182,20 @@ public class TriggerCueAnimation : AnimationAction
 
     void Fire()
     {
+        try
+        {
+            FireCue();
+        }
+        catch (Exception exception)
+        {
+            // Presentation must never stall the queue.
+            Debug.LogException(exception);
+            CallCallback();
+        }
+    }
+
+    void FireCue()
+    {
         CueDef def = cue.Def;
         int repeat = CuePlayer.Play(def.Sound);
 

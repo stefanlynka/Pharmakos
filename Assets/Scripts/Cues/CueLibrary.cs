@@ -75,7 +75,6 @@ public static class CueLibrary
     public const string Mend = "Mend";
     public const string Rally = "Rally";
     public const string Swift = "Swift";
-    public const string Ward = "Ward";
     public const string Revive = "Revive";
     public const string Chaos = "Chaos";
     public const string Hope = "Hope";
@@ -125,14 +124,14 @@ public static class CueLibrary
         { nameof(LyreOfApolloTrinketEffectDef), Lyre },
         { nameof(VialOfAmbrosiaTrinketEffectDef), Life },
         { nameof(CyclopsEyeTrinketEffectDef), Empower },
-        { nameof(PansFluteTrinketEffectDef), Panpipe },
+        { nameof(PansFluteTrinketEffectDef), "" },          // "Followers have...": passive, silent
         { nameof(HermesSandalsTrinketEffectDef), Swift },
         { nameof(TheAegisTrinketEffectDef), "" },          // a passive aura: flares, no sound
         { nameof(RodOfAsclepiusTrinketEffectDef), Revive },
         { nameof(HydrasScaleTrinketEffectDef), Summon },
         { nameof(TunicOfNessusTrinketEffectDef), Flame },
         { nameof(MedeasPotionTrinketEffectDef), Draw },
-        { nameof(WingsOfIcarusTrinketEffectDef), Empower },
+        { nameof(WingsOfIcarusTrinketEffectDef), "" },      // passive aura, silent
         { nameof(PandorasBoxTrinketEffectDef), Chaos },
         { nameof(PandorasHopeTrinketEffectDef), Hope },
         { nameof(TwistingCorridorsTrinketEffectDef), Summon },
