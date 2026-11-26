@@ -117,11 +117,14 @@ public class ContentScrollView : MonoBehaviour
         public readonly List<Transform> Items = new List<Transform>();
         // From each item's origin to the centre of its footprint, in container space
         public readonly List<Vector3> ItemOffsets = new List<Vector3>();
+        // Single-column sections only: each item's own depth. Empty = every item is CellSize.y deep.
+        public readonly List<float> ItemDepths = new List<float>();
 
         public void ClearItems()
         {
             Items.Clear();
             ItemOffsets.Clear();
+            ItemDepths.Clear();
         }
     }
 
@@ -482,23 +485,47 @@ public class ContentScrollView : MonoBehaviour
                 false);
         }
 
+        // Newest first. Each turn belongs to one player, so a change of owner starts a new turn and gets a header.
+        Player currentOwner = null;
+        bool firstInTurn = true;
         foreach (PlayHistoryItem playHistoryItem in playHistoryItems)
         {
-            GameObject itemObject = _playHistoryItemPool.Get();
-            itemObject.transform.SetParent(ContentContainer, false);
-            itemObject.transform.localRotation = Quaternion.identity;
-
-            ViewPlayHistoryItemNew viewItem = itemObject.GetComponent<ViewPlayHistoryItemNew>();
-            if (viewItem == null)
+            if (playHistoryItem == null)
                 continue;
 
-            viewItem.Load(playHistoryItem);
-            ApplyItemScale(itemObject.transform, _activeLayout.ItemScale);
-            SetLayerRecursively(itemObject, _contentLayer);
-            _playHistoryItems.Add(viewItem);
-            _mainSection.Items.Add(itemObject.transform);
-            _mainSection.ItemOffsets.Add(Vector3.zero);
+            if (_playHistoryItems.Count == 0 || playHistoryItem.Owner != currentOwner)
+            {
+                currentOwner = playHistoryItem.Owner;
+                AddPlayHistoryView().LoadHeader(currentOwner);
+                firstInTurn = true;
+            }
+
+            AddPlayHistoryView().Load(playHistoryItem, showDivider: !firstInTurn);
+            firstInTurn = false;
         }
+
+        if (_playHistoryItems.Count == 0)
+            AddPlayHistoryView().LoadMessage("Nothing Played Yet");
+
+        foreach (ViewPlayHistoryItemNew viewItem in _playHistoryItems)
+        {
+            SetLayerRecursively(viewItem.gameObject, _contentLayer);
+            _mainSection.Items.Add(viewItem.transform);
+            _mainSection.ItemOffsets.Add(Vector3.zero);
+            _mainSection.ItemDepths.Add(viewItem.Depth);
+        }
+    }
+
+    ViewPlayHistoryItemNew AddPlayHistoryView()
+    {
+        GameObject itemObject = _playHistoryItemPool.Get();
+        itemObject.transform.SetParent(ContentContainer, false);
+        itemObject.transform.localRotation = Quaternion.identity;
+        ApplyItemScale(itemObject.transform, _activeLayout.ItemScale);
+
+        ViewPlayHistoryItemNew viewItem = itemObject.GetComponent<ViewPlayHistoryItemNew>();
+        _playHistoryItems.Add(viewItem);
+        return viewItem;
     }
 
     void ClearCardViews()
@@ -649,6 +676,12 @@ public class ContentScrollView : MonoBehaviour
         }
 
         int columns = Mathf.Max(1, section.Columns);
+        if (columns == 1 && section.ItemDepths.Count == itemCount)
+        {
+            LayoutColumnByDepth(section);
+            return;
+        }
+
         int rows = Mathf.CeilToInt(itemCount / (float)columns);
         Vector2 cell = section.CellSize;
         float margin = section.Margin;
@@ -669,6 +702,29 @@ public class ContentScrollView : MonoBehaviour
             section.Items[i].localPosition = cellCenter - section.ItemOffsets[i];
         }
 
+        ApplyCameraScroll(section);
+    }
+
+    // One column of items, each as deep as its ItemDepths entry, stacked down from the top of the view.
+    static void LayoutColumnByDepth(Section section)
+    {
+        int itemCount = section.Items.Count;
+        float margin = section.Margin;
+        float totalDepth = Mathf.Max(0, itemCount - 1) * margin;
+        foreach (float depth in section.ItemDepths)
+            totalDepth += depth;
+
+        float top = section.ViewCenterZ + section.ViewDepth * 0.5f;
+        float cursor = 0f;
+        for (int i = 0; i < itemCount; i++)
+        {
+            float depth = section.ItemDepths[i];
+            Vector3 center = new Vector3(0f, 0f, top - cursor - depth * 0.5f);
+            section.Items[i].localPosition = center - section.ItemOffsets[i];
+            cursor += depth + margin;
+        }
+
+        section.MaxScrollOffset = Mathf.Max(0f, totalDepth - section.ViewDepth);
         ApplyCameraScroll(section);
     }
 
@@ -1172,6 +1228,7 @@ public class ContentScrollView : MonoBehaviour
 public class ContentScrollLayout
 {
     public float ItemWidth = 5f;
+    [Tooltip("Ignored by play history: its rows and turn headers take the depths set on the PlayHistoryItem prefab.")]
     public float ItemDepth = 7f;
     public float ItemMargin = 0.5f;
     public float ItemScale = 1f;
