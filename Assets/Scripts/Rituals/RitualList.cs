@@ -162,7 +162,7 @@ public class ApolloMinor : Ritual
     {
         if (target is not Player targetPlayer) return;
 
-        ChangeResourceAction goldAction = new ChangeResourceAction(targetPlayer, OfferingType.Gold, 2);
+        CreateOfferingAction goldAction = new CreateOfferingAction(targetPlayer, OfferingType.Gold, 2, targetPlayer.ITargetID, targetPlayer.ITargetID);
         targetPlayer.StartOfTurnActions.Add(new DelayedGameAction(goldAction));
 
         DrawCardAction drawAction = new DrawCardAction(Owner, targetPlayer, 2);
@@ -833,7 +833,8 @@ public class DionysusMinor : Ritual
         KillFollowerAction killAction = new KillFollowerAction(Owner, target, true);
         Owner.GameState.ActionHandler.AddAction(killAction, true);
 
-        ChangeResourceAction gainGoldAction = new ChangeResourceAction(Owner, OfferingType.Gold, 1);
+        // The gold leaves from the sacrificed follower (same gain as ChangeResourceAction).
+        CreateOfferingAction gainGoldAction = new CreateOfferingAction(Owner, OfferingType.Gold, 1, target.GetID(), Owner.ITargetID);
         Owner.GameState.ActionHandler.AddAction(gainGoldAction, true);
 
         DrawCardAction drawAction = new DrawCardAction(Owner, Owner, 2);

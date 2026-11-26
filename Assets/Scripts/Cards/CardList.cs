@@ -3601,11 +3601,12 @@ public class FinalRites : Spell
 
         if (scrollsSpent > 0)
         {
-            ChangeResourceAction boneAction = new ChangeResourceAction(Owner, OfferingType.Bone, scrollsSpent);
+            // Tokens fly from the caster's portrait to their slots (same gain as ChangeResourceAction).
+            CreateOfferingAction boneAction = new CreateOfferingAction(Owner, OfferingType.Bone, scrollsSpent, Owner.ITargetID, Owner.ITargetID);
             Owner.GameState.ActionHandler.AddAction(boneAction);
 
             int goldGained = Mathf.CeilToInt(scrollsSpent / 2f);
-            ChangeResourceAction goldAction = new ChangeResourceAction(Owner, OfferingType.Gold, goldGained);
+            CreateOfferingAction goldAction = new CreateOfferingAction(Owner, OfferingType.Gold, goldGained, Owner.ITargetID, Owner.ITargetID);
             Owner.GameState.ActionHandler.AddAction(goldAction);
         }
     }
@@ -4423,7 +4424,8 @@ public class PriceOfProfit : Spell
         KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget, true);
         Owner.GameState.ActionHandler.AddAction(killAction);
 
-        ChangeResourceAction action = new ChangeResourceAction(Owner, OfferingType.Gold, 1);
+        // The gold leaves from the sacrificed follower (same gain as ChangeResourceAction).
+        CreateOfferingAction action = new CreateOfferingAction(Owner, OfferingType.Gold, 1, followerTarget.ID, Owner.ITargetID);
         Owner.GameState.ActionHandler.AddAction(action, true);
     }
 }
@@ -4578,7 +4580,8 @@ public class PriceOfWealth : Spell
         KillFollowerAction killAction = new KillFollowerAction(Owner, followerTarget, true);
         Owner.GameState.ActionHandler.AddAction(killAction);
 
-        ChangeResourceAction action = new ChangeResourceAction(Owner, OfferingType.Gold, followerAttack);
+        // The gold leaves from the sacrificed follower (same gain as ChangeResourceAction).
+        CreateOfferingAction action = new CreateOfferingAction(Owner, OfferingType.Gold, followerAttack, followerTarget.ID, Owner.ITargetID);
         Owner.GameState.ActionHandler.AddAction(action, true);
     }
 }

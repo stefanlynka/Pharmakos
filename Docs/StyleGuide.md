@@ -63,6 +63,7 @@ Body`; `GameFonts.WithDisplayTitle` turns the leading bold title into Cinzel, an
 | Ritual usable | Ritual on the altar can be used | Fire (`Altar` preset), unchanged |
 | Hover | Mouse over | Brighten + lift; no colour change of its own |
 | Unavailable | Can't use | No glow |
+| Triggered *(proposed)* | A card's triggered ability just fired (On Death, On Attack, start of turn...) | Brief **Votive Gold** flare (`Triggered` preset, ~0.45 s) with a small scale pulse, then back to its state's glow. Never stays lit. Static/passive abilities never flash. See `Assets/Scripts/Cues/CLAUDE.md`. |
 
 Use the five offering colours (Gold, Blood, Bone, Crop, Scroll) only for offerings, the Ready glow of what produces them, and their themes (see Palette rules); never for interaction states.
 
@@ -123,6 +124,7 @@ The game is dark and grand, and the board must never compete with what the playe
 - Card art and event art share one colour grade *(TBD)*: warm, slightly desaturated, lifted blacks toward Kiln Black.
 - 3D props (trinkets, braziers, lyre) are lit warm from firelight; avoid cool rim light and glossy plastic specular.
 - VFX use the palette: embers and fire in Terracotta/Gold, offerings in their offering colour. Particles must be large enough to read at 1080p.
+- **Combat cue VFX (proposed):** painted brushstrokes, like the fire and water flurries: projectiles and bursts in Water (Siren), Fire, Blood (Hera, Gnaw, the Price Of... sacrifices; the offering's red for life and blood), Ink (ash grey with bone streaks: shades, fear, the Furies) and Gold (Twist of Fate, the gods' favour). Sized relative to the cards (`CueVfxUtil.Unit`).
 - **Ritual invocations (proposed):** the one place a god's own colour is used as light. Each god's glow comes from its
   altar style, pushed toward light (Zeus pale gold, Poseidon muted sea green, Hades bone, Ares crimson, Hera lapis
   violet...), set in its `RitualTheme` (`Resources/Content/RitualThemes`). Same rules as the altars: muted rather than

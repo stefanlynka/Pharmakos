@@ -397,8 +397,10 @@ public class ChangeResourceDelayedInstance : TriggeredFollowerEffectInstance
 
     public override void Trigger(ITarget target = null, int amount = 0)
     {
-        ChangeResourceAction action = new ChangeResourceAction(AffectedFollower.Owner, OfferingType.Gold, OfferingAmount);
-        AffectedFollower.Owner.StartOfTurnActions.Add(new DelayedGameAction(action));
+        // Paid at the start of next turn: the token flies from the owner's portrait (the follower may be gone by then).
+        Player owner = AffectedFollower.Owner;
+        CreateOfferingAction action = new CreateOfferingAction(owner, OfferingType.Gold, OfferingAmount, owner.ITargetID, owner.ITargetID);
+        owner.StartOfTurnActions.Add(new DelayedGameAction(action));
         AffectedFollower.Owner.GameState.ActionHandler.MarkTriggerActed();
         //AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
     }
