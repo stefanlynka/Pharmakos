@@ -62,6 +62,12 @@ public class AudioHandler : MonoBehaviour
     [Tooltip("Minor rituals play at this fraction of RitualInvocationVolume, so Majors land harder.")]
     [Range(0f, 1f)] public float MinorRitualVolumeScale = 0.8f;
 
+    [Header("Follower Death")]
+    [Tooltip("The skull landing on a dying follower. Clip: Audio/SFX/Death/DeathStrike (Tools/Audio/build_death_sounds.py).")]
+    [Range(0f, 2f)] public float DeathStrikeVolume = 0.7f;
+    [Tooltip("The card falling into the board and breaking into ash. Clip: Audio/SFX/Death/DeathCollapse.")]
+    [Range(0f, 2f)] public float DeathCollapseVolume = 0.8f;
+
     private float baseMusicVolume = 0.1f;
 
     private float userMusicVolume = 0.5f;
@@ -523,6 +529,25 @@ public class AudioHandler : MonoBehaviour
                 }
             }
         }
+    }
+
+    AudioClip deathStrikeClip;
+    AudioClip deathCollapseClip;
+
+    /// <summary>The skull landing on a dying follower (FollowerDeathAnimation).</summary>
+    public void PlayDeathStrike()
+    {
+        if (deathStrikeClip == null)
+            deathStrikeClip = Resources.Load<AudioClip>("Audio/SFX/Death/DeathStrike");
+        PlayOneShot(deathStrikeClip, DeathStrikeVolume);
+    }
+
+    /// <summary>A dead follower's card falling into the board and breaking into ash (FollowerDeathAnimation).</summary>
+    public void PlayDeathCollapse()
+    {
+        if (deathCollapseClip == null)
+            deathCollapseClip = Resources.Load<AudioClip>("Audio/SFX/Death/DeathCollapse");
+        PlayOneShot(deathCollapseClip, DeathCollapseVolume);
     }
 
     public void PlayOneShot(AudioClip clip, float volumeScale = 1f)

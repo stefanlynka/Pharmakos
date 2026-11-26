@@ -1,7 +1,7 @@
 """The skull shown over a follower when it dies (ViewFollower.SkullRenderer), in black-figure style.
 
-A Kiln Black silhouette with the eye sockets and nose cut through (the card shows behind), incised Terracotta
-lines for brow, cheekbones and teeth, and a thin Terracotta rim so it reads on dark art.
+A Kiln Black silhouette with the eye sockets and nose cut through (the card shows behind), incised bone-white
+lines for temples, dome and teeth, and a thin bone-white rim so it reads on dark art.
 
     python Tools/Icons/death_skull.py            # writes Assets/Sprites/DeathSkull.png and Tools/Icons/svg/death_skull.svg
     python Tools/Icons/death_skull.py --out X.png
@@ -21,7 +21,7 @@ OUT = os.path.join(ROOT, "Assets", "Sprites", "DeathSkull.png")
 SVG = os.path.join(summary_mono.SVG_DIR, "death_skull.svg")
 
 BLACK = "#141110"
-TERRACOTTA = "#D9733F"
+BONE = "#D8D4CC"  # the Bone offering colour: white is death (Docs/StyleGuide.md, offering colours)
 WIDTH, HEIGHT = 1024, 1229  # canvas 100 x 120
 
 SILHOUETTE = (
@@ -53,15 +53,15 @@ RIM = 1.9
 
 def build_svg():
     incisions = "".join(
-        f'<path d="{d}" fill="none" stroke="{TERRACOTTA}" stroke-width="{STROKE}" stroke-linecap="round"/>'
+        f'<path d="{d}" fill="none" stroke="{BONE}" stroke-width="{STROKE}" stroke-linecap="round"/>'
         for d in INCISIONS
     )
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" viewBox="0 0 100 120">'
         f'<path d="{SILHOUETTE} {SOCKETS} {NOSE}" fill="{BLACK}" fill-rule="evenodd"/>'
-        f'<path d="{SOCKETS} {NOSE}" fill="none" stroke="{TERRACOTTA}" stroke-width="{STROKE}" stroke-linejoin="round"/>'
+        f'<path d="{SOCKETS} {NOSE}" fill="none" stroke="{BONE}" stroke-width="{STROKE}" stroke-linejoin="round"/>'
         f"{incisions}"
-        f'<path d="{SILHOUETTE}" fill="none" stroke="{TERRACOTTA}" stroke-width="{RIM}" stroke-linejoin="round"/>'
+        f'<path d="{SILHOUETTE}" fill="none" stroke="{BONE}" stroke-width="{RIM}" stroke-linejoin="round"/>'
         f"</svg>"
     )
 

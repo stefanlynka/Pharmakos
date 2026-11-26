@@ -64,6 +64,16 @@ public class CreateOfferingAnimation : AnimationAction
 
         ViewTarget viewSource = View.Instance.GetViewTargetByID(sourceID);
 
+        // A dying follower's Bone leaves from its ash, not while the skull is still landing on it.
+        if (viewSource is ViewFollower dyingFollower
+            && FollowerDeathAnimation.DeferUntilAsh(dyingFollower, () => Launch(dyingFollower)))
+            return;
+
+        Launch(viewSource);
+    }
+
+    void Launch(ViewTarget viewSource)
+    {
         if (viewSource == null)
         {
             Debug.LogWarning("CreateOfferingAnimation: ViewTarget with ID " + sourceID + " not found.");

@@ -25,7 +25,7 @@ Use these, not ad-hoc colours. Hex values are starting points sampled by eye fro
 | Offering | Scroll | `#2E5C8A` | Scroll offering only |
 
 Rules:
-- Offering colours mean offerings. Don't reuse them for UI states.
+- Offering colours mean their offering **and its theme**, and should carry that meaning wherever it applies: Bone white = bones and death (the death skull is Kiln Black and Bone white), Blood red = blood and life change (damage, healing), Crop green = crops and followers, Scroll blue = scrolls and spells. Don't reuse them for unrelated UI states. Terracotta stays the UI accent (touchable), not a default for gameplay meaning.
 - No cyan, no neon green, no default Unity grey anywhere.
 - Text is Bone on dark, or Kiln Black on terracotta/parchment. Never pure white `#FFFFFF` on large areas.
 
@@ -64,7 +64,7 @@ Body`; `GameFonts.WithDisplayTitle` turns the leading bold title into Cinzel, an
 | Hover | Mouse over | Brighten + lift; no colour change of its own |
 | Unavailable | Can't use | No glow |
 
-Never use the five offering colours (Gold, Blood, Bone, Crop, Scroll) for anything except offerings, or for the Ready glow of what produces them.
+Use the five offering colours (Gold, Blood, Bone, Crop, Scroll) only for offerings, the Ready glow of what produces them, and their themes (see Palette rules); never for interaction states.
 
 Overworld: reachable hexes get an **amber** outline (Choice ember brightened to read on terracotta tiles), the current hex a **warm bone** outline (`Assets/Outlines/Free Outline Settings.asset`, rendering layers 2 and 4). The legend icon sheets (`Images/Overworld/2.png`, `3.png`) are baked screenshots; if outline colours change, recolour their rings too.
 
