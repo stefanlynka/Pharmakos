@@ -18,6 +18,10 @@ public class ArcProjectileStyle
     public float Speed = 18f;
     public float MinDuration = 0.22f;
     public float MaxDuration = 1.35f;
+    /// <summary>When set, the projectile is painted from this Resources folder's brushstrokes (StrokeProjectileView) instead of a prefab.</summary>
+    public string StrokeFolder;
+    /// <summary>Cue sound (CuePlayer id) played when it reaches the target.</summary>
+    public string ImpactCue;
 
     public static readonly ArcProjectileStyle Arrow = new ArcProjectileStyle
     {
@@ -65,6 +69,7 @@ public class ArcProjectileAnimation : AnimationAction
     }
 
     GameObject projectile;
+    StrokeProjectileView strokes;
     AttackArrowPreview.DirectArc arc;
     float impactDistance;
     float projectileLength;
@@ -112,6 +117,16 @@ public class ArcProjectileAnimation : AnimationAction
 
     bool TrySpawn()
     {
+        if (!string.IsNullOrEmpty(style.StrokeFolder))
+        {
+            strokes = StrokeProjectileView.Create(style);
+            if (strokes == null)
+                return false;
+            projectile = strokes.gameObject;
+            projectileLength = 1.2f;
+            return true;
+        }
+
         GameObject prefab = LoadPrefab(style.PrefabPath);
         if (prefab == null)
             return false;
@@ -210,6 +225,14 @@ public class ArcProjectileAnimation : AnimationAction
         if (!arc.Sample(distance, out Vector3 position, out Vector3 tangent))
             return;
 
+        if (strokes != null)
+        {
+            // Painted projectiles end at the target in a burst instead of flying through it.
+            if (!reached)
+                strokes.MoveHead(position, tangent);
+            return;
+        }
+
         projectile.transform.position = position;
         if (align)
         {
@@ -236,6 +259,13 @@ public class ArcProjectileAnimation : AnimationAction
             return;
 
         reached = true;
+        if (strokes != null)
+        {
+            strokes.Impact(arc.End, arc.ArriveDirection);
+            strokes.Release();
+        }
+        if (!string.IsNullOrEmpty(style?.ImpactCue))
+            CuePlayer.Play(style.ImpactCue);
         OnReachedTarget?.Invoke();
         if (pullDamageOnImpact)
             PullDamage();
@@ -271,7 +301,13 @@ public class ArcProjectileAnimation : AnimationAction
         if (!reached)
             ReachTarget();
 
-        if (projectile != null)
+        if (strokes != null)
+        {
+            strokes.Release();
+            strokes = null;
+            projectile = null;
+        }
+        else if (projectile != null)
         {
             UnityEngine.Object.Destroy(projectile);
             projectile = null;

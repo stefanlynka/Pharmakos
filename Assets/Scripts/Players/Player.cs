@@ -405,15 +405,20 @@ public class Player : ITarget
         if (otherPlayer != null)
             otherPlayer.SummoningSicknessCleared = false;
 
+        // Each follower's turn effects get a cue scope: if one does something, its card flashes with its sound.
         foreach (Follower follower in BattleRow.Followers)
         {
-            follower.DoStartOfMyTurnEffects();
-            follower.DoStartOfEachTurnEffects();
+            using (GameState.ActionHandler.BeginCue(follower, TriggerCue.StartOfTurn))
+            {
+                follower.DoStartOfMyTurnEffects();
+                follower.DoStartOfEachTurnEffects();
+            }
         }
 
         foreach (Follower follower in otherPlayer.BattleRow.Followers)
         {
-            follower.DoStartOfEachTurnEffects();
+            using (GameState.ActionHandler.BeginCue(follower, TriggerCue.StartOfTurn))
+                follower.DoStartOfEachTurnEffects();
         }
 
         DoStartOfTurnPlayerActions();
@@ -455,8 +460,11 @@ public class Player : ITarget
         {
             if (follower == null || follower.CurrentHealth <= 0) continue;
 
-            follower.DoEndOfMyTurnEffects();
-            follower.DoEndOfEachTurnEffects();
+            using (GameState.ActionHandler.BeginCue(follower, TriggerCue.EndOfTurn))
+            {
+                follower.DoEndOfMyTurnEffects();
+                follower.DoEndOfEachTurnEffects();
+            }
         }
 
         Player otherPlayer = GameState.GetOtherPlayer(PlayerID);
@@ -465,7 +473,9 @@ public class Player : ITarget
             List<Follower> theirFollowers = new List<Follower>(otherPlayer.BattleRow.Followers);
             foreach (Follower follower in theirFollowers)
             {
-                follower?.DoEndOfEachTurnEffects();
+                if (follower == null) continue;
+                using (GameState.ActionHandler.BeginCue(follower, TriggerCue.EndOfTurn))
+                    follower.DoEndOfEachTurnEffects();
             }
         }
 

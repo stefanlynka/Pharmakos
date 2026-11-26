@@ -48,6 +48,29 @@ public class FollowerDeathAnimation : AnimationAction
     // Followers mid-death, with what waits for their ash (the Bone token's flight).
     static readonly Dictionary<ViewFollower, List<Action>> waitingForAsh = new Dictionary<ViewFollower, List<Action>>();
 
+    // Where recently dead followers broke into ash (by follower ID), for anything that leaves from them after their
+    // card is gone (e.g. a gold token queued behind another trigger). Only the last few are kept.
+    static readonly Dictionary<int, Vector3> ashPositions = new Dictionary<int, Vector3>();
+    static readonly Queue<int> ashOrder = new Queue<int>();
+    const int AshPositionsKept = 16;
+
+    /// <summary>Where the follower with this ID broke into ash, if it died recently.</summary>
+    public static bool TryGetAshPosition(int followerID, out Vector3 position)
+    {
+        return ashPositions.TryGetValue(followerID, out position);
+    }
+
+    static void RememberAsh(int followerID, Vector3 position)
+    {
+        if (!ashPositions.ContainsKey(followerID))
+        {
+            ashOrder.Enqueue(followerID);
+            if (ashOrder.Count > AshPositionsKept)
+                ashPositions.Remove(ashOrder.Dequeue());
+        }
+        ashPositions[followerID] = position;
+    }
+
     private ViewFollower ViewFollower;
     private Follower follower;
 
@@ -213,6 +236,9 @@ public class FollowerDeathAnimation : AnimationAction
 
     void Collapse(VfxContext context)
     {
+        if (ViewFollower != null && follower != null)
+            RememberAsh(follower.ID, ViewFollower.transform.position);
+
         if (ViewFollower != null && waitingForAsh.TryGetValue(ViewFollower, out List<Action> waiting))
         {
             waitingForAsh.Remove(ViewFollower);

@@ -65,7 +65,23 @@ public class PostFXPulseSettings : ScriptableObject
     [Tooltip("The god's colour is darkened by this before tinting, so the edges glow faintly rather than wash out.")]
     [Range(0f, 1f)] public float RitualTintDarkness = 0.35f;
 
+    [Header("Twist of Fate")]
+    [Tooltip("The board darkens toward fired-umber gold while the threads of fate gather (Duration and Attack Time are " +
+             "stretched to TwistOfFateVfx.GatherTime).")]
+    public Pulse TwistOfFate = new Pulse
+    {
+        Duration = 1.5f,
+        AttackTime = 1f,
+        VignetteColor = new Color(0.22f, 0.14f, 0.02f),
+        VignetteIntensity = 0.5f,
+        VignetteSmoothness = 0.55f,
+        ChromaticAberration = 0.08f,
+        Exposure = -0.7f,
+        Saturation = -25f,
+    };
+
     // Runtime copy of RitualUsed with the god's tint applied (never saved).
     [System.NonSerialized] public Pulse RitualTintedPulse;
     [System.NonSerialized] public Pulse RitualGatherTimed;
+    [System.NonSerialized] public Pulse TwistOfFateTimed;
 }

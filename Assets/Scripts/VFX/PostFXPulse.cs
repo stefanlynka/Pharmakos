@@ -56,6 +56,19 @@ public class PostFXPulse : MonoBehaviour
         Play(timed, 1f);
     }
 
+    /// <summary>Darkens toward umber gold while Twist of Fate's threads gather, peaking as they land (gather seconds from now).</summary>
+    public static void TwistOfFate(float gather)
+    {
+        PostFXPulseSettings s = LoadSettings();
+        if (s == null || s.TwistOfFate == null)
+            return;
+        PostFXPulseSettings.Pulse timed = s.TwistOfFateTimed ??= new PostFXPulseSettings.Pulse();
+        CopyPulse(s.TwistOfFate, timed);
+        timed.AttackTime = Mathf.Max(0.05f, gather);
+        timed.Duration = gather + 0.6f;
+        Play(timed, 1f);
+    }
+
     static void CopyPulse(PostFXPulseSettings.Pulse from, PostFXPulseSettings.Pulse to)
     {
         to.Duration = from.Duration;

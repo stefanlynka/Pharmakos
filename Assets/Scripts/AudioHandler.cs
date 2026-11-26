@@ -68,6 +68,12 @@ public class AudioHandler : MonoBehaviour
     [Tooltip("The card falling into the board and breaking into ash. Clip: Audio/SFX/Death/DeathCollapse.")]
     [Range(0f, 2f)] public float DeathCollapseVolume = 0.8f;
 
+    [Header("Cues")]
+    [Tooltip("Triggered abilities, trinkets and ritual buffs (CuePlayer). Still scaled by the SFX slider. Clips: Audio/SFX/Cues, rendered by Tools/Audio/build_cue_sounds.py.")]
+    [Range(0f, 2f)] public float CueVolume = 0.7f;
+    [Tooltip("Spell cast sounds (CuePlayer.PlayCast). Still scaled by the SFX slider.")]
+    [Range(0f, 2f)] public float SpellCastVolume = 0.8f;
+
     private float baseMusicVolume = 0.1f;
 
     private float userMusicVolume = 0.5f;
@@ -548,6 +554,56 @@ public class AudioHandler : MonoBehaviour
         if (deathCollapseClip == null)
             deathCollapseClip = Resources.Load<AudioClip>("Audio/SFX/Death/DeathCollapse");
         PlayOneShot(deathCollapseClip, DeathCollapseVolume);
+    }
+
+    const int PitchedVoiceCount = 10;
+    readonly List<AudioSource> pitchedVoices = new List<AudioSource>();
+    int nextPitchedVoice;
+
+    /// <summary>
+    /// Plays a clip at a pitch of its own (PlayOneShot shares the source's pitch), on a small pool of voices that
+    /// copy the SFX source's mixer routing. The oldest voice is reused when all are busy.
+    /// </summary>
+    public void PlayPitched(AudioClip clip, float volumeScale = 1f, float pitch = 1f)
+    {
+        if (clip == null)
+            return;
+
+        if (pitchedVoices.Count == 0)
+        {
+            for (int i = 0; i < PitchedVoiceCount; i++)
+            {
+                AudioSource voice = gameObject.AddComponent<AudioSource>();
+                voice.playOnAwake = false;
+                voice.spatialBlend = 0f;
+                if (SoundEffectSource != null)
+                {
+                    voice.outputAudioMixerGroup = SoundEffectSource.outputAudioMixerGroup;
+                    voice.priority = SoundEffectSource.priority;
+                }
+                pitchedVoices.Add(voice);
+            }
+        }
+
+        AudioSource source = null;
+        for (int i = 0; i < pitchedVoices.Count; i++)
+        {
+            AudioSource candidate = pitchedVoices[(nextPitchedVoice + i) % pitchedVoices.Count];
+            if (!candidate.isPlaying)
+            {
+                source = candidate;
+                break;
+            }
+        }
+        if (source == null)
+            source = pitchedVoices[nextPitchedVoice];
+        nextPitchedVoice = (pitchedVoices.IndexOf(source) + 1) % pitchedVoices.Count;
+
+        source.Stop();
+        source.clip = clip;
+        source.pitch = pitch;
+        source.volume = Mathf.Clamp01(userSoundEffectVolume * volumeScale);
+        source.Play();
     }
 
     public void PlayOneShot(AudioClip clip, float volumeScale = 1f)

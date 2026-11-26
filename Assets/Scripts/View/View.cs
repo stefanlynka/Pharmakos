@@ -101,6 +101,8 @@ public class View : MonoBehaviour
             Player1.FlareBuff(effect);
         else if (Player2 != null && effect.Owner == Player2.Player)
             Player2.FlareBuff(effect);
+
+        CueLibrary.PlayEffectCue(effect);
     }
 
     private void Awake()

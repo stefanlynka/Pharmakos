@@ -1,14 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Unity.VisualScripting.Member;
-using static UnityEngine.GraphicsBuffer;
 
 public class ChangeResourceAction : GameAction
 {
     Player owner;
     OfferingType offeringType;
     int amount = 0;
+
+    public OfferingType OfferingType => offeringType;
+    public int Amount => amount;
 
     public ChangeResourceAction(Player owner, OfferingType offeringType, int amount)
     {

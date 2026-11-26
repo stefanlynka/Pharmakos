@@ -1,9 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class PlaySpellAction : GameAction
 {
@@ -51,18 +49,20 @@ public class PlaySpellAction : GameAction
 
         RemoveCardAnimation removeCardAnimation = new RemoveCardAnimation(this, Spell);
 
-        List<AnimationAction> animationActions = new List<AnimationAction>()
-        {
-            moveCardAnimation,
-            waitAnimation,
-            removeCardAnimation,
-        };
+        // Order: card arrives, cast sound, the spell's VFX, a thrown projectile, any buff it grants, then it is shown
+        // for a moment and removed. Cast cues (sound, VFX, projectile) come from SpellCues via CueLibrary.
+        List<AnimationAction> animationActions = new List<AnimationAction> { moveCardAnimation };
+        SpellCueDef cue = CueLibrary.ForSpell(Spell);
 
-        VfxEffect playVfx = Spell.GetPlayVfx(Target);
+        if (cue != null && !string.IsNullOrEmpty(cue.Sound))
+            animationActions.Add(new CastSoundAnimation(this, cue.Sound, cue.SoundDelay));
+
+        VfxEffect playVfx = Spell.GetPlayVfx(Target) ?? cue?.Vfx?.Invoke(Spell, Target);
         if (playVfx != null)
-            animationActions.Insert(1, new PlayVfxAnimation(this, playVfx, Spell, Target));
+            animationActions.Add(new PlayVfxAnimation(this, playVfx, Spell, Target));
 
         ArcProjectileStyle throwStyle = Spell.GetThrowStyle();
+        ArcProjectileStyle cueStyle = throwStyle == null ? cue?.Projectile : null;
         if (throwStyle != null && Target != null)
         {
             ArcProjectileAnimation throwAnimation = new ArcProjectileAnimation(this, throwStyle, Owner, Target, pullDamageOnImpact: true);
@@ -72,12 +72,27 @@ public class PlaySpellAction : GameAction
                 && ReferenceEquals(damage.Source, Owner)
                 && ReferenceEquals(damage.Target, Target)
                 && damage.ProjectileStyle == throwStyle);
-            animationActions.Insert(1, throwAnimation);
+            animationActions.Add(throwAnimation);
+        }
+        else if (cueStyle != null && Target != null)
+        {
+            // The spell's own damage to its target is shown when this lands.
+            ArcProjectileAnimation throwAnimation = new ArcProjectileAnimation(this, cueStyle, Owner, Target, pullDamageOnImpact: true);
+            throwAnimation.MatchDamage(animationAction =>
+                animationAction is ChangeStatsAnimation
+                && animationAction.GameAction is DealDamageAction damage
+                && damage.ProjectileStyle == null
+                && ReferenceEquals(damage.Source, Owner)
+                && ReferenceEquals(damage.Target, Target));
+            animationActions.Add(throwAnimation);
         }
 
         // Show the granted trinket once this card is on screen, as the result of the play.
         if (Spell is TwistOfFate)
-            animationActions.Insert(1, new RevealPlayedTrinketAnimation(this, Owner));
+            animationActions.Add(new RevealPlayedTrinketAnimation(this, Owner));
+
+        animationActions.Add(waitAnimation);
+        animationActions.Add(removeCardAnimation);
 
         return animationActions;
     }

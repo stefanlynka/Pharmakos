@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7e3b9c1d2f5486a8b0c1d2e3f4a5b6c, type: 3}
+  m_Name: Triggered
+  m_EditorClassIdentifier: 
+  glowColor: {r: 0.85, g: 0.71, b: 0.35, a: 0.95}
+  hotColor: {r: 1, g: 0.93, b: 0.72, a: 0.97}
+  outerColor: {r: 0.62, g: 0.42, b: 0.12, a: 1}
+  outerShellGlowColor: {r: 0.8, g: 0.58, b: 0.2, a: 0.97}
+  outerShellOuterColor: {r: 0.36, g: 0.22, b: 0.05, a: 0.8}
+  coreFlameExtent: 0.012
+  coreFlameExtentMin: 0.001
+  outerFlameExtent: 0.032
+  outerFlameExtentMin: 0.004
+  edgeMode: 0
+  geomEdgeWidth: 0.08
+  geomEdgeStrength: 1
+  hybridBlend: 0.65
+  topFaceSuppress: 0
+  edgePower: 3.8
+  outerEdgePower: 2.6
+  edgeMin: 0.35
+  riseStrength: 1.1
+  coreTongueThreshold: 0.46
+  outerTongueThreshold: 0.58
+  tongueSharpness: 0.11
+  tipFalloff: 1.35
+  outerTipFalloff: 1.05
+  noiseScale: 3
+  noiseSpeed: 0.85
+  coreNoiseStrength: 1.15
+  outerNoiseStrength: 1.35
+  flowBias: 0.24
+  intensity: 1
+  coreIntensityMultiplier: 1
+  outerIntensityMultiplier: 1
+  emissionBoost: 2.2
+  outerEmissionBoost: 2.2
+  flickerSpeed: 0.65
+  flickerStrength: 0.38
+  pulseSpeed: 0.3
+  pulseMin: 0.6
+  pulseMax: 1.1

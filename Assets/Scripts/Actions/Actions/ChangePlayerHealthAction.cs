@@ -9,6 +9,9 @@ public class ChangePlayerHealthAction : GameAction
     int amount = 0;
     int healthChanged = 0;
 
+    public int Amount => amount;
+    public Player Target => target;
+
     public ChangePlayerHealthAction(Player target, ITarget source, int amount)
     {
         this.target = target;

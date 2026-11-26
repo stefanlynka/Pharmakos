@@ -71,6 +71,9 @@ public class CardHighlightEffect : MonoBehaviour
     bool isInitialized;
     bool flarePlaying;
     float flareElapsed;
+    // Colours of the flare in progress when it plays a preset of its own (a trigger flash); null = the live preset's.
+    MeshHighlightSettings flarePreset;
+    float flareDurationOverride = -1f;
 
     void Awake()
     {
@@ -87,8 +90,9 @@ public class CardHighlightEffect : MonoBehaviour
 
 #if UNITY_EDITOR
         // Edits to the preset asset show up live while tuning in play mode.
-        if (LivePreset != null)
-            CopySettingsToFields(LivePreset);
+        MeshHighlightSettings showing = flarePlaying && flarePreset != null ? flarePreset : LivePreset;
+        if (showing != null)
+            CopySettingsToFields(showing);
 #endif
 
         float resting = isActive ? RestingIntensity() : 0f;
@@ -98,11 +102,12 @@ public class CardHighlightEffect : MonoBehaviour
         if (flarePlaying)
         {
             flareElapsed += Time.unscaledDeltaTime;
-            float duration = Mathf.Max(0.01f, flareDuration);
+            float duration = Mathf.Max(0.01f, flareDurationOverride > 0f ? flareDurationOverride : flareDuration);
             float t = flareElapsed / duration;
             if (t >= 1f)
             {
                 flarePlaying = false;
+                EndFlarePreset();
                 RefreshRendererState();
             }
             else
@@ -146,6 +151,37 @@ public class CardHighlightEffect : MonoBehaviour
 
     public void Flare()
     {
+        EndFlarePreset();
+        StartFlare();
+    }
+
+    /// <summary>
+    /// Flares in another preset's colours (e.g. a triggered ability's flash), then returns to the live preset.
+    /// Duration &lt;= 0 uses the component's flare duration.
+    /// </summary>
+    public void Flare(MeshHighlightSettings preset, float duration = -1f)
+    {
+        EndFlarePreset();
+        flarePreset = preset;
+        flareDurationOverride = duration;
+        if (preset != null)
+            CopySettingsToFields(preset);
+        StartFlare();
+    }
+
+    void EndFlarePreset()
+    {
+        flareDurationOverride = -1f;
+        if (flarePreset == null)
+            return;
+
+        flarePreset = null;
+        if (LivePreset != null)
+            CopySettingsToFields(LivePreset);
+    }
+
+    void StartFlare()
+    {
         EnsureInitialized();
         flarePlaying = true;
         flareElapsed = 0f;
@@ -162,6 +198,9 @@ public class CardHighlightEffect : MonoBehaviour
             return;
 
         livePreset = preset;
+        // A preset flare keeps its own colours; the new state's colours take over when it ends.
+        if (flarePlaying && flarePreset != null)
+            return;
         CopySettingsToFields(preset);
 
         if (isActive || flarePlaying)

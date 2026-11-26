@@ -9,6 +9,9 @@ public abstract class GameAction
     // Play history, canon game only (ActionHandler stamps it; it stays null in AI simulations): the triggered
     // ability, trinket or ritual buff this action resolves for. Copies share it, but simulated copies never read it.
     public TriggeredEffectPlayHistory HistoryRecord;
+    // Presentation, canon game only: the triggered ability this action is a direct result of (its flash and sound
+    // play just before this action's animations). Set by ActionHandler while a trigger scope is open; see Cues/CLAUDE.md.
+    public TriggerCue Cue;
 
     /// <summary>True for plays, attacks and rituals, which add an entry of their own (see MakePlayHistoryItem).</summary>
     public virtual bool AddsPlayHistoryEntry => false;

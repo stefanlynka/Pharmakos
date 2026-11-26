@@ -15,6 +15,11 @@ public class ActionHandler
     private GameAction executingAction;
     private int evaluationDepth;
 
+    // Presentation (canon game only): each open trigger scope has a cue (flash + sound) that its direct actions carry.
+    // A closed cue that acted waits here for the action that caused it to finish animating (see TriggerCue.Close).
+    private readonly Stack<TriggerCue> cueScopes = new Stack<TriggerCue>();
+    private readonly List<TriggerCue> waitingCues = new List<TriggerCue>();
+
     public ActionHandler(bool simulated = false)
     {
         Simulated = simulated;
@@ -30,6 +35,9 @@ public class ActionHandler
             else if (executingAction != null)
                 newAction.HistoryRecord = executingAction.HistoryRecord;
         }
+
+        if (!Simulated && newAction.Cue == null && cueScopes.Count > 0)
+            cueScopes.Peek().AddAction(newAction);
 
         if (frontOfQueue)
         {
@@ -75,6 +83,11 @@ public class ActionHandler
                 finally
                 {
                     executingAction = previous;
+                    if (!Simulated)
+                    {
+                        newAction.Cue?.ActionExecuted();
+                        ReleaseCuesCausedBy(newAction);
+                    }
                 }
             }
         }
@@ -92,25 +105,79 @@ public class ActionHandler
     /// Opens a play history scope for a follower's triggered ability: actions added until it is disposed belong to
     /// one entry. Does nothing in simulations. Use with <c>using</c>.
     /// </summary>
-    public TriggerHistoryScope BeginTrigger(Follower source, EffectTrigger trigger, bool viaAlly = false)
+    public TriggerHistoryScope BeginTrigger(Follower source, EffectTrigger trigger, bool viaAlly = false, string effectDefName = null)
     {
         if (Simulated || source == null || Controller.Instance == null)
             return default;
 
         TriggeredEffectPlayHistory record = new TriggeredEffectPlayHistory(source, trigger, viaAlly);
         triggerScopes.Push(record);
-        return new TriggerHistoryScope(this);
+        OpenCue(source, trigger.ToString(), viaAlly, effectDefName);
+        return new TriggerHistoryScope(this, history: true, cue: true);
     }
 
-    internal void EndTrigger()
+    /// <summary>
+    /// Opens a presentation-only scope for an ability that has no play history trigger (start / end of turn
+    /// effects): if it does something, its follower flashes and its cue sound plays. Does nothing in simulations.
+    /// </summary>
+    public TriggerHistoryScope BeginCue(Follower source, string trigger)
     {
-        if (triggerScopes.Count > 0)
+        if (Simulated || source == null || Controller.Instance == null)
+            return default;
+
+        OpenCue(source, trigger, false, null);
+        return new TriggerHistoryScope(this, history: false, cue: true);
+    }
+
+    internal void EndTrigger(bool history, bool cue)
+    {
+        if (history && triggerScopes.Count > 0)
             triggerScopes.Pop();
+        if (cue && cueScopes.Count > 0)
+            CloseCue(cueScopes.Pop());
+    }
+
+    void OpenCue(Follower source, string trigger, bool viaAlly, string effectDefName)
+    {
+        TriggerCue cue = new TriggerCue(source, trigger, viaAlly, executingAction, effectDefName);
+        cueScopes.Push(cue);
+        cue.Open();
+    }
+
+    void CloseCue(TriggerCue cue)
+    {
+        if (cue.Close())
+            waitingCues.Add(cue);
+    }
+
+    // The action that fired these cues has executed (its animations are queued): place any still unplaced after them.
+    void ReleaseCuesCausedBy(GameAction action)
+    {
+        for (int i = waitingCues.Count - 1; i >= 0; i--)
+        {
+            TriggerCue cue = waitingCues[i];
+            if (cue.CausingAction != action && !cue.Placed)
+                continue;
+
+            waitingCues.RemoveAt(i);
+            cue.PlaceNow();
+        }
+    }
+
+    /// <summary>
+    /// The open trigger did something without adding an action now (e.g. stored a reward for next turn), so its
+    /// cue should still play.
+    /// </summary>
+    public void MarkTriggerActed()
+    {
+        if (!Simulated && cueScopes.Count > 0)
+            cueScopes.Peek().MarkActed();
     }
 
     public void ClearStack()
     {
         ActionStack.Clear();
+        waitingCues.Clear();
     }
 }
 
@@ -119,14 +186,18 @@ public class ActionHandler
 public struct TriggerHistoryScope : System.IDisposable
 {
     readonly ActionHandler handler;
+    readonly bool history;
+    readonly bool cue;
 
-    public TriggerHistoryScope(ActionHandler handler)
+    public TriggerHistoryScope(ActionHandler handler, bool history = true, bool cue = false)
     {
         this.handler = handler;
+        this.history = history;
+        this.cue = cue;
     }
 
     public void Dispose()
     {
-        handler?.EndTrigger();
+        handler?.EndTrigger(history, cue);
     }
 }

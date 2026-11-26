@@ -676,10 +676,10 @@ public class DemeterMajorEffectDef : StaticPlayerEffect
     {
         if (follower.Owner != TargetPlayer) return;
 
-        DrawCardAction drawCardAction = new DrawCardAction(Owner, Owner, 1);
+        DrawCardAction drawCardAction = new DrawCardAction(Owner, Owner, 1) { SourceEffect = this };
         Owner.GameState.ActionHandler.AddAction(drawCardAction, true);
 
-        ChangePlayerHealthAction gainHealthAction = new ChangePlayerHealthAction(Owner, Owner, 1);
+        ChangePlayerHealthAction gainHealthAction = new ChangePlayerHealthAction(Owner, Owner, 1) { SourceEffect = this };
         Owner.GameState.ActionHandler.AddAction(gainHealthAction, true);
 
     }
@@ -780,7 +780,7 @@ public class DemeterMinorEffectDef : StaticPlayerEffect
         Follower targetFollower = alliedFollowers[idx];
 
         // Give that follower the attack value
-        ChangeStatsAction action = new ChangeStatsAction(targetFollower, attackGain, 0);
+        ChangeStatsAction action = new ChangeStatsAction(targetFollower, attackGain, 0) { SourceEffect = this };
         Owner.GameState.ActionHandler.AddAction(action, true);
     }
     protected override string GetDescription()
@@ -1175,7 +1175,7 @@ public class HermesMajorEffectDef : StaticPlayerEffect
         Herald herald = new Herald();
         herald.Costs[OfferingType.Gold] = 0;
         herald.Init(TargetPlayer);
-        AddCardCopyToHandAction addAction = new AddCardCopyToHandAction(herald);
+        AddCardCopyToHandAction addAction = new AddCardCopyToHandAction(herald) { SourceEffect = this };
         TargetPlayer.GameState.ActionHandler.AddAction(addAction);
     }
 
@@ -1449,7 +1449,7 @@ public class HeraMajorEffectDef : StaticPlayerEffect
         int idx = TargetPlayer.GameState.RNG.Next(0, possibleTargets.Count);
         ITarget randomEnemy = possibleTargets[idx];
 
-        DealDamageAction damageAction = new DealDamageAction(Owner, randomEnemy, 2);
+        DealDamageAction damageAction = new DealDamageAction(Owner, randomEnemy, 2) { SourceEffect = this };
         TargetPlayer.GameState.ActionHandler.AddAction(damageAction);
     }
     protected override string GetDescription()
@@ -1609,7 +1609,7 @@ public class PoseidonMajorEffectDef : StaticPlayerEffect
         Drown drown = new Drown();
         drown.Costs[OfferingType.Gold] = 0;
         drown.Init(TargetPlayer);
-        AddCardCopyToHandAction addAction = new AddCardCopyToHandAction(drown);
+        AddCardCopyToHandAction addAction = new AddCardCopyToHandAction(drown) { SourceEffect = this };
         TargetPlayer.GameState.ActionHandler.AddAction(addAction);
     }
 

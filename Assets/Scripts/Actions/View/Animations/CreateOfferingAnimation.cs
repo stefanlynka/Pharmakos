@@ -74,7 +74,12 @@ public class CreateOfferingAnimation : AnimationAction
 
     void Launch(ViewTarget viewSource)
     {
-        if (viewSource == null)
+        if (viewSource == null && FollowerDeathAnimation.TryGetAshPosition(sourceID, out Vector3 ash))
+        {
+            // Its follower has already died and gone: leave from where it broke into ash.
+            startPos = ash;
+        }
+        else if (viewSource == null)
         {
             Debug.LogWarning("CreateOfferingAnimation: ViewTarget with ID " + sourceID + " not found.");
             startPos = middleOfScreen;

@@ -222,7 +222,7 @@ public class TriggeredFollowerEffectInstance: FollowerEffectInstance
         if (handler == null)
             return default;
 
-        return handler.BeginTrigger(source, trigger, viaAlly: source != AffectedFollower);
+        return handler.BeginTrigger(source, trigger, viaAlly: source != AffectedFollower, effectDefName: EffectDef?.GetType().Name);
     }
 
     /// <summary>
@@ -375,8 +375,11 @@ public class ChangeResourceInstance : TriggeredFollowerEffectInstance
 
     public override void Trigger(ITarget target = null, int amount = 0)
     {
-        ChangeResourceAction action = new ChangeResourceAction(AffectedFollower.Owner, OfferingType.Gold, OfferingAmount);
-        AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
+        // Same as ChangeResourceAction, but the token flies from the follower whose ability this is to the owner's slot.
+        Player owner = AffectedFollower.Owner;
+        Follower source = HistorySource ?? AffectedFollower;
+        CreateOfferingAction action = new CreateOfferingAction(owner, OfferingType.Gold, OfferingAmount, source.ID, owner.ITargetID);
+        owner.GameState.ActionHandler.AddAction(action, true, true);
     }
 }
 
@@ -396,6 +399,7 @@ public class ChangeResourceDelayedInstance : TriggeredFollowerEffectInstance
     {
         ChangeResourceAction action = new ChangeResourceAction(AffectedFollower.Owner, OfferingType.Gold, OfferingAmount);
         AffectedFollower.Owner.StartOfTurnActions.Add(new DelayedGameAction(action));
+        AffectedFollower.Owner.GameState.ActionHandler.MarkTriggerActed();
         //AffectedFollower.Owner.GameState.ActionHandler.AddAction(action, true, true);
     }
 }
@@ -414,6 +418,7 @@ public class DrawCardsDelayedInstance : TriggeredFollowerEffectInstance
     {
         DrawCardAction action = new DrawCardAction(AffectedFollower.Owner, AffectedFollower.Owner, CardAmount);
         AffectedFollower.Owner.StartOfTurnActions.Add(new DelayedGameAction(action));
+        AffectedFollower.Owner.GameState.ActionHandler.MarkTriggerActed();
     }
 }
 

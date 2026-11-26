@@ -35,6 +35,9 @@ public class HighlightPalette : ScriptableObject
     [Tooltip("Pick-me glow outside combat (rewards, shop, temple, starter bundles).")]
     public MeshHighlightSettings Choice;
 
+    [Tooltip("Brief flash when a card's triggered ability fires (On Death, On Attack...). Votive gold; not an interaction state, so it never stays lit.")]
+    public MeshHighlightSettings Triggered;
+
     [Tooltip("Intensity multiplier for the Selected state.")]
     public float SelectedIntensity = 1.45f;
 

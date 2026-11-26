@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.UI.GridLayoutGroup;
 
 public class AnimationHandler
 {
@@ -100,7 +99,17 @@ public class AnimationHandler
     public void AddGameActionToQueue(GameAction gameAction, bool backOfQueue = true)
     {
         //int index = backOfQueue ? AnimationActionQueue.Count : 0;
+        CueLibrary.DecorateForView(gameAction);
         List<AnimationAction> animationActions = gameAction.GetAnimationActions();
+        CueLibrary.DecorateAnimations(gameAction, animationActions);
+        // A triggered ability's flash and sound play just before its first visible result.
+        AnimationAction cueAnimation = gameAction.Cue?.TakeAnimationForPlacement();
+        if (cueAnimation != null)
+        {
+            // Plays first for this action, so it carries the action's trinket flare (MarkSourceTriggered).
+            cueAnimation.GameAction = gameAction;
+            animationActions.Insert(0, cueAnimation);
+        }
         if (!backOfQueue) animationActions.Reverse();
 
         AnimationAction playsFirst = null;
