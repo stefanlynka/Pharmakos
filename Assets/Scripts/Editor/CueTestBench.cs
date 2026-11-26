@@ -168,7 +168,7 @@ public static class CueTestBench
     /// <summary>
     /// Captures count frames every step game-seconds into Claude/Cues/Shots/film_NN.png at the given time scale
     /// (trigger flashes run on unscaled time, so film them at 1). Restores the time scale afterwards.
-    /// Contact sheet: python Claude/Cues/film.py name x0 y0 x1 y1 [cols].
+    /// Contact sheet: python Tools/VFX/film_sheet.py name x0 y0 x1 y1 [cols].
     /// </summary>
     public static void Film(float step, int count, float timeScale = 1f)
     {
