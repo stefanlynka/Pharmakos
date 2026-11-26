@@ -1,7 +1,8 @@
-"""Hades' realm (test enemy, and the bosses until they get their own): broken basalt under drifted ash, the remains of
+"""Hades' realm (test enemy): broken basalt under drifted ash and cinder (a generated tile under the procedural cracks), the remains of
 the dead in the margins (whole skeletons, piles, scattered fragments), embers glowing deep in the widest cracks far
 from the fight, a little pale asphodel. Lanes: worn slate slabs with ash packed in the joints."""
 from boardkit import *  # noqa
+from genkit import tile, two_scale, norm_lum, edge_fade, RockFace
 
 NAME = 'Underworld'
 
@@ -27,8 +28,8 @@ def paint(preview=False):
     fine = smoothstep(0.88, 0.97, n.ridged(X, Y, 3.2, 3, offset=5)) * smoothstep(0.3, 0.6, mid)
     hgt = (big * 0.6 + mid * 0.25 + grain * 0.06 + (cid - 0.5) * 0.08 - crack * 0.45 - fine * 0.08).astype(F32)
 
-    base = lerp(C(0.065, 0.06, 0.062), C(0.16, 0.145, 0.14), norm01(big * 0.6 + mid * 0.4))
-    alb = base + ((cid - 0.5) * 0.035)[..., None] + ((grain - 0.5) * 0.05)[..., None] + ((stroke - 0.5) * 0.035)[..., None]
+    base = norm_lum(two_scale(n, tile('Underworld_AshTile.png'), X, Y, 10.0) * C(0.95, 0.97, 1.0), 0.105) * (0.75 + 0.5 * norm01(big * 0.6 + mid * 0.4))[..., None]
+    alb = base + ((cid - 0.5) * 0.025)[..., None]
     alb = lerp(alb, C(0.03, 0.028, 0.03), np.clip(crack * 0.9 + fine * 0.5, 0, 1))
 
     # ash settles in the low places and is trodden flat across the arena
@@ -67,6 +68,7 @@ def paint(preview=False):
     cav = cavity(hgt, g, 0.7, 2.5)
     alb = alb * (1 - cav[..., None] * 0.55)
     alb = desaturate(alb, 0.1)
+    alb = edge_fade(X, Y, alb)
     smooth = 0.16 - 0.08 * ash + 0.06 * (1 - margin)
 
     # lanes: worn slate slabs, ash in the joints
@@ -89,23 +91,21 @@ def paint(preview=False):
 
 
 def back_edge():
-    """A ridge of broken basalt along the far edge, jagged against the dark, embers glowing in its cracks."""
+    """A wall of jagged black basalt closing the far edge (a generated rock tile carved into the mesh, genkit.RockFace),
+    rising out of frame, embers glowing in its lowest cracks, lit only at its foot."""
     from backedge import BackEdge, Material, save_material
-    import bepaint as bp
     folder = os.path.join(OUT, NAME)
     n = Noise(13)
     be = BackEdge(NAME)
-    rk = be.material(Material('Basalt', tex_h=10.0, self_light=0.3))
-    f = lambda x, h, sc, o: n.fbm(np.array([[x]], F32), np.array([[h]], F32), sc, 4, offset=o)[0, 0]
-    ridge = lambda x: 2.8 + 4.5 * f(x, 0, 7, 31) + 2.0 * abs(math.sin(x * 0.9 + 3 * f(x, 5, 3, 32)))
-    be.relief(be.materials['Basalt'], -75, 75, lambda x: 35.0 + 1.2 * f(x, 0, 8, 33), ridge,
-              lambda x, h: 1.8 * f(x, h, 2.0, 34) + h * 0.35, step=0.4, h_step=0.4, back=4.0)
-    be.save(folder)
-    c = rk.elev_canvas()
-    alb, hgt, sm = bp.rock(c, n, C(0.06, 0.055, 0.055), C(0.17, 0.155, 0.15), strata=0.3, offset=191)
+    rk = be.material(Material('Basalt', tex_h=14.0, self_light=0.0))
+    face = RockFace(rk, n, tile('Underworld_BasaltTile.png'), 35.0, top=14.0, lean=0.35, bulk=2.6, bulk_scale=5.0,
+                    disp=0.8, size=5.0, foot_wave=1.6, offset=130)
+    face.mesh(be)
+    c = face.canvas
+    alb, hgt, em, sm = face.paint(alb=norm_lum(face.alb, 0.16), top=4.0, glow=0.5, floor=0.08)
     crack = smoothstep(0.86, 0.95, n.ridged(c.X * 0.8, c.Y, 1.6, 3, offset=192))
-    hot = crack * smoothstep(0.35, 0.6, n.fbm(c.X, c.Y, 3.0, 3, offset=193))
+    hot = crack * smoothstep(0.35, 0.6, n.fbm(c.X, c.Y, 3.0, 3, offset=193)) * (1 - smoothstep(0.5, 2.5, c.Y))
     alb = lerp(alb, C(0.3, 0.08, 0.02), hot)
-    em = C(1.0, 0.32, 0.06) * hot[..., None] + C(0.3, 0.07, 0.01) * np.clip(blurf(hot, 0.4, c) * 1.5, 0, 1)[..., None]
-    ta, th, ts = bp.tops(rk, n, C(0.03, 0.028, 0.03), C(0.08, 0.075, 0.075), offset=194)
-    save_material(folder, rk, alb, hgt, sm, emission=em.astype(F32), talb=ta, thgt=th, tsmooth=ts)
+    em = em + C(1.0, 0.32, 0.06) * hot[..., None] + C(0.3, 0.07, 0.01) * np.clip(blurf(hot, 0.4, c) * 1.5, 0, 1)[..., None]
+    save_material(folder, rk, alb, hgt, sm, emission=em.astype(F32))
+    be.save(folder)

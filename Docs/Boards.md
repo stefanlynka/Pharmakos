@@ -107,7 +107,11 @@ How it's made:
   a target brightness), `tile_lanes`, `edge_fade` (corners to black), `falloff` (back-edge light: only the foot glows,
   darker upward and to the sides), `RockFace` (a natural rock wall carved from a rock tile, with optional recesses such
   as a cave mouth), `AshlarWall` (Troy's masonry generalised, with openings for passages) and `boulder`. Redone with
-  it so far: Troy, Cyclops, Labyrinth, Bacchanalia, Caves, Trials, Cliffs.
+  it so far: Troy, Cyclops, Labyrinth, Bacchanalia, Caves, Trials, Cliffs, Underworld.
+- **Older back edges** (Hunt, Temple, Archiereus, the bosses) keep their primitive geometry, but `save_material` now
+  fades every self-lit material's glow with height (`backedge.FALL_TOP`, per material `fall_top`) and toward the sides,
+  and darkens it upward, so every board meets the top-fade rule. Lower `fall_top` for things the spotlights catch high
+  up (Temple's marble, Hunt's trunks).
 - **Painted backdrops don't work.** A flat painting at the far edge (tried for Troy) reads as a pasted picture: its baked
   light and perspective don't match the scene's and it meets the floor along a hard line. Keep back edges as geometry.
 - **Light falloff on a back edge:** instead of uniform self-light, pass an `emission` map to `save_material` that falls off
