@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
-using static UnityEngine.GraphicsBuffer;
 
 public class AddCardCopyToHandAction : GameAction
 {
@@ -12,6 +11,11 @@ public class AddCardCopyToHandAction : GameAction
     public AddCardCopyToHandAction(Card newCard)
     {
         Card = newCard;
+    }
+
+    public override void AddPlayHistoryResults(TriggeredEffectPlayHistory record)
+    {
+        record.AddResult(Card);
     }
 
     public override GameAction DeepCopy(Player newOwner)

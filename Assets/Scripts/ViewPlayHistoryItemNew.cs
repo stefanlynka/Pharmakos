@@ -21,8 +21,15 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
     public float SourceX = -11f;
     [Tooltip("Centre X of the verb icon and label.")]
     public float VerbX = 0f;
-    [Tooltip("Centre X of the target card / portrait.")]
+    [Tooltip("Centre X of the target card / portrait (the first result, when a trigger has several).")]
     public float TargetX = 11f;
+    [Tooltip("Width of a card / portrait in the row, for spacing several results (a trigger hitting several followers).")]
+    public float CardWidth = 6.6f;
+    public float PortraitWidth = 9.8f;
+    [Tooltip("Gap between results.")]
+    public float ResultGap = 1.4f;
+    [Tooltip("Results never reach past this X; when they would, they shrink and close up.")]
+    public float ResultsMaxRight = 30f;
     public float CardScale = 1.3f;
     public float RitualScale = 0.45f;
     public float PortraitScale = 1.2f;
@@ -31,6 +38,16 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
     [Tooltip("How much of their depth rituals and portraits keep. This camera looks straight down, so a raised "
         + "altar or frame beside the centre shows its sides in perspective; flattening them keeps rows clean.")]
     [Range(0.02f, 1f)] public float DepthFlatten = 0.1f;
+    [Tooltip("Height in world units of a trinket's or ritual buff's icon.")]
+    public float EffectIconSize = 6f;
+    [Tooltip("Gap between a trinket's icon and its name underneath.")]
+    public float EffectNameGap = 0.4f;
+    [Tooltip("The name wraps to this width.")]
+    public float EffectNameWidth = 9f;
+    [Tooltip("Size of the name relative to the verb label.")]
+    public float EffectNameSize = 0.85f;
+    [Tooltip("Scale of a trigger's icon (the summary glyphs), matching the attack and target icon prefabs.")]
+    public float TriggerIconScale = 1.7f;
     [Tooltip("Z offset of the verb icon above the row centre (the label sits below it).")]
     public float VerbIconZ = 1f;
     [Tooltip("Z of the verb label when the row has an icon; rows without one centre the label.")]
@@ -133,31 +150,50 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
             return;
         }
 
-        // Components arrive as: source, [verb icon, target]. Plays without a target have no verb icon.
+        // Components arrive as: source, [verb icon], results. Plays without a target have no verb icon.
         List<PlayHistoryComponent> components = playHistoryItem.GetComponents();
         PlayHistoryComponent source = components.Count > 0 ? components[0] : null;
         PlayHistoryComponent verbIcon = null;
-        PlayHistoryComponent target = null;
+        List<PlayHistoryComponent> results = new List<PlayHistoryComponent>();
         for (int i = 1; i < components.Count; i++)
         {
             PlayHistoryComponentType type = components[i].GetComponentType();
-            if (type == PlayHistoryComponentType.Attack || type == PlayHistoryComponentType.Target)
+            if (verbIcon == null && (type == PlayHistoryComponentType.Attack
+                || type == PlayHistoryComponentType.Target
+                || type == PlayHistoryComponentType.TriggerIcon))
                 verbIcon = components[i];
             else
-                target = components[i];
+                results.Add(components[i]);
         }
 
         if (source != null)
-            AddComponent(source, SourceX, 0f);
+            AddComponent(source, SourceX, 0f, 1f);
         if (verbIcon != null)
-            AddComponent(verbIcon, VerbX, VerbIconZ);
-        if (target != null)
-            AddComponent(target, TargetX, 0f);
+            AddComponent(verbIcon, VerbX, VerbIconZ, 1f);
 
+        // Results sit side by side from TargetX; if they would run past ResultsMaxRight, they shrink and close up.
+        if (results.Count > 0)
+        {
+            float left = TargetX - GetResultWidth(results[0]) * 0.5f;
+            float extent = 0f;
+            for (int i = 0; i < results.Count; i++)
+                extent += GetResultWidth(results[i]) + (i > 0 ? ResultGap : 0f);
+
+            float resultScale = extent > 0f ? Mathf.Min(1f, (ResultsMaxRight - left) / extent) : 1f;
+            float cursor = left;
+            foreach (PlayHistoryComponent result in results)
+            {
+                float width = GetResultWidth(result) * resultScale;
+                AddComponent(result, cursor + width * 0.5f, 0f, resultScale);
+                cursor += width + ResultGap * resultScale;
+            }
+        }
+
+        bool hasTarget = results.Count > 0;
         SetRowChrome(true, showDivider);
         if (VerbLabel != null)
         {
-            VerbLabel.text = GetVerb(playHistoryItem, target != null);
+            VerbLabel.text = GetVerb(playHistoryItem, hasTarget);
             Vector3 labelPosition = VerbLabel.transform.localPosition;
             labelPosition.x = VerbX;
             labelPosition.z = verbIcon != null ? VerbLabelZ : 0f;
@@ -165,10 +201,25 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
         }
     }
 
+    float GetResultWidth(PlayHistoryComponent component)
+    {
+        switch (component.GetComponentType())
+        {
+            case PlayHistoryComponentType.Player:
+                return PortraitWidth;
+            case PlayHistoryComponentType.Effect:
+                return Mathf.Max(EffectIconSize, EffectNameWidth * 0.8f);
+            default:
+                return CardWidth;
+        }
+    }
+
     static string GetVerb(PlayHistoryItem item, bool hasTarget)
     {
         switch (item)
         {
+            case TriggeredEffectPlayHistory triggered:
+                return triggered.Label;
             case AttackWithFollowerPlayHistory _:
                 return "Attacks";
             case PlaySpellPlayHistory _:
@@ -221,7 +272,7 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
         IsHeader = false;
     }
 
-    void AddComponent(PlayHistoryComponent componentData, float x, float z)
+    void AddComponent(PlayHistoryComponent componentData, float x, float z, float scale)
     {
         ViewPlayHistoryHandler handler = Controller.Instance?.ViewPlayHistoryHandler;
         if (handler == null)
@@ -232,19 +283,30 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
 
         PlayHistoryComponentType componentType = componentData.GetComponentType();
         GameObject componentPrefab = handler.GetComponentPrefab(componentType);
-        if (componentPrefab == null)
+        bool builtHere = componentType == PlayHistoryComponentType.TriggerIcon
+            || componentType == PlayHistoryComponentType.Effect;
+        if (componentPrefab == null && !builtHere)
             return;
 
         Transform holder = HolderPool.Get();
         holder.SetParent(ComponentParent, false);
         holder.localPosition = new Vector3(x, 0f, z);
         holder.localRotation = Quaternion.identity;
-        holder.localScale = Vector3.one;
+        holder.localScale = Vector3.one * scale;
         _componentHolders.Add(holder);
 
         // Squash raised objects (altar, portrait frame) along the camera's view axis, so their sides don't show.
         if (componentType == PlayHistoryComponentType.Ritual || componentType == PlayHistoryComponentType.Player)
-            holder.localScale = new Vector3(1f, DepthFlatten, 1f);
+            holder.localScale = new Vector3(scale, DepthFlatten * scale, scale);
+
+        if (builtHere)
+        {
+            if (componentData is TriggerIconPlayHistoryComponent triggerIcon)
+                AddIcon(holder, Resources.Load<Sprite>("Images/Icons/SummaryMono/" + triggerIcon.IconName), TriggerIconScale);
+            else if (componentData is EffectPlayHistoryComponent effect)
+                AddEffect(holder, effect);
+            return;
+        }
 
         GameObject componentObject = Instantiate(componentPrefab, holder);
         componentObject.transform.localPosition = Vector3.zero;
@@ -278,6 +340,46 @@ public class ViewPlayHistoryItemNew : MonoBehaviour
         }
 
         _playHistoryComponents.Add(componentObject);
+    }
+
+    GameObject AddIcon(Transform holder, Sprite sprite, float scale)
+    {
+        if (sprite == null)
+            return null;
+
+        GameObject iconObject = new GameObject("Icon");
+        iconObject.transform.SetParent(holder, false);
+        iconObject.transform.localRotation = FlatDisplayRotation;
+        iconObject.transform.localScale = Vector3.one * scale;
+        iconObject.AddComponent<SpriteRenderer>().sprite = sprite;
+        _playHistoryComponents.Add(iconObject);
+        return iconObject;
+    }
+
+    // A trinket's or ritual buff's icon at about card height, with its name underneath in the verb label's style.
+    void AddEffect(Transform holder, EffectPlayHistoryComponent effect)
+    {
+        float spriteHeight = effect.Icon != null ? effect.Icon.bounds.size.y : 0f;
+        if (spriteHeight > 0f)
+            AddIcon(holder, effect.Icon, EffectIconSize / spriteHeight);
+
+        if (string.IsNullOrEmpty(effect.Name) || VerbLabel == null)
+            return;
+
+        GameObject nameObject = Instantiate(VerbLabel.gameObject, holder);
+        nameObject.name = "EffectName";
+        nameObject.SetActive(true);
+        TextMeshPro nameText = nameObject.GetComponent<TextMeshPro>();
+        nameText.text = effect.Name;
+        nameText.fontSize = VerbLabel.fontSize * EffectNameSize;
+        nameText.enableWordWrapping = true;
+        nameText.alignment = TextAlignmentOptions.Top;
+        float rectHeight = nameText.rectTransform.sizeDelta.y;
+        nameText.rectTransform.sizeDelta = new Vector2(EffectNameWidth, rectHeight);
+        // Hang the (possibly two-line) name from just under the icon.
+        float top = -EffectIconSize * 0.5f - EffectNameGap;
+        nameObject.transform.localPosition = new Vector3(0f, VerbLabel.transform.localPosition.y, top - rectHeight * 0.5f);
+        _playHistoryComponents.Add(nameObject);
     }
 
     void ConfigurePortrait(GameObject portraitObject, PlayerPlayHistoryComponent playerComponent)

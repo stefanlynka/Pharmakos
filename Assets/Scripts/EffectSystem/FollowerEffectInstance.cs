@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.UI.GridLayoutGroup;
 
 public class FollowerEffectInstance : IComparable<FollowerEffectInstance>
 {
@@ -180,17 +179,87 @@ public class TriggeredFollowerEffectInstance: FollowerEffectInstance
 
     public virtual void Trigger(ITarget target = null, int amount = 0){}
 
+    /// <summary>False for bookkeeping triggers (stat auras recalculating) that the play history should not show.</summary>
+    public virtual bool RecordsInPlayHistory => true;
+
     private void OnEnter(Follower follower)
     {
-        Trigger(follower);
+        TriggerFromEvent(follower);
     }
     private void OnDeath(Follower follower)
     {
-        Trigger(follower);
+        TriggerFromEvent(follower);
     }
     private void OnSpellPlayed(Spell spell)
     {
-        if (spell.Owner == AffectedFollower.Owner) Trigger(spell);
+        if (spell.Owner == AffectedFollower.Owner) TriggerFromEvent(spell);
+    }
+
+    private void TriggerFromEvent(ITarget target)
+    {
+        if (!RecordsInPlayHistory)
+        {
+            Trigger(target);
+            return;
+        }
+
+        using (BeginHistory(effectTrigger))
+        {
+            Trigger(target);
+        }
+    }
+
+    /// <summary>
+    /// The follower whose ability this is. Usually the one it sits on, but some abilities sit on neighbours
+    /// (Melpomene's "when an adjacent Follower dies" is an On Death effect on each neighbour).
+    /// </summary>
+    public Follower HistorySource => EffectDef?.EffectSource ?? AffectedFollower;
+
+    TriggerHistoryScope BeginHistory(EffectTrigger trigger)
+    {
+        Follower source = HistorySource;
+        ActionHandler handler = source?.GameState?.ActionHandler ?? AffectedFollower?.GameState?.ActionHandler;
+        if (handler == null)
+            return default;
+
+        return handler.BeginTrigger(source, trigger, viaAlly: source != AffectedFollower);
+    }
+
+    /// <summary>
+    /// Fires a follower's triggered effects, giving each ability's actions one play history entry (consecutive
+    /// effects from the same source, like Hippolyta's +2 attack and Sprint, share it).
+    /// </summary>
+    public static void TriggerAll(IEnumerable<TriggeredFollowerEffectInstance> effects, EffectTrigger trigger, ITarget target = null, int amount = 0)
+    {
+        TriggerHistoryScope scope = default;
+        Follower scopeSource = null;
+        bool scopeOpen = false;
+        try
+        {
+            foreach (TriggeredFollowerEffectInstance effect in effects)
+            {
+                if (!effect.RecordsInPlayHistory)
+                {
+                    effect.Trigger(target, amount);
+                    continue;
+                }
+
+                Follower source = effect.HistorySource;
+                if (!scopeOpen || source != scopeSource)
+                {
+                    scope.Dispose();
+                    scope = effect.BeginHistory(trigger);
+                    scopeSource = source;
+                    scopeOpen = true;
+                }
+
+                effect.Trigger(target, amount);
+            }
+        }
+        finally
+        {
+            scope.Dispose();
+        }
     }
 }
 
@@ -438,6 +507,9 @@ public class UpdateStatsInstance : TriggeredFollowerEffectInstance
     public bool UseAmountForHealth;
 
     public UpdateStatsInstance(FollowerEffect def, Follower affectedFollower, int offsetFromOwner = 0, int effectNum = 0, EffectTrigger effectTrigger = EffectTrigger.None) : base(def, affectedFollower, offsetFromOwner, effectNum, effectTrigger) { }
+
+    // Recalculates an aura's stats when the board changes: not an ability the player sees go off.
+    public override bool RecordsInPlayHistory => false;
 
     public void Init(EffectTarget targetType = EffectTarget.Self, bool useTargetInsteadOfType = false, bool useAmountForHealth = false)
     {

@@ -18,6 +18,11 @@ public class GiveFollowerStaticEffectAction : GameAction
         StaticEffectName = staticEffectName;
     }
 
+    public override void AddPlayHistoryResults(TriggeredEffectPlayHistory record)
+    {
+        record.AddResult(Target);
+    }
+
     public override GameAction DeepCopy(Player newOwner)
     {
         GiveFollowerStaticEffectAction copy = (GiveFollowerStaticEffectAction)MemberwiseClone();

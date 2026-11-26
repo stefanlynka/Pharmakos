@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
-using static UnityEngine.UI.GridLayoutGroup;
 
 
 public class PlayRitualAction : GameAction
@@ -21,6 +19,8 @@ public class PlayRitualAction : GameAction
     {
         Debug.Log($"PlayRitualAction: {ritual.GetName()} on {target}");
     }
+
+    public override bool AddsPlayHistoryEntry => true;
 
     public override GameAction DeepCopy(Player newOwner)
     {

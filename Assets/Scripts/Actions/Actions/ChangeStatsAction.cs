@@ -18,6 +18,11 @@ public class ChangeStatsAction : GameAction
         HealthChange = healthChange;
     }
 
+    public override void AddPlayHistoryResults(TriggeredEffectPlayHistory record)
+    {
+        record.AddResult(Target);
+    }
+
     public override GameAction DeepCopy(Player newOwner)
     {
         if (Target == null)

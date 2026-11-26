@@ -16,6 +16,11 @@ public class HealAction : GameAction
         this.amount = amount;
     }
 
+    public override void AddPlayHistoryResults(TriggeredEffectPlayHistory record)
+    {
+        record.AddResult(target);
+    }
+
     public override GameAction DeepCopy(Player newOwner)
     {
         HealAction copy = (HealAction)MemberwiseClone();

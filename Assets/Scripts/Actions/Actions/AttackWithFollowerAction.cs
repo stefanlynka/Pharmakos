@@ -13,6 +13,8 @@ public class AttackWithFollowerAction : GameAction
         Target = target;
     }
 
+    public override bool AddsPlayHistoryEntry => true;
+
     public override GameAction DeepCopy(Player newOwner)
     {
         AttackWithFollowerAction copy = (AttackWithFollowerAction)MemberwiseClone();

@@ -10,7 +10,26 @@ public class Spell : Card, ITarget
         return new List<ITarget>();
     }
 
+    // Set by spells that grant a buff when played (Twist of Fate), so the play history can show it.
+    public Trinket GrantedTrinket;
+
     public override void Play(ITarget target)
+    {
+        GrantedTrinket = null;
+        // On Targeted and spell-cast reactions resolve before this play's entry exists; hold them until it does.
+        PlayHistoryHandler history = PlayHistoryHandler.For(GameState);
+        history?.BeginPlay();
+        try
+        {
+            PlayBase(target);
+        }
+        finally
+        {
+            history?.EndPlay();
+        }
+    }
+
+    void PlayBase(ITarget target)
     {
         base.Play(target);
 

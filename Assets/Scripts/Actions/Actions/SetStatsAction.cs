@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static Unity.VisualScripting.Member;
 
 public class SetStatsAction : GameAction
 {
@@ -17,6 +16,11 @@ public class SetStatsAction : GameAction
         Target = target;
         NewAttack = newAttack;
         NewHealth = newHealth;
+    }
+
+    public override void AddPlayHistoryResults(TriggeredEffectPlayHistory record)
+    {
+        record.AddResult(Target);
     }
 
     public override GameAction DeepCopy(Player newOwner)

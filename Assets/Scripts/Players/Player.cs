@@ -640,10 +640,7 @@ public class Player : ITarget
     public void FollowerDied(Follower follower)
     {
         SortedSet<TriggeredFollowerEffectInstance> triggers = new SortedSet<TriggeredFollowerEffectInstance>(follower.OnDeathEffects);
-        foreach (TriggeredFollowerEffectInstance effectInstance in triggers)
-        {
-            effectInstance.Trigger();
-        }    
+        TriggeredFollowerEffectInstance.TriggerAll(triggers, EffectTrigger.OnDeath);
         BattleRow.RemoveFollower(follower);
     }
     public void PlayCard(Card card)

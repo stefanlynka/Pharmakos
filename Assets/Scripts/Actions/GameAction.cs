@@ -6,6 +6,12 @@ public abstract class GameAction
 {
     public ActionName ActionName;
     public StaticPlayerEffect SourceEffect;
+    // Play history, canon game only (ActionHandler stamps it; it stays null in AI simulations): the triggered
+    // ability, trinket or ritual buff this action resolves for. Copies share it, but simulated copies never read it.
+    public TriggeredEffectPlayHistory HistoryRecord;
+
+    /// <summary>True for plays, attacks and rituals, which add an entry of their own (see MakePlayHistoryItem).</summary>
+    public virtual bool AddsPlayHistoryEntry => false;
     //protected List<AnimationAction> AnimationActions = new List<AnimationAction>();
 
     public virtual void Execute(bool simulated = false, bool successful = true)
@@ -27,6 +33,8 @@ public abstract class GameAction
             }
 
             AddToPlayHistory();
+            if (successful)
+                AddToTriggeredRecord();
         }
     }
 
@@ -44,6 +52,20 @@ public abstract class GameAction
     public virtual PlayHistoryItem MakePlayHistoryItem()
     {
         return null;
+    }
+
+    private void AddToTriggeredRecord()
+    {
+        if (HistoryRecord == null || Controller.Instance == null)
+            return;
+
+        AddPlayHistoryResults(HistoryRecord);
+        Controller.Instance.PlayHistoryHandler.AddTriggeredRecord(HistoryRecord);
+    }
+
+    /// <summary>What this action hit, changed or made, for the triggered-effect entry it belongs to.</summary>
+    public virtual void AddPlayHistoryResults(TriggeredEffectPlayHistory record)
+    {
     }
 
     //public void AddAnimationAction(AnimationAction action)

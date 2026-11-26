@@ -20,6 +20,8 @@ public class PlaySpellAction : GameAction
         Target = target;
     }
 
+    public override bool AddsPlayHistoryEntry => true;
+
     public override GameAction DeepCopy(Player newOwner)
     {
         PlaySpellAction copy = (PlaySpellAction)MemberwiseClone();

@@ -17,7 +17,7 @@ public abstract class AnimationAction
         if (MarkSourceTriggered)
         {
             MarkSourceTriggered = false;
-            GameAction?.SourceEffect?.MarkTriggered();
+            GameAction?.SourceEffect?.FlareTriggered();
         }
     }
 

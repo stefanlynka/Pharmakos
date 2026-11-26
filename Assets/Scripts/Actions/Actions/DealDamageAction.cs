@@ -27,6 +27,11 @@ public class DealDamageAction : GameAction
         this.resolveDamageImmediately = resolveDamageImmediately;
     }
 
+    public override void AddPlayHistoryResults(TriggeredEffectPlayHistory record)
+    {
+        record.AddResult(Target);
+    }
+
     public override GameAction DeepCopy(Player newOwner)
     {
         DealDamageAction copy = (DealDamageAction)MemberwiseClone();

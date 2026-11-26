@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static Unity.VisualScripting.Member;
-using static UnityEngine.GraphicsBuffer;
 
 public class KillFollowerAction : GameAction
 {
@@ -17,6 +15,11 @@ public class KillFollowerAction : GameAction
         Source = source;
         Target = target;
         Sacrifice = sacrifice;
+    }
+
+    public override void AddPlayHistoryResults(TriggeredEffectPlayHistory record)
+    {
+        record.AddResult(Target);
     }
 
     public override GameAction DeepCopy(Player newOwner)

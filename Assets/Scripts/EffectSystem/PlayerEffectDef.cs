@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 public abstract class PlayerEffect
 {
@@ -21,7 +20,23 @@ public abstract class StaticPlayerEffect : PlayerEffect
     public Player Owner;
     public Player TargetPlayer;
 
+    /// <summary>
+    /// Call when the effect acts without an action of its own (e.g. changes an offering directly): flares its icon
+    /// and adds it to the play history. Effects that act through actions set the action's SourceEffect instead.
+    /// </summary>
     public void MarkTriggered()
+    {
+        if (Owner?.GameState == null || Owner.GameState.IsSimulated)
+            return;
+
+        PlayHistoryHandler history = PlayHistoryHandler.For(Owner.GameState);
+        history?.AddTriggeredRecord(history.GetEffectRecord(this));
+
+        Triggered?.Invoke(this);
+    }
+
+    /// <summary>Flares the icon only: an action with this SourceEffect is animating (its history is already recorded).</summary>
+    public void FlareTriggered()
     {
         if (Owner?.GameState == null || Owner.GameState.IsSimulated)
             return;

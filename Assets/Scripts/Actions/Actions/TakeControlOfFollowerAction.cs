@@ -17,6 +17,11 @@ public class TakeControlOfFollowerAction : GameAction
         Follower = follower;
     }
 
+    public override void AddPlayHistoryResults(TriggeredEffectPlayHistory record)
+    {
+        record.AddResult(Follower);
+    }
+
     public override GameAction DeepCopy(Player newOwner)
     {
         TakeControlOfFollowerAction copy = (TakeControlOfFollowerAction)MemberwiseClone();

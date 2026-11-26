@@ -4823,6 +4823,8 @@ public class TwistOfFate : Spell
             Trinket buffCopy = randomBuff.MakeBaseCopy();
             buffCopy.Owner = aiPlayer;
             buffCopy.ApplyEffect(aiPlayer, revealWithAnimation: true);
+            if (!Owner.GameState.IsSimulated)
+                GrantedTrinket = buffCopy;
         }
     }
 }

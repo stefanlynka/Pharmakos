@@ -485,18 +485,19 @@ public class ContentScrollView : MonoBehaviour
                 false);
         }
 
-        // Newest first. Each turn belongs to one player, so a change of owner starts a new turn and gets a header.
-        Player currentOwner = null;
+        // Newest first. A change of turn player (whose turn the entry happened in) starts a new turn with a header.
+        Player currentTurn = null;
         bool firstInTurn = true;
         foreach (PlayHistoryItem playHistoryItem in playHistoryItems)
         {
             if (playHistoryItem == null)
                 continue;
 
-            if (_playHistoryItems.Count == 0 || playHistoryItem.Owner != currentOwner)
+            Player turnPlayer = playHistoryItem.TurnPlayer ?? playHistoryItem.Owner;
+            if (_playHistoryItems.Count == 0 || turnPlayer != currentTurn)
             {
-                currentOwner = playHistoryItem.Owner;
-                AddPlayHistoryView().LoadHeader(currentOwner);
+                currentTurn = turnPlayer;
+                AddPlayHistoryView().LoadHeader(currentTurn);
                 firstInTurn = true;
             }
 

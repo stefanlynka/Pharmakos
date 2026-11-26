@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.UI.GridLayoutGroup;
 
 public class PlayFollowerAction : GameAction
 {
@@ -13,6 +12,8 @@ public class PlayFollowerAction : GameAction
         Follower = follower;
         Index = index;
     }
+
+    public override bool AddsPlayHistoryEntry => true;
 
     public override GameAction DeepCopy(Player newOwner)
     {

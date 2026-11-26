@@ -16,6 +16,11 @@ public class ChangePlayerHealthAction : GameAction
         this.amount = amount;
     }
 
+    public override void AddPlayHistoryResults(TriggeredEffectPlayHistory record)
+    {
+        record.AddResult(target);
+    }
+
     public override GameAction DeepCopy(Player newOwner)
     {
         ChangePlayerHealthAction copy = (ChangePlayerHealthAction)MemberwiseClone();

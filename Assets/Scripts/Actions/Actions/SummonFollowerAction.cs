@@ -22,6 +22,11 @@ public class SummonFollowerAction : GameAction
         CreateCrops = createCrops;
     }
 
+    public override void AddPlayHistoryResults(TriggeredEffectPlayHistory record)
+    {
+        record.AddResult(Follower);
+    }
+
     public override GameAction DeepCopy(Player newOwner)
     {
         SummonFollowerAction copy = (SummonFollowerAction)MemberwiseClone();

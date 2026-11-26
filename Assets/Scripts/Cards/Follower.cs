@@ -5,8 +5,6 @@ using System.Reflection;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static Unity.VisualScripting.Member;
-using static UnityEngine.GraphicsBuffer;
 
 public class Follower : Card, ITarget
 {
@@ -383,10 +381,7 @@ public class Follower : Card, ITarget
 
     public void ApplyOnEnterEffects()
     {
-        foreach (TriggeredFollowerEffectInstance effect in OnEnterEffects)
-        {
-            effect.Trigger();
-        }
+        TriggeredFollowerEffectInstance.TriggerAll(OnEnterEffects, EffectTrigger.OnEnter);
     }
 
     public bool HasStaticEffect(StaticEffect effect)
@@ -500,37 +495,25 @@ public class Follower : Card, ITarget
     public void ApplyOnDamageEffects(ITarget target, int amount)
     {
         SortedSet<TriggeredFollowerEffectInstance> triggers = new SortedSet<TriggeredFollowerEffectInstance>(OnDamageEffects);
-        foreach (TriggeredFollowerEffectInstance effect in triggers)
-        {
-            effect.Trigger(target, amount);
-        }
+        TriggeredFollowerEffectInstance.TriggerAll(triggers, EffectTrigger.OnDamage, target, amount);
     }
 
     public void ApplyOnDamagedEffects(ITarget damageSource, int amount)
     {
         List<TriggeredFollowerEffectInstance> onDamagedEffects = new List<TriggeredFollowerEffectInstance>(OnDamagedEffects);
-        foreach (TriggeredFollowerEffectInstance effect in onDamagedEffects)
-        {
-            effect.Trigger(damageSource, amount);
-        }
+        TriggeredFollowerEffectInstance.TriggerAll(onDamagedEffects, EffectTrigger.OnDamaged, damageSource, amount);
     }
 
     public void ApplyOnKillEffects(ITarget target)
     {
         List<TriggeredFollowerEffectInstance> onKillEffects = new List<TriggeredFollowerEffectInstance>(OnKillEffects);
-        foreach (TriggeredFollowerEffectInstance effect in onKillEffects)
-        {
-            effect.Trigger(target);
-        }
+        TriggeredFollowerEffectInstance.TriggerAll(onKillEffects, EffectTrigger.OnKill, target);
     }
 
     public void ApplyOnDrawBloodEffects(ITarget target, int amount)
     {
         List<TriggeredFollowerEffectInstance> onDrawBloodEffects = new List<TriggeredFollowerEffectInstance>(OnDrawBloodEffects);
-        foreach (TriggeredFollowerEffectInstance effect in onDrawBloodEffects)
-        {
-            effect.Trigger(target, amount);
-        }
+        TriggeredFollowerEffectInstance.TriggerAll(onDrawBloodEffects, EffectTrigger.OnDrawBlood, target, amount);
     }
     //public void ApplyOnKillEffects(ITarget source)
     //{
@@ -560,6 +543,8 @@ public class Follower : Card, ITarget
     public void AttackTarget(ITarget target)
     {
         TimesThisAttackedThisTurn++;
+        // On Attack / On Attacked reactions resolve before the attack's own entry; hold them until it arrives.
+        PlayHistoryHandler.For(GameState)?.ExpectEntry();
 
         Owner.GameState.FireFollowerAttacked(this);
 
@@ -597,18 +582,12 @@ public class Follower : Card, ITarget
     public void ApplyOnAttackEffects(ITarget target)
     {
         List<TriggeredFollowerEffectInstance> attackEffects = new List<TriggeredFollowerEffectInstance>(OnAttackEffects);
-        foreach (TriggeredFollowerEffectInstance effect in attackEffects)
-        {
-            effect.Trigger(target);
-        }
+        TriggeredFollowerEffectInstance.TriggerAll(attackEffects, EffectTrigger.OnAttack, target);
     }
     public void ApplyOnAttackedEffects(ITarget attacker)
     {
         List<TriggeredFollowerEffectInstance> attackedEffects = new List<TriggeredFollowerEffectInstance>(OnAttackedEffects);
-        foreach (TriggeredFollowerEffectInstance effect in attackedEffects)
-        {
-            effect.Trigger(attacker);
-        }
+        TriggeredFollowerEffectInstance.TriggerAll(attackedEffects, EffectTrigger.OnAttacked, attacker);
     }
     
     public void AttackFollower(Follower defender)
@@ -676,10 +655,7 @@ public class Follower : Card, ITarget
     public void ApplyOnTargetedEffects(Spell spell)
     {
         SortedSet<TriggeredFollowerEffectInstance> onTargetdEffects = new SortedSet<TriggeredFollowerEffectInstance>(OnTargetedEffects);
-        foreach (TriggeredFollowerEffectInstance effect in onTargetdEffects)
-        {
-            effect.Trigger(null);
-        }
+        TriggeredFollowerEffectInstance.TriggerAll(onTargetdEffects, EffectTrigger.OnTargeted);
 
         if (spell.Owner == Owner) SpellsCastOnThisByOwner.Add(spell.MakeBaseCopy() as Spell);
     }
