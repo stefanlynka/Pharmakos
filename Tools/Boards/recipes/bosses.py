@@ -1,8 +1,8 @@
 """The three Underworld bosses, each with its own board (module paints all three; run as `boards.py Bosses`).
 
-Throne:  Hades' hall. Polished obsidian slabs, a gold-inlaid Greek key round the arena, spilt pomegranate seeds,
+Throne:  Hades' hall. Polished obsidian slabs, a gold-inlaid Greek key round the arena, 
          old stains where supplicants knelt, cold green-gold glimmer in the gold. Lanes: black basalt.
-Fates:   the Moirai's chamber. Dark worn stone, a few cut red threads, spindles and wool; the warp-weighted loom
+Fates:   the Moirai's chamber. Dark worn stone, a few cut red threads, spindles; the warp-weighted loom
          stands along the far edge as a 3D back edge (fates_edge). Lanes: dark wood-grained floor of the loom room.
 TheGate: the gate of Hades on the Styx. Ancient black paving, heaved, cracked and broken, scored with Cerberus' claw marks, chains, obols scattered for
          the ferryman, and the river along the far edge, faintly glowing. Lanes: wet black flagstones."""
@@ -52,9 +52,7 @@ def throne(preview):
     for x, y in scatter_points(rng, 14, (-64, 64, -22, 42), margin_keep(3.0, 18.0), 7.0):
         for _ in range(rng.integers(12, 40)):
             seeds.ellipse(x + rng.normal(0, 0.9), y + rng.normal(0, 0.9), 0.11, 0.15, 255, rng.uniform(0, 6.28))
-    sm = seeds.read()
-    sdome = np.clip(blurf(sm, 0.03, g) * 1.6, 0, 1) * sm
-    alb, hgt = apply_object(g, alb, hgt, sm, sdome * 0.05, lerp(C(0.25, 0.02, 0.04), C(0.55, 0.06, 0.1), sdome), shadow=0.4, shadow_blur=0.05)
+    # (the pomegranate seeds are still laid out but not applied: the red dots read as noise; rng sequence kept)
     # no bones in the king's hall: only old stains worn into the stone where supplicants knelt
     st = Layer(g)
     for x, y in scatter_points(rng, 10, (-64, 64, -22, 42), margin_keep(3.0, 16.0), 9.0):
@@ -64,7 +62,7 @@ def throne(preview):
 
     cav = cavity(hgt, g, 0.4, 2.0)
     alb = desaturate(alb * (1 - cav[..., None] * 0.3), 0.05)
-    smooth = 0.7 - joint * 0.5 + km * 0.1 + sm * 0.2 - stm * 0.2
+    smooth = 0.7 - joint * 0.5 + km * 0.1 - stm * 0.2
     emission = C(0.18, 0.13, 0.04) * (km * smoothstep(0.55, 0.8, n.fbm(X, Y, 4, 3, offset=2)))[..., None]
     lalb, lhgt, lsmooth = dark_lane(n, lane, rng, C(0.05, 0.045, 0.05), C(0.1, 0.09, 0.1), offset=2150)
     finish(os.path.join(OUT, 'Throne'), 'Throne', g, alb, hgt, smooth, emission, lane, lalb, lhgt, lsmooth, preview=preview)
@@ -111,8 +109,7 @@ def fates(preview):
     spm = sp.read()
     wm = wool.read()
     alb, hgt = apply_object(g, alb, hgt, spm, spm * 0.1, C(0.3, 0.2, 0.11), shadow=0.55, shadow_blur=0.1)
-    wdome = np.clip(blurf(wm, 0.15, g) * 1.4, 0, 1) * wm
-    alb, hgt = apply_object(g, alb, hgt, wm, wdome * 0.25, lerp(C(0.35, 0.33, 0.29), C(0.6, 0.57, 0.5), wdome * brush(n, X, Y, 0.2, 2.0)), shadow=0.5, shadow_blur=0.2)
+    # (the wool tufts are still laid out but not applied: the white splotches read as unclear; rng sequence kept)
 
     cav = cavity(hgt, g, 0.4, 2.0)
     alb = desaturate(alb * (1 - cav[..., None] * 0.35), 0.1)
@@ -268,8 +265,8 @@ def fates_edge():
     be = BackEdge('Fates')
     wood = be.material(Material('Wood', tex_h=16.0, self_light=0.35))
     cloth = be.material(Material('Cloth', tex_h=16.0, self_light=0.45))
-    thread = be.material(Material('Thread', tex_h=6.0, self_light=0.5))
-    red = be.material(Material('RedThread', tex_h=6.0, self_light=0.5))
+    thread = be.material(Material('Thread', tex_h=6.0, self_light=0.15))
+    red = be.material(Material('RedThread', tex_h=6.0, self_light=0.2))
     clay = be.material(Material('Clay', tex_h=3.0, self_light=0.4))
     ly = 35.6
     cloth_h = 4.2
@@ -318,7 +315,7 @@ def gate_edge():
     n = Noise(143)
     be = BackEdge('TheGate')
     stone = be.material(Material('Stone', tex_h=16.0, self_light=0.3))
-    bronze = be.material(Material('Bronze', tex_h=16.0, self_light=0.4))
+    bronze = be.material(Material('Bronze', tex_h=16.0, self_light=0.25))
     gy = 35.6
     be.box(stone, -75, -24.0, gy + 0.8, gy + 3.0, 0, 14.0, batter=0.15)
     be.box(stone, 24.0, 75, gy + 0.8, gy + 3.0, 0, 14.0, batter=0.15)

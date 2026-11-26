@@ -100,7 +100,7 @@ def back_edge():
     folder = os.path.join(OUT, NAME)
     n = Noise(107)
     be = BackEdge(NAME)
-    mar = be.material(Material('Marble', tex_h=16.0, self_light=0.42))
+    mar = be.material(Material('Marble', tex_h=16.0, self_light=0.35, fall_top=2.0))
     wall = be.material(Material('Cella', tex_h=16.0, self_light=0.18))
     top_y, top_h = bk.steps(be, mar, -75, 75, 34.0, 3, 0.5, 0.6)
     be.box(mar, -75, 75, top_y - 0.01, 41.5, 0, top_h, sides=False)
@@ -115,7 +115,7 @@ def back_edge():
     alb, hgt, sm = bp.marble(c, n, C(0.46, 0.44, 0.4), C(0.6, 0.58, 0.53), C(0.32, 0.3, 0.28), 0.5, 0.04, offset=31)
     alb = bp.age(n, c.X, c.Y, alb, foot_dark=0.35, streaks=0.35)
     ta, th, ts = bp.tops(mar, n, C(0.42, 0.4, 0.36), C(0.55, 0.52, 0.47), offset=32)
-    save_material(folder, mar, desaturate(alb, 0.1), hgt, sm, talb=ta, thgt=th, tsmooth=ts)
+    save_material(folder, mar, desaturate(alb, 0.1) * 0.48, hgt, sm, talb=ta * 0.5, thgt=th, tsmooth=ts)
     c = wall.elev_canvas()
     alb, hgt, sm = bp.masonry(c, n, 1.6, 0.7, C(0.1, 0.085, 0.075), C(0.16, 0.14, 0.12), C(0.05, 0.04, 0.035), offset=33)
     fresco = (1 - smoothstep(0.25, 0.35, np.abs(c.Y - 3.2))) * 0.5

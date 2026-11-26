@@ -192,7 +192,7 @@ SMOOTH_CAP = 0.38
 GRADES = {
     'Troy': dict(value=0.74, sat=0.9),
     'Trials': dict(value=0.78, sat=1.0),
-    'Temple': dict(value=0.48, sat=0.85),
+    'Temple': dict(value=0.43, sat=0.85),
     'Labyrinth': dict(value=0.78, sat=0.8),
     'Cyclops': dict(value=0.78, sat=1.0),
     'Bacchanalia': dict(value=0.8, sat=1.05),

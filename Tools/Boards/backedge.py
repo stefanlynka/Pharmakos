@@ -22,13 +22,15 @@ import os
 
 import numpy as np
 
-from boardgen import Canvas, F32, normals, save_set
+from boardgen import Canvas, F32, normals, save_set, smoothstep
 
 HALF = 75.0
 TEX_W = 4096
 PPU = TEX_W / (2 * HALF)          # texels per unit, the same across and up
 TOP_ROWS = 96
 SELF_LIGHT_GAIN = 1.7   # back edges stand outside the spotlights; scales every material's self-light
+FALL_TOP = 4.0          # self-light fades out by this height, and the stone darkens upward: the frame fades to black
+FALL_SIDE = (8.0, 55.0)  # ...and toward the sides (|x|), so the top corners stay black (board spec)
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 JSON_DIR = os.path.join(ROOT, 'Claude', 'Boards', 'backedge_json')   # regenerated input for the Unity builder
 
@@ -37,8 +39,9 @@ class Material:
     """name, height the elevation texture covers, self_light (0..1: emission from the albedo, standing in for bounce
     light the spotlights don't give vertical faces), cutout (alpha-tested albedo), smoothness scale."""
 
-    def __init__(self, name, tex_h=12.0, self_light=0.4, cutout=False, emission_strength=1.0):
+    def __init__(self, name, tex_h=12.0, self_light=0.4, cutout=False, emission_strength=1.0, fall_top=FALL_TOP):
         self.name = name
+        self.fall_top = fall_top
         self.tex_h = tex_h
         self.self_light = self_light
         self.cutout = cutout
@@ -269,9 +272,21 @@ def save_material(folder, mat, alb, hgt, smooth, emission=None, talb=None, thgt=
     A = np.concatenate([talb, alb], 0)
     N = np.concatenate([normals(thgt, tp, 1.0), normals(hgt, el, 1.0)], 0)
     S = np.concatenate([tsmooth, smooth], 0)
-    # emission = the material's self-light (a share of its own albedo, standing in for bounce light) plus any glow
-    E = A * mat.self_light * SELF_LIGHT_GAIN
+    # self-light (a share of the albedo, standing in for bounce light the spotlights don't give vertical faces) only
+    # at the foot: it fades out with height and toward the sides, and the material darkens upward, so every back edge
+    # falls to black at the top of the frame (fall_top=None keeps the old uniform self-light)
+    if mat.self_light > 0 and mat.fall_top:
+        lit = 1 - smoothstep(0.4, mat.fall_top, el.Y)
+        sd = 1 - smoothstep(FALL_SIDE[0], FALL_SIDE[1], np.abs(el.X))
+        ek = np.concatenate([np.broadcast_to(sd[:1] * 0.5, (TOP_ROWS, TEX_W)), lit * sd], 0)
+        ak = np.concatenate([np.broadcast_to(0.5 + 0.5 * sd[:1], (TOP_ROWS, TEX_W)), (0.12 + 0.88 * lit) * (0.5 + 0.5 * sd)], 0)
+        E = A * (mat.self_light * SELF_LIGHT_GAIN * ek)[..., None]
+        A = A * ak[..., None]
+    else:
+        E = A * mat.self_light * SELF_LIGHT_GAIN
     if emission is not None:
+        if mat.self_light > 0 and mat.fall_top:
+            emission = emission * (lit * sd)[..., None]          # glows (embers...) fade the same way
         E = E + np.concatenate([np.zeros_like(talb), emission], 0)
     prefix = 'BE_' + mat.name
     save_set(folder, prefix, full, A, N, S, E, normal_scale=1.0, mask_size=(TEX_W // 4, max(mat.rows // 4, 4)))

@@ -1,5 +1,5 @@
 """Artemis' hunt: an old forest floor of moss and leaf litter, roots snaking in from the edges, fern fronds and
-fallen twigs, a shed antler and a few spent arrows. Lanes: a muddy game trail cut with deer slots."""
+fallen twigs and a few spent arrows (the shed antler was removed: too eye-catching). Lanes: a muddy game trail cut with deer slots."""
 from boardkit import *  # noqa
 
 NAME = 'Hunt'
@@ -131,7 +131,7 @@ def paint(preview=False):
     fcol = lerp(C(0.05, 0.09, 0.03), C(0.14, 0.22, 0.06), n.fbm(X, Y, 0.5, 3, offset=8))
     alb, hgt = apply_object(g, alb, hgt, fm, fm * 0.12, fcol, shadow=0.55, shadow_blur=0.3)
 
-    # twigs, a shed antler, spent arrows
+    # twigs and spent arrows
     tw = Layer(g)
     strokes(tw, rng, scatter_points(rng, 300, (-66, 66, -23, 43), margin_keep(1.0), 0.8), 0.9, 0.08)
     twm = tw.read()
@@ -139,9 +139,7 @@ def paint(preview=False):
     ant = Layer(g)
     for x, y in scatter_points(rng, 3, (-62, 62, -21, 41), margin_keep(8.0), 25):
         antler(ant, rng, x, y, rng.uniform(1.0, 1.3), rng.uniform(0, 6.28))
-    am = ant.read()
-    adome = np.clip(blurf(am, 0.06, g) * 1.5, 0, 1) * am
-    alb, hgt = apply_object(g, alb, hgt, am, adome * 0.2, lerp(C(0.28, 0.24, 0.18), C(0.52, 0.47, 0.38), adome), shadow=0.55)
+    # (the antlers are still drawn, but not applied, so the rng sequence and the rest of the floor stay as they were)
     ar = Layer(g)
     fl2 = Layer(g)
     for x, y in scatter_points(rng, 7, (-62, 62, -21, 41), margin_keep(3.0, 14.0), 6):
@@ -192,8 +190,8 @@ def back_edge():
     n = Noise(63)
     rng = np.random.default_rng(63)
     be = BackEdge(NAME)
-    bark = be.material(Material('Bark', tex_h=20.0, self_light=0.35))
-    bank = be.material(Material('Bank', tex_h=4.0, self_light=0.35))
+    bark = be.material(Material('Bark', tex_h=20.0, self_light=0.35, fall_top=3.0))
+    bank = be.material(Material('Bank', tex_h=4.0, self_light=0.25, fall_top=2.5))
     f = lambda x, h, sc, o: n.fbm(np.array([[x]], F32), np.array([[h]], F32), sc, 4, offset=o)[0, 0]
     be.relief(bank, -75, 75, lambda x: 34.8 + 0.8 * f(x, 0, 6, 51), lambda x: 0.8 + 1.4 * f(x, 0, 5, 52),
               lambda x, h: 0.6 * f(x, h, 1.0, 53) + h * 0.9, step=0.5, h_step=0.3, back=5.0)
@@ -203,15 +201,16 @@ def back_edge():
         r = rng.uniform(0.9, 1.8)
         seed = rng.uniform(0, 100)
         wob = lambda t, h, s_=seed: 0.85 + 0.3 * n.value(np.array([[math.cos(t * 3) + s_]], F32), np.array([[h * 0.3 + s_]], F32), 1.0, 54)[0, 0]
-        be.lathe(bark, x, y, [(0.0, r * 2.1), (0.4, r * 1.5), (1.2, r * 1.12), (3.0, r), (20.0, r * 0.82)], segments=16, wobble=wob)
+        be.lathe(bark, x, y, [(0.0, r * 1.35), (0.4, r * 1.15), (1.2, r * 1.03), (3.0, r), (20.0, r * 0.85)], segments=20, wobble=wob)
         x += rng.uniform(5.5, 11.0)
     be.save(folder)
+    # bark: the generated oak bark tile (Tools/Boards/gen), mossy at the roots
+    from genkit import tile, norm_lum, tile_height
     c = bark.elev_canvas()
-    ridges = n.value(c.X * 4.0, c.Y * 0.25, 1.0, 61) * 0.6 + n.fbm(c.X, c.Y, 0.6, 3, offset=62) * 0.4
-    alb = lerp(C(0.09, 0.075, 0.06), C(0.28, 0.24, 0.18), ridges)
-    moss = smoothstep(0.58, 0.72, n.fbm(c.X, c.Y, 1.5, 4, offset=63)) * (1 - smoothstep(1.0, 6.0, c.Y))
-    alb = lerp(alb, C(0.08, 0.12, 0.04), moss * 0.7)
-    save_material(folder, bark, alb.astype(F32), (ridges * 0.12).astype(F32), np.full(c.X.shape, 0.12, F32))
+    alb = norm_lum(sample_tiled(tile('Bacchanalia_BarkTile.png'), c.X, c.Y, 3.2), 0.13)
+    moss = smoothstep(0.58, 0.72, n.fbm(c.X, c.Y, 1.5, 4, offset=63)) * (1 - smoothstep(1.0, 4.0, c.Y))
+    alb = lerp(alb, alb * C(0.75, 1.0, 0.55), moss * 0.6)
+    save_material(folder, bark, alb.astype(F32), tile_height(alb, c, 0.2), np.full(c.X.shape, 0.12, F32))
     c = bank.elev_canvas()
     alb, hgt, sm = bp.rock(c, n, C(0.07, 0.05, 0.035), C(0.17, 0.13, 0.09), strata=0.0, offset=64)
     green = smoothstep(0.45, 0.65, n.fbm(c.X, c.Y, 0.9, 4, offset=65))

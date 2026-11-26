@@ -89,7 +89,7 @@ def paint(preview=False):
     blm = blurf(bl.read(), 0.08, g)
     alb = lerp(alb, lerp(C(0.07, 0.01, 0.01), C(0.16, 0.02, 0.02), n.fbm(X, Y, 0.7, 3, offset=2)), blm * 0.85)
 
-    # candles in pools of their own wax, flames still burning
+    # candle layout (removed from the floor; see below)
     wax = Layer(g)
     stub = Layer(g)
     flame = Layer(g)
@@ -101,18 +101,9 @@ def paint(preview=False):
             stub.ellipse(x, y, r, r, 255, n=24)
             if rng.random() < 0.75:
                 flame.ellipse(x, y, r * 0.38, r * 0.38)
-    wm = blurf(wax.read(), 0.08, g)
-    sm_ = stub.read()
-    fm = flame.read()
-    waxcol = lerp(C(0.13, 0.11, 0.085), C(0.22, 0.19, 0.15), n.fbm(X, Y, 0.3, 3, offset=3))
-    alb, hgt = apply_object(g, alb, hgt, wm * 0.8, wm * 0.05, waxcol, shadow=0.0)
-    sdome = np.clip(blurf(sm_, 0.08, g) * 1.4, 0, 1) * sm_
-    alb, hgt = apply_object(g, alb, hgt, sm_, sdome * 0.4, lerp(C(0.2, 0.17, 0.13), C(0.36, 0.31, 0.24), sdome), shadow=0.5)
-    wick = fm
-    alb = lerp(alb, C(0.05, 0.03, 0.02), wick)
-    halo = np.clip(blurf(fm, 1.4, g) * 6.0, 0, 1)
-    emission = C(1.0, 0.62, 0.25) * np.clip(blurf(fm, 0.06, g) * 2.5, 0, 1)[..., None] + C(0.45, 0.2, 0.06) * halo[..., None] * 0.7
-    alb = lerp(alb, C(0.12, 0.07, 0.035), halo * 0.3)          # candlelight warming the floor around them
+    # (the floor candles are still laid out, but not applied, so the rng sequence and the rest of the floor stay as
+    # they were: they drew the eye off the cards; the candles on the back edge's ledge remain)
+    emission = None
 
     cav = cavity(hgt, g, 0.4, 2.0)
     alb = desaturate(alb * (1 - cav[..., None] * 0.35), 0.05)
@@ -145,7 +136,7 @@ def back_edge():
     rng = np.random.default_rng(117)
     be = BackEdge(NAME)
     blk = be.material(Material('Black', tex_h=14.0, self_light=0.45))
-    wax = be.material(Material('Wax', tex_h=4.0, self_light=0.5))
+    wax = be.material(Material('Wax', tex_h=4.0, self_light=0.15))
     fl = be.material(bk.flame_material())
     top_y, top_h = bk.steps(be, blk, -75, 75, 34.0, 2, 0.4, 0.6)
     be.box(blk, -75, 75, top_y - 0.01, 37.6, 0, top_h, sides=False)
