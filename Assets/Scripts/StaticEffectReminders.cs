@@ -96,7 +96,7 @@ public static class StaticEffectReminders
     {
         string phrase = effect.ToString();
         if (effect == StaticEffect.RangedAttacker)
-            phrase = "Ranged Attacker";
+            phrase = "Archer"; // StaticEffect.RangedAttacker keeps its old name in code
         else if (effect == StaticEffect.LowVision)
             phrase = "Low Vision";
 
@@ -119,7 +119,7 @@ public static class StaticEffectReminders
             case StaticEffect.Taunt:
                 return "<b>Taunt</b>\nMust be attacked before other followers.";
             case StaticEffect.RangedAttacker:
-                return "<b>Ranged Attacker</b>\nAttacks enemies outside melee range and takes no damage when attacking.";
+                return "<b>Archer</b>\nAttacks enemies outside melee range and takes no damage when attacking.";
             case StaticEffect.Frenzy:
                 return "<b>Frenzy</b>\nCan attack twice each turn.";
             case StaticEffect.Immobile:
