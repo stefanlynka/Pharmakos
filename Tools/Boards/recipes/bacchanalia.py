@@ -1,267 +1,105 @@
-"""Dionysus' revel in a night glade: dark loam and moss strewn with fallen vine leaves (green, yellowing, wine-red),
-curling tendrils, grape bunches (some trodden into purple smears), pools of spilt wine that still shine, and broken
-black-figure cups and amphorae. Lanes: trampled earth splashed with wine, bare footprints and satyrs' hoofprints."""
+"""Dionysus' revel in a night glade: a forest floor of fallen oak and vine leaves, ochre, brown and a few wine-red
+(a generated tile), trampled toward bare loam in the arena, a few dark wine stains soaked in. Back edge (3D): the
+forest's edge, great old trunks rising out of frame in front of a dark wooded bank, lit only at their roots.
+Lanes: the same litter, trodden calmer. (The terrace wall, pithoi, pergola and painted leaves were dropped: they
+read as low-poly and clay-like.)"""
 from boardkit import *  # noqa
+from genkit import tile, two_scale, norm_lum, tile_height, edge_fade, tile_lanes, falloff, RockFace
 
 NAME = 'Bacchanalia'
+BANK_Y = 39.5        # the wooded bank behind the trunks
 
 
-def tendril(layer, rng, x, y, length, width):
-    a = rng.uniform(0, 6.28)
-    pts = [(x, y)]
-    curl = rng.uniform(0.15, 0.35) * rng.choice([-1, 1])
-    step = 0.25
-    for i in range(int(length / step)):
-        t = i / max(1, length / step)
-        a += curl * (1 + 3 * t * t) + rng.normal(0, 0.08)
-        x += math.cos(a) * step * (1 - 0.6 * t)
-        y += math.sin(a) * step * (1 - 0.6 * t)
-        pts.append((x, y))
-    layer.line(pts, width)
+def trunks():
+    """The trunks along the forest's edge: (x, y, radius). Kept behind the enemy portrait and its offerings."""
+    rng = np.random.default_rng(613)
+    out = []
+    x = -72.0 + rng.uniform(0, 4)
+    while x < 72:
+        r = rng.uniform(1.0, 2.3)
+        y = rng.uniform(35.6, 38.6) + r * 0.3
+        out.append((x, y, r))
+        x += rng.uniform(7.0, 13.0)
+    return out
 
 
 def paint(preview=False):
     g, lane = new_canvases()
-    n = Noise(41)
-    rng = np.random.default_rng(41)
+    n = Noise(53)
+    rng = np.random.default_rng(53)
     X, Y = g.X, g.Y
     ad = arena_dist(X, Y)
-    margin = smoothstep(1, 10, ad)
 
-    big = n.fbm(X, Y, 14, 4, offset=1)
-    grain = n.fbm(X, Y, 0.5, 5, offset=2)
-    soil = lerp(C(0.07, 0.05, 0.04), C(0.17, 0.12, 0.085), np.clip(big * 0.7 + grain * 0.3, 0, 1))
-    moss = smoothstep(0.55, 0.72, n.fbm(X, Y, 4, 4, offset=3)) * margin
-    mosscol = lerp(C(0.05, 0.07, 0.03), C(0.12, 0.15, 0.06), tufts(n, X, Y, 0.35, 28, offset=4))
-    alb = lerp(soil, mosscol, moss)
-    alb = alb + ((brush(n, X, Y) - 0.5) * 0.03)[..., None]
-    trodden = smoothstep(2.0, -4.0, ad)
-    alb = lerp(alb, C(0.19, 0.14, 0.1), trodden * 0.5)
-    hgt = (big * 0.35 + grain * 0.06 + moss * 0.08).astype(F32)
+    litter = tile('Bacchanalia_LeafTile.png')
+    alb = norm_lum(two_scale(n, litter, X, Y, 12.0), 0.15)
+    # the arena trampled: the litter pulled toward its own dark mean, so the leaves don't read under the cards
+    calm = smoothstep(5.0, -1.0, ad) * 0.7
+    alb = lerp(alb, np.broadcast_to(alb.reshape(-1, 3).mean(0) * 0.85, alb.shape), calm)
+    big = n.fbm(X, Y, 16, 4, offset=1)
+    alb = alb * (0.8 + 0.4 * big)[..., None]
+    hgt = (big * 0.3 + tile_height(alb, g, 0.1) * (1 - calm * 0.7)).astype(F32)
 
-    # spilt wine: pools near the arena, splashes everywhere, all a little glossy
-    wine = Layer(g)
-    for x, y in scatter_points(rng, 26, (-64, 64, -22, 42), margin_keep(1.5, 16.0), min_gap=6):
-        blob(wine, rng, x, y, rng.uniform(0.8, 2.2), 18, 0.35, rng.uniform(0, 6.28), rng.uniform(0.5, 0.9))
-        for _ in range(rng.integers(6, 16)):
-            a = rng.uniform(0, 6.28)
-            d = rng.uniform(1.2, 3.5)
-            wine.ellipse(x + math.cos(a) * d, y + math.sin(a) * d, rng.uniform(0.05, 0.22), rng.uniform(0.05, 0.18))
-    wm = np.clip(blurf(wine.read(), 0.05, g), 0, 1)
-    winecol = lerp(C(0.09, 0.015, 0.03), C(0.2, 0.03, 0.06), n.fbm(X, Y, 0.8, 3, offset=5))
-    alb = lerp(alb, winecol, wm * 0.9)
+    # wine spilt and soaked in: few, dark, matte
+    w = Layer(g)
+    for x, y in scatter_points(rng, 9, (-66, 66, -23, 33), margin_keep(3.0), 9.0):
+        blob(w, rng, x, y, rng.uniform(0.7, 1.6), 16, 0.45)
+    wm = blurf(w.read(), 0.35, g) * (0.5 + 0.5 * n.fbm(X, Y, 0.6, 3, offset=4))
+    alb = lerp(alb, alb * C(0.55, 0.3, 0.38), wm * 0.75)
 
-    # vines creeping in from the edges: woody runners with big leaves, tendrils and grape bunches along them,
-    # plus loose fallen leaves near them
-    wood = Layer(g)
-    leaves = Layer(g)
-    tint = Layer(g)
-    veinl = Layer(g)
-    tl = Layer(g)
-    grapes = Layer(g)
-    starts = []
-    for i in range(16):
-        side = i % 4
-        t = rng.uniform(0.05, 0.95)
-        if side == 0:
-            starts.append((-68 + 136 * t, 44.5))
-        elif side == 1:
-            starts.append((-68 + 136 * t, -24.5))
-        elif side == 2:
-            starts.append((-68.5, -24 + 68 * t))
-        else:
-            starts.append((68.5, -24 + 68 * t))
-
-    def add_leaf(x, y, size, a):
-        v = rng.random()
-        tv = 40 if v < 0.62 else (150 if v < 0.88 else 235)
-        palmate_leaf(leaves, x, y, size, a, 255)
-        palmate_leaf(tint, x, y, size, a, tv + rng.uniform(-30, 15))
-        for spread in (-0.9, 0, 0.9):
-            veinl.line([(x, y), (x + math.cos(a + spread) * size * 0.75, y + math.sin(a + spread) * size * 0.75)], size * 0.03)
-
-    for sx, sy in starts:
-        x, y = sx, sy
-        a = math.atan2(11.6 - y, -x) + rng.normal(0, 0.5)
-        pts = [(x, y)]
-        length = rng.uniform(18, 40)
-        for k in range(int(length / 0.4)):
-            a += rng.normal(0, 0.12)
-            nx_, ny_ = x + math.cos(a) * 0.4, y + math.sin(a) * 0.4
-            d = float(arena_dist(np.array([[nx_]], F32), np.array([[ny_]], F32))[0, 0])
-            if d < 3.0:
-                a += 0.5 * rng.choice([-1, 1])
-                continue
-            x, y = nx_, ny_
-            pts.append((x, y))
-            if k % 4 == 0:
-                side = 1 if (k // 4) % 2 else -1
-                add_leaf(x, y, rng.uniform(1.4, 2.6), a + side * rng.uniform(0.9, 1.6))
-            if k % 9 == 4:
-                tendril(tl, rng, x, y, rng.uniform(1.5, 3.5), 0.07)
-            if k % 17 == 8 and rng.random() < 0.7:
-                ga = a + rng.choice([-1, 1]) * 1.3
-                for q in range(rng.integers(14, 28)):
-                    t = rng.random()
-                    gx = x + math.cos(ga) * t * 1.8 + rng.normal(0, 0.3 * (1 - t * 0.7))
-                    gy = y + math.sin(ga) * t * 1.8 + rng.normal(0, 0.3 * (1 - t * 0.7))
-                    r = rng.uniform(0.15, 0.22)
-                    grapes.ellipse(gx, gy, r, r)
-        wood.line(pts, rng.uniform(0.22, 0.38))
-    for x, y in scatter_points(rng, 110, (-66, 66, -23, 43), margin_keep(3.0), 1.6):
-        add_leaf(x, y, rng.uniform(1.0, 2.0), rng.uniform(0, 6.28))
-
-    wdm = wood.read()
-    wcol = lerp(C(0.1, 0.07, 0.05), C(0.22, 0.16, 0.11), np.clip(blurf(wdm, 0.06, g) * 1.4, 0, 1) * (0.6 + 0.5 * grain))
-    alb, hgt = apply_object(g, alb, hgt, wdm, wdm * 0.25, wcol, shadow=0.55, shadow_blur=0.2)
-
-    lm = leaves.read()
-    tv = np.clip(tint.read() / np.maximum(lm, 1e-3), 0, 1)
-    vm = veinl.read() * lm
-    green = lerp(C(0.045, 0.055, 0.03), C(0.09, 0.105, 0.05), grain)        # muted, shadowed: they frame, not decorate
-    yellow = lerp(C(0.1, 0.085, 0.045), C(0.15, 0.12, 0.065), grain)
-    red = lerp(C(0.09, 0.035, 0.03), C(0.13, 0.05, 0.04), grain)
-    leafcol = lerp(green, yellow, smoothstep(0.35, 0.6, tv))
-    leafcol = lerp(leafcol, red, smoothstep(0.75, 0.88, tv))
-    leafcol = desaturate(leafcol * (0.85 + 0.25 * n.fbm(X, Y, 0.6, 3, offset=8))[..., None], 0.3)
-    leafcol = lerp(leafcol, leafcol * 0.55, vm)
-    alb, hgt = apply_object(g, alb, hgt, lm, lm * 0.06 - vm * 0.02, leafcol, shadow=0.5, shadow_blur=0.18)
-
-    tm = tl.read()
-    alb, hgt = apply_object(g, alb, hgt, tm, tm * 0.06, C(0.17, 0.15, 0.07), shadow=0.35, shadow_blur=0.08)
-
-    gm = grapes.read()
-    gdome = np.clip(blurf(gm, 0.05, g) * 1.5, 0, 1) * gm
-    gcol = lerp(C(0.035, 0.015, 0.03), C(0.11, 0.05, 0.1), gdome ** 1.5)
-    alb, hgt = apply_object(g, alb, hgt, gm, gdome * 0.18, gcol, shadow=0.55, shadow_blur=0.1)
-    smear = Layer(g)
-    for x, y in scatter_points(rng, 20, (-66, 66, -23, 43), margin_keep(1.5, 12), 4.0):
-        blob(smear, rng, x, y, rng.uniform(0.5, 1.0), 12, 0.5)
-    sm = blurf(smear.read(), 0.1, g)
-    alb = lerp(alb, C(0.08, 0.025, 0.05), sm * 0.6)
-
-    # broken cups and amphorae: terracotta outside, black glaze in
+    # roots' shadows on the litter, and the ground behind the trees lost in darkness
     sh = Layer(g)
-    glaze = Layer(g)
-    for x, y in scatter_points(rng, 14, (-66, 66, -23, 43), margin_keep(2.0, 14), 8.0):
-        for _ in range(rng.integers(2, 6)):
-            px, py = x + rng.normal(0, 0.8), y + rng.normal(0, 0.8)
-            size = rng.uniform(0.6, 1.4)
-            shard(sh, rng, px, py, size)
-            if rng.random() < 0.5:
-                shard(glaze, rng, px, py, size * 0.7)
-    shm = sh.read()
-    glm = glaze.read() * shm
-    shcol = lerp(C(0.15, 0.075, 0.045), C(0.22, 0.11, 0.07), n.fbm(X, Y, 0.3, 3, offset=7))
-    shcol = lerp(shcol, C(0.05, 0.04, 0.04), glm)
-    alb, hgt = apply_object(g, alb, hgt, shm, shm * 0.08, shcol, shadow=0.55, shadow_blur=0.12)
+    for x, y, r in trunks():
+        sh.ellipse(x, y - 0.4, r * 1.6, r * 1.0)
+    alb = alb * (1 - blurf(sh.read(), 0.9, g)[..., None] * 0.55)
+    alb = alb * (1 - smoothstep(34.0, 37.5, Y)[..., None] * 0.6)
 
+    alb = edge_fade(X, Y, alb)
     cav = cavity(hgt, g, 0.5, 2.0)
-    alb = desaturate(alb * (1 - cav[..., None] * 0.45), 0.1)
-    smooth = 0.12 + wm * 0.55 + gm * 0.35 + glm * 0.3 + sm * 0.2
+    alb = alb * (1 - cav[..., None] * 0.3)
+    smooth = np.full(X.shape, 0.1, F32)
 
-    # lanes: trampled earth, wine splashes, bare feet and cloven hooves
-    LX, LY = lane.WX, lane.WY
-    lalb, lhgt = lane_base(n, lane, C(0.15, 0.11, 0.08), C(0.24, 0.18, 0.13), offset=940)
-    wear = lane_wear(lane)
-    sp = Layer(lane)
-    for _ in range(160):
-        x, y = rng.uniform(-29.5, 29.5), rng.uniform(0.3, 19.7)
-        sp.ellipse(x, y, rng.uniform(0.05, 0.3), rng.uniform(0.05, 0.25))
-    spm = blurf(sp.read(), 0.04, lane)
-    lalb = lerp(lalb, C(0.14, 0.04, 0.05), spm * 0.45)
-    pr = Layer(lane)
-    for _ in range(140):
-        x, y = rng.uniform(-29.5, 29.5), rng.choice([rng.uniform(1.5, 8.5), rng.uniform(11.5, 18.5)])
-        a = rng.uniform(0, 6.28)
-        if rng.random() < 0.5:
-            footprint(pr, x, y, rng.uniform(0.9, 1.1), a)
-        else:
-            hoofprint(pr, x, y, rng.uniform(0.35, 0.45), a)
-    pm = blurf(pr.read(), 0.05, lane) * 0.6
-    lalb = lerp(lalb, C(0.11, 0.08, 0.06), pm * 0.5)
-    lhgt = (lhgt - pm * 0.08).astype(F32)
-    lalb = lalb * (0.95 + 0.1 * wear)[..., None]
-    lcav = cavity(lhgt, lane, 0.4, 2.0)
-    lalb = desaturate(lalb * (1 - lcav[..., None] * 0.3), 0.12)
-    lsmooth = 0.12 + spm * 0.4
+    lalb, lhgt, lsmooth = tile_lanes(n, lane, litter, size=12.0, mean=0.17, calm=0.65)
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, None, lane, lalb, lhgt, lsmooth, preview=preview)
     back_edge()
 
 
 def back_edge():
-    """Dionysus' vineyard: a dry-stone terrace wall, great wine jars (pithoi) standing before it, and a pergola of
-    rough posts behind it hung thick with vine leaves and grapes."""
+    """Old trunks (lathes with a noise wobble and flared roots; generated bark tile) standing along the far edge and
+    rising out of frame, in front of a dark bank of earth and litter (a RockFace with the leaf tile)."""
     from backedge import BackEdge, Material, save_material
-    import bepaint as bp
     folder = os.path.join(OUT, NAME)
-    n = Noise(43)
-    rng = np.random.default_rng(43)
+    n = Noise(57)
     be = BackEdge(NAME)
-    wall = be.material(Material('Terrace', tex_h=3.0, self_light=0.38))
-    clay = be.material(Material('Pithos', tex_h=5.0, self_light=0.4))
-    post = be.material(Material('Post', tex_h=16.0, self_light=0.35))
-    vine = be.material(Material('Vine', tex_h=16.0, self_light=0.4, cutout=True))
-    be.box(wall, -75, 75, 35.2, 38.0, 0, 1.8, batter=0.25, sides=False)
-    for x in [-66, -58, -49, -40, -27, -18, 37, 46, 55, 63, 71]:
-        x = x + rng.normal(0, 1.0)
-        r = rng.uniform(1.1, 1.5)
-        hh = r * rng.uniform(2.3, 2.7)
-        y = 34.2 if not (-11 < x < 31) else 35.0
-        be.lathe(clay, x, y, [(0.0, r * 0.45), (hh * 0.2, r * 0.95), (hh * 0.5, r), (hh * 0.8, r * 0.7), (hh * 0.9, r * 0.42),
-                              (hh, r * 0.45), (hh + 0.15, r * 0.52)], segments=18)
-    xs = np.arange(-72, 75, 8.0)
-    for x in xs:
-        be.lathe(post, x, 37.0, [(1.8, 0.32), (16.0, 0.26)], segments=8)
-    for x in xs[:-1]:
-        for k in range(3):
-            yy = 36.4 - k * 0.25
-            x0, x1 = x - 1.5 + k * 0.7, x + 9.5 - k * 0.5
-            be.strand(vine, (x0 + x1) / 2, yy, 2.6 + k * 0.7, 16.0, x1 - x0, along_shift=k * 19.0 * (-1 if x > 0 else 1))
+    for old in ('Pithos', 'Post', 'Terrace', 'Vine'):
+        for suffix in ('_Albedo.jpg', '_Albedo.png', '_Normal.jpg', '_Mask.png', '_Emission.jpg'):
+            f = os.path.join(folder, 'BE_' + old + suffix)
+            if os.path.exists(f):
+                os.remove(f)
+
+    # the bank: dark earth and leaves, far back, running out of frame
+    bk = be.material(Material('Bank', tex_h=14.0, self_light=0.0))
+    litter = tile('Bacchanalia_LeafTile.png')
+    bank = RockFace(bk, n, litter, BANK_Y, top=14.0, lean=0.6, bulk=2.2, bulk_scale=8.0, disp=0.3, size=6.0,
+                    foot_wave=1.2, offset=500)
+    bank.mesh(be, step=0.3, h_step=0.3)
+    alb, hgt, em, sm = bank.paint(alb=norm_lum(bank.alb, 0.12), top=3.5, glow=0.3, floor=0.08, cavity_dark=0.6)
+    save_material(folder, bk, alb, hgt, sm, emission=em)
+
+    # the trunks
+    tm = be.material(Material('Bark', tex_h=14.0, self_light=0.0))
+    for i, (x, y, r) in enumerate(trunks()):
+        prof = [(0.0, r * 1.3), (0.35, r * 1.12), (1.0, r * 1.02), (4.0, r * 0.97), (8.0, r * 0.92), (14.0, r * 0.88)]
+        seed = 11.0 * i
+        wob = lambda t, h, s=seed: 0.86 + 0.28 * n.value(np.array([[math.cos(t) * 1.6 + s]], F32),
+                                                        np.array([[math.sin(t) * 1.6 + h * 0.15 + s]], F32), 1.0, 61)[0, 0]
+        be.lathe(tm, x, y, prof, segments=20, cap=False, wobble=wob)
+    c = tm.elev_canvas()
+    bark = tile('Bacchanalia_BarkTile.png')
+    balb = norm_lum(sample_tiled(bark, c.X, c.Y, 3.2), 0.16)
+    moss = smoothstep(0.6, 0.75, n.fbm(c.X, c.Y, 1.0, 4, offset=62)) * (1 - smoothstep(0.0, 2.5, c.Y))
+    balb = lerp(balb, balb * C(0.8, 1.0, 0.6), moss * 0.5)
+    bh = tile_height(balb, c, 0.2)
+    em_k, am = falloff(n, c.X, c.Y, top=6.5, glow=0.6, floor=0.06)
+    save_material(folder, tm, balb * am[..., None], bh, np.full(c.X.shape, 0.12, F32), emission=balb * em_k[..., None])
     be.save(folder)
-    c = wall.elev_canvas()
-    alb, hgt, sm = bp.masonry(c, n, 0.9, 0.42, C(0.18, 0.15, 0.11), C(0.34, 0.29, 0.21), C(0.04, 0.03, 0.02), gap=0.08,
-                              jitter=0.6, offset=71)
-    ta, th, ts = bp.tops(wall, n, C(0.1, 0.07, 0.05), C(0.2, 0.15, 0.1), offset=72)
-    save_material(folder, wall, alb, hgt, sm, talb=ta, thgt=th, tsmooth=ts)
-    c = clay.elev_canvas()
-    alb, hgt, sm = bp.rock(c, n, C(0.25, 0.11, 0.06), C(0.4, 0.2, 0.11), strata=0.0, offset=73)
-    band = (1 - smoothstep(0.08, 0.14, np.abs(((c.Y * 1.0) % 1.1) - 0.55)))
-    alb = lerp(alb, C(0.08, 0.05, 0.04), band * 0.6)
-    save_material(folder, clay, alb, hgt, sm)
-    c = post.elev_canvas()
-    alb, hgt, sm = bp.wood(c, n, C(0.09, 0.06, 0.04), C(0.2, 0.14, 0.09), offset=74)
-    save_material(folder, post, alb, hgt, sm)
-    # vine: leaves (and grapes) on a transparent ground, denser toward the top
-    from boardgen import Layer
-    from boardkit import palmate_leaf
-    c = vine.elev_canvas()
-    leaves = Layer(c)
-    tint = Layer(c)
-    grapes = Layer(c)
-    pts = np.stack([rng.uniform(-75, 75, 9000), rng.uniform(0, 16, 9000)], 1)
-    for x, h in pts:
-        if rng.random() > 0.15 + 0.85 * min(1.0, max(0.0, (h - 2.6) / 4.0)):
-            continue
-        s = rng.uniform(0.7, 1.3)
-        a = rng.uniform(0, 6.28)
-        palmate_leaf(leaves, x, h, s, a, 255)
-        palmate_leaf(tint, x, h, s, a, int(rng.uniform(30, 255)))
-    for x, h in pts[:500]:
-        if h < 3.0:
-            continue
-        for _ in range(rng.integers(10, 20)):
-            t = rng.random()
-            rr = rng.uniform(0.12, 0.17)
-            grapes.ellipse(x + rng.normal(0, 0.25 * (1 - t * 0.6)), h - t * 1.2, rr, rr)
-    lm = leaves.read()
-    tv = np.clip(tint.read() / np.maximum(lm, 1e-3), 0, 1)
-    gm = grapes.read()
-    leafcol = lerp(lerp(C(0.06, 0.09, 0.03), C(0.14, 0.18, 0.06), n.fbm(c.X, c.Y, 0.3, 3, offset=75)),
-                   C(0.2, 0.17, 0.06), smoothstep(0.75, 0.95, tv) * 0.6)
-    gdome = np.clip(blurf(gm, 0.04, c) * 1.5, 0, 1) * gm
-    alb = lerp(leafcol, lerp(C(0.05, 0.02, 0.05), C(0.2, 0.08, 0.18), gdome), gm)
-    alpha = np.clip(lm + gm, 0, 1)
-    save_material(folder, vine, alb.astype(F32), (lm * 0.05 + gdome * 0.05).astype(F32), np.full(c.X.shape, 0.2, F32),
-                  alpha=alpha)
