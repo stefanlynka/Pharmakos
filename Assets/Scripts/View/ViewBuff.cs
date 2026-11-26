@@ -78,7 +78,8 @@ public class ViewBuff : MonoBehaviour
 
     void OnMouseEnter()
     {
-        if (summaryForced || OverworldMapView.BlocksGameInput)
+        // Full-screen viewers (status, deck) sit over the shop's trinkets; their popups would show through.
+        if (summaryForced || OverworldMapView.BlocksGameInput || ContentScrollView.BlocksGameInput)
             return;
 
         ShowHoverSummary();
@@ -119,7 +120,7 @@ public class ViewBuff : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (OverworldMapView.BlocksGameInput)
+        if (OverworldMapView.BlocksGameInput || ContentScrollView.BlocksGameInput)
             return;
 
         if (OnClick != null)
