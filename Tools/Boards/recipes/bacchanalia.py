@@ -1,10 +1,10 @@
-"""Dionysus' revel in a night glade: a forest floor of fallen oak and vine leaves, ochre, brown and a few wine-red
-(a generated tile), trampled toward bare loam in the arena, a few dark wine stains soaked in. Back edge (3D): the
+"""Dionysus' revel in a summer glade: vine leaves, ivy and moss running riot (a generated tile), trampled into dark loam
+and old leaves in the arena, a few dark wine stains soaked in. Back edge (3D): the
 forest's edge, great old trunks rising out of frame in front of a dark wooded bank, lit only at their roots.
 Lanes: the same litter, trodden calmer. (The terrace wall, pithoi, pergola and painted leaves were dropped: they
 read as low-poly and clay-like.)"""
 from boardkit import *  # noqa
-from genkit import tile, two_scale, norm_lum, tile_height, edge_fade, tile_lanes, falloff, RockFace
+from genkit import patch_mix, tile, two_scale, norm_lum, tile_height, edge_fade, tile_lanes, falloff, RockFace
 
 NAME = 'Bacchanalia'
 BANK_Y = 39.5        # the wooded bank behind the trunks
@@ -30,11 +30,17 @@ def paint(preview=False):
     X, Y = g.X, g.Y
     ad = arena_dist(X, Y)
 
+    # high summer: vine leaves, ivy and moss (generated tile) running riot in the margins; the arena trampled into
+    # dark loam and old leaves where the revellers dance, its green pulled toward olive so the playable cards' green
+    # glow still stands out
+    summer = tile('Bacchanalia_SummerTile.png')
     litter = tile('Bacchanalia_LeafTile.png')
-    alb = norm_lum(two_scale(n, litter, X, Y, 12.0), 0.15)
-    # the arena trampled: the litter pulled toward its own dark mean, so the leaves don't read under the cards
-    calm = smoothstep(5.0, -1.0, ad) * 0.7
-    alb = lerp(alb, np.broadcast_to(alb.reshape(-1, 3).mean(0) * 0.85, alb.shape), calm)
+    salb = norm_lum(two_scale(n, summer, X, Y, 9.0), 0.18)
+    lalb_ = norm_lum(two_scale(n, litter, X, Y, 12.0, offset=15) * C(0.78, 0.84, 0.86), 0.13)        # umber loam, off the accent
+    trod = 0.25 + 0.5 * smoothstep(7.0, -2.0, ad)
+    alb, bare = patch_mix(n, salb, lalb_, X, Y, trod, scale=5.0, softness=0.12, offset=16)
+    calm = smoothstep(5.0, -1.0, ad) * 0.45
+    alb = lerp(alb, np.broadcast_to(alb.reshape(-1, 3).mean(0) * 0.9, alb.shape), calm)
     big = n.fbm(X, Y, 16, 4, offset=1)
     alb = alb * (0.8 + 0.4 * big)[..., None]
     hgt = (big * 0.3 + tile_height(alb, g, 0.1) * (1 - calm * 0.7)).astype(F32)
@@ -58,7 +64,7 @@ def paint(preview=False):
     alb = alb * (1 - cav[..., None] * 0.3)
     smooth = np.full(X.shape, 0.1, F32)
 
-    lalb, lhgt, lsmooth = tile_lanes(n, lane, litter, size=12.0, mean=0.17, calm=0.65)
+    lalb, lhgt, lsmooth = tile_lanes(n, lane, lerp(litter, summer, 0.3) * C(0.84, 0.9, 0.86), size=10.0, mean=0.16, calm=0.65)
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, None, lane, lalb, lhgt, lsmooth, preview=preview)
     back_edge()
@@ -79,7 +85,7 @@ def back_edge():
 
     # the bank: dark earth and leaves, far back, running out of frame
     bk = be.material(Material('Bank', tex_h=14.0, self_light=0.0))
-    litter = tile('Bacchanalia_LeafTile.png')
+    litter = tile('Bacchanalia_SummerTile.png')
     bank = RockFace(bk, n, litter, BANK_Y, top=14.0, lean=0.6, bulk=2.2, bulk_scale=8.0, disp=0.3, size=6.0,
                     foot_wave=1.2, offset=500)
     bank.mesh(be, step=0.3, h_step=0.3)
@@ -100,6 +106,6 @@ def back_edge():
     moss = smoothstep(0.6, 0.75, n.fbm(c.X, c.Y, 1.0, 4, offset=62)) * (1 - smoothstep(0.0, 2.5, c.Y))
     balb = lerp(balb, balb * C(0.8, 1.0, 0.6), moss * 0.5)
     bh = tile_height(balb, c, 0.2)
-    em_k, am = falloff(n, c.X, c.Y, top=6.5, glow=0.6, floor=0.06)
+    em_k, am = falloff(n, c.X, c.Y, top=6.0, glow=0.5, floor=0.05)
     save_material(folder, tm, balb * am[..., None], bh, np.full(c.X.shape, 0.12, F32), emission=balb * em_k[..., None])
     be.save(folder)

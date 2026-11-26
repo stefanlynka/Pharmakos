@@ -195,7 +195,7 @@ GRADES = {
     'Temple': dict(value=0.48, sat=0.85),
     'Labyrinth': dict(value=0.78, sat=0.8),
     'Cyclops': dict(value=0.78, sat=1.0),
-    'Bacchanalia': dict(value=0.8, sat=0.5, tint=(0.92, 1.0, 0.78), tint_amt=0.4),
+    'Bacchanalia': dict(value=0.8, sat=1.05),
 }
 
 
