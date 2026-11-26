@@ -28,6 +28,14 @@ Presentation only: nothing here changes game state, and none of it runs in AI si
 - Repeats of one sound within 0.75 s climb a semitone each (max 7), get slightly quieter and shorten their beat, so combos read as a run of notes. Played on `AudioHandler.PlayPitched` (a small voice pool; `PlayOneShot` can't pitch per shot).
 - Timings shared with VFX are constants on both sides: `HEARTBEATS` ↔ `HeartbeatVfx.Beats` (Price Of...), `FATE_STRIKE` ↔ `TwistOfFateVfx.GatherTime`, `GNAW_CLOSE` ↔ `BiteVfx.CloseTime`.
 
+## Mixer and levels (all game audio, not just cues)
+
+- Everything plays through `Resources/Content/Audio/GameMixer.mixer`: Master (+6 dB, Compressor at -3 dB as a safety limiter) > **Music** > Tracks (-20 dB), and Master > **SFX** > Board (-14 dB: `SoundEffectSource`, i.e. every `AudioHandler.PlayOneShot` / `PlaySoundEffect`) / Cues (pitched voices) / Rituals (invocations, flame bed, rumble) / Offerings. `AudioHandler.Start` assigns the groups to the sources; runtime-made sources pick their group where they're created.
+- The settings sliders set the exposed `MusicVolume` / `SFXVolume` faders via `AudioHandler.SliderToDecibels` (40·log10, so 0.5 = -12 dB; the Master +6 makes the default sound the same as the old linear sliders). The code no longer multiplies anything by the slider value.
+- **Bus levels live on the mixer faders** (Window → Audio → Audio Mixer, "Edit in Play Mode"); the `AudioHandler` fields are trims within a bus. The Board bus is 14 dB under Cues and Rituals, so compare trims within a bus only.
+- `AudioSource.volume` clamps at 1, so a trim above 1 does nothing on `PlayPitched`, the flame loop or the rumble (`RumbleVolume` 1.3 acts like 1). `PlayOneShot` trims (offering collects, Board sounds) can go above 1. Clip loudness varies a lot (offering collects and `FlameOngoing` are mastered 20–35 dB quieter than cues), which is why some trims sit far from 1.
+- To measure a bus: loop a steady sine on a probe AudioSource routed to the group and read `AudioListener.GetOutputData` in a later `execute_code` call. A mono source loses 3 dB to panning. One-shot clips end between calls, so snapshots of real sounds are unreliable.
+
 ## VFX (`StrokeProjectile.cs`, `CueVfx.cs`)
 
 - Everything is painted brushstrokes (`BrushStrokeReveal` shader, state in vertex colour), facing the camera. Stroke sets: `Images/Particles/Water`, `Fire` (painted), `Blood`, `Ink`, `Gold` (recoloured from Water by `Tools/VFX/build_stroke_sets.py`; they must import as Sprite, mesh Tight).

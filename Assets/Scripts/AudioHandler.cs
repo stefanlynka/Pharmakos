@@ -2,14 +2,36 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.UI;
 using static ProgressionHandler;
 
 
+/// <summary>
+/// Every source plays through GameMixer (Resources/Content/Audio): Master > Music > Tracks, and Master > SFX > Board /
+/// Cues / Rituals / Offerings. The settings sliders drive the exposed MusicVolume / SFXVolume faders; each group's own
+/// fader is the bus level, and the per-sound fields below are trims within a bus.
+/// </summary>
 public class AudioHandler : MonoBehaviour
 {
     public Slider MusicSlider;
     public Slider SoundEffectSlider;
+
+    [Header("Mixer")]
+    public AudioMixer Mixer;
+    [Tooltip("Combat and menu music.")]
+    public AudioMixerGroup MusicGroup;
+    [Tooltip("SoundEffectSource: card draws, deaths, projectiles, stat changes, flame start, UI one-shots.")]
+    public AudioMixerGroup BoardGroup;
+    [Tooltip("Trigger cues and spell cast sounds (CuePlayer).")]
+    public AudioMixerGroup CuesGroup;
+    [Tooltip("Ritual invocations, the ritual flame bed and the rumble.")]
+    public AudioMixerGroup RitualsGroup;
+    [Tooltip("Offering collect notes.")]
+    public AudioMixerGroup OfferingsGroup;
+
+    const string MusicVolumeParam = "MusicVolume";
+    const string SfxVolumeParam = "SFXVolume";
 
     public AudioSource MusicSource;
     public AudioSource SoundEffectSource;
@@ -71,8 +93,6 @@ public class AudioHandler : MonoBehaviour
     [Range(0f, 2f)] public float CueVolume = 0.4f;
     [Tooltip("Spell cast sounds (CuePlayer.PlayCast). Still scaled by the SFX slider. In the test chamber, [ and ] step both cue volumes.")]
     [Range(0f, 2f)] public float SpellCastVolume = 0.45f;
-
-    private float baseMusicVolume = 0.1f;
 
     private float userMusicVolume = 0.5f;
     private float userSoundEffectVolume = 0.5f;
@@ -190,6 +210,44 @@ public class AudioHandler : MonoBehaviour
 
         LoadOfferingCollectSounds();
         LoadRitualFlameSounds();
+
+        Route(MusicSource, MusicGroup);
+        Route(SoundEffectSource, BoardGroup);
+        Route(OtherSource, RitualsGroup);
+        Route(offeringCollectSource, OfferingsGroup);
+        Route(flameOngoingSource, RitualsGroup);
+
+        // Exposed mixer params can't be set in Awake (the mixer isn't ready), so the slider levels go in here.
+        ApplyUserVolumes();
+        ApplyMusicVolume();
+    }
+
+    static void Route(AudioSource source, AudioMixerGroup group)
+    {
+        if (source != null)
+            source.outputAudioMixerGroup = group;
+    }
+
+    void ApplyUserVolumes()
+    {
+        if (Mixer == null)
+        {
+            Debug.LogError("AudioHandler has no Mixer: the volume sliders do nothing.");
+            return;
+        }
+        Mixer.SetFloat(MusicVolumeParam, SliderToDecibels(userMusicVolume));
+        Mixer.SetFloat(SfxVolumeParam, SliderToDecibels(userSoundEffectVolume));
+    }
+
+    /// <summary>
+    /// Slider position to fader dB. Squared amplitude (40·log10) so each step of the slider sounds like a similar
+    /// change; the Master fader's +6 dB makes the default 0.5 land where the old linear sliders did (0.5 = -6 dB).
+    /// </summary>
+    public static float SliderToDecibels(float slider)
+    {
+        if (slider <= 0.0001f)
+            return -80f;
+        return Mathf.Max(-80f, 40f * Mathf.Log10(slider));
     }
 
     private void LoadOfferingCollectSounds()
@@ -283,7 +341,7 @@ public class AudioHandler : MonoBehaviour
             return;
 
         if (flameStartClip != null && SoundEffectSource != null)
-            SoundEffectSource.PlayOneShot(flameStartClip, userSoundEffectVolume);
+            SoundEffectSource.PlayOneShot(flameStartClip);
 
         if (flameOngoingSource != null && flameOngoingSource.isPlaying)
             return;
@@ -387,7 +445,7 @@ public class AudioHandler : MonoBehaviour
     private void ApplyMusicVolume()
     {
         if (MusicSource != null)
-            MusicSource.volume = baseMusicVolume * userMusicVolume * currentMusicMultiplier * musicFadeMultiplier * handoverMultiplier;
+            MusicSource.volume = currentMusicMultiplier * musicFadeMultiplier * handoverMultiplier;
     }
 
     private void LateUpdate()
@@ -411,9 +469,9 @@ public class AudioHandler : MonoBehaviour
             float pitch = GetOfferingPitch(note.Type, note.CountAfterCollect);
             offeringCollectSource.Stop();
             offeringCollectSource.pitch = pitch;
-            offeringCollectSource.volume = GetOfferingBaseVolume(note.Type) * userSoundEffectVolume;
-            offeringCollectSource.clip = clip;
-            offeringCollectSource.Play();
+            // PlayOneShot so base volumes above 1 still count (AudioSource.volume clamps at 1).
+            offeringCollectSource.volume = 1f;
+            offeringCollectSource.PlayOneShot(clip, GetOfferingBaseVolume(note.Type));
             wait = Mathf.Max(wait, clip.length / Mathf.Max(0.01f, Mathf.Abs(pitch)));
         }
 
@@ -432,7 +490,7 @@ public class AudioHandler : MonoBehaviour
 
         flameOngoingSource.clip = flameOngoingClip;
         flameOngoingSource.loop = true;
-        flameOngoingSource.volume = userSoundEffectVolume;
+        flameOngoingSource.volume = 1f;
         flameOngoingSource.Play();
     }
 
@@ -509,25 +567,25 @@ public class AudioHandler : MonoBehaviour
                 switch(name)
                 {
                     case SoundEffectType.CardDraw:
-                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.1f);
+                        SoundEffectSource.PlayOneShot(audioClip, 0.1f);
                         break;
                     case SoundEffectType.Impact:
-                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.5f);
+                        SoundEffectSource.PlayOneShot(audioClip, 0.5f);
                         break;
                     case SoundEffectType.Blood:
-                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.25f);
+                        SoundEffectSource.PlayOneShot(audioClip, 0.25f);
                         break;
                     case SoundEffectType.Scroll:
-                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.6f);
+                        SoundEffectSource.PlayOneShot(audioClip, 0.6f);
                         break;
                     case SoundEffectType.Defeat:
-                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.3f);
+                        SoundEffectSource.PlayOneShot(audioClip, 0.3f);
                         break;
                     case SoundEffectType.Whoosh:
-                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume * 0.5f);
+                        SoundEffectSource.PlayOneShot(audioClip, 0.5f);
                         break;
                     default:
-                        SoundEffectSource.PlayOneShot(audioClip, userSoundEffectVolume);
+                        SoundEffectSource.PlayOneShot(audioClip);
                         break;
 
                 }
@@ -565,11 +623,9 @@ public class AudioHandler : MonoBehaviour
                 AudioSource voice = gameObject.AddComponent<AudioSource>();
                 voice.playOnAwake = false;
                 voice.spatialBlend = 0f;
+                voice.outputAudioMixerGroup = CuesGroup;
                 if (SoundEffectSource != null)
-                {
-                    voice.outputAudioMixerGroup = SoundEffectSource.outputAudioMixerGroup;
                     voice.priority = SoundEffectSource.priority;
-                }
                 pitchedVoices.Add(voice);
             }
         }
@@ -591,14 +647,14 @@ public class AudioHandler : MonoBehaviour
         source.Stop();
         source.clip = clip;
         source.pitch = pitch;
-        source.volume = Mathf.Clamp01(userSoundEffectVolume * volumeScale);
+        source.volume = Mathf.Clamp01(volumeScale);
         source.Play();
     }
 
     public void PlayOneShot(AudioClip clip, float volumeScale = 1f)
     {
         if (clip != null && SoundEffectSource != null)
-            SoundEffectSource.PlayOneShot(clip, userSoundEffectVolume * volumeScale);
+            SoundEffectSource.PlayOneShot(clip, volumeScale);
     }
 
     /// <summary>
@@ -629,9 +685,10 @@ public class AudioHandler : MonoBehaviour
             ritualInvocationSource.playOnAwake = false;
             ritualInvocationSource.spatialBlend = 0f;
             ritualInvocationSource.loop = false;
+            ritualInvocationSource.outputAudioMixerGroup = RitualsGroup;
         }
 
-        float volume = RitualInvocationVolume * userSoundEffectVolume;
+        float volume = RitualInvocationVolume;
         if (!RitualInvocationVfx.IsMajor(ritual))
             volume *= MinorRitualVolumeScale;
         ritualInvocationSource.PlayOneShot(clip, volume);
@@ -658,17 +715,16 @@ public class AudioHandler : MonoBehaviour
         userMusicVolume = volume;
         PlayerPrefs.SetFloat("UserMusicVolume", userMusicVolume);
 
-        ApplyMusicVolume();
+        if (Mixer != null)
+            Mixer.SetFloat(MusicVolumeParam, SliderToDecibels(userMusicVolume));
     }
     public void SetSoundEffectVolume(float volume)
     {
         userSoundEffectVolume = volume;
         PlayerPrefs.SetFloat("UserSoundEffectVolume", userSoundEffectVolume);
 
-        if (flameOngoingSource != null && flameOngoingSource.isPlaying)
-            flameOngoingSource.volume = userSoundEffectVolume;
-
-        ApplyRumbleVolume();
+        if (Mixer != null)
+            Mixer.SetFloat(SfxVolumeParam, SliderToDecibels(userSoundEffectVolume));
     }
 
     public void PlayOther(OtherSoundType name)
@@ -793,7 +849,7 @@ public class AudioHandler : MonoBehaviour
             return;
 
         float volume = rumbleIsRefusal ? RefusalRumbleVolume : RumbleVolume;
-        OtherSource.volume = userSoundEffectVolume * volume * rumbleLevel;
+        OtherSource.volume = volume * rumbleLevel;
     }
 
     bool IsRumbleClip(AudioClip clip)
