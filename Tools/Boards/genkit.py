@@ -271,3 +271,12 @@ class AshlarWall:
         em = a * em_k[..., None]
         a = a * am[..., None]
         return a.astype(F32), self.hgt, em.astype(F32), np.full(X.shape, 0.12, F32)
+
+
+def patch_mix(n, a, b, X, Y, amount, scale=6.0, softness=0.12, offset=21):
+    """Mixes two sampled tiles (a, b) in patches through noise: `amount` (a number or a per-pixel array, 0..1) is the
+    share of b. Returns (mix, mask)."""
+    f = n.fbm(X, Y, scale, 4, offset=offset)
+    thr = 1 - np.asarray(amount, F32)
+    m = smoothstep(thr - softness, thr + softness, f)
+    return lerp(a, b, m), m.astype(F32)

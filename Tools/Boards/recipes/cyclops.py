@@ -1,9 +1,9 @@
-"""Polyphemus' island: dry hillside ground of thin sun-dried grass, thyme and limestone grit (a generated tile), the
-arena trodden bare, scree at the foot of the hill. Back edge (3D): the rocky hillside rising out of frame, the black
+"""Polyphemus' island: a hillside pasture, a patchwork of green turf and bare trodden dirt (generated tiles), the
+arena worn mostly to dirt, scree at the foot of the hill. Back edge (3D): the rocky hillside rising out of frame, the black
 mouth of the giant's cave and the great boulder he rolls across it, lit only at the foot. Lanes: the same ground,
 packed calmer. (The giant's footprints and scattered boulders were dropped: seen from above they read as a map.)"""
 from boardkit import *  # noqa
-from genkit import tile, two_scale, norm_lum, tile_height, edge_fade, tile_lanes, falloff, RockFace, boulder
+from genkit import patch_mix, tile, two_scale, norm_lum, tile_height, edge_fade, tile_lanes, falloff, RockFace, boulder
 
 NAME = 'Cyclops'
 FOOT_Y = 34.8          # the hillside's foot (kept clear of the enemy portrait and its offerings)
@@ -18,15 +18,21 @@ def paint(preview=False):
     X, Y = g.X, g.Y
     ad = arena_dist(X, Y)
 
+    # a patchwork of green turf and bare trodden dirt: grass holds the margins, the arena is worn mostly to dirt
+    grass = tile('Cyclops_GrassTile.png')
+    dirt = tile('Cyclops_DirtTile.png')
     ground = tile('Cyclops_GroundTile.png')
-    alb = norm_lum(two_scale(n, ground, X, Y, 11.0) * C(0.95, 1.0, 0.82), 0.17)     # leaned olive: a pasture, not dirt
+    galb = norm_lum(two_scale(n, grass, X, Y, 7.0, offset=11), 0.165)
+    galb = lerp(galb, norm_lum(two_scale(n, ground, X, Y, 9.0, offset=12), 0.15), 0.3)    # dry tufts in the green
+    dalb = norm_lum(two_scale(n, dirt, X, Y, 8.0, offset=13, rot=(1.1, 2.9)) * C(0.9, 0.95, 1.05), 0.14)     # umber, off the accent
+    worn = 0.22 + 0.45 * smoothstep(8.0, -2.0, ad)
+    alb, bare = patch_mix(n, galb, dalb, X, Y, worn, scale=5.0, softness=0.1, offset=14)
     big = n.fbm(X, Y, 16, 4, offset=1)
-    alb = alb * (0.8 + 0.4 * big)[..., None]
-    hgt = (big * 0.3 + tile_height(alb, g, 0.1)).astype(F32)
-
-    # the arena trodden toward bare earth: muted, a little darker, the grass worn down
-    bare = smoothstep(3.0, -4.0, ad) * (0.55 + 0.35 * n.fbm(X, Y, 4, 3, offset=4))
-    alb = lerp(alb, desaturate(alb, 0.6) * 0.9, bare * 0.55)
+    alb = alb * (0.85 + 0.3 * big)[..., None]
+    hgt = (big * 0.3 + tile_height(alb, g, 0.1) + (1 - bare) * 0.05).astype(F32)
+    # the arena's grass and dirt calmed toward their mix so nothing busy sits under the cards
+    calm = smoothstep(4.0, -1.0, ad) * 0.35
+    alb = lerp(alb, blurf(alb.mean(-1), 0.5, g)[..., None] * (alb / np.maximum(alb.mean(-1, keepdims=True), 1e-3)), calm)
 
     # scree at the hill's foot, a narrow contact shadow, and the boulder's shadow
     alb = alb * (1 - smoothstep(FOOT_Y - 1.6, FOOT_Y, Y)[..., None] * 0.45)
@@ -43,8 +49,7 @@ def paint(preview=False):
     alb = alb * (1 - cav[..., None] * 0.3)
     smooth = np.full(X.shape, 0.1, F32)
 
-    lalb, lhgt, lsmooth = tile_lanes(n, lane, ground, size=11.0, mean=0.19, calm=0.45)
-    lalb = desaturate(lalb, 0.35)
+    lalb, lhgt, lsmooth = tile_lanes(n, lane, dirt * C(0.9, 0.95, 1.05), size=8.0, mean=0.17, calm=0.5)
 
     finish(os.path.join(OUT, NAME), NAME, g, alb, hgt, smooth, None, lane, lalb, lhgt, lsmooth, preview=preview)
     back_edge()
