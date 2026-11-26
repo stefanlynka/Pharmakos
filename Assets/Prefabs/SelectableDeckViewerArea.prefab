@@ -21405,6 +21405,8 @@ MonoBehaviour:
   TrinketCarpetZ: 5
   ScrollIncrement: 5
   ScrollSpeed: 40
+  ScrollSharpness: 14
+  PlayHistoryScrollIncrement: 9
   SideScrollRows: 0.5
   SideScrollSpeed: 4
 --- !u!1 &8146532511200594043
