@@ -147,24 +147,21 @@ public class ProgressionHandler
             {
                 [1] = new List<Card>
                 {
-                    //new Hoplite(),
-                    new ThrowStone(),
-                    new ThrowStone(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    new Hoplite(),
+                    // new ThrowStone(),
+                    // new ThrowStone(),
                     // new Helios(),
                     // new Helios(),
                     // new Helios(),
                     // new Helios(),
-                    new Helios(),
                 }
             },
             StartingBattleRow = new Dictionary<int, List<Follower>>
             {
                 [1] = new List<Follower>
                 {
-                    new Rat(),
-                    new Rat(),
-                    new Rat(),
-                    new Siren(),
                     new Rat(),
                     //new Corridor(),
                     //new Peltast(),
@@ -227,12 +224,12 @@ public class ProgressionHandler
                     // new Sheep(),
                     // new Sheep(),
                     // new Sheep(),
-                    new Toxotes(),
+                    // new Toxotes(),
                     new Chariot(),
-                    new Toxotes(),
-                    new Peltast(),
-                    new Chariot(),
-                    new Toxotes(),
+                    // new Toxotes(),
+                    // new Peltast(),
+                    // new Chariot(),
+                    // new Toxotes(),
                     // new Ekdromos(),
                     //new Pytho(),
                     //new Agamemnon(),
