@@ -144,3 +144,130 @@ def boulder(be, mat, n, x, y, r, h, seed=0.0, segments=18):
     prof = [(0.0, r * 0.75), (h * 0.15, r * 0.97), (h * 0.45, r), (h * 0.75, r * 0.82), (h * 0.95, r * 0.4), (h, 0.0)]
     wob = lambda t, hh: 0.82 + 0.36 * n.value(np.array([[math.cos(t) * 1.3 + seed]], F32), np.array([[math.sin(t) * 1.3 + hh * 0.7 + seed]], F32), 1.0, 46)[0, 0]
     be.lathe(mat, x, y, prof, segments=segments, wobble=wob)
+
+
+class AshlarWall:
+    """A wall of irregular ashlar standing along the far edge (after Troy's wall): courses of varying height with
+    stepped beds, blocks of varying width with slightly slanted joints, each block's face bulging or standing proud
+    and its surface the generated stone tile sampled at its own spot. One height map (D: how far each point sits
+    back) drives both the mesh and the normal map. `openings` cut dark passages through it: [(x, width)].
+    Build with `mesh()`, paint with `paint()`."""
+
+    def __init__(self, mat, n, rng, stone, height, course=(0.95, 1.5), width=(2.0, 5.5), slant=0.3, beds=0.2,
+                 bulge=(0.03, 0.12), proud=(-0.07, 0.06), block_size=3.2, openings=(), opening_depth=7.0):
+        from backedge import HALF
+        self.mat, self.n, self.height, self.openings, self.opening_depth = mat, n, height, openings, opening_depth
+        c = mat.elev_canvas()
+        self.canvas = c
+        X, H = c.X, c.Y
+        forced = []
+        for ox, ow in openings:
+            forced += [ox - ow / 2, ox + ow / 2]
+        lim = HALF + 6
+        courses = []
+        h = 0.0
+        while h < height - 1e-3:
+            ch = float(rng.uniform(*course))
+            if height - (h + ch) < course[0] * 0.7:
+                ch = height - h
+            courses.append((h, h + ch))
+            h += ch
+        layout = []
+        for h0, h1 in courses:
+            joints = []
+            x = -lim + float(rng.uniform(0, 2))
+            while x < lim:
+                joints.append(x)
+                x += float(rng.uniform(*width))
+            joints = [j for j in joints if not forced or min(abs(j - o) for o in forced) > width[0] * 0.45]
+            sl = [float(rng.uniform(-slant, slant)) for _ in joints] + [0.0] * len(forced)
+            order = np.argsort(joints + forced)
+            layout.append((h0, h1, np.array(joints + forced, F32)[order], np.array(sl, F32)[order]))
+        nblocks = sum(len(cc[2]) + 1 for cc in layout)
+        bval = rng.uniform(0.8, 1.12, nblocks).astype(F32)
+        bbulge = rng.uniform(*bulge, nblocks).astype(F32)
+        bproud = rng.uniform(*proud, nblocks).astype(F32)
+        box_, boy = rng.uniform(0, 60, nblocks).astype(F32), rng.uniform(0, 60, nblocks).astype(F32)
+        xs = X[0]
+        bnd = [np.zeros_like(xs)]
+        for ci, (h0, h1, joints, slants) in enumerate(layout):
+            if ci == len(layout) - 1:
+                bnd.append(np.full_like(xs, height))
+            else:
+                idx = np.clip(np.searchsorted(joints, xs), 1, len(joints) - 1)
+                toff = rng.uniform(-beds, beds, len(joints) + 1).astype(F32)
+                bnd.append(np.maximum(h1 + toff[idx], bnd[-1] + 0.45))
+        starts = np.cumsum([0] + [len(cc[2]) + 1 for cc in layout])
+        edge = np.full(X.shape, 9.0, F32)
+        bid = np.full(X.shape, -1, np.int32)
+        for r in np.where(H[:, 0] <= height + 1e-3)[0]:
+            hr = float(H[r, 0])
+            xr = X[r]
+            for ci, (h0, h1, joints, slants) in enumerate(layout):
+                lo, hi = bnd[ci], bnd[ci + 1]
+                top_course = ci == len(layout) - 1
+                cols = (hr >= lo) & ((hr < hi) | top_course)
+                if not cols.any():
+                    continue
+                t = (hr - (h0 + h1) / 2) / (h1 - h0)
+                jx = joints + slants * t
+                xc = xr[cols]
+                idx = np.clip(np.searchsorted(jx, xc), 1, len(jx) - 1)
+                dl = xc - jx[idx - 1]
+                dr = jx[idx] - xc
+                dh = hr - lo[cols] if top_course else np.minimum(hr - lo[cols], hi[cols] - hr)
+                edge[r, cols] = np.minimum(np.minimum(dl, dr), dh)
+                bid[r, cols] = starts[ci] + idx
+        inwall = bid >= 0
+        b = np.where(inwall, bid, 0)
+        joint = 1 - smoothstep(0.0, 0.13, edge)
+        chip = smoothstep(0.6, 0.78, n.fbm(X, H, 0.35, 3, offset=3)) * (1 - smoothstep(0.04, 0.4, edge))
+        D = np.where(inwall, 0.15 * joint + 0.07 * chip - bbulge[b] * smoothstep(0.05, 0.9, edge)
+                     + bproud[b] * smoothstep(0.0, 0.12, edge), 0.0).astype(F32)
+        self.hole = np.zeros(X.shape, F32)
+        for ox, ow in openings:
+            self.hole = np.maximum(self.hole, (np.abs(X - ox) < ow / 2).astype(F32))
+        D = np.where(self.hole > 0, opening_depth, D).astype(F32)
+        self.D = D
+        self.Dm = blurf(np.where(self.hole > 0, 0.0, D).astype(F32), 0.06, c)
+        flip = np.where(b % 2 == 0, 1.0, -1.0).astype(F32)
+        salb = sample_tiled(stone, X * flip + box_[b], H + boy[b], block_size) * bval[b][..., None]
+        g = lum(stone)
+        g3 = np.repeat(g[..., None], 3, 2)
+        grain = sample_tiled(g3, X * flip + box_[b], H + boy[b], block_size)[..., 0] - float(g.mean())
+        self.alb = (salb * (1 - np.clip(D * 4.5, 0, 0.75))[..., None]).astype(F32)
+        self.hgt = np.where(self.hole > 0, 0.0, -D + grain * 0.05).astype(F32)
+        self.inwall = inwall
+
+    def depth(self, x, h):
+        from backedge import HALF, PPU
+        c = self.canvas
+        ix = int(min(max((x + HALF) * PPU, 0), c.w - 1))
+        iy = int(min(max((self.mat.tex_h - min(h, self.height - 0.01)) * PPU, 0), c.h - 1))
+        d = float(self.Dm[iy, ix])
+        for ox, ow in self.openings:
+            if abs(x - ox) < ow / 2:
+                d = self.opening_depth
+        return d
+
+    def mesh(self, be, foot_y, batter=0.0, x0=-75.0, x1=75.0, step=0.12, h_step=0.1):
+        """foot_y: number or function of x."""
+        fy = foot_y if callable(foot_y) else (lambda x, v=foot_y: v)
+        be.relief(self.mat, x0, x1, fy, lambda x: self.height, lambda x, h: h * batter + self.depth(x, h),
+                  step=step, h_step=h_step)
+
+    def paint(self, dust_col=None, dust_h=0.75, top=6.0, glow=0.7, side=(8.0, 55.0), floor=0.2, streaks=0.3):
+        """Returns (albedo, height, emission, smoothness) for save_material."""
+        from bepaint import age
+        n = self.n
+        c = self.canvas
+        X, H = c.X, c.Y
+        a = age(n, X, H, self.alb, foot_dark=0.0, streaks=streaks)
+        if dust_col is not None:
+            dust = (1 - smoothstep(0.0, dust_h, H)) * (0.55 + 0.35 * n.fbm(X, H, 0.8, 3, offset=5))
+            a = lerp(a, np.broadcast_to(dust_col, a.shape), dust * 0.85)
+        a = a * (1 - self.hole * 0.97)[..., None]                     # passages: black
+        em_k, am = falloff(n, X, H, top=top, glow=glow, side=side, floor=floor)
+        em = a * em_k[..., None]
+        a = a * am[..., None]
+        return a.astype(F32), self.hgt, em.astype(F32), np.full(X.shape, 0.12, F32)
