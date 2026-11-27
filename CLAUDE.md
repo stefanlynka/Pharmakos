@@ -76,6 +76,7 @@ Run saves (`Save/RunSave.cs`, JSON in `Application.persistentDataPath/run-save.j
 ## Conventions
 
 - **The inspector is the source of truth.** Don't write code that silently overrides values the developer sees and edits in the inspector (e.g. replacing a component's serialized preset at runtime). If something must change at runtime, leave the authored field alone and make the runtime value clearly separate.
+- **Screens and UI are built to be edited in the hierarchy.** A new screen is a prefab instanced in `GameScene` (like `StatusScreen`), with every panel, label, button and text string as a real object or inspector field, so the developer can adjust layout and copy in the scene/prefab view. Don't instantiate screens or build their layout from code at runtime; code fills in content (cards, counts), not structure. Copy that the developer may edit (titles, subtitles) goes in serialized fields, not only in code defaults.
 - **Content lives together** under `Assets/Resources/Content` (events, follower layouts, highlight presets and the `HighlightPalette`). Put new content ScriptableObjects there.
 - C# style: PascalCase public members, `camelCase`/`_camelCase` private, Allman braces, 4-space indent. Match surrounding code.
 - Remove stray auto-added usings like `using static Unity.VisualScripting.Member;` / `UnityEngine.GraphicsBuffer` when touching a file — they're IDE accidents.

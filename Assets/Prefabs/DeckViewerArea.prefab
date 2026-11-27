@@ -5137,6 +5137,7 @@ MonoBehaviour:
   TrinketSummaryGap: 1
   TrinketSummaryZ: -0.2
   TrinketCarpetZ: 5
+  SideCarpetWidthScale: 2
   ScrollIncrement: 5
   ScrollSpeed: 40
   ScrollSharpness: 14

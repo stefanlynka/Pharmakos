@@ -12879,7 +12879,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3011876531552526561, guid: 9d15120f3f23d5c45af392efeb7a02a2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 16.7
+      value: 22.6
       objectReference: {fileID: 0}
     - target: {fileID: 3011876531552526561, guid: 9d15120f3f23d5c45af392efeb7a02a2, type: 3}
       propertyPath: m_LocalPosition.y
@@ -19974,7 +19974,7 @@ Transform:
   m_GameObject: {fileID: 520293226}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -19.53, y: -17.53, z: 5}
+  m_LocalPosition: {x: -14.8, y: -17.53, z: 5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -19996,7 +19996,7 @@ MonoBehaviour:
   IsHuman: 1
   MaxSpacing: 1.5
   CardWidth: 6.55
-  HandWidth: 45
+  HandWidth: 40.2
   CardY: 0
   CardZ: 2.5
   CardZOffset: 0.1
@@ -37477,11 +37477,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 34.3
+      value: 42.7
       objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 28.9
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_LocalPosition.z
@@ -38697,9 +38697,9 @@ MonoBehaviour:
   RumbleStartTime: 5
   RitualInvocationVolume: 0.04
   MinorRitualVolumeScale: 0.8
-  DeathStrikeVolume: 0.1
-  CueVolume: 0.4
-  SpellCastVolume: 0.45
+  DeathStrikeVolume: 0.6
+  CueVolume: 0.04
+  SpellCastVolume: 0.04
   MusicFadeDuration: 1.5
   MusicFadedVolume: 0.5
   CombatMusicFadeOutDuration: 2.5
@@ -58673,11 +58673,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 43.4
+      value: 41.5
       objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 16.15
+      value: 5.8
       objectReference: {fileID: 0}
     - target: {fileID: 8524862095652594471, guid: 0b81397dd0209b442a24d8391596caec, type: 3}
       propertyPath: m_LocalPosition.z
@@ -65646,6 +65646,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2099432155}
     m_Modifications:
+    - target: {fileID: 561967689310150261, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -3.835
+      objectReference: {fileID: 0}
     - target: {fileID: 996401740309907323, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -65814,6 +65818,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -2
       objectReference: {fileID: 0}
+    - target: {fileID: 6411051916323729250, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 6727119838430249782, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -65884,6 +65892,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7802711176893236712, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7867232589287868129, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: PileTwist
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7997253387403181496, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
@@ -69762,6 +69774,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 561967689310150261, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 3.835
+      objectReference: {fileID: 0}
     - target: {fileID: 1149819252306713459, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_Size.x
       value: 5.7
@@ -69902,6 +69918,14 @@ PrefabInstance:
       propertyPath: m_LocalScale.z
       value: 0.8
       objectReference: {fileID: 0}
+    - target: {fileID: 6411051916323729250, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -14.84
+      objectReference: {fileID: 0}
+    - target: {fileID: 6411051916323729250, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -7.59
+      objectReference: {fileID: 0}
     - target: {fileID: 6711059594147613370, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.075
@@ -69969,6 +69993,10 @@ PrefabInstance:
     - target: {fileID: 7802711176893236712, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_Name
       value: RitualBuff
+      objectReference: {fileID: 0}
+    - target: {fileID: 7867232589287868129, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
+      propertyPath: PileTwist
+      value: -1.6
       objectReference: {fileID: 0}
     - target: {fileID: 8350421998293339217, guid: fc4b8bad6d9c0e24a8a7eb9d6496aa57, type: 3}
       propertyPath: m_Enabled
@@ -71664,6 +71692,10 @@ PrefabInstance:
     - target: {fileID: 2297831700392476149, guid: e8a26b4e7211cc54b9f5a8db08a69621, type: 3}
       propertyPath: m_Name
       value: NewBackgroundHolder
+      objectReference: {fileID: 0}
+    - target: {fileID: 2297831700392476149, guid: e8a26b4e7211cc54b9f5a8db08a69621, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4052815390278274213, guid: e8a26b4e7211cc54b9f5a8db08a69621, type: 3}
       propertyPath: m_LocalPosition.x

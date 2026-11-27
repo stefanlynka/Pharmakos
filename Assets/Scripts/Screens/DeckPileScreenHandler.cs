@@ -8,15 +8,14 @@ using UnityEngine.UI;
 /// to draw, sorted so the order gives nothing away) and Full Deck (every card you brought to the fight). For the
 /// enemy's pile it shows their whole deck only, so you get a sense of what they can do without seeing what's next.
 ///
-/// Laid out in <c>Resources/Prefabs/UI/DeckPileScreen.prefab</c> (the status screen's look: tabs top left, title
-/// and subtitle centred). It isn't in the scene: the first <see cref="Open"/> instantiates it beside
-/// DeckViewerScreen and registers it with ScreenHandler. ContentScrollView renders the cards into DeckContent.
+/// Laid out in <c>Prefabs/DeckPileScreen.prefab</c> (the status screen's look: tabs top left, title and subtitle
+/// centred), instanced in GameScene beside DeckViewerScreen, so it's edited in the hierarchy like any screen. Its
+/// texts are inspector fields. ContentScrollView renders the cards into DeckContent.
 /// Closing goes through <see cref="Controller.HideContentScrollView"/>, so Escape and Back behave like the other
 /// viewers.
 /// </summary>
 public class DeckPileScreenHandler : MonoBehaviour
 {
-    const string PrefabPath = "Prefabs/UI/DeckPileScreen";
     const string RenderTexturePath = "RenderTextures/DeckViewer";
 
     static DeckPileScreenHandler instance;
@@ -32,7 +31,7 @@ public class DeckPileScreenHandler : MonoBehaviour
     [Header("Text")]
     public string PlayerTitle = "Your Deck";
     [Tooltip("{0} is the number of cards left to draw.")]
-    public string DrawPileSubtitle = "{0} cards left to draw, in no particular order";
+    public string DrawPileSubtitle = "{0} cards left to draw, in no particular order. When out of cards, your full deck is shuffled back into your draw pile";
     public string DrawPileSingularSubtitle = "1 card left to draw";
     public string DrawPileEmptySubtitle = "No cards left to draw. Your next draw reshuffles your whole deck.";
     [Tooltip("{0} is the number of cards in the deck.")]
@@ -59,42 +58,18 @@ public class DeckPileScreenHandler : MonoBehaviour
         instance.Show(player);
     }
 
+    // The screen is in the scene (an instance of Prefabs/DeckPileScreen.prefab under the UI canvas, beside
+    // DeckViewerScreen); ScreenHandler registers it on Awake like every other screen.
     static bool Ensure()
     {
         if (instance != null)
             return true;
-        if (ScreenHandler.Instance == null)
-            return false;
-
-        GameObject prefab = Resources.Load<GameObject>(PrefabPath);
-        if (prefab == null)
+        if (ScreenHandler.Instance == null || !ScreenHandler.Instance.TryGetScreen(ScreenName.DeckPileScreen, out Screen screen))
         {
-            Debug.LogError("DeckPileScreenHandler: prefab missing at Resources/" + PrefabPath);
+            Debug.LogError("DeckPileScreenHandler: no DeckPileScreen in the scene.");
             return false;
         }
-
-        // Beside the other full-screen viewers, so it sorts with them (above the board UI, below popups).
-        Transform parent = null;
-        int sibling = -1;
-        if (ScreenHandler.Instance.TryGetScreen(ScreenName.DeckViewerScreen, out Screen deckViewer))
-        {
-            parent = deckViewer.transform.parent;
-            sibling = deckViewer.transform.GetSiblingIndex() + 1;
-        }
-        if (parent == null)
-            return false;
-
-        GameObject screenObject = Instantiate(prefab, parent, false);
-        screenObject.name = prefab.name;
-        if (sibling >= 0)
-            screenObject.transform.SetSiblingIndex(sibling);
-
-        Screen screen = screenObject.GetComponent<Screen>();
-        ScreenHandler.Instance.Screens.Add(screen);
-        screen.Init();
-        screen.Exit(true);
-
-        instance = screenObject.GetComponent<DeckPileScreenHandler>();
+        instance = screen.GetComponent<DeckPileScreenHandler>();
         return instance != null;
     }
 

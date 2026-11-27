@@ -243,7 +243,7 @@ public class DeckPile : MonoBehaviour
 
         string text = IsEnemy
             ? "<b>Enemy's Deck</b>\nClick to see every card they might draw."
-            : "<b>Your Deck</b>\nClick to see the cards left to draw, and your whole deck.";
+            : "<b>Your Deck</b>\nClick to see the cards left to draw.";
         PopupScreenHandler.Instance.ShowTextPopup(GameFonts.WithDisplayTitle(text), transform, PopupPosition.Left);
         popupShown = true;
     }
